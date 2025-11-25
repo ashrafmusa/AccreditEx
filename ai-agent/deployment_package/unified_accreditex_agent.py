@@ -5,11 +5,7 @@ from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
 import logging
 
-# Azure AI Agent Framework
-from azure.ai.projects import AIProjectClient
-from azure.identity import DefaultAzureCredential
-
-# OpenAI
+# OpenAI SDK (used for Groq)
 import openai
 from openai import AsyncOpenAI
 
@@ -29,18 +25,31 @@ logger = logging.getLogger(__name__)
 
 class UnifiedAccreditexAgent:
     """
-    Unified Accreditex AI Agent
-    Combines capabilities of the original agent with the new Azure AI Agent Framework
+    Unified Accreditex AI Agent (Groq Edition)
+    Uses Groq's high-performance API with Llama 3 for free/fast inference.
+    Manages conversation history manually since we are not using the Assistants API.
     """
     
     def __init__(self):
         self.client = None
-        self.agent = None
         self.db = None
-        self.project_client = None
         
-        # Initialize OpenAI client
-        self.openai_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        # Initialize Groq client using OpenAI SDK
+        # Groq is compatible with OpenAI's API structure
+        api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
+        base_url = "https://api.groq.com/openai/v1" if os.getenv("GROQ_API_KEY") else None
+        
+        self.client = AsyncOpenAI(
+            api_key=api_key,
+            base_url=base_url
+        )
+        
+        # Model selection - prefer Llama 3 on Groq, fallback to GPT-3.5/4 if using OpenAI key
+        self.model = "llama3-70b-8192" if os.getenv("GROQ_API_KEY") else "gpt-3.5-turbo"
+        
+        # In-memory conversation history storage (for demo/stateless deployment)
+        # In production, this should be in Redis or Firestore
+        self.conversations: Dict[str, List[Dict[str, str]]] = {}
         
         # Initialize Firebase (if credentials exist)
         self._initialize_firebase()
@@ -61,32 +70,13 @@ class UnifiedAccreditexAgent:
             logger.error(f"❌ Firebase initialization failed: {e}")
 
     async def initialize(self):
-        """Initialize the agent"""
-        try:
-            # For now, we'll use a direct OpenAI implementation as it's more portable for Render
-            # This avoids Azure dependency issues in the free tier
-            logger.info("Initializing OpenAI-based agent...")
-            
-            # Define tools/functions
-            self.tools = self._get_agent_tools()
-            
-            # Create the assistant
-            self.agent = await self.openai_client.beta.assistants.create(
-                name="AccreditEx Agent",
-                instructions=self._get_agent_instructions(),
-                tools=self.tools,
-                model="gpt-4-1106-preview"  # Use Turbo for better performance/cost
-            )
-            logger.info(f"✅ Agent initialized: {self.agent.id}")
-            
-        except Exception as e:
-            logger.error(f"❌ Agent initialization failed: {e}")
-            raise
+        """Initialize the agent - mostly a placeholder now as client is init in __init__"""
+        logger.info(f"✅ Agent initialized using model: {self.model}")
 
-    def _get_agent_instructions(self, context: Optional[Dict[str, Any]] = None) -> str:
-        """Get comprehensive instructions for the healthcare accreditation agent"""
+    def _get_system_prompt(self, context: Optional[Dict[str, Any]] = None) -> str:
+        """Get the system prompt with dynamic context"""
         
-        base_instructions = """
+        base_prompt = """
 You are the AccreditEx AI Agent, an expert healthcare accreditation consultant.
 Your goal is to assist healthcare organizations in preparing for and maintaining accreditation (CBAHI, JCI, etc.).
 
@@ -100,16 +90,11 @@ TONE AND STYLE:
 - Professional, encouraging, and authoritative but accessible.
 - Use clear, structured formatting (bullet points, bold text).
 - Be proactive: suggest next steps or related checks.
-
-KNOWLEDGE BASE:
-- You have access to general accreditation standards (CBAHI, JCI).
-- You understand healthcare policies, SOPs, and KPIs.
 """
 
         # Add dynamic context if provided
-        context_instructions = ""
         if context:
-            context_instructions = f"""
+            base_prompt += f"""
 \nCURRENT CONTEXT:
 The user is currently navigating the AccreditEx application.
 - **Current Page**: {context.get('page_title', 'Unknown')}
@@ -117,59 +102,55 @@ The user is currently navigating the AccreditEx application.
 - **User Role**: {context.get('user_role', 'Unknown')}
 - **Timestamp**: {context.get('timestamp', datetime.now().isoformat())}
 
-Please tailor your responses to this context. For example, if the user is on the "Training" page, focus on training-related advice.
+Please tailor your responses to this context.
 """
-
-        return base_instructions + context_instructions
-
-    def _get_agent_tools(self):
-        """Define the tools available to the agent"""
-        return [
-            {"type": "code_interpreter"},
-            {"type": "retrieval"},
-            # Add function definitions here as needed
-        ]
+        return base_prompt
 
     async def chat(self, message: str, thread_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
-        Chat with the agent using streaming responses
+        Chat with the agent using streaming responses (Standard Chat Completions)
         """
-        if not self.agent:
-            await self.initialize()
-
         try:
-            # Update agent instructions with current context if provided
-            if context:
-                await self.openai_client.beta.assistants.update(
-                    assistant_id=self.agent.id,
-                    instructions=self._get_agent_instructions(context)
-                )
-
-            # Create or retrieve thread
+            # Generate thread_id if not provided
             if not thread_id:
-                thread = await self.openai_client.beta.threads.create()
-                thread_id = thread.id
+                thread_id = f"thread_{datetime.now().timestamp()}"
             
-            # Add message to thread
-            await self.openai_client.beta.threads.messages.create(
-                thread_id=thread_id,
-                role="user",
-                content=message
+            # Initialize conversation history if new thread
+            if thread_id not in self.conversations:
+                self.conversations[thread_id] = [
+                    {"role": "system", "content": self._get_system_prompt(context)}
+                ]
+            else:
+                # Update system prompt with new context if needed (optional, usually keeps initial context)
+                # For this implementation, we'll just append the user message
+                pass
+
+            # Append user message
+            self.conversations[thread_id].append({"role": "user", "content": message})
+            
+            # Keep history manageable (last 10 messages + system prompt)
+            if len(self.conversations[thread_id]) > 11:
+                # Keep system prompt [0] and last 10
+                self.conversations[thread_id] = [self.conversations[thread_id][0]] + self.conversations[thread_id][-10:]
+
+            # Stream response
+            stream = await self.client.chat.completions.create(
+                model=self.model,
+                messages=self.conversations[thread_id],
+                stream=True,
+                temperature=0.7,
+                max_tokens=1024
             )
 
-            # Run the assistant
-            run = await self.openai_client.beta.threads.runs.create(
-                thread_id=thread_id,
-                assistant_id=self.agent.id,
-                stream=True
-            )
-
-            # Stream the response
-            async for event in run:
-                if event.event == "thread.message.delta":
-                    # Yield the text delta
-                    if event.data.delta.content:
-                        yield event.data.delta.content[0].text.value
+            full_response = ""
+            async for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+                    yield content
+            
+            # Append assistant response to history
+            self.conversations[thread_id].append({"role": "assistant", "content": full_response})
             
         except Exception as e:
             logger.error(f"Chat error: {e}")
@@ -192,9 +173,8 @@ Please tailor your responses to this context. For example, if the user is on the
         3. Recommendations
         """
         
-        # Use simple completion for this task for speed/reliability
-        response = await self.openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+        response = await self.client.chat.completions.create(
+            model=self.model,
             messages=[
                 {"role": "system", "content": "You are a compliance auditor."},
                 {"role": "user", "content": prompt}
@@ -218,8 +198,8 @@ Please tailor your responses to this context. For example, if the user is on the
         Provide a risk assessment (Low/Medium/High) and immediate actions needed.
         """
         
-        response = await self.openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+        response = await self.client.chat.completions.create(
+            model=self.model,
             messages=[
                 {"role": "system", "content": "You are a risk management expert."},
                 {"role": "user", "content": prompt}
@@ -243,8 +223,8 @@ Please tailor your responses to this context. For example, if the user is on the
         Suggest 3 specific training modules or activities.
         """
         
-        response = await self.openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
+        response = await self.client.chat.completions.create(
+            model=self.model,
             messages=[
                 {"role": "system", "content": "You are a healthcare training coordinator."},
                 {"role": "user", "content": prompt}
