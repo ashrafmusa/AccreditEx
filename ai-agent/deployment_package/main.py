@@ -14,6 +14,11 @@ import logging
 from datetime import datetime
 
 # Import the unified agent
+import sys
+# Add current directory to python path for Render deployment
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+# Import the unified agent
 from unified_accreditex_agent import UnifiedAccreditexAgent
 
 # Configure logging
