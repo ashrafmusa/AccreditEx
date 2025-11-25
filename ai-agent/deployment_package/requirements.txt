@@ -1,0 +1,31 @@
+# AccreditEx AI Agent - Production Dependencies
+# Minimal, secure dependencies for Render.com deployment
+
+# 🤖 Microsoft Agent Framework (Latest Beta)
+agent-framework-azure-ai==1.0.0b251114
+
+# 🚀 FastAPI Web Framework  
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+
+# 🔑 OpenAI Integration
+openai>=1.3.0
+
+# 🔥 Firebase (Optional - can be disabled)
+firebase-admin>=6.4.0
+
+# ⚙️ Configuration & Environment
+python-dotenv>=1.0.0
+
+# 📊 Logging & Monitoring
+structlog>=23.2.0
+
+# 📁 File Operations
+aiofiles>=23.2.0
+
+# 🛡️ Security & Validation
+pydantic[email]>=2.5.0
+
+# 🌐 HTTP Client (for health checks)
+httpx>=0.25.0
