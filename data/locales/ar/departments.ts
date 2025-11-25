@@ -1,0 +1,22 @@
+
+export const ar = {
+    departmentsPageDescription: 'إدارة الوحدات التنظيمية، وتعيين الموظفين، وتتبع أداء الأقسام.',
+    addNewDepartment: 'إضافة قسم جديد',
+    editDepartment: 'تعديل القسم',
+    departmentName: 'اسم القسم',
+    departmentNameEn: 'اسم القسم (الإنجليزية)',
+    departmentNameAr: 'اسم القسم (العربية)',
+    areYouSureDeleteDepartment: 'هل أنت متأكد من رغبتك في حذف هذا القسم؟ سيصبح جميع المستخدمين فيه غير معينين.',
+    noDepartmentsFound: 'لم يتم إنشاء أي أقسام بعد.',
+    createDepartmentToStart: 'أنشئ قسمًا جديدًا للبدء.',
+    totalDepartments: 'إجمالي الأقسام',
+    totalStaffAssigned: 'إجمالي الموظفين المعينين',
+    totalTasks: 'إجمالي المهام المعينة',
+    tasksAssigned: 'المهام المعينة',
+    departmentMembers: 'أعضاء القسم',
+    noUsersInDepartment: 'لم يتم تعيين أي مستخدمين لهذا القسم.',
+    departmentDetails: 'تفاصيل القسم',
+    assignedUsers: 'المستخدمون المعينون',
+    searchByTask: 'ابحث بالمهمة أو بمعرف المعيار...',
+    noTasksForDepartment: 'لا توجد مهام معينة حاليًا لهذا القسم.',
+};

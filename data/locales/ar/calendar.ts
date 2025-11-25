@@ -1,0 +1,17 @@
+export const ar = {
+    complianceCalendar: 'تقويم الامتثال',
+    calendarPageDescription: 'تتبع جميع المواعيد النهائية والأحداث الهامة في مكان واحد.',
+    today: 'اليوم',
+    month: 'شهر',
+    agenda: 'جدول أعمال',
+    year: 'سنة',
+    createEvent: 'إنشاء حدث',
+    editEvent: 'تعديل حدث',
+    eventDate: 'التاريخ',
+    eventTitleEn: 'العنوان (الإنجليزية)',
+    eventTitleAr: 'العنوان (العربية)',
+    eventDescriptionEn: 'الوصف (الإنجليزية، اختياري)',
+    eventDescriptionAr: 'الوصف (العربية، اختياري)',
+    noEventsForDay: 'لا توجد أحداث مجدولة لهذا اليوم.',
+    noEventsForMonth: 'لا توجد أحداث مجدولة لهذا الشهر.',
+};

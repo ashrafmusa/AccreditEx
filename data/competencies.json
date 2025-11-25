@@ -1,0 +1,46 @@
+[
+  {
+    "id": "comp-bls",
+    "name": {
+      "en": "Basic Life Support (BLS)",
+      "ar": "دعم الحياة الأساسي (BLS)"
+    },
+    "description": {
+      "en": "Certification in providing basic life support, including CPR and AED usage.",
+      "ar": "شهادة في تقديم دعم الحياة الأساسي، بما في ذلك الإنعاش القلبي الرئوي واستخدام جهاز الصدمات الكهربائية الخارجي."
+    }
+  },
+  {
+    "id": "comp-acls",
+    "name": {
+      "en": "Advanced Cardiovascular Life Support (ACLS)",
+      "ar": "دعم الحياة القلبي الوعائي المتقدم (ACLS)"
+    },
+    "description": {
+      "en": "Certification for managing cardiovascular emergencies.",
+      "ar": "شهادة لإدارة طوارئ القلب والأوعية الدموية."
+    }
+  },
+  {
+    "id": "comp-cphq",
+    "name": {
+      "en": "Certified Professional in Healthcare Quality (CPHQ)",
+      "ar": "محترف معتمد في جودة الرعاية الصحية (CPHQ)"
+    },
+    "description": {
+      "en": "Professional certification for healthcare quality management professionals.",
+      "ar": "شهادة مهنية لمتخصصي إدارة جودة الرعاية الصحية."
+    }
+  },
+  {
+    "id": "comp-cic",
+    "name": {
+      "en": "Certification in Infection Control (CIC)",
+      "ar": "شهادة في مكافحة العدوى (CIC)"
+    },
+    "description": {
+      "en": "Certification for professionals in infection prevention and control.",
+      "ar": "شهادة للمهنيين في مجال الوقاية من العدوى ومكافحتها."
+    }
+  }
+]
