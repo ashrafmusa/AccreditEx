@@ -15,11 +15,31 @@ from datetime import datetime
 
 # Import the unified agent
 import sys
-# Add current directory to python path for Render deployment
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import os
 
-# Import the unified agent
-from unified_accreditex_agent import UnifiedAccreditexAgent
+# Debugging: Print current directory and contents
+current_dir = os.path.dirname(os.path.abspath(__file__))
+print(f"Current directory: {current_dir}")
+print(f"Directory contents: {os.listdir(current_dir)}")
+print(f"Python path: {sys.path}")
+
+# Add current directory to python path
+sys.path.append(current_dir)
+
+try:
+    from unified_accreditex_agent import UnifiedAccreditexAgent
+except ImportError as e:
+    print(f"CRITICAL ERROR: Could not import UnifiedAccreditexAgent: {e}")
+    # Try importing from local file directly if module import fails
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("UnifiedAccreditexAgent", os.path.join(current_dir, "unified_accreditex_agent.py"))
+    if spec and spec.loader:
+        module = importlib.util.module_from_spec(spec)
+        sys.modules["unified_accreditex_agent"] = module
+        spec.loader.exec_module(module)
+        UnifiedAccreditexAgent = module.UnifiedAccreditexAgent
+    else:
+        raise
 
 # Configure logging
 logging.basicConfig(
