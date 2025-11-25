@@ -1,0 +1,17 @@
+export const en = {
+    complianceCalendar: 'Compliance Calendar',
+    calendarPageDescription: 'Track all important deadlines and events in one place.',
+    today: 'Today',
+    month: 'Month',
+    agenda: 'Agenda',
+    year: 'Year',
+    createEvent: 'Create Event',
+    editEvent: 'Edit Event',
+    eventDate: 'Date',
+    eventTitleEn: 'Title (English)',
+    eventTitleAr: 'Title (Arabic)',
+    eventDescriptionEn: 'Description (English, Optional)',
+    eventDescriptionAr: 'Description (Arabic, Optional)',
+    noEventsForDay: 'No events scheduled for this day.',
+    noEventsForMonth: 'No events scheduled for this month.',
+};

@@ -1,0 +1,22 @@
+{
+  "appName": "AccreditEx",
+  "logoUrl": "",
+  "primaryColor": "#4f46e5",
+  "defaultLanguage": "en",
+  "defaultUserRole": "TeamMember",
+  "passwordPolicy": {
+    "minLength": 8,
+    "requireUppercase": false,
+    "requireNumber": false,
+    "requireSymbol": false
+  },
+  "globeSettings": {
+    "baseColor": "#1e293b",
+    "markerColor": "#818cf8",
+    "glowColor": "#4f46e5",
+    "scale": 2.5,
+    "darkness": 0.9,
+    "lightIntensity": 1.2,
+    "rotationSpeed": 0.02
+  }
+}

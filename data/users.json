@@ -1,0 +1,70 @@
+[
+  {
+    "id": "user-1",
+    "name": "Mr. Ashraf Musa",
+    "email": "excellencequestconsultancy@gmail.com",
+    "role": "Admin",
+    "departmentId": "dep-7",
+    "jobTitle": "Chief Medical Officer",
+    "hireDate": "2018-03-12",
+    "competencies": [
+      {
+        "competencyId": "comp-cphq",
+        "issueDate": "2020-05-15",
+        "expiryDate": "2025-05-14"
+      }
+    ],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-2",
+    "name": "Marcus Thorne",
+    "email": "m.thorne@healthcare.com",
+    "role": "Project Lead",
+    "departmentId": "dep-5",
+    "jobTitle": "Quality Improvement Manager",
+    "hireDate": "2021-09-01",
+    "competencies": [],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-3",
+    "name": "Lena Petrova",
+    "email": "l.petrova@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-1",
+    "jobTitle": "Registered Nurse, ICU",
+    "hireDate": "2022-02-20",
+    "competencies": [
+      {
+        "competencyId": "comp-bls",
+        "issueDate": "2023-01-10",
+        "expiryDate": "2025-01-09"
+      },
+      {
+        "competencyId": "comp-acls",
+        "issueDate": "2023-02-15",
+        "expiryDate": "2025-02-14"
+      }
+    ],
+    "trainingAssignments": [
+      {
+        "trainingId": "train-1",
+        "assignedBy": "user-1",
+        "assignedDate": "2024-07-01T10:00:00Z",
+        "dueDate": "2024-08-01T10:00:00Z"
+      }
+    ]
+  },
+  {
+    "id": "user-4",
+    "name": "Samuel Chen",
+    "email": "s.chen@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-2",
+    "jobTitle": "Clinical Pharmacist",
+    "hireDate": "2020-11-05",
+    "competencies": [],
+    "trainingAssignments": []
+  }
+]

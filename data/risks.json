@@ -1,0 +1,35 @@
+[
+  {
+    "id": "risk-1",
+    "title": "Single point of failure in primary lab analyzer",
+    "description": "The main hematology analyzer is old and has no backup. If it fails, all routine blood tests will be delayed, impacting patient care.",
+    "likelihood": 4,
+    "impact": 5,
+    "status": "Open",
+    "ownerId": "user-2",
+    "mitigationPlan": "1. Schedule preventative maintenance immediately. 2. Begin procurement process for a new or backup analyzer. 3. Establish an SLA with a nearby reference lab for emergency sample processing.",
+    "createdAt": "2024-05-10T10:00:00Z"
+  },
+  {
+    "id": "risk-2",
+    "title": "Upcoming changes to data privacy regulations (HIPAA equivalent)",
+    "description": "New national data privacy laws are expected within 6 months. Our current patient data handling may not be compliant.",
+    "likelihood": 5,
+    "impact": 4,
+    "status": "Open",
+    "ownerId": "user-1",
+    "mitigationPlan": "1. Legal team to review draft regulations. 2. IT department to perform a gap analysis on current systems. 3. Develop a project plan for necessary updates.",
+    "createdAt": "2024-06-01T14:30:00Z"
+  },
+  {
+    "id": "risk-3",
+    "title": "Shortage of specialized ICU nurses",
+    "description": "High turnover and difficulty in recruiting have led to a shortage of experienced ICU nurses, potentially affecting patient-to-nurse ratios and quality of care.",
+    "likelihood": 3,
+    "impact": 5,
+    "status": "Mitigated",
+    "ownerId": "user-3",
+    "mitigationPlan": "Implemented a retention bonus program and partnered with a specialized nursing agency for temporary staff. Continuing to monitor ratios daily.",
+    "createdAt": "2024-04-20T09:00:00Z"
+  }
+]

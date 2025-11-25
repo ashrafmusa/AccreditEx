@@ -1,0 +1,22 @@
+
+export const en = {
+    departmentsPageDescription: 'Manage organizational units, assign staff, and track departmental performance.',
+    addNewDepartment: 'Add New Department',
+    editDepartment: 'Edit Department',
+    departmentName: 'Department Name',
+    departmentNameEn: 'Department Name (English)',
+    departmentNameAr: 'Department Name (Arabic)',
+    areYouSureDeleteDepartment: 'Are you sure you want to delete this department? All users within it will become unassigned.',
+    noDepartmentsFound: 'No departments have been created yet.',
+    createDepartmentToStart: 'Create a new department to get started.',
+    totalDepartments: 'Total Departments',
+    totalStaffAssigned: 'Total Staff Assigned',
+    totalTasks: 'Total Tasks Assigned',
+    tasksAssigned: 'Tasks Assigned',
+    departmentMembers: 'Department Members',
+    noUsersInDepartment: 'No users have been assigned to this department.',
+    departmentDetails: 'Department Details',
+    assignedUsers: 'Assigned Users',
+    searchByTask: 'Search by task or standard ID...',
+    noTasksForDepartment: 'No tasks are currently assigned to this department.',
+};

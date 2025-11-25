@@ -1,0 +1,304 @@
+[
+  {
+    "standardId": "JCI.IPSG.1",
+    "programId": "prog-jci",
+    "section": "Patient Safety Goals",
+    "description": "Identify patients correctly.",
+    "criticality": "High",
+    "subStandards": [
+      {
+        "id": "JCI.IPSG.1.A",
+        "description": "Use at least two patient identifiers when providing care, treatment, and services."
+      },
+      {
+        "id": "JCI.IPSG.1.B",
+        "description": "Label containers used for blood and other specimens in the presence of the patient."
+      }
+    ]
+  },
+  {
+    "standardId": "JCI.IPSG.2",
+    "programId": "prog-jci",
+    "section": "Patient Safety Goals",
+    "description": "Improve effective communication.",
+    "criticality": "High"
+  },
+  {
+    "standardId": "JCI.ACC.1",
+    "programId": "prog-jci",
+    "section": "Access and Continuity",
+    "description": "The organization has a process for patient admission.",
+    "criticality": "Medium"
+  },
+  {
+    "standardId": "DNV.QM.1",
+    "programId": "prog-dnv",
+    "section": "Quality Management",
+    "description": "Establish a quality management system.",
+    "criticality": "High"
+  },
+  {
+    "standardId": "DNV.PC.5",
+    "programId": "prog-dnv",
+    "section": "Patient Care",
+    "description": "Medication management processes are in place.",
+    "criticality": "Medium"
+  },
+  {
+    "standardId": "HFAP.01.01.01",
+    "programId": "prog-hfap",
+    "section": "Governing Body",
+    "description": "The hospital has an effective governing body."
+  },
+  {
+    "standardId": "CBAHI.LD.1",
+    "programId": "prog-cbahi",
+    "section": "Leadership",
+    "description": "The organization is managed by qualified leaders.",
+    "criticality": "High"
+  },
+  {
+    "standardId": "CBAHI.IM.3",
+    "programId": "prog-cbahi",
+    "section": "Information Management",
+    "description": "Patient clinical records are complete and accurate."
+  },
+  {
+    "standardId": "SMCS.1",
+    "programId": "prog-osahi",
+    "section": "Provision of Care",
+    "description": "The hospital displays information to patients and families on services provided.",
+    "totalMeasures": 3,
+    "criticality": "Low",
+    "subStandards": [
+      {
+        "id": "SMCS.1.a",
+        "description": "The hospital uses a variety of methods to display information, such as posters, brochures, media, MOH portals, or websites, with methods of how to access its services."
+      },
+      {
+        "id": "SMCS.1.b",
+        "description": "All hospital staff are oriented to these services, mainly the staff in reception, outpatient department, and in-patient departments."
+      },
+      {
+        "id": "SMCS.1.c",
+        "description": "The hospital uses appropriate language and format to provide information about its services to patients, families, and community."
+      }
+    ]
+  },
+  {
+    "standardId": "SMCS.2",
+    "programId": "prog-osahi",
+    "section": "Provision of Care",
+    "description": "The hospital implements a mechanism to ensure the provision of a unified standard of care to patients.",
+    "totalMeasures": 6,
+    "criticality": "High",
+    "subStandards": [
+      {
+        "id": "SMCS.2.a",
+        "description": "Patient’s care is provided according to the policies, laws and regulations."
+      },
+      {
+        "id": "SMCS.2.b",
+        "description": "Department leaders ensure that all patients receive the same standards of care throughout the hospital departments, all the time (during the morning, afternoon, or night, working hours, or off-hours, regardless of their race, gender, or religion and whether they can pay or not."
+      },
+      {
+        "id": "SMCS.2.c",
+        "description": "Every patient has an individualized care plan based on their initial assessment and reassessment."
+      },
+      {
+        "id": "SMCS.2.d",
+        "description": "Each patient attending in-patient or outpatient services receives awareness about their rights and responsibilities."
+      },
+      {
+        "id": "SMCS.2.e",
+        "description": "The hospital designs and carries out processes to provide continuity of patient care services in the hospital and coordination among health care providers."
+      },
+      {
+        "id": "SMCS.2.f",
+        "description": "The hospital has qualified professionals responsible for the patient’s care during all phases of in-patient care."
+      }
+    ]
+  },
+  {
+    "standardId": "SMCS.3",
+    "programId": "prog-osahi",
+    "section": "Provision of Care",
+    "description": "The hospital has a standardized method for registration and admission of patients within its scope of services that meet patients' health needs.",
+    "totalMeasures": 14,
+    "criticality": "Medium",
+    "subStandards": [
+      {
+        "id": "SMCS.3.a",
+        "description": "The hospital has a clear policy and procedures describing the process used for admission in various departments, including: Roles and responsibilities, Elective vs. Emergency admissions, Day care, Outpatient registration, Managing bed unavailability, and Admission pathways."
+      },
+      {
+        "id": "SMCS.3.b",
+        "description": "All staff are oriented about the standardized process of admission of patients to various hospital settings."
+      },
+      {
+        "id": "SMCS.3.c",
+        "description": "Each patient has a unique registration identification number through the process of admission."
+      },
+      {
+        "id": "SMCS.3.d",
+        "description": "Patients are accepted only if the hospital can provide the services."
+      },
+      {
+        "id": "SMCS.3.e",
+        "description": "Hospital department leaders conduct monitoring audits to assess staff compliance to policies and procedures."
+      },
+      {
+        "id": "SMCS.3.f",
+        "description": "The staff are oriented to the admission policy and procedure to ensure a consistent admission process."
+      },
+      {
+        "id": "SMCS.3.g",
+        "description": "Each department has an admission criterion designed for their scope of service."
+      },
+      {
+        "id": "SMCS.3.h",
+        "description": "There is a regular audit conducted to monitor compliance of the admission process by healthcare staff to ensure standardized practice."
+      }
+    ]
+  },
+    {
+    "standardId": "SMCS.4",
+    "programId": "prog-osahi",
+    "section": "Provision of Care",
+    "description": "The hospital has a clear mechanism for patient transfer.",
+    "totalMeasures": 6,
+    "subStandards": [
+      { "id": "SMCS.4.a", "description": "The hospital has a documented transfer policy for patients' intra and inter-hospital transfers." },
+      { "id": "SMCS.4.b", "description": "Hospital staff are oriented about the transfer process." },
+      { "id": "SMCS.4.c", "description": "Hospital leaders and staff are responsible for providing detailed information on patient assessments, reason for transfer, clinical findings, and medication use." },
+      { "id": "SMCS.4.d", "description": "A unified checklist is recommended to structure the transfer process and mitigate risks." },
+      { "id": "SMCS.4.e", "description": "The receiving unit staff is responsible for assessing the patient’s condition on arrival to ensure safety and appropriate service transfer." },
+      { "id": "SMCS.4.f", "description": "The hospital monitors staff compliance with the transfer policy to ensure standardized practice." }
+    ]
+  },
+  {
+    "standardId": "SMCS.5",
+    "programId": "prog-osahi",
+    "section": "Provision of Care",
+    "description": "The hospital has a clear process for assessment of patients throughout the care process.",
+    "totalMeasures": 16,
+    "criticality": "High",
+    "subStandards": [
+      { "id": "SMCS.5.a", "description": "Hospital has clear policies for patient physical assessment, re-assessment, time frames, and content for various care settings (Inpatient, Outpatient, Critical Care, Emergency)." },
+      { "id": "SMCS.5.b", "description": "The policy defines the scope and content of assessment by each discipline (physicians, nurses, social services, dietitians, etc.)." },
+      { "id": "SMCS.5.c", "description": "The hospital ensures training for relevant staff on proper assessment policies and procedures." },
+      { "id": "SMCS.5.d", "description": "Assessment includes discharge planning, required diagnostic testing, and care level priorities." },
+      { "id": "SMCS.5.e", "description": "Evidence ensures all patients are reassessed at appropriate intervals to determine treatment response and plan further care." },
+      { "id": "SMCS.5.f", "description": "The hospital uses standardized assessment tools (Pain score, Fall risk, Nutritional assessment, Physical assessments, Skin assessment)." },
+      { "id": "SMCS.5.g", "description": "Patients are reassessed to confirm the effectiveness of care plans and response to treatment." },
+      { "id": "SMCS.5.h", "description": "Documentation of the patient’s care plan is maintained in electronic medical records." },
+      { "id": "SMCS.5.i", "description": "Department heads conduct regular monitoring to ensure staff compliance with policies and procedures." }
+    ]
+  },
+    {
+    "standardId": "SMCS.17",
+    "programId": "prog-osahi",
+    "section": "Laboratory",
+    "description": "The hospital has laboratory services that are applicable to national laws and regulations, to meet patient needs.",
+    "totalMeasures": 4,
+    "subStandards": [
+        {
+            "id": "SMCS.17.a",
+            "description": "The hospital has laboratory services that are under national standards, laws, and regulations."
+        },
+        {
+            "id": "SMCS.17.b",
+            "description": "The laboratory services unit has a clear scope of services to meet the needs related to the hospital mission and patient populations, emergency needs, covering twenty-four hours a day, seven days a week."
+        },
+        {
+            "id": "SMCS.17.c",
+            "description": "Essential, simple laboratory services are available twenty-four hours a day, seven days a week. This includes hematology services, biochemistry, and blood bank)."
+        },
+        {
+            "id": "SMCS.17.d",
+            "description": "When special diagnostic tests are not available, there is clear process for referral and follow up of diagnostic tests."
+        }
+    ]
+  },
+  {
+    "standardId": "SMCS.28",
+    "programId": "prog-osahi",
+    "section": "Diagnostic Imaging Services (RD)",
+    "description": "The radiology department is well staffed with qualified, trained, experienced staff.",
+    "totalMeasures": 5,
+    "subStandards": [
+        {
+            "id": "SMCS.28.a",
+            "description": "The director/ head of radiology department is qualified, trained, skilled and experienced radiologist."
+        },
+        {
+            "id": "SMCS.28.b",
+            "description": "The radiology department staff have proper qualifications, training, and experience."
+        },
+        {
+            "id": "SMCS.28.c",
+            "description": "Hospital has twenty-four-hour radiology service coverage"
+        },
+        {
+            "id": "SMCS.28.d",
+            "description": "The radiology department has a mechanism on developing human resources."
+        },
+        {
+            "id": "SMCS.28.e",
+            "description": "The radiology department have records of staff trained in Basic Life Support (BLS)."
+        }
+    ]
+  },
+  {
+    "standardId": "OHAP.PR.1",
+    "programId": "prog-ohap",
+    "section": "Patient Rights",
+    "description": "The organization upholds and protects patient rights and responsibilities.",
+    "subStandards": [
+      {
+        "id": "OHAP.PR.1.A",
+        "description": "Patients are informed of their rights and responsibilities upon admission in a language and manner they understand."
+      },
+      {
+        "id": "OHAP.PR.1.B",
+        "description": "The organization has a clear process for handling patient complaints and grievances."
+      }
+    ]
+  },
+  {
+    "standardId": "OHAP.LD.1",
+    "programId": "prog-ohap",
+    "section": "Leadership",
+    "description": "The organization's leaders create a culture of quality and patient safety."
+  },
+  {
+    "standardId": "OHAP.FMS.1",
+    "programId": "prog-ohap",
+    "section": "Facility Management and Safety",
+    "description": "The organization provides a safe and functional environment for patients, staff, and visitors.",
+    "subStandards": [
+      {
+        "id": "OHAP.FMS.1.A",
+        "description": "A documented fire safety plan is in place and regularly tested."
+      },
+      {
+        "id": "OHAP.FMS.1.B",
+        "description": "Medical equipment is managed, maintained, and inspected regularly."
+      }
+    ]
+  },
+  {
+    "standardId": "NHRA.FMS.1",
+    "programId": "prog-nhra",
+    "section": "Facility Management & Safety",
+    "description": "The organization has a written fire prevention plan.",
+    "criticality": "High"
+  },
+  {
+    "standardId": "NHRA.MR.2",
+    "programId": "prog-nhra",
+    "section": "Medical Records",
+    "description": "Each medical record contains a unique identifier.",
+    "criticality": "High"
+  }
+]

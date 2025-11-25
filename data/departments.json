@@ -1,0 +1,54 @@
+[
+  {
+    "id": "dep-1",
+    "name": {
+      "en": "Nursing",
+      "ar": "التمريض"
+    },
+    "requiredCompetencyIds": ["comp-bls", "comp-acls"]
+  },
+  {
+    "id": "dep-2",
+    "name": {
+      "en": "Pharmacy",
+      "ar": "الصيدلية"
+    }
+  },
+  {
+    "id": "dep-3",
+    "name": {
+      "en": "Laboratory",
+      "ar": "المختبر"
+    }
+  },
+  {
+    "id": "dep-4",
+    "name": {
+      "en": "Radiology",
+      "ar": "الأشعة"
+    }
+  },
+  {
+    "id": "dep-5",
+    "name": {
+      "en": "Quality Management",
+      "ar": "إدارة الجودة"
+    },
+    "requiredCompetencyIds": ["comp-cphq"]
+  },
+  {
+    "id": "dep-6",
+    "name": {
+      "en": "Infection Control",
+      "ar": "مكافحة العدوى"
+    },
+    "requiredCompetencyIds": ["comp-cic"]
+  },
+  {
+    "id": "dep-7",
+    "name": {
+      "en": "Administration",
+      "ar": "الإدارة"
+    }
+  }
+]

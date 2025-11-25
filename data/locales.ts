@@ -1,0 +1,1 @@
+export { locales } from '@/data/locales/index';

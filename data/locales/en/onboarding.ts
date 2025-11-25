@@ -1,0 +1,15 @@
+export const en = {
+    welcomeToAccreditEx: 'Welcome to AccreditEx!',
+    onboardingWelcomeMessage: 'Your all-in-one solution for healthcare accreditation management. Let\'s take a quick tour of the key features to get you started.',
+    onboardingDashboardTitle: 'The Dashboard',
+    onboardingDashboardMessage: 'Get a high-level overview of your projects, compliance rates, and upcoming deadlines right when you log in. It\'s your command center for quality management.',
+    onboardingProjectsTitle: 'Projects Hub',
+    onboardingProjectsMessage: 'Create, manage, and track all your accreditation projects. Each project comes with a detailed checklist based on your selected standards.',
+    onboardingAccreditationTitle: 'Accreditation Hub',
+    onboardingAccreditationMessage: 'This is your central library for all accreditation programs (like JCI, DNV) and their standards. You can add, edit, and manage them here.',
+    onboardingUsersTitle: 'User & Department Management',
+    onboardingUsersMessage: 'Easily manage users, assign roles, and organize them into departments to streamline task assignments and track performance.',
+    onboardingAiTitle: 'AI-Powered Assistance',
+    onboardingAiMessage: 'Leverage the power of AI to suggest action plans for non-compliant items and help draft policy documents, saving you time and effort.',
+    getStarted: 'Get Started',
+};

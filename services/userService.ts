@@ -1,0 +1,10 @@
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
+import { User } from '../types';
+
+const usersCollection = collection(db, 'users');
+
+export const getUsers = async (): Promise<User[]> => {
+    const userSnapshot = await getDocs(usersCollection);
+    return userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+};
