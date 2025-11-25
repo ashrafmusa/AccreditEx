@@ -1,0 +1,58 @@
+[
+  {
+    "id": "prog-jci",
+    "name": "JCI",
+    "description": {
+      "en": "Joint Commission International standards for patient safety and quality of care.",
+      "ar": "معايير اللجنة المشتركة الدولية لسلامة المرضى وجودة الرعاية."
+    }
+  },
+  {
+    "id": "prog-dnv",
+    "name": "DNV",
+    "description": {
+      "en": "DNV GL standards, integrating ISO 9001 quality management with CMS Conditions of Participation.",
+      "ar": "معايير DNV GL، التي تدمج إدارة الجودة ISO 9001 مع شروط المشاركة في CMS."
+    }
+  },
+  {
+    "id": "prog-hfap",
+    "name": "HFAP",
+    "description": {
+      "en": "Healthcare Facilities Accreditation Program standards, now part of the ACHC.",
+      "ar": "برنامج اعتماد مرافق الرعاية الصحية، وهو الآن جزء من ACHC."
+    }
+  },
+  {
+    "id": "prog-cbahi",
+    "name": "CBAHI",
+    "description": {
+      "en": "Saudi Central Board for Accreditation of Healthcare Institutions national standards.",
+      "ar": "المعايير الوطنية للمركز السعودي لاعتماد المنشآت الصحية."
+    }
+  },
+  {
+    "id": "prog-osahi",
+    "name": "OSAHI",
+    "description": {
+      "en": "Organization for Safety & Accreditation in Healthcare Institutions, focusing on clinical service standards.",
+      "ar": "منظمة السلامة واعتماد المؤسسات الصحية، مع التركيز على معايير الخدمات السريرية."
+    }
+  },
+  {
+    "id": "prog-ohap",
+    "name": "OHAP",
+    "description": {
+      "en": "Oman Healthcare Accreditation Program standards, focusing on enhancing quality and patient safety in the Sultanate of Oman.",
+      "ar": "معايير برنامج اعتماد الرعاية الصحية العماني، مع التركيز على تعزيز الجودة وسلامة المرضى في سلطنة عمان."
+    }
+  },
+  {
+    "id": "prog-nhra",
+    "name": "NHRA",
+    "description": {
+      "en": "National Health Regulatory Authority standards for the Kingdom of Bahrain.",
+      "ar": "معايير الهيئة الوطنية لتنظيم المهن والخدمات الصحية لمملكة البحرين."
+    }
+  }
+]

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AccreditEx</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 2L2 7V17L12 22L22 17V7L12 2Z' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 7L12 12L22 7' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 22V12' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    <link rel="manifest" href="/manifest.json">
+    
+    <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.1.1",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
+    "react/": "https://aistudiocdn.com/react@^19.1.1/",
+    "recharts": "https://aistudiocdn.com/recharts@^3.2.1",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0",
+    "zustand": "https://aistudiocdn.com/zustand@^5.0.8",
+    "cobe": "https://aistudiocdn.com/cobe@^0.6.5",
+    "framer-motion": "https://aistudiocdn.com/framer-motion@^11.3.19",
+    "use-debounce": "https://aistudiocdn.com/use-debounce@^10.0.6",
+    "firebase/app": "https://aistudiocdn.com/firebase@^10.12.4/app",
+    "firebase/auth": "https://aistudiocdn.com/firebase@^10.12.4/auth",
+    "firebase/firestore": "https://aistudiocdn.com/firebase@^10.12.4/firestore",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.3.0/",
+    "recharts/": "https://aistudiocdn.com/recharts@^3.3.0/"
+  }
+}
+</script>
+    <!-- TAILWIND CDN: For development/prototyping only. For production, use the Tailwind CLI or PostCSS plugin as recommended in the official documentation. -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              'brand-primary': 'var(--brand-primary-color, #4f46e5)',
+              'brand-surface': 'var(--color-surface, #ffffff)',
+              'brand-background': 'var(--color-background, #f8fafc)',
+              'brand-border': 'var(--color-border, #e2e8f0)',
+              'brand-text-primary': 'var(--color-text-primary, #0f172a)',
+              'brand-text-secondary': 'var(--color-text-secondary, #64748b)',
+              'brand-success': '#22c55e',
+              'brand-warning': '#f97316',
+              'dark-brand-surface': 'var(--dark-color-surface, #1e293b)',
+              'dark-brand-background': 'var(--dark-color-background, #020617)',
+              'dark-brand-border': 'var(--dark-color-border, #334155)',
+              'dark-brand-text-primary': 'var(--dark-color-text-primary, #e2e8f0)',
+              'dark-brand-text-secondary': 'var(--dark-color-text-secondary, #94a3b8)',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        --brand-primary-color: #4f46e5;
+        --color-surface: #ffffff;
+        --color-background: #f8fafc;
+        --color-border: #e2e8f0;
+        --color-text-primary: #0f172a;
+        --color-text-secondary: #64748b;
+
+        /* Dark mode colors */
+        --dark-color-surface: #1e293b;
+        --dark-color-background: #020617;
+        --dark-color-border: #334155;
+        --dark-color-text-primary: #e2e8f0;
+        --dark-color-text-secondary: #94a3b8;
+      }
+      .dark {
+        --color-surface: var(--dark-color-surface);
+        --color-background: var(--dark-color-background);
+        --color-border: var(--dark-color-border);
+        --color-text-primary: var(--dark-color-text-primary);
+        --color-text-secondary: var(--dark-color-text-secondary);
+      }
+      body {
+        background-color: var(--color-background);
+        color: var(--color-text-primary);
+        transition: background-color 0.3s ease, color 0.3s ease;
+      }
+      .dark body {
+        background-color: var(--dark-color-background);
+        color: var(--dark-color-text-primary);
+      }
+      /* Simple CSS for Collapsible Trigger Icon */
+      [data-state='open'] > .collapsible-chevron {
+        transform: rotate(180deg);
+      }
+      .collapsible-chevron {
+        transition: transform 0.2s ease-in-out;
+      }
+
+      /* Simple animations */
+      @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      @keyframes scaleIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+      .modal-enter { animation: fadeIn 0.2s ease-out; }
+      .modal-content-enter { animation: scaleIn 0.2s ease-out; }
+      .page-enter-active { animation: fadeInUp 0.3s ease-out; }
+      .dot-grid { background-image: radial-gradient(circle at 1px 1px, #cbd5e1 1px, transparent 0); background-size: 20px 20px; }
+      .dark .dot-grid { background-image: radial-gradient(circle at 1px 1px, #475569 1px, transparent 0); }
+      .dark-prose { color: #d1d5db; }
+      .dark-prose h1, .dark-prose h2, .dark-prose h3, .dark-prose h4 { color: #f9fafb; }
+      .dark-prose a { color: #818cf8; }
+      .dark-prose strong { color: #f9fafb; }
+      .dark-prose blockquote { border-color: #4b5563; color: #d1d5db; }
+    </style>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js').then(registration => {
+                    console.log('SW registered: ', registration);
+                }).catch(registrationError => {
+                    console.log('SW registration failed: ', registrationError);
+                });
+            });
+        }
+    </script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>

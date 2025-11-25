@@ -1,0 +1,90 @@
+[
+  {
+    "id": "train-1",
+    "title": {
+      "en": "Hand Hygiene and Infection Control",
+      "ar": "نظافة اليدين ومكافحة العدوى"
+    },
+    "description": {
+      "en": "Learn the fundamental principles of hand hygiene and its critical role in preventing healthcare-associated infections.",
+      "ar": "تعلم المبادئ الأساسية لنظافة اليدين ودورها الحاسم في الوقاية من العدوى المرتبطة بالرعاية الصحية."
+    },
+    "content": {
+      "en": "<h3>Introduction</h3><p>Hand hygiene is the single most important factor in preventing the spread of infections. This module covers the WHO's '5 Moments for Hand Hygiene'.</p><h3>Key Concepts</h3><ul><li>Moment 1: Before touching a patient.</li><li>Moment 2: Before a clean/aseptic procedure.</li><li>Moment 3: After body fluid exposure risk.</li><li>Moment 4: After touching a patient.</li><li>Moment 5: After touching patient surroundings.</li></ul><p>Proper technique involves using an alcohol-based handrub or soap and water, covering all surfaces of the hands, and rubbing for at least 20 seconds.</p>",
+      "ar": "<h3>مقدمة</h3><p>تعتبر نظافة اليدين أهم عامل منفرد في منع انتشار العدوى. تغطي هذه الوحدة 'اللحظات الخمس لنظافة اليدين' لمنظمة الصحة العالمية.</p><h3>المفاهيم الرئيسية</h3><ul><li>اللحظة 1: قبل لمس المريض.</li><li>اللحظة 2: قبل إجراء نظيف/معقم.</li><li>اللحظة 3: بعد خطر التعرض لسوائل الجسم.</li><li>اللحظة 4: بعد لمس المريض.</li><li>اللحظة 5: بعد لمس محيط المريض.</li></ul><p>تتضمن التقنية الصحيحة استخدام مطهر كحولي لليدين أو الصابون والماء، وتغطية جميع أسطح اليدين، والفرك لمدة 20 ثانية على الأقل.</p>"
+    },
+    "passingScore": 80,
+    "quiz": [
+      {
+        "id": "q1-1",
+        "question": {
+          "en": "Which of the following is NOT one of the '5 Moments for Hand Hygiene'?",
+          "ar": "أي مما يلي ليس من 'اللحظات الخمس لنظافة اليدين'؟"
+        },
+        "options": [
+          { "en": "Before touching a patient", "ar": "قبل لمس المريض" },
+          { "en": "After using the restroom", "ar": "بعد استخدام دورة المياه" },
+          { "en": "After touching patient surroundings", "ar": "بعد لمس محيط المريض" }
+        ],
+        "correctOptionIndex": 1
+      },
+      {
+        "id": "q1-2",
+        "question": {
+          "en": "What is the minimum recommended time for rubbing hands with soap and water?",
+          "ar": "ما هو الحد الأدنى للوقت الموصى به لفرك اليدين بالصابون والماء؟"
+        },
+        "options": [
+          { "en": "5 seconds", "ar": "5 ثوان" },
+          { "en": "10 seconds", "ar": "10 ثوان" },
+          { "en": "20 seconds", "ar": "20 ثانية" }
+        ],
+        "correctOptionIndex": 2
+      }
+    ]
+  },
+  {
+    "id": "train-2",
+    "title": {
+      "en": "Patient Identification",
+      "ar": "تحديد هوية المريض"
+    },
+    "description": {
+      "en": "Master the correct procedures for patient identification to ensure patient safety as per JCI standards.",
+      "ar": "إتقان الإجراءات الصحيحة لتحديد هوية المريض لضمان سلامة المرضى وفقًا لمعايير اللجنة المشتركة الدولية."
+    },
+    "content": {
+      "en": "<h3>Core Principle</h3><p>The core principle of patient identification is to reliably identify the individual as the person for whom the service or treatment is intended and to match the service or treatment to that individual.</p><h3>Procedure</h3><p>At least two patient identifiers must be used when administering medications, blood, or other treatments. Acceptable identifiers include:</p><ul><li>Patient's full name</li><li>Date of birth</li><li>Medical record number</li></ul><p>The patient's room number or location is NOT an acceptable identifier.</p>",
+      "ar": "<h3>المبدأ الأساسي</h3><p>المبدأ الأساسي لتحديد هوية المريض هو تحديد الفرد بشكل موثوق به كشخص مقصود للخدمة أو العلاج ومطابقة الخدمة أو العلاج مع ذلك الفرد.</p><h3>الإجراء</h3><p>يجب استخدام معرفين على الأقل للمريض عند إعطاء الأدوية أو الدم أو العلاجات الأخرى. تشمل المعرفات المقبولة:</p><ul><li>الاسم الكامل للمريض</li><li>تاريخ الميلاد</li><li>رقم السجل الطبي</li></ul><p>رقم غرفة المريض أو موقعه ليس معرفًا مقبولاً.</p>"
+    },
+    "passingScore": 100,
+    "quiz": [
+      {
+        "id": "q2-1",
+        "question": {
+          "en": "How many patient identifiers are required at minimum before administering medication?",
+          "ar": "كم عدد معرفات المريض المطلوبة كحد أدنى قبل إعطاء الدواء؟"
+        },
+        "options": [
+          { "en": "One", "ar": "واحد" },
+          { "en": "Two", "ar": "اثنان" },
+          { "en": "Three", "ar": "ثلاثة" }
+        ],
+        "correctOptionIndex": 1
+      },
+      {
+        "id": "q2-2",
+        "question": {
+          "en": "Which of the following is NOT an acceptable patient identifier?",
+          "ar": "أي مما يلي ليس معرفًا مقبولاً للمريض؟"
+        },
+        "options": [
+          { "en": "Full Name", "ar": "الاسم الكامل" },
+          { "en": "Date of Birth", "ar": "تاريخ الميلاد" },
+          { "en": "Room Number", "ar": "رقم الغرفة" }
+        ],
+        "correctOptionIndex": 2
+      }
+    ]
+  }
+]
