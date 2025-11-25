@@ -44,7 +44,8 @@ app.add_middleware(
         "https://accreditex-79c08.web.app",
         "https://accreditex-79c08.firebaseapp.com",
         "http://localhost:5173",
-        "http://localhost:3000"
+        "http://localhost:3000",
+        "*"  # Allow all origins for testing - remove in production
     ],
     allow_credentials=True,
     allow_methods=["*"],
