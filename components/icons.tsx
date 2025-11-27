@@ -37,6 +37,7 @@ const iconPaths = {
   BeakerIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.21 1.002L7.5 15.25l-2.04-5.426a2.25 2.25 0 01-.21-1.002V3.104a2.25 2.25 0 012.25-2.25h1.5a2.25 2.25 0 012.25 2.25zM15 3.75a2.25 2.25 0 012.25 2.25v11.25a2.25 2.25 0 01-2.25 2.25h-9a2.25 2.25 0 01-2.25-2.25V6a2.25 2.25 0 012.25-2.25m9 0h-9" />,
   ShieldCheckIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.286zm0 13.036h.008v.008h-.008v-.008z" />,
   ExclamationTriangleIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />,
+  ExclamationCircleIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9 1.5a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />,
   ClockIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />,
   XMarkIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />,
   Cog6ToothIcon: <><path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6h3m-6.75 3h13.5M3.75 12h16.5m-16.5 3H12m-8.25 3h13.5" transform="rotate(45 12 12)"/><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12c0 4.142-3.358 7.5-7.5 7.5s-7.5-3.358-7.5-7.5 3.358-7.5 7.5-7.5 7.5 3.358 7.5 7.5z" /></>,
@@ -62,6 +63,7 @@ const iconPaths = {
   ChevronLeftIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />,
   ChevronRightIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />,
   ChevronDownIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />,
+  ChevronUpIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />,
   ShareIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 100-2.186m0 2.186a2.25 2.25 0 100-2.186" />,
   PlayIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z" />,
   StopCircleIcon: <><path strokeLinecap="round" strokeLinejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M9 9.563C9 9.254 9.254 9 9.563 9h4.874c.309 0 .563.254.563.563v4.874c0 .309-.254.563-.563.563H9.563C9.254 15 9 14.746 9 14.437V9.563z" /></>,
@@ -75,6 +77,8 @@ const iconPaths = {
   DownloadIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />,
   CogIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12a7.5 7.5 0 0015 0m-15 0a7.5 7.5 0 1115 0m-15 0H3m18 0h-1.5m-15 0a7.5 7.5 0 1115 0m-15 0H3" />,
   ServerStackIcon: <><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 21H3a2.25 2.25 0 01-2.25-2.25V5.25A2.25 2.25 0 013 3h18a2.25 2.25 0 012.25 2.25v13.5A2.25 2.25 0 0121 21h-3.75m-10.5 0V12.75m10.5 0V21" /><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 6.75h.75" /><path strokeLinecap="round" strokeLinejoin="round" d="M6.75 9.75h.75" /></>,
+  PaintBrushIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.395m3.42 3.42a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.763m3.42 3.42a6.776 6.776 0 00-3.42-3.42" />,
+  FunnelIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />,
 };
 
 // --- Outline Icons ---
@@ -98,6 +102,7 @@ export const ClipboardDocumentSearchIcon = createOutlineIcon(iconPaths.Clipboard
 export const BeakerIcon = createOutlineIcon(iconPaths.BeakerIcon);
 export const ShieldCheckIcon = createOutlineIcon(iconPaths.ShieldCheckIcon);
 export const ExclamationTriangleIcon = createOutlineIcon(iconPaths.ExclamationTriangleIcon);
+export const ExclamationCircleIcon = createOutlineIcon(iconPaths.ExclamationCircleIcon);
 export const ClockIcon = createOutlineIcon(iconPaths.ClockIcon);
 export const XMarkIcon = createOutlineIcon(iconPaths.XMarkIcon);
 export const Cog6ToothIcon = createOutlineIcon(iconPaths.Cog6ToothIcon);
@@ -123,6 +128,7 @@ export const ArrowPathIcon = createOutlineIcon(iconPaths.ArrowPathIcon);
 export const ChevronLeftIcon = createOutlineIcon(iconPaths.ChevronLeftIcon);
 export const ChevronRightIcon = createOutlineIcon(iconPaths.ChevronRightIcon);
 export const ChevronDownIcon = createOutlineIcon(iconPaths.ChevronDownIcon);
+export const ChevronUpIcon = createOutlineIcon(iconPaths.ChevronUpIcon);
 export const ShareIcon = createOutlineIcon(iconPaths.ShareIcon);
 export const PlayIcon = createOutlineIcon(iconPaths.PlayIcon);
 export const StopCircleIcon = createOutlineIcon(iconPaths.StopCircleIcon);
@@ -136,6 +142,8 @@ export const UploadIcon = createOutlineIcon(iconPaths.UploadIcon);
 export const DownloadIcon = createOutlineIcon(iconPaths.DownloadIcon);
 export const CogIcon = createOutlineIcon(iconPaths.CogIcon);
 export const ServerStackIcon = createOutlineIcon(iconPaths.ServerStackIcon);
+export const PaintBrushIcon = createOutlineIcon(iconPaths.PaintBrushIcon);
+export const FunnelIcon = createOutlineIcon(iconPaths.FunnelIcon);
 
 // --- Solid Icons (if any needed) ---
 // Example: export const SolidPlusIcon = createIcon(iconPaths.PlusIcon);

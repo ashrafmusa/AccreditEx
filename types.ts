@@ -108,6 +108,31 @@ export interface MockSurvey {
     results: MockSurveyResult[];
 }
 
+
+// PDCA Cycle Management Types
+export type PDCAStage = 'Plan' | 'Do' | 'Check' | 'Act' | 'Completed';
+
+export interface PDCAStageHistory {
+    stage: PDCAStage;
+    enteredAt: string;
+    completedAt?: string;
+    completedBy?: string;
+    notes: string;
+    attachments?: string[];
+}
+
+export interface ImprovementMetric {
+    metric: string;
+    value: number;
+    unit: string;
+    measuredAt?: string;
+}
+
+export interface ImprovementMetrics {
+    baseline: ImprovementMetric[];
+    target: ImprovementMetric[];
+    actual?: ImprovementMetric[];
+}
 export interface CAPAReport {
     id: string;
     status: 'Open' | 'Closed';
@@ -130,6 +155,10 @@ export interface CAPAReport {
         completed: boolean;
         notes: string;
     };
+    // PDCA Cycle fields
+    pdcaStage?: PDCAStage;
+    pdcaHistory?: PDCAStageHistory[];
+    improvementMetrics?: ImprovementMetrics;
 }
 
 export interface DesignControlItem {
@@ -142,6 +171,25 @@ export interface DesignControlItem {
     linkedDocumentIds: string[];
 }
 
+
+// Standalone PDCA Cycle (for improvement initiatives not tied to CAPAs)
+export interface PDCACycle {
+  id: string;
+  projectId: string;
+  title: string;
+  description: string;
+  category: 'Process' | 'Quality' | 'Safety' | 'Efficiency' | 'Other';
+  currentStage: PDCAStage;
+  priority: 'High' | 'Medium' | 'Low';
+  owner: string;
+  team: string[];
+  createdAt: string;
+  targetCompletionDate: string;
+  stageHistory: PDCAStageHistory[];
+  improvementMetrics: ImprovementMetrics;
+  linkedCAPAIds?: string[];
+  linkedDocumentIds?: string[];
+}
 export interface Project {
   id: string;
   name: string;
@@ -157,6 +205,8 @@ export interface Project {
   mockSurveys: MockSurvey[];
   capaReports: CAPAReport[];
   designControls: DesignControlItem[];
+  pdcaCycles?: PDCACycle[];
+
   finalizedBy?: string;
   finalizationDate?: string;
 }
@@ -354,7 +404,7 @@ export type UserTrainingStatus = {
 
 export type SettingsSection = 'general' | 'profile' | 'security' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'about';
 
-export type ProjectDetailView = 'overview' | 'checklist' | 'documents' | 'audit_log' | 'mock_surveys' | 'design_controls';
+export type ProjectDetailView = 'overview' | 'checklist' | 'documents' | 'audit_log' | 'mock_surveys' | 'design_controls' | 'pdca_cycles';
 
 export type NavigationState =
   | { view: 'dashboard' }
