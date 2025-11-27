@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Project, ChecklistItem, DesignControlItem, CAPAReport, MockSurvey, ComplianceStatus } from '@/types';
+import { Project, ChecklistItem, DesignControlItem, CAPAReport, MockSurvey, ComplianceStatus, PDCACycle, PDCAStage } from '@/types';
 import { backendService } from '@/services/BackendService';
 import { useUserStore } from './useUserStore';
 import { useAppStore } from './useAppStore';
@@ -21,6 +21,11 @@ interface ProjectState {
   updateMockSurvey: (projectId: string, survey: MockSurvey) => Promise<void>;
   applySurveyFindingsToProject: (projectId: string, surveyId: string) => Promise<void>;
   updateCapa: (projectId: string, capa: CAPAReport) => Promise<void>;
+  // PDCA actions
+  updateCAPAPDCAStage: (projectId: string, capaId: string, newStage: PDCAStage, notes: string, attachments: string[]) => Promise<void>;
+  createPDCACycle: (projectId: string, cycleData: Omit<PDCACycle, 'id' | 'createdAt' | 'stageHistory'>) => Promise<void>;
+  updatePDCACycle: (projectId: string, cycle: PDCACycle) => Promise<void>;
+  getPDCACyclesByStage: (projectId: string, stage: PDCAStage) => PDCACycle[];
 }
 
 const calculateProgress = (checklist: ChecklistItem[]): number => {
@@ -157,5 +162,92 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   updateCapa: async (projectId, capa) => {
     const updatedProject = await backendService.updateCapa(projectId, capa);
     get().updateProject(updatedProject);
+  },
+
+  // PDCA actions
+  updateCAPAPDCAStage: async (projectId, capaId, newStage, notes, attachments) => {
+    const project = get().projects.find(p => p.id === projectId);
+    const capa = project?.capaReports.find(c => c.id === capaId);
+
+    if (!project || !capa) {
+      throw new Error('Project or CAPA not found');
+    }
+
+    const user = useUserStore.getState().currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    // Create history entry
+    const historyEntry = {
+      stage: capa.pdcaStage || 'Plan',
+      enteredAt: capa.pdcaHistory?.[capa.pdcaHistory.length - 1]?.completedAt || capa.createdAt,
+      completedAt: new Date().toISOString(),
+      completedBy: user.id,
+      notes,
+      attachments
+    };
+
+    // Update CAPA with new stage and history
+    const updatedCapa: CAPAReport = {
+      ...capa,
+      pdcaStage: newStage,
+      pdcaHistory: [...(capa.pdcaHistory || []), historyEntry]
+    };
+
+    await get().updateCapa(projectId, updatedCapa);
+  },
+
+  createPDCACycle: async (projectId, cycleData) => {
+    const project = get().projects.find(p => p.id === projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const user = useUserStore.getState().currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    const newCycle: PDCACycle = {
+      ...cycleData,
+      id: `pdca-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      createdAt: new Date().toISOString(),
+      stageHistory: [{
+        stage: 'Plan',
+        enteredAt: new Date().toISOString(),
+        completedAt: '',
+        completedBy: user.id,
+        notes: 'PDCA cycle created',
+        attachments: []
+      }]
+    };
+
+    const updatedProject: Project = {
+      ...project,
+      pdcaCycles: [...(project.pdcaCycles || []), newCycle]
+    };
+
+    await get().updateProject(updatedProject);
+  },
+
+  updatePDCACycle: async (projectId, cycle) => {
+    const project = get().projects.find(p => p.id === projectId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const updatedProject: Project = {
+      ...project,
+      pdcaCycles: (project.pdcaCycles || []).map(c =>
+        c.id === cycle.id ? cycle : c
+      )
+    };
+
+    await get().updateProject(updatedProject);
+  },
+
+  getPDCACyclesByStage: (projectId, stage) => {
+    const project = get().projects.find(p => p.id === projectId);
+    if (!project || !project.pdcaCycles) {
+      return [];
+    }
+    return project.pdcaCycles.filter(cycle => cycle.currentStage === stage);
   }
 }));
