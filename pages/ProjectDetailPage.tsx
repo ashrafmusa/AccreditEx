@@ -14,6 +14,7 @@ import GenerateReportModal from '@/components/documents/GenerateReportModal';
 import DesignControlsPage from './DesignControlsPage';
 import AuditLogPage from './AuditLogPage';
 import MockSurveyListPage from './MockSurveyListPage';
+import PDCACycleManager from '@/components/projects/PDCACycleManager';
 
 interface ProjectDetailPageProps {
   navigation: { view: 'projectDetail', projectId: string };
@@ -57,20 +58,6 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ navigation, setNa
     switch (activeView) {
       case 'overview':
         return <ProjectOverview project={project} />;
-      case 'checklist':
-        return <ProjectChecklist project={project} onUpdateProject={updateProject} />;
-      case 'design_controls':
-        return <DesignControlsPage project={project} documents={documents} isFinalized={project.status === 'Finalized'} onSave={(dcs) => updateDesignControls(project.id, dcs)} />;
-      case 'audit_log':
-        return <AuditLogPage activityLog={project.activityLog} />;
-      case 'mock_surveys':
-        return <MockSurveyListPage project={project} setNavigation={setNavigation} />;
-      default:
-        return <ProjectOverview project={project} />;
-    }
-  };
-
-  return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
       <ProjectDetailSidebar activeView={activeView} setActiveView={setActiveView} />
       <main className="w-full lg:w-3/4 xl:w-4/5">
