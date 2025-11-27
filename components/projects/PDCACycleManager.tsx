@@ -4,6 +4,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { PlusIcon, FunnelIcon } from '../icons';
 import PDCACycleCard from './PDCACycleCard';
 import PDCAStageTransitionForm from './PDCAStageTransitionForm';
+import PDCACycleDetailModal from './PDCACycleDetailModal';
 
 interface PDCACycleManagerProps {
   project: Project;
@@ -19,10 +20,12 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Combine CAPAs and standalone cycles
-  const allItems = useMemo(() => {
-    const capaItems = project.capaReports.map(capa => ({ item: capa, type: 'capa' as const }));
-    const cycleItems = (project.pdcaCycles || []).map(cycle => ({ item: cycle, type: 'cycle' as const }));
+  // Combine Cycles and CAPAs
+  type PDCAItem = { item: CAPAReport; type: 'capa' } | { item: PDCACycle; type: 'cycle' };
+  
+  const allItems: PDCAItem[] = useMemo(() => {
+    const capaItems: PDCAItem[] = project.capaReports.map(capa => ({ item: capa, type: 'capa' }));
+    const cycleItems: PDCAItem[] = (project.pdcaCycles || []).map(cycle => ({ item: cycle, type: 'cycle' }));
     return [...capaItems, ...cycleItems];
   }, [project.capaReports, project.pdcaCycles]);
 
@@ -232,58 +235,78 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
       </div>
 
       {/* Kanban Board */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {(['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[]).map((stage) => (
-          <div key={stage} className={`border-t-4 ${getStageColor(stage)} rounded-lg p-4`}>
-            {/* Column Header */}
-            <div className="mb-4">
-              <h3 className="font-bold text-brand-text-primary dark:text-dark-brand-text-primary text-lg">
+      <div className="flex overflow-x-auto gap-6 pb-6">
+        {(['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[]).map(stage => (
+          <div key={stage} className="flex-none w-80">
+            <div className={`flex items-center justify-between mb-4 px-2 py-1 border-b-2 ${getStageColor(stage).split(' ')[0]}`}>
+              <h3 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                 {t(`${stage.toLowerCase()}Stage`) || stage}
               </h3>
-              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                {itemsByStage[stage].length} {t('items') || 'items'}
-              </p>
+              <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
+                {itemsByStage[stage].length}
+              </span>
             </div>
-
-            {/* Cards */}
-            <div className="space-y-3 min-h-[200px]">
-              {itemsByStage[stage].length === 0 ? (
-                <div className="text-center py-8 text-brand-text-secondary dark:text-dark-brand-text-secondary text-sm">
+            
+            <div className={`min-h-[200px] rounded-lg p-2 space-y-3 ${getStageColor(stage).split(' ').slice(1).join(' ')}`}>
+              {itemsByStage[stage].map(({ item, type }) => (
+                <PDCACycleCard
+                  key={item.id}
+                  item={item}
+                  type={type}
+                  onClick={() => setSelectedItem({ item, type })}
+                  onAdvance={() => handleAdvanceStage(item, type)}
+                />
+              ))}
+              {itemsByStage[stage].length === 0 && (
+                <div className="text-center py-8 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary italic">
                   {t('noItemsInStage') || 'No items in this stage'}
                 </div>
-              ) : (
-                itemsByStage[stage].map(({ item, type }) => (
-                  <PDCACycleCard
-                    key={`${type}-${item.id}`}
-                    item={item}
-                    type={type}
-                    onView={() => setSelectedItem({ item, type })}
-                    onAdvanceStage={stage !== 'Completed' ? () => handleAdvanceStage(item, type) : undefined}
-                  />
-                ))
               )}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Stage Transition Form */}
+      {/* Detail Modal */}
+      {selectedItem && (
+        <PDCACycleDetailModal
+          isOpen={!!selectedItem}
+          onClose={() => setSelectedItem(null)}
+          cycle={selectedItem.type === 'cycle' ? selectedItem.item as PDCACycle : undefined}
+          capa={selectedItem.type === 'capa' ? selectedItem.item as CAPAReport : undefined}
+          type={selectedItem.type}
+          onUpdate={(updatedItem) => {
+            // TODO: Implement update logic
+            console.log('Update item:', updatedItem);
+          }}
+        />
+      )}
+
+      {/* Transition Form */}
       {showTransitionForm && transitioningItem && (
         <PDCAStageTransitionForm
+          isOpen={showTransitionForm}
+          onClose={() => {
+            setShowTransitionForm(false);
+            setTransitioningItem(null);
+          }}
           currentStage={
             transitioningItem.type === 'capa'
               ? (transitioningItem.item as CAPAReport).pdcaStage || 'Plan'
               : (transitioningItem.item as PDCACycle).currentStage
           }
+          nextStage={
+            (['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[])[
+              (['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[]).indexOf(
+                transitioningItem.type === 'capa'
+                  ? (transitioningItem.item as CAPAReport).pdcaStage || 'Plan'
+                  : (transitioningItem.item as PDCACycle).currentStage
+              ) + 1
+            ]
+          }
           onConfirm={handleConfirmTransition}
-          onCancel={() => {
-            setShowTransitionForm(false);
-            setTransitioningItem(null);
-          }}
         />
       )}
-
-      {/* TODO: Add detail modal for viewing/editing cycles */}
     </div>
   );
 };
