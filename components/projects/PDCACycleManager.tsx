@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Project, CAPAReport, PDCACycle, PDCAStage } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useProjectStore } from '@/stores/useProjectStore';
 import { PlusIcon, FunnelIcon } from '../icons';
 import PDCACycleCard from './PDCACycleCard';
 import PDCAStageTransitionForm from './PDCAStageTransitionForm';
@@ -8,14 +9,16 @@ import PDCACycleDetailModal from './PDCACycleDetailModal';
 
 interface PDCACycleManagerProps {
   project: Project;
-  onUpdate: (project: Project) => void;
+  onUpdate?: (project: Project) => void; // Optional now, store handles updates
 }
 
-const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }) => {
+const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   const { t } = useTranslation();
+  const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle } = useProjectStore();
   const [selectedItem, setSelectedItem] = useState<{ item: CAPAReport | PDCACycle; type: 'capa' | 'cycle' } | null>(null);
   const [showTransitionForm, setShowTransitionForm] = useState(false);
-  const [transitioningItem, setTransitioningItem] = useState<{ item: CAPAReport | PDCACycle; type: 'capa' | 'cycle' } | null>(null);
+  const [transitioningItem,setTransitioningItem] = useState<{ item: CAPAReport | PDCACycle; type: 'capa' | 'cycle' } | null>(null);
+  const [showNewCycleModal, setShowNewCycleModal] = useState(false);
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -24,8 +27,8 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
   type PDCAItem = { item: CAPAReport; type: 'capa' } | { item: PDCACycle; type: 'cycle' };
   
   const allItems: PDCAItem[] = useMemo(() => {
-    const capaItems: PDCAItem[] = project.capaReports.map(capa => ({ item: capa, type: 'capa' }));
-    const cycleItems: PDCAItem[] = (project.pdcaCycles || []).map(cycle => ({ item: cycle, type: 'cycle' }));
+    const capaItems: PDCAItem[] = project.capaReports.map(capa => ({ item: capa, type: 'capa' as const }));
+    const cycleItems: PDCAItem[] = (project.pdcaCycles || []).map(cycle => ({ item: cycle, type: 'cycle' as const }));
     return [...capaItems, ...cycleItems];
   }, [project.capaReports, project.pdcaCycles]);
 
@@ -75,11 +78,11 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
       Completed: []
     };
 
-    filteredItems.forEach(({ item, type }) => {
-      const stage = type === 'capa' 
-        ? (item as CAPAReport).pdcaStage || 'Plan'
-        : (item as PDCACycle).currentStage;
-      grouped[stage].push({ item, type });
+    filteredItems.forEach((pdcaItem) => {
+      const stage = pdcaItem.type === 'capa' 
+        ? (pdcaItem.item as CAPAReport).pdcaStage || 'Plan'
+        : (pdcaItem.item as PDCACycle).currentStage;
+      grouped[stage].push(pdcaItem);
     });
 
     return grouped;
@@ -91,7 +94,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
     setShowTransitionForm(true);
   };
 
-  const handleConfirmTransition = (notes: string, attachments: string[]) => {
+  const handleConfirmTransition = async (notes: string, attachments: string[]) => {
     if (!transitioningItem) return;
 
     const { item, type } = transitioningItem;
@@ -106,53 +109,39 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
 
     if (!nextStage) return;
 
-    // Create stage history entry
-    const historyEntry = {
-      stage: currentStage,
-      enteredAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
-      completedBy: 'current-user-id', // TODO: Get from auth context
-      notes,
-      attachments
-    };
+    try {
+      // Use store actions
+      if (type === 'capa') {
+        await updateCAPAPDCAStage(project.id, item.id, nextStage, notes, attachments);
+      } else {
+        // Update PDCA cycle
+        const user = useProjectStore.getState().projects.find(p => p.id === project.id);
+        const currentCycle = item as PDCACycle;
+        
+        const historyEntry = {
+          stage: currentStage,
+          enteredAt: currentCycle.stageHistory[currentCycle.stageHistory.length - 1]?.completedAt || currentCycle.createdAt,
+          completedAt: new Date().toISOString(),
+          completedBy: 'current-user-id', // TODO: Get from auth
+          notes,
+          attachments
+        };
 
-    // Update the item
-    if (type === 'capa') {
-      const updatedCapas = project.capaReports.map(capa => {
-        if (capa.id === item.id) {
-          return {
-            ...capa,
-            pdcaStage: nextStage,
-            pdcaHistory: [...(capa.pdcaHistory || []), historyEntry]
-          };
-        }
-        return capa;
-      });
+        const updatedCycle: PDCACycle = {
+          ...currentCycle,
+          currentStage: nextStage,
+          stageHistory: [...currentCycle.stageHistory, historyEntry]
+        };
 
-      onUpdate({
-        ...project,
-        capaReports: updatedCapas
-      });
-    } else {
-      const updatedCycles = (project.pdcaCycles || []).map(cycle => {
-        if (cycle.id === item.id) {
-          return {
-            ...cycle,
-            currentStage: nextStage,
-            stageHistory: [...cycle.stageHistory, historyEntry]
-          };
-        }
-        return cycle;
-      });
+        await updatePDCACycle(project.id, updatedCycle);
+      }
 
-      onUpdate({
-        ...project,
-        pdcaCycles: updatedCycles
-      });
+      setShowTransitionForm(false);
+      setTransitioningItem(null);
+    } catch (error) {
+      console.error('Failed to advance stage:', error);
+      // TODO: Show error toast
     }
-
-    setShowTransitionForm(false);
-    setTransitioningItem(null);
   };
 
   // Get stage color
@@ -180,7 +169,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
         </div>
         <button
           className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-dark transition-colors"
-          onClick={() => {/* TODO: Implement create new cycle */}}
+          onClick={() => setShowNewCycleModal(true)}
         >
           <PlusIcon className="h-5 w-5" />
           {t('newPDCACycle') || 'New PDCA Cycle'}
@@ -236,11 +225,18 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
 
       {/* Kanban Board */}
       <div className="flex overflow-x-auto gap-6 pb-6">
-        {(['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[]).map(stage => (
+        {(['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[]).map(stage => {
+        const stageKey = stage === 'Plan' ? 'planStage' :
+                        stage === 'Do' ? 'doStage' :
+                        stage === 'Check' ? 'checkStage' :
+                        stage === 'Act' ? 'actStage' :
+                        'completedStage';
+        
+        return (
           <div key={stage} className="flex-none w-80">
             <div className={`flex items-center justify-between mb-4 px-2 py-1 border-b-2 ${getStageColor(stage).split(' ')[0]}`}>
               <h3 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                {t(`${stage.toLowerCase()}Stage`) || stage}
+                {t(stageKey) || stage}
               </h3>
               <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-full">
                 {itemsByStage[stage].length}
@@ -253,8 +249,8 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
                   key={item.id}
                   item={item}
                   type={type}
-                  onClick={() => setSelectedItem({ item, type })}
-                  onAdvance={() => handleAdvanceStage(item, type)}
+                  onView={() => setSelectedItem({ item, type })}
+                  onAdvanceStage={() => handleAdvanceStage(item, type)}
                 />
               ))}
               {itemsByStage[stage].length === 0 && (
@@ -264,7 +260,8 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
               )}
             </div>
           </div>
-        ))}
+        );
+      })}
       </div>
 
       {/* Detail Modal */}
@@ -272,40 +269,118 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project, onUpdate }
         <PDCACycleDetailModal
           isOpen={!!selectedItem}
           onClose={() => setSelectedItem(null)}
-          cycle={selectedItem.type === 'cycle' ? selectedItem.item as PDCACycle : undefined}
-          capa={selectedItem.type === 'capa' ? selectedItem.item as CAPAReport : undefined}
+          cycle={selectedItem.item}
           type={selectedItem.type}
           onUpdate={(updatedItem) => {
             // TODO: Implement update logic
             console.log('Update item:', updatedItem);
+            setSelectedItem(null);
           }}
         />
       )}
 
-      {/* Transition Form */}
+      {/* Transition Form Modal*/}
       {showTransitionForm && transitioningItem && (
         <PDCAStageTransitionForm
-          isOpen={showTransitionForm}
-          onClose={() => {
-            setShowTransitionForm(false);
-            setTransitioningItem(null);
-          }}
           currentStage={
             transitioningItem.type === 'capa'
               ? (transitioningItem.item as CAPAReport).pdcaStage || 'Plan'
               : (transitioningItem.item as PDCACycle).currentStage
           }
-          nextStage={
-            (['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[])[
-              (['Plan', 'Do', 'Check', 'Act', 'Completed'] as PDCAStage[]).indexOf(
-                transitioningItem.type === 'capa'
-                  ? (transitioningItem.item as CAPAReport).pdcaStage || 'Plan'
-                  : (transitioningItem.item as PDCACycle).currentStage
-              ) + 1
-            ]
-          }
           onConfirm={handleConfirmTransition}
+          onCancel={() => {
+            setShowTransitionForm(false);
+            setTransitioningItem(null);
+          }}
         />
+      )}
+
+      {/* New Cycle Modal */}
+      {showNewCycleModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-dark-brand-surface rounded-lg max-w-2xl w-full p-6">
+            <h2 className="text-xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
+              {t('newPDCACycle') || 'New PDCA Cycle'}
+            </h2>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              try {
+                await createPDCACycle(project.id, {
+                  projectId: project.id,
+                  title: formData.get('title') as string,
+                  description: formData.get('description') as string,
+                  category: formData.get('category') as 'Process' | 'Quality' | 'Safety' | 'Efficiency' | 'Other',
+                  priority: formData.get('priority') as 'High' | 'Medium' | 'Low',
+                  owner: formData.get('owner') as string,
+                  team: [],
+                  currentStage: 'Plan',
+                  targetCompletionDate: formData.get('dueDate') as string,
+                  improvementMetrics: { baseline: [], target: [], actual: [] }
+                });
+                setShowNewCycleModal(false);
+              } catch (error) {
+                console.error('Failed to create cycle:', error);
+              }
+            }}>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Title</label>
+                  <input type="text" name="title" required className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold mb-1">Description</label>
+                  <textarea name="description" required rows={3} className="w-full px-3 py-2 border rounded-lg" />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Category</label>
+                    <select name="category" required className="w-full px-3 py-2 border rounded-lg">
+                      <option value="Process">Process</option>
+                      <option value="Quality">Quality</option>
+                      <option value="Safety">Safety</option>
+                      <option value="Efficiency">Efficiency</option>
+                      <option value="Other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Priority</label>
+                    <select name="priority" required className="w-full px-3 py-2 border rounded-lg">
+                      <option value="High">High</option>
+                      <option value="Medium">Medium</option>
+                      <option value="Low">Low</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Owner</label>
+                    <input type="text" name="owner" required className="w-full px-3 py-2 border rounded-lg" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold mb-1">Target Completion</label>
+                    <input type="date" name="dueDate" required className="w-full px-3 py-2 border rounded-lg" />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowNewCycleModal(false)}
+                  className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 px-4 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-dark"
+                >
+                  Create Cycle
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

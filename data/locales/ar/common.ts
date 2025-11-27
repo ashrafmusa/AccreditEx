@@ -249,4 +249,10 @@ export const ar = {
     standardizationStepsDocumented: 'تم توثيق خطوات التوحيد القياسي',
     lessonsLearnedCaptured: 'تم تسجيل الدروس المستفادة',
     finalApprovalObtained: 'تم الحصول على الموافقة النهائية',
+    progress: 'التقدم',
+    advanceToNextStage: 'الانتقال إلى المرحلة التالية',
+    optional: 'اختياري',
+    confirmAdvance: 'تأكيد التقدم',
+    close: 'إغلاق',
+    completionChecklist: 'قائمة الاكتمال',
 };
