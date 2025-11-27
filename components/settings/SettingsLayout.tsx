@@ -9,9 +9,13 @@ import AccreditationHubPage from '@/pages/AccreditationHubPage';
 import CompetencyLibraryPage from '../competencies/CompetencyLibraryPage';
 import DataSettingsPage from './DataSettingsPage';
 import AboutSettingsPage from './AboutSettingsPage';
+import AppearanceSettingsPage from './AppearanceSettingsPage';
+import NotificationSettingsPage from './NotificationSettingsPage';
+import AccessibilitySettingsPage from './AccessibilitySettingsPage';
 import { 
     Cog6ToothIcon, UserCircleIcon, ShieldCheckIcon, UsersIcon, GlobeAltIcon, 
-    CircleStackIcon, InformationCircleIcon, IdentificationIcon 
+    CircleStackIcon, InformationCircleIcon, IdentificationIcon, BellIcon,
+    EyeIcon, PaintBrushIcon
 } from '@/components/icons';
 
 interface SettingsLayoutProps {
@@ -24,8 +28,11 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({ section = 'general', se
 
   const navItems = [
     { id: 'general', label: t('general'), icon: Cog6ToothIcon },
+    { id: 'appearance', label: 'Appearance', icon: PaintBrushIcon },
     { id: 'profile', label: t('profile'), icon: UserCircleIcon },
     { id: 'security', label: t('security'), icon: ShieldCheckIcon },
+    { id: 'notifications', label: 'Notifications', icon: BellIcon },
+    { id: 'accessibility', label: 'Accessibility', icon: EyeIcon },
     { id: 'users', label: t('userManagement'), icon: UsersIcon },
     { id: 'accreditationHub', label: t('accreditationHub'), icon: GlobeAltIcon },
     { id: 'competencies', label: t('competencies'), icon: IdentificationIcon },
@@ -36,8 +43,11 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({ section = 'general', se
   const renderSection = () => {
     switch (section) {
       case 'general': return <GeneralSettingsPage />;
+      case 'appearance': return <AppearanceSettingsPage />;
       case 'profile': return <ProfileSettingsPage />;
       case 'security': return <SecuritySettingsPage />;
+      case 'notifications': return <NotificationSettingsPage />;
+      case 'accessibility': return <AccessibilitySettingsPage />;
       case 'users': return <UsersPage setNavigation={setNavigation} />;
       case 'accreditationHub': return <AccreditationHubPage setNavigation={setNavigation} />;
       case 'competencies': return <CompetencyLibraryPage />;

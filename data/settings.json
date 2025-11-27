@@ -18,5 +18,25 @@
     "darkness": 0.9,
     "lightIntensity": 1.2,
     "rotationSpeed": 0.02
+  },
+  "appearance": {
+    "compactMode": false,
+    "sidebarCollapsed": false,
+    "showAnimations": true,
+    "cardStyle": "elevated"
+  },
+  "notifications": {
+    "emailNotifications": true,
+    "pushNotifications": false,
+    "taskReminders": true,
+    "projectUpdates": true,
+    "trainingDueDates": true,
+    "auditSchedules": true
+  },
+  "accessibility": {
+    "fontSize": "medium",
+    "highContrast": false,
+    "reduceMotion": false,
+    "screenReaderOptimized": false
   }
 }

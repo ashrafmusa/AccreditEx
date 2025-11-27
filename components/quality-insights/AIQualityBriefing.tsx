@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { AIQualityBriefing as AIQualityBriefingType, Project, Risk, User, Department, Competency } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { Project, Risk, User, Department, Competency } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
-// FIX: Corrected import path for backendService
-import { backendService } from '../../services/BackendService';
-import { SparklesIcon, CheckBadgeIcon, ExclamationTriangleIcon, LightBulbIcon } from '../icons';
+import { useAIAgent } from '../../hooks/useAIAgent';
+import { SparklesIcon, CheckBadgeIcon, ExclamationTriangleIcon, LightBulbIcon, ArrowPathIcon } from '../icons';
+import ReactMarkdown from 'react-markdown';
 
 interface AIQualityBriefingProps {
   projects: Project[];
@@ -15,24 +15,41 @@ interface AIQualityBriefingProps {
 
 const AIQualityBriefing: React.FC<AIQualityBriefingProps> = ({ projects, risks, users, departments, competencies }) => {
   const { t } = useTranslation();
-  const [briefing, setBriefing] = useState<AIQualityBriefingType | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const { chatHistory, isLoading, error, sendMessage, clearHistory } = useAIAgent();
+  const [hasGenerated, setHasGenerated] = useState(false);
 
-  const handleGenerate = async () => {
-    setIsLoading(true);
-    setError('');
-    setBriefing(null);
-    try {
-      const result = await backendService.generateQualityBriefing(projects, risks, users, departments, competencies);
-      setBriefing(result);
-    } catch (e) {
-      setError(t('briefingError'));
-      console.error(e);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleGenerate = () => {
+    clearHistory();
+    setHasGenerated(true);
+    
+    // Prepare a summary of the data for the AI
+    const dataSummary = {
+      projectCount: projects.length,
+      activeProjects: projects.filter(p => p.status === 'In Progress').length,
+      highRisks: risks.filter(r => r.level === 'High').length,
+      riskCount: risks.length,
+      departmentCount: departments.length,
+      competencyGaps: 'Calculated based on user training status', // Simplified for prompt
+    };
+
+    const prompt = `
+      Generate a strategic Quality Briefing for the Accreditation Director.
+      
+      Context Data:
+      ${JSON.stringify(dataSummary, null, 2)}
+      
+      Please provide:
+      1. **Strategic Strengths**: What are we doing well?
+      2. **Critical Concerns**: What high-level risks need attention?
+      3. **Strategic Recommendations**: 3 actionable steps for continuous improvement (PDCA).
+      
+      Format as a professional executive summary with clear sections.
+    `;
+
+    sendMessage(prompt, { page_title: 'Quality Insights Hub', user_role: 'Quality Manager' });
   };
+
+  const lastMessage = chatHistory.length > 0 ? chatHistory[chatHistory.length - 1] : null;
 
   const renderSkeleton = () => (
     <div className="space-y-6 animate-pulse">
@@ -64,43 +81,26 @@ const AIQualityBriefing: React.FC<AIQualityBriefingProps> = ({ projects, risks, 
           disabled={isLoading}
           className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center font-semibold shadow-sm w-full sm:w-auto disabled:bg-indigo-400 disabled:cursor-wait"
         >
-          <SparklesIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-          {isLoading ? t('generatingBriefing') : t('generateBriefing')}
+          {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin ltr:mr-2 rtl:ml-2" /> : <SparklesIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />}
+          {isLoading ? t('generatingBriefing') : hasGenerated ? t('regenerateBriefing') : t('generateBriefing')}
         </button>
       </div>
 
       <div className="mt-6 border-t border-indigo-200 dark:border-indigo-800 pt-6">
-        {isLoading && renderSkeleton()}
+        {isLoading && !lastMessage ? renderSkeleton() : null}
+        
         {error && <p className="text-red-500 text-center">{error}</p>}
-        {briefing && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-[fadeInUp_0.5s_ease-out]">
-            {/* Strengths */}
-            <div className="space-y-3">
-                <h4 className="font-semibold flex items-center gap-2 text-green-700 dark:text-green-300"><CheckBadgeIcon className="w-5 h-5"/>{t('strengths')}</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    {briefing.strengths.map((s, i) => <li key={`s-${i}`}>{s}</li>)}
-                </ul>
-            </div>
-            {/* Concerns */}
-            <div className="space-y-3">
-                <h4 className="font-semibold flex items-center gap-2 text-amber-700 dark:text-amber-300"><ExclamationTriangleIcon className="w-5 h-5"/>{t('areasForImprovement')}</h4>
-                <ul className="list-disc list-inside space-y-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    {briefing.concerns.map((c, i) => <li key={`c-${i}`}>{c}</li>)}
-                </ul>
-            </div>
-            {/* Recommendations */}
-            <div className="space-y-3">
-                <h4 className="font-semibold flex items-center gap-2 text-blue-700 dark:text-blue-300"><LightBulbIcon className="w-5 h-5"/>{t('recommendations')}</h4>
-                <ul className="space-y-3 text-sm">
-                    {briefing.recommendations.map((r, i) => (
-                        <li key={`r-${i}`} className="bg-white/50 dark:bg-black/20 p-3 rounded-lg">
-                            <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">{r.title}</p>
-                            <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">{r.details}</p>
-                        </li>
-                    ))}
-                </ul>
-            </div>
+        
+        {lastMessage?.role === 'assistant' && (
+          <div className="prose prose-sm dark:prose-invert max-w-none animate-[fadeInUp_0.5s_ease-out]">
+            <ReactMarkdown>{lastMessage.content}</ReactMarkdown>
           </div>
+        )}
+        
+        {!isLoading && !hasGenerated && (
+             <div className="text-center text-brand-text-secondary dark:text-dark-brand-text-secondary py-8 italic">
+                {t('clickToGenerateBriefing') || 'Click "Generate Briefing" to receive a strategic analysis of your quality metrics.'}
+             </div>
         )}
       </div>
     </div>

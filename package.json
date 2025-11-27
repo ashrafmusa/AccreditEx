@@ -9,19 +9,24 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@google/genai": "^1.20.0",
+    "cobe": "^0.6.5",
+    "firebase": "^12.3.0",
+    "framer-motion": "^11.3.19",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
     "recharts": "^3.3.0",
-    "@google/genai": "^1.20.0",
-    "zustand": "^5.0.8",
-    "cobe": "^0.6.5",
-    "framer-motion": "^11.3.19",
     "use-debounce": "^10.0.6",
-    "firebase": "^12.3.0"
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.17",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.22",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.17",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
