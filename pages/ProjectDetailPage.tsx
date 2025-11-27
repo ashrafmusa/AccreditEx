@@ -7,7 +7,6 @@ import { useToast } from '@/hooks/useToast';
 import ProjectDetailHeader from '@/components/projects/ProjectDetailHeader';
 import ProjectDetailSidebar from '@/components/projects/ProjectDetailSidebar';
 import ProjectOverview from '@/pages/ProjectOverview';
-// FIX: Corrected import path for ProjectChecklist
 import ProjectChecklist from '@/components/projects/ProjectChecklist';
 import SignatureModal from '@/components/common/SignatureModal';
 import GenerateReportModal from '@/components/documents/GenerateReportModal';
@@ -58,6 +57,22 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ navigation, setNa
     switch (activeView) {
       case 'overview':
         return <ProjectOverview project={project} />;
+      case 'checklist':
+        return <ProjectChecklist project={project} onUpdate={updateProject} />;
+      case 'design_controls':
+        return <DesignControlsPage project={project} onUpdate={updateDesignControls} />;
+      case 'mock_surveys':
+        return <MockSurveyListPage project={project} />;
+      case 'audit_log':
+        return <AuditLogPage project={project} />;
+      case 'pdca_cycles':
+        return <PDCACycleManager project={project} onUpdate={updateProject} />;
+      default:
+        return <ProjectOverview project={project} />;
+    }
+  };
+
+  return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
       <ProjectDetailSidebar activeView={activeView} setActiveView={setActiveView} />
       <main className="w-full lg:w-3/4 xl:w-4/5">
