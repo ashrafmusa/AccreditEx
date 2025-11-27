@@ -122,7 +122,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
           stage: currentStage,
           enteredAt: currentCycle.stageHistory[currentCycle.stageHistory.length - 1]?.completedAt || currentCycle.createdAt,
           completedAt: new Date().toISOString(),
-          completedBy: 'current-user-id', // TODO: Get from auth
+          completedBy: user.id,
           notes,
           attachments
         };
