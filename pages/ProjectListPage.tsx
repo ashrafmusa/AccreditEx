@@ -1,11 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { NavigationState, User } from '@/types';
+import { NavigationState, User, ProjectStatus } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { useAppStore } from '@/stores/useAppStore';
 import ProjectCard from '@/components/projects/ProjectCard';
-import { FolderIcon, PlusIcon, SearchIcon } from '@/components/icons';
+import { FolderIcon, PlusIcon, SearchIcon, FunnelIcon, XMarkIcon } from '@/components/icons';
 import EmptyState from '@/components/common/EmptyState';
 
 interface ProjectListPageProps {
@@ -17,20 +17,43 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const { projects, deleteProject } = useProjectStore();
   const { currentUser, users } = useUserStore();
   const { accreditationPrograms } = useAppStore();
+  
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all');
+  const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<{ start: string; end: string }>({ start: '', end: '' });
+  const [showFilters, setShowFilters] = useState(false);
 
   const programMap = useMemo(() => new Map(accreditationPrograms.map(p => [p.id, p.name])), [accreditationPrograms]);
 
   const filteredProjects = useMemo(() => {
-    return projects.filter(p =>
-      p.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [projects, searchTerm]);
+    return projects.filter(p => {
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+      
+      const matchesAssignee = assigneeFilter === 'all' || 
+        p.projectLead.id === assigneeFilter || 
+        p.checklist.some(item => item.assignedTo === assigneeFilter);
+
+      const matchesDate = (!dateFilter.start || new Date(p.startDate) >= new Date(dateFilter.start)) &&
+                          (!dateFilter.end || (p.endDate && new Date(p.endDate) <= new Date(dateFilter.end)));
+
+      return matchesSearch && matchesStatus && matchesAssignee && matchesDate;
+    });
+  }, [projects, searchTerm, statusFilter, assigneeFilter, dateFilter]);
   
   const handleDelete = (projectId: string) => {
     if (window.confirm(t('areYouSureDeleteProject'))) {
         deleteProject(projectId);
     }
+  };
+
+  const clearFilters = () => {
+    setStatusFilter('all');
+    setAssigneeFilter('all');
+    setDateFilter({ start: '', end: '' });
+    setSearchTerm('');
   };
 
   return (
@@ -48,15 +71,80 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         </button>
       </div>
 
-      <div className="relative">
-        <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-        <input
-          type="text"
-          placeholder={t('searchProjects')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full ltr:pl-10 rtl:pr-10 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-brand-primary focus:border-brand-primary text-sm bg-brand-surface dark:bg-dark-brand-surface"
-        />
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-1">
+                <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                type="text"
+                placeholder={t('searchProjects')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full ltr:pl-10 rtl:pr-10 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-brand-primary focus:border-brand-primary text-sm bg-brand-surface dark:bg-dark-brand-surface"
+                />
+            </div>
+            <button 
+                onClick={() => setShowFilters(!showFilters)}
+                className={`px-4 py-2 rounded-lg border flex items-center gap-2 font-medium transition-colors ${showFilters ? 'bg-brand-primary text-white border-brand-primary' : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200'}`}
+            >
+                <FunnelIcon className="w-5 h-5" />
+                {t('filterByStatus')}
+            </button>
+             {(statusFilter !== 'all' || assigneeFilter !== 'all' || dateFilter.start || dateFilter.end) && (
+                <button onClick={clearFilters} className="text-red-500 hover:text-red-700 text-sm font-medium px-2">
+                    {t('clearFilters')}
+                </button>
+            )}
+        </div>
+
+        {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-fadeIn">
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('filterByStatus')}</label>
+                    <select 
+                        value={statusFilter} 
+                        onChange={(e) => setStatusFilter(e.target.value as ProjectStatus | 'all')}
+                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                    >
+                        <option value="all">{t('allStatuses')}</option>
+                        {Object.values(ProjectStatus).map(status => (
+                            <option key={status} value={status}>{t(status.replace(/\s/g, '').toLowerCase() as any) || status}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('filterByAssignee')}</label>
+                    <select 
+                        value={assigneeFilter} 
+                        onChange={(e) => setAssigneeFilter(e.target.value)}
+                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                    >
+                        <option value="all">{t('allAssignees')}</option>
+                        {users.map(user => (
+                            <option key={user.id} value={user.id}>{user.name}</option>
+                        ))}
+                    </select>
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('startDate')}</label>
+                    <input 
+                        type="date" 
+                        value={dateFilter.start} 
+                        onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
+                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('endDate')}</label>
+                    <input 
+                        type="date" 
+                        value={dateFilter.end} 
+                        onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
+                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                    />
+                </div>
+            </div>
+        )}
       </div>
       
       {filteredProjects.length > 0 ? (
@@ -82,7 +170,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         <EmptyState 
             icon={FolderIcon} 
             title={t('noProjectsFound')} 
-            message={t('createProjectToStart')} 
+            message={t('tryAdjustingSearch')} 
         />
       )}
     </div>

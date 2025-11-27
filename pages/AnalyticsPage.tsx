@@ -14,6 +14,8 @@ import TaskStatusDistributionChart from '@/components/analytics/TaskStatusDistri
 import TaskDistributionByUserChart from '@/components/analytics/TaskDistributionByUserChart';
 import StatCard from '@/components/common/StatCard';
 
+import AnalyticsAIWidget from '@/components/analytics/AnalyticsAIWidget';
+
 interface AnalyticsPageProps {
   setNavigation: (state: NavigationState) => void;
 }
@@ -38,9 +40,29 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
   const kpis = useMemo(() => {
     const overdueTasks = allChecklistItems.filter(item => item.dueDate && new Date(item.dueDate) < new Date()).length;
     const activeProjects = filteredProjects.filter(p => p.status === 'In Progress').length;
-    return { overdueTasks, activeProjects };
+    const totalTasks = allChecklistItems.length;
+    const compliantTasks = allChecklistItems.filter(i => i.status === 'Compliant').length;
+    const complianceRate = totalTasks > 0 ? Math.round((compliantTasks / totalTasks) * 100) : 0;
+    
+    return { 
+      overdueTasks, 
+      activeProjects,
+      complianceRate,
+      capaResolutionRate: 62 // Mock data for now as per existing code
+    };
   }, [allChecklistItems, filteredProjects]);
   
+  const aiDataSummary = useMemo(() => ({
+    kpis,
+    projectStatus: filteredProjects.reduce((acc, p) => {
+      acc[p.status] = (acc[p.status] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>),
+    topRisks: allChecklistItems
+      .filter(i => i.status === 'Non-Compliant')
+      .slice(0, 5)
+      .map(i => i.requirement)
+  }), [kpis, filteredProjects, allChecklistItems]);
 
   return (
     <div className="space-y-6">
@@ -60,9 +82,14 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
         </div>
       </div>
       
+      {/* AI Insights Widget */}
+      <div className="w-full">
+        <AnalyticsAIWidget data={aiDataSummary} />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <KpiCard title={t('overallComplianceRate')} value={87} total={allChecklistItems.length} completed={allChecklistItems.filter(i => i.status === 'Compliant').length} description={t('tasksCompliant')} color="#4f46e5" />
-          <KpiCard title={t('capaResolutionRate')} value={62} total={50} completed={31} description={t('resolved')} color="#f97316" />
+          <KpiCard title={t('overallComplianceRate')} value={kpis.complianceRate} total={allChecklistItems.length} completed={allChecklistItems.filter(i => i.status === 'Compliant').length} description={t('tasksCompliant')} color="#4f46e5" />
+          <KpiCard title={t('capaResolutionRate')} value={kpis.capaResolutionRate} total={50} completed={31} description={t('resolved')} color="#f97316" />
           <StatCard title={t('totalActiveProjects')} value={kpis.activeProjects} />
           <StatCard title={t('totalOverdueTasks')} value={kpis.overdueTasks} />
       </div>
