@@ -180,6 +180,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemProps> = ({
             isFinalized={isFinalized}
             onUpload={uploadEvidence}
             onLinkData={() => setIsLinkDataOpen(true)}
+            onUpdate={(updates) => handleUpdate(updates)}
           />
 
           <ChecklistComments

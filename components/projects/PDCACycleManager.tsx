@@ -2,6 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { Project, CAPAReport, PDCACycle, PDCAStage } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useProjectStore } from '@/stores/useProjectStore';
+import { useUserStore } from '@/stores/useUserStore';
+import { useAppStore } from '@/stores/useAppStore';
+import { useToast } from '@/hooks/useToast';
 import { PlusIcon, FunnelIcon } from '../icons';
 import PDCACycleCard from './PDCACycleCard';
 import PDCAStageTransitionForm from './PDCAStageTransitionForm';
@@ -14,6 +17,9 @@ interface PDCACycleManagerProps {
 
 const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const { currentUser } = useUserStore();
+  const { users } = useAppStore();
   const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle } = useProjectStore();
   const [selectedItem, setSelectedItem] = useState<{ item: CAPAReport | PDCACycle; type: 'capa' | 'cycle' } | null>(null);
   const [showTransitionForm, setShowTransitionForm] = useState(false);
@@ -22,6 +28,12 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterPriority, setFilterPriority] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [formErrors, setFormErrors] = useState<{
+    title?: string;
+    description?: string;
+    owner?: string;
+    dueDate?: string;
+  }>({});
 
   // Combine Cycles and CAPAs
   type PDCAItem = { item: CAPAReport; type: 'capa' } | { item: PDCACycle; type: 'cycle' };
@@ -136,11 +148,12 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
         await updatePDCACycle(project.id, updatedCycle);
       }
 
+      toast.success(t('pdcaStageAdvanced'));
       setShowTransitionForm(false);
       setTransitioningItem(null);
     } catch (error) {
       console.error('Failed to advance stage:', error);
-      // TODO: Show error toast
+      toast.error(t('pdcaStageFailed'));
     }
   };
 
@@ -305,32 +318,108 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
             <form onSubmit={async (e) => {
               e.preventDefault();
               const formData = new FormData(e.currentTarget);
+              
+              // Validate form
+              const errors: typeof formErrors = {};
+              
+              // Title validation
+              const title = (formData.get('title') as string || '').trim();
+              if (!title) {
+                errors.title = 'Title is required';
+              } else if (title.length < 3) {
+                errors.title = 'Title must be at least 3 characters';
+              }
+              
+              // Description validation
+              const description = (formData.get('description') as string || '').trim();
+              if (!description) {
+                errors.description = 'Description is required';
+              } else if (description.length < 10) {
+                errors.description = 'Description must be at least 10 characters';
+              }
+              
+              // Owner validation
+              const owner = formData.get('owner') as string;
+              if (!owner) {
+                errors.owner = 'Please select an owner';
+              }
+              
+              // Date validation
+              const dueDate = formData.get('dueDate') as string;
+              if (!dueDate) {
+                errors.dueDate = 'Target completion date is required';
+              } else {
+                const selectedDate = new Date(dueDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                
+                if (selectedDate <= today) {
+                  errors.dueDate = 'Target date must be in the future';
+                }
+              }
+              
+              setFormErrors(errors);
+              
+              // Stop if validation fails
+              if (Object.keys(errors).length > 0) {
+                return;
+              }
+              
               try {
                 await createPDCACycle(project.id, {
                   projectId: project.id,
-                  title: formData.get('title') as string,
-                  description: formData.get('description') as string,
+                  title,
+                  description,
                   category: formData.get('category') as 'Process' | 'Quality' | 'Safety' | 'Efficiency' | 'Other',
                   priority: formData.get('priority') as 'High' | 'Medium' | 'Low',
-                  owner: formData.get('owner') as string,
+                  owner,
                   team: [],
                   currentStage: 'Plan',
-                  targetCompletionDate: formData.get('dueDate') as string,
+                  targetCompletionDate: dueDate,
                   improvementMetrics: { baseline: [], target: [], actual: [] }
                 });
+                toast.success(t('pdcaCycleCreated'));
+                setFormErrors({});
                 setShowNewCycleModal(false);
               } catch (error) {
                 console.error('Failed to create cycle:', error);
+                toast.error(t('pdcaCycleCreateFailed'));
               }
             }}>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Title</label>
-                  <input type="text" name="title" required className="w-full px-3 py-2 border rounded-lg" />
+                  <label className="block text-sm font-semibold mb-1">Title *</label>
+                  <input 
+                    type="text" 
+                    name="title" 
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      formErrors.title 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 focus:ring-brand-primary'
+                    }`}
+                  />
+                  {formErrors.title && (
+                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                      {formErrors.title}
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold mb-1">Description</label>
-                  <textarea name="description" required rows={3} className="w-full px-3 py-2 border rounded-lg" />
+                  <label className="block text-sm font-semibold mb-1">Description *</label>
+                  <textarea 
+                    name="description" 
+                    rows={3} 
+                    className={`w-full px-3 py-2 border rounded-lg ${
+                      formErrors.description 
+                        ? 'border-red-500 focus:ring-red-500' 
+                        : 'border-gray-300 focus:ring-brand-primary'
+                    }`}
+                  />
+                  {formErrors.description && (
+                    <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                      {formErrors.description}
+                    </p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -354,19 +443,56 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold mb-1">Owner</label>
-                    <input type="text" name="owner" required className="w-full px-3 py-2 border rounded-lg" />
+                    <label className="block text-sm font-semibold mb-1">Owner *</label>
+                    <select 
+                      name="owner" 
+                      className={`w-full px-3 py-2 border rounded-lg ${
+                        formErrors.owner 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-brand-primary'
+                      }`}
+                      defaultValue=""
+                    >
+                      <option value="" disabled>Select owner...</option>
+                      {users.map(user => (
+                        <option key={user.id} value={user.id}>
+                          {user.name}
+                        </option>
+                      ))}
+                    </select>
+                    {formErrors.owner && (
+                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                        {formErrors.owner}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold mb-1">Target Completion</label>
-                    <input type="date" name="dueDate" required className="w-full px-3 py-2 border rounded-lg" />
+                    <label className="block text-sm font-semibold mb-1">Target Completion *</label>
+                    <input 
+                      type="date" 
+                      name="dueDate" 
+                      min={new Date(Date.now() + 86400000).toISOString().split('T')[0]}
+                      className={`w-full px-3 py-2 border rounded-lg ${
+                        formErrors.dueDate 
+                          ? 'border-red-500 focus:ring-red-500' 
+                          : 'border-gray-300 focus:ring-brand-primary'
+                      }`}
+                    />
+                    {formErrors.dueDate && (
+                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                        {formErrors.dueDate}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>
               <div className="flex gap-3 mt-6">
                 <button
                   type="button"
-                  onClick={() => setShowNewCycleModal(false)}
+                  onClick={() => {
+                    setShowNewCycleModal(false);
+                    setFormErrors({});
+                  }}
                   className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
                 >
                   Cancel

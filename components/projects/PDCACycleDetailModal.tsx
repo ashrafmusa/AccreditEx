@@ -7,8 +7,11 @@ import {
   XMarkIcon, 
   LightBulbIcon, 
   ChartBarIcon, 
-  ClipboardDocumentCheckIcon 
+  ClipboardDocumentCheckIcon,
+  PaperClipIcon
 } from '@/components/icons';
+import { useAppStore } from '@/stores/useAppStore';
+import DocumentPicker from '../common/DocumentPicker';
 
 interface PDCACycleDetailModalProps {
   isOpen: boolean;
@@ -25,9 +28,11 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
   type,
   onUpdate 
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { suggestions, generateSuggestions, isLoading: isLoadingSuggestions } = usePDCASuggestions();
+  const { documents } = useAppStore();
   const [activeTab, setActiveTab] = useState<PDCAStage | 'History'>('Plan');
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
   
   // Helper to get current stage
   const currentStage = type === 'cycle' 
@@ -46,6 +51,20 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
   if (!isOpen) return null;
 
   const tabs: (PDCAStage | 'History')[] = ['Plan', 'Do', 'Check', 'Act', 'History'];
+
+  const linkedDocs = documents.filter(doc => (cycle.linkedDocumentIds || []).includes(doc.id));
+
+  const handleDocumentsSelected = (documentIds: string[]) => {
+    const currentIds = cycle.linkedDocumentIds || [];
+    const uniqueIds = documentIds.filter(id => !currentIds.includes(id));
+    onUpdate({ ...cycle, linkedDocumentIds: [...currentIds, ...uniqueIds] });
+    setIsPickerOpen(false);
+  };
+
+  const handleRemoveDocument = (docId: string) => {
+    const currentIds = cycle.linkedDocumentIds || [];
+    onUpdate({ ...cycle, linkedDocumentIds: currentIds.filter(id => id !== docId) });
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm" onClick={onClose}>
@@ -243,6 +262,13 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                   <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     {t('addEvidence') || 'Add Evidence Document'}
                   </button>
+                  <button 
+                    onClick={() => setIsPickerOpen(true)}
+                    className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  >
+                    <PaperClipIcon className="w-4 h-4" />
+                    {t('linkDocument') || 'Link Document'}
+                  </button>
                   <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                     {t('assignTask') || 'Assign Task'}
                   </button>
@@ -251,6 +277,29 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                   </button>
                 </div>
               </div>
+
+              {/* Linked Documents Section */}
+              {linkedDocs.length > 0 && (
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <PaperClipIcon className="w-5 h-5 text-gray-500" />
+                    {t('linkedDocuments') || 'Linked Documents'}
+                  </h4>
+                  <div className="space-y-2">
+                    {linkedDocs.map(doc => (
+                      <div key={doc.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 text-sm group">
+                        <span className="truncate flex-1" title={doc.name[lang]}>{doc.name[lang]}</span>
+                        <button 
+                          onClick={() => handleRemoveDocument(doc.id)}
+                          className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
+                        >
+                          <XMarkIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
           </div>
@@ -267,6 +316,15 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
         </div>
 
       </div>
+      
+      <DocumentPicker
+        isOpen={isPickerOpen}
+        onClose={() => setIsPickerOpen(false)}
+        onSelect={handleDocumentsSelected}
+        documents={documents}
+        selectedIds={cycle.linkedDocumentIds || []}
+        multiSelect={true}
+      />
     </div>
   );
 };

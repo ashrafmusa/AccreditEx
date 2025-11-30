@@ -33,19 +33,6 @@ The application is designed to run without a build step.
 
 ## Features
 
--   **Live Cloud Database**: All data is stored and managed in Google Firestore, providing real-time updates, scalability, and robust security.
--   **Firebase Authentication**: Secure user login and session management powered by Firebase.
--   **Admin Control Center**: A comprehensive settings page to manage the application's core. This includes:
-    -   **Accreditation Hub**: Dynamically create, update, and delete accreditation programs and their associated standards.
-    -   **User Management**: Onboard new users, manage roles, and assign departments, with direct access to detailed user profiles.
-    -   **Competency Library**: Centrally define and manage all official staff competencies, skills, and certifications for standardized tracking.
--   **Project Creation & Management**: Create projects based on dynamic accreditation programs. The system automatically generates comprehensive checklists from your library of standards.
--   **Project Finalization & Comprehensive Audit Trail**: Formally finalize projects with an electronic signature to create a locked, immutable record. A detailed, timestamped audit log tracks every significant action, providing the traceability required for regulatory compliance (Foundation for 21 CFR Part 11).
--   **Risk & Communication Hub**: Manage Corrective and Preventive Actions (CAPA) through a formal workflow and collaborate with an integrated commenting system on checklist items.
--   **Mock Survey Hub**: Conduct internal audits with a dedicated survey interface and generate comprehensive reports with actionable findings that can be applied back to the project.
--   **Analytics & Reporting**: A centralized dashboard with interactive filters to visualize compliance trends, compare departmental performance, and identify problematic standards.
--   **Compliance Calendar**: A unified, interactive calendar to schedule and visualize all compliance-related activities, including project deadlines, mock surveys, and document review dates.
--   **AI-Powered Tools**: Utilizes the Gemini API to suggest professional action plans, generate policy documents, analyze root causes, and provide high-level quality briefings.
 -   **Training & Competency Management**:
     -   **Training Hub**: A full-featured module with interactive content, quizzes, and automated certificate generation.
     -   **User Profile & Competency Hub**: A detailed "digital HR file" for each staff member, tracking their job title, hire date, project involvement, training history, and a full list of their professional competencies and certifications with issue/expiry date tracking.

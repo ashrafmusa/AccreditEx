@@ -1,12 +1,17 @@
 import { create } from 'zustand';
 import { Project, ChecklistItem, DesignControlItem, CAPAReport, MockSurvey, ComplianceStatus, PDCACycle, PDCAStage } from '@/types';
-import { backendService } from '@/services/BackendService';
+import * as projectService from '@/services/projectService';
 import { useUserStore } from './useUserStore';
 import { useAppStore } from './useAppStore';
 
 interface ProjectState {
   projects: Project[];
+  loading: boolean;
+  error: string | null;
+  unsubscribe: (() => void) | null;
   fetchAllProjects: () => Promise<void>;
+  subscribeToProjects: () => void;
+  unsubscribeFromProjects: () => void;
   addProject: (newProjectData: any) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
   deleteProject: (projectId: string) => Promise<void>;
@@ -20,12 +25,10 @@ interface ProjectState {
   startMockSurvey: (projectId: string) => Promise<{ updatedProject: Project; newSurvey: MockSurvey }>;
   updateMockSurvey: (projectId: string, survey: MockSurvey) => Promise<void>;
   applySurveyFindingsToProject: (projectId: string, surveyId: string) => Promise<void>;
-  updateCapa: (projectId: string, capa: CAPAReport) => Promise<void>;
-  // PDCA actions
-  updateCAPAPDCAStage: (projectId: string, capaId: string, newStage: PDCAStage, notes: string, attachments: string[]) => Promise<void>;
-  createPDCACycle: (projectId: string, cycleData: Omit<PDCACycle, 'id' | 'createdAt' | 'stageHistory'>) => Promise<void>;
-  updatePDCACycle: (projectId: string, cycle: PDCACycle) => Promise<void>;
-  getPDCACyclesByStage: (projectId: string, stage: PDCAStage) => PDCACycle[];
+  bulkArchiveProjects: (projectIds: string[]) => Promise<boolean>;
+  bulkRestoreProjects: (projectIds: string[]) => Promise<boolean>;
+  bulkDeleteProjects: (projectIds: string[]) => Promise<boolean>;
+  bulkUpdateStatus: (projectIds: string[], status: ProjectStatus) => Promise<boolean>;
 }
 
 const calculateProgress = (checklist: ChecklistItem[]): number => {
@@ -46,16 +49,44 @@ const calculateProgress = (checklist: ChecklistItem[]): number => {
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
   projects: [],
+  loading: false,
+  error: null,
+  unsubscribe: null,
+
   fetchAllProjects: async () => {
-    const projectsFromBackend = await backendService.getProjects();
-    const projectsWithProgress = projectsFromBackend.map(p => ({
-      ...p,
-      progress: calculateProgress(p.checklist)
-    }));
-    set({ projects: projectsWithProgress });
+    try {
+      set({ loading: true, error: null });
+      const projectsFromBackend = await projectService.getProjects();
+      const projectsWithProgress = projectsFromBackend.map(p => ({
+        ...p,
+        progress: calculateProgress(p.checklist)
+      }));
+      set({ projects: projectsWithProgress, loading: false });
+    } catch (error) {
+      set({ error: (error as Error).message, loading: false });
+    }
+  },
+
+  subscribeToProjects: () => {
+    const unsubscribeFn = projectService.subscribeToProjects((projects) => {
+      const projectsWithProgress = projects.map(p => ({
+        ...p,
+        progress: calculateProgress(p.checklist)
+      }));
+      set({ projects: projectsWithProgress });
+    });
+    set({ unsubscribe: unsubscribeFn });
+  },
+
+  unsubscribeFromProjects: () => {
+    const { unsubscribe } = get();
+    if (unsubscribe) {
+      unsubscribe();
+      set({ unsubscribe: null });
+    }
   },
   addProject: async (newProjectData) => {
-    const newProject = await backendService.createProject(newProjectData);
+    const newProject = await projectService.createProject(newProjectData);
     set(state => ({ projects: [...state.projects, { ...newProject, progress: calculateProgress(newProject.checklist) }] }));
   },
   updateProject: async (updatedProject) => {
@@ -63,13 +94,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       ...updatedProject,
       progress: calculateProgress(updatedProject.checklist)
     };
-    const returnedProject = await backendService.updateProject(projectWithRecalculatedProgress);
+    await projectService.updateProject(updatedProject.id, projectWithRecalculatedProgress);
     set(state => ({
-      projects: state.projects.map(p => p.id === returnedProject.id ? returnedProject : p)
+      projects: state.projects.map(p => p.id === updatedProject.id ? projectWithRecalculatedProgress : p)
     }));
   },
   deleteProject: async (projectId) => {
-    await backendService.deleteProject(projectId);
+    await projectService.deleteProject(projectId);
     set(state => ({
       projects: state.projects.filter(p => p.id !== projectId)
     }));
@@ -77,20 +108,17 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   finalizeProject: async (projectId, passwordAttempt) => {
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error("User not authenticated");
-    const updatedProject = await backendService.finalizeProject(projectId, user.id, passwordAttempt);
-    get().updateProject(updatedProject);
+    await projectService.finalizeProject(projectId, user.id, user.name);
+    await get().fetchAllProjects();
   },
   updateDesignControls: async (projectId, designControls) => {
-    const updatedProject = await backendService.updateDesignControls(projectId, designControls);
-    get().updateProject(updatedProject);
+    await projectService.updateDesignControls(projectId, designControls);
+    await get().fetchAllProjects();
   },
   generateReport: async (projectId, reportType) => {
-    const project = get().projects.find(p => p.id === projectId);
-    const user = useUserStore.getState().currentUser;
-    if (project && user) {
-      const newReport = await backendService.generateProjectReport(project, reportType, user.name);
-      useAppStore.getState().addDocument(newReport);
-    }
+    // This functionality needs to be implemented in a separate report service
+    // For now, we'll keep it as a placeholder
+    console.log('Generate report:', projectId, reportType);
   },
   updateChecklistItem: async (projectId, checklistItemId, updates) => {
     const project = get().projects.find(p => p.id === projectId);
@@ -104,13 +132,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   addComment: async (projectId, checklistItemId, commentText) => {
     const user = useUserStore.getState().currentUser;
     if (user) {
-      const updatedProject = await backendService.addComment(projectId, checklistItemId, {
+      await projectService.addComment(projectId, checklistItemId, {
         userId: user.id,
         userName: user.name,
         timestamp: new Date().toISOString(),
         text: commentText,
       });
-      get().updateProject(updatedProject);
+      await get().fetchAllProjects();
     }
   },
   addCapaReport: async (projectId, checklistItemId) => {
@@ -130,38 +158,41 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         dueDate: '',
         createdAt: new Date().toISOString(),
       };
-      const updatedProject = await backendService.addCapaReport(projectId, capaData);
-      get().updateProject(updatedProject);
+      await projectService.addCapaReport(projectId, capaData);
+      await get().fetchAllProjects();
     }
   },
-  uploadEvidence: async (projectId, checklistItemId, docData) => {
+  uploadEvidence: async (projectId, checklistItemId, fileData) => {
     const user = useUserStore.getState().currentUser;
     if (user) {
-      const { updatedProject, newDocument } = await backendService.uploadEvidenceDocument(projectId, checklistItemId, docData, user.name);
-      get().updateProject(updatedProject);
-      useAppStore.getState().addDocument(newDocument);
+      // Upload file and get document ID
+      // This needs to be implemented with Firebase Storage
+      const fileId = `doc-${Date.now()}`;
+      await projectService.uploadEvidence(projectId, checklistItemId, fileId);
+      await get().fetchAllProjects();
     }
   },
   startMockSurvey: async (projectId) => {
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error("User not authenticated");
-    const { updatedProject, newSurvey } = await backendService.startMockSurvey(projectId, user.id);
-    get().updateProject(updatedProject);
+    const newSurvey = await projectService.startMockSurvey(projectId, user.id);
+    await get().fetchAllProjects();
+    const updatedProject = get().projects.find(p => p.id === projectId)!;
     return { updatedProject, newSurvey };
   },
   updateMockSurvey: async (projectId, survey) => {
-    const updatedProject = await backendService.updateMockSurvey(projectId, survey);
-    get().updateProject(updatedProject);
+    await projectService.updateMockSurvey(projectId, survey.id, survey);
+    await get().fetchAllProjects();
   },
   applySurveyFindingsToProject: async (projectId, surveyId) => {
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error("User not authenticated");
-    const updatedProject = await backendService.applySurveyFindingsToProject(projectId, surveyId, user.name);
-    get().updateProject(updatedProject);
+    // This functionality needs to be implemented
+    console.log('Apply survey findings:', projectId, surveyId);
   },
   updateCapa: async (projectId, capa) => {
-    const updatedProject = await backendService.updateCapa(projectId, capa);
-    get().updateProject(updatedProject);
+    await projectService.updateCapa(projectId, capa.id, capa);
+    await get().fetchAllProjects();
   },
 
   // PDCA actions
@@ -197,50 +228,16 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   },
 
   createPDCACycle: async (projectId, cycleData) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error('User not authenticated');
 
-    const newCycle: PDCACycle = {
-      ...cycleData,
-      id: `pdca-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      stageHistory: [{
-        stage: 'Plan',
-        enteredAt: new Date().toISOString(),
-        completedAt: '',
-        completedBy: user.id,
-        notes: 'PDCA cycle created',
-        attachments: []
-      }]
-    };
-
-    const updatedProject: Project = {
-      ...project,
-      pdcaCycles: [...(project.pdcaCycles || []), newCycle]
-    };
-
-    await get().updateProject(updatedProject);
+    await projectService.createPDCACycle(projectId, cycleData, user.id);
+    await get().fetchAllProjects();
   },
 
   updatePDCACycle: async (projectId, cycle) => {
-    const project = get().projects.find(p => p.id === projectId);
-    if (!project) {
-      throw new Error('Project not found');
-    }
-
-    const updatedProject: Project = {
-      ...project,
-      pdcaCycles: (project.pdcaCycles || []).map(c =>
-        c.id === cycle.id ? cycle : c
-      )
-    };
-
-    await get().updateProject(updatedProject);
+    await projectService.updatePDCACycle(projectId, cycle.id, cycle);
+    await get().fetchAllProjects();
   },
 
   getPDCACyclesByStage: (projectId, stage) => {
@@ -249,5 +246,30 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       return [];
     }
     return project.pdcaCycles.filter(cycle => cycle.currentStage === stage);
-  }
+  },
+
+  // Bulk Operations
+  bulkArchiveProjects: async (projectIds: string[]) => {
+    await projectService.bulkArchiveProjects(projectIds);
+    await get().fetchAllProjects();
+    return true;
+  },
+
+  bulkRestoreProjects: async (projectIds: string[]) => {
+    await projectService.bulkRestoreProjects(projectIds);
+    await get().fetchAllProjects();
+    return true;
+  },
+
+  bulkDeleteProjects: async (projectIds: string[]) => {
+    await projectService.bulkDeleteProjects(projectIds);
+    await get().fetchAllProjects();
+    return true;
+  },
+
+  bulkUpdateStatus: async (projectIds: string[], status: any) => {
+    await projectService.bulkUpdateStatus(projectIds, status);
+    await get().fetchAllProjects();
+    return true;
+  },
 }));
