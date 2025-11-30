@@ -327,5 +327,121 @@
         "comments": []
       }
     ]
+  },
+  {
+    "id": "proj-7",
+    "name": "JCI Re-accreditation 2025",
+    "programId": "prog-jci",
+    "status": "Not Started",
+    "startDate": "2025-01-01",
+    "endDate": null,
+    "projectLead": {
+      "id": "user-5",
+      "name": "Dr. Sarah Al-Hamad",
+      "email": "s.alhamad@healthcare.com",
+      "role": "Admin"
+    },
+    "activityLog": [],
+    "mockSurveys": [],
+    "capaReports": [],
+    "designControls": [],
+    "checklist": []
+  },
+  {
+    "id": "proj-8",
+    "name": "CBAHI Mock Survey Q3",
+    "programId": "prog-cbahi",
+    "status": "In Progress",
+    "startDate": "2024-08-01",
+    "endDate": null,
+    "projectLead": {
+      "id": "user-7",
+      "name": "James Wilson",
+      "email": "j.wilson@healthcare.com",
+      "role": "Project Lead"
+    },
+    "activityLog": [],
+    "mockSurveys": [],
+    "capaReports": [],
+    "designControls": [],
+    "checklist": []
+  },
+  {
+    "id": "proj-9",
+    "name": "Magnet Recognition Program",
+    "programId": "prog-magnet",
+    "status": "Not Started",
+    "startDate": "2024-11-01",
+    "endDate": null,
+    "projectLead": {
+      "id": "user-6",
+      "name": "Fatima Al-Sayed",
+      "email": "f.alsayed@healthcare.com",
+      "role": "Project Lead"
+    },
+    "activityLog": [],
+    "mockSurveys": [],
+    "capaReports": [],
+    "designControls": [],
+    "checklist": []
+  },
+  {
+    "id": "proj-10",
+    "name": "ISO 9001:2015 Surveillance Audit",
+    "programId": "prog-iso",
+    "status": "In Progress",
+    "startDate": "2024-07-15",
+    "endDate": null,
+    "projectLead": {
+      "id": "user-2",
+      "name": "Marcus Thorne",
+      "email": "m.thorne@healthcare.com",
+      "role": "Project Lead"
+    },
+    "activityLog": [],
+    "mockSurveys": [],
+    "capaReports": [],
+    "designControls": [],
+    "checklist": []
+  },
+  {
+    "id": "proj-11",
+    "name": "Patient Safety Initiative 2024",
+    "programId": "prog-safety",
+    "status": "In Progress",
+    "startDate": "2024-01-01",
+    "endDate": null,
+    "projectLead": {
+      "id": "user-1",
+      "name": "Mr. Ashraf Musa",
+      "email": "excellencequestconsultancy@gmail.com",
+      "role": "Admin"
+    },
+    "activityLog": [],
+    "mockSurveys": [],
+    "capaReports": [],
+    "designControls": [],
+    "checklist": []
+  },
+  {
+    "id": "proj-12",
+    "name": "Infection Control Audit",
+    "programId": "prog-ic",
+    "status": "Finalized",
+    "startDate": "2024-02-01",
+    "endDate": "2024-02-28",
+    "projectLead": {
+      "id": "user-6",
+      "name": "Fatima Al-Sayed",
+      "email": "f.alsayed@healthcare.com",
+      "role": "Project Lead"
+    },
+    "finalizedBy": "Dr. Sarah Al-Hamad",
+    "finalizationDate": "2024-03-01T09:00:00Z",
+    "activityLog": [],
+    "mockSurveys": [],
+    "capaReports": [],
+    "designControls": [],
+    "checklist": []
   }
 ]

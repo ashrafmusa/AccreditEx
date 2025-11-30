@@ -66,5 +66,111 @@
     "hireDate": "2020-11-05",
     "competencies": [],
     "trainingAssignments": []
+  },
+  {
+    "id": "user-5",
+    "name": "Dr. Sarah Al-Hamad",
+    "email": "s.alhamad@healthcare.com",
+    "role": "Admin",
+    "departmentId": "dep-7",
+    "jobTitle": "Medical Director",
+    "hireDate": "2019-06-15",
+    "competencies": [
+      {
+        "competencyId": "comp-cphq",
+        "issueDate": "2021-03-10",
+        "expiryDate": "2026-03-09"
+      }
+    ],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-6",
+    "name": "Fatima Al-Sayed",
+    "email": "f.alsayed@healthcare.com",
+    "role": "Project Lead",
+    "departmentId": "dep-1",
+    "jobTitle": "Head of Nursing",
+    "hireDate": "2018-11-20",
+    "competencies": [
+      {
+        "competencyId": "comp-bls",
+        "issueDate": "2023-05-01",
+        "expiryDate": "2025-04-30"
+      }
+    ],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-7",
+    "name": "James Wilson",
+    "email": "j.wilson@healthcare.com",
+    "role": "Project Lead",
+    "departmentId": "dep-5",
+    "jobTitle": "Quality Officer",
+    "hireDate": "2022-08-10",
+    "competencies": [],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-8",
+    "name": "Dr. Ahmed Hassan",
+    "email": "a.hassan@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-3",
+    "jobTitle": "Head of Surgery",
+    "hireDate": "2017-04-05",
+    "competencies": [],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-9",
+    "name": "Maria Garcia",
+    "email": "m.garcia@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-4",
+    "jobTitle": "Radiology Manager",
+    "hireDate": "2020-01-15",
+    "competencies": [],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-10",
+    "name": "John Smith",
+    "email": "j.smith@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-6",
+    "jobTitle": "ER Nurse",
+    "hireDate": "2023-03-22",
+    "competencies": [
+      {
+        "competencyId": "comp-acls",
+        "issueDate": "2023-04-01",
+        "expiryDate": "2025-03-31"
+      }
+    ],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-11",
+    "name": "Layla Mahmoud",
+    "email": "l.mahmoud@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-2",
+    "jobTitle": "Lab Technician",
+    "hireDate": "2021-07-08",
+    "competencies": [],
+    "trainingAssignments": []
+  },
+  {
+    "id": "user-12",
+    "name": "Robert Brown",
+    "email": "r.brown@healthcare.com",
+    "role": "Team Member",
+    "departmentId": "dep-8",
+    "jobTitle": "Facility Manager",
+    "hireDate": "2019-09-30",
+    "competencies": [],
+    "trainingAssignments": []
   }
 ]

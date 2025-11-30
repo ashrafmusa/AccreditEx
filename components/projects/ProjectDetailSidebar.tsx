@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProjectDetailView } from '@/types';
+import { ProjectDetailView, Project } from '@/types';
 import { 
   ChartBarIcon, 
   ClipboardDocumentCheckIcon, 
@@ -10,17 +10,21 @@ import {
 } from '@/components/icons';
 
 interface ProjectDetailSidebarProps {
+  project: Project;
   activeView: ProjectDetailView;
   setActiveView: (view: ProjectDetailView) => void;
 }
 
-const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({ activeView, setActiveView }) => {
-  const navItems: { id: ProjectDetailView; label: string; icon: React.ElementType }[] = [
+const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({ project, activeView, setActiveView }) => {
+  // Count active PDCA cycles (not completed)
+  const activePDCACycles = (project.pdcaCycles || []).filter(cycle => cycle.currentStage !== 'Completed').length;
+  
+  const navItems: { id: ProjectDetailView; label: string; icon: React.ElementType; badge?: number }[] = [
     { id: 'overview', label: 'Overview', icon: ChartBarIcon },
     { id: 'checklist', label: 'Checklist', icon: ClipboardDocumentCheckIcon },
     { id: 'design_controls', label: 'Design Controls', icon: CubeIcon },
     { id: 'mock_surveys', label: 'Mock Surveys', icon: ClipboardDocumentListIcon },
-    { id: 'pdca_cycles', label: 'PDCA Cycles', icon: ArrowPathIcon },
+    { id: 'pdca_cycles', label: 'PDCA Cycles', icon: ArrowPathIcon, badge: activePDCACycles },
     { id: 'audit_log', label: 'Audit Log', icon: ClockIcon },
   ];
 
@@ -38,7 +42,12 @@ const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({ activeView,
             }`}
           >
             <item.icon className="w-5 h-5" />
-            <span>{item.label}</span>
+            <span className="flex-1 text-left">{item.label}</span>
+            {item.badge !== undefined && item.badge > 0 && (
+              <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-brand-primary rounded-full min-w-[1.25rem]">
+                {item.badge}
+              </span>
+            )}
           </button>
         ))}
       </nav>

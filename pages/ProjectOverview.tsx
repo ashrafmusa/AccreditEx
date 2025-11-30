@@ -22,7 +22,9 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project }) => {
   }, [project]);
 
   const teamMemberIds = new Set(project.checklist.map(item => item.assignedTo).filter(Boolean));
-  teamMemberIds.add(project.projectLead.id);
+  if (project.projectLead?.id) {
+    teamMemberIds.add(project.projectLead.id);
+  }
   const teamMembers = Array.from(teamMemberIds).map(id => users.find(u => u.id === id)).filter((u): u is User => !!u);
 
   return (
@@ -44,7 +46,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project }) => {
                 </div>
                 <div>
                   <p className="font-semibold text-sm">{user.name}</p>
-                  <p className="text-xs text-gray-500">{user.id === project.projectLead.id ? t('projectLead') : user.role}</p>
+                  <p className="text-xs text-gray-500">{user.id === project.projectLead?.id ? t('projectLead') : user.role}</p>
                 </div>
               </div>
             ))}

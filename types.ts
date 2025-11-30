@@ -66,29 +66,6 @@ export interface User {
   role: UserRole;
   departmentId?: string;
   jobTitle?: string;
-  hireDate?: string;
-  competencies: UserCompetency[];
-  trainingAssignments: UserTrainingAssignment[];
-  readAndAcknowledge?: { documentId: string; acknowledgedDate?: string }[];
-}
-
-export interface ChecklistItem {
-  id: string;
-  item: string;
-  standardId: string;
-  status: ComplianceStatus;
-  assignedTo: string | null;
-  dueDate: string | null;
-  actionPlan: string;
-  notes: string;
-  evidenceFiles: string[];
-  comments: Comment[];
-  linkedFhirResources?: { resourceType: string; resourceId: string; displayText: string }[];
-}
-
-export interface ActivityLogItem {
-  id: string;
-  timestamp: string;
   user: string;
   action: LocalizedString;
   details?: LocalizedString;
@@ -142,58 +119,12 @@ export interface CAPAReport {
     sourceStandardId?: string;
     sourceIncidentId?: string;
     description: string;
-    rootCauseAnalysis: string;
-    rootCauseCategory?: string;
-    trainingRecommendationId?: string;
-    actionPlan: string;
-    assignedTo: string | null;
-    dueDate: string;
-    createdAt: string;
-    effectivenessCheck?: {
-        required: boolean;
-        dueDate: string;
-        completed: boolean;
-        notes: string;
-    };
-    // PDCA Cycle fields
-    pdcaStage?: PDCAStage;
-    pdcaHistory?: PDCAStageHistory[];
-    improvementMetrics?: ImprovementMetrics;
-}
-
-export interface DesignControlItem {
-    id: string;
-    userNeed: string;
-    designInput: string;
-    designOutput: string;
-    verification: string;
-    validation: string;
-    linkedDocumentIds: string[];
-}
-
-
-// Standalone PDCA Cycle (for improvement initiatives not tied to CAPAs)
-export interface PDCACycle {
+  rootCauseAnalysis: string;
   id: string;
   projectId: string;
   title: string;
   description: string;
   category: 'Process' | 'Quality' | 'Safety' | 'Efficiency' | 'Other';
-  currentStage: PDCAStage;
-  priority: 'High' | 'Medium' | 'Low';
-  owner: string;
-  team: string[];
-  createdAt: string;
-  targetCompletionDate: string;
-  stageHistory: PDCAStageHistory[];
-  improvementMetrics: ImprovementMetrics;
-  linkedCAPAIds?: string[];
-  linkedDocumentIds?: string[];
-}
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
   programId: string;
   startDate: string;
   endDate: string | null;

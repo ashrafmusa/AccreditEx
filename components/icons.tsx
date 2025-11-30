@@ -82,6 +82,9 @@ const iconPaths = {
   ChartBarIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />,
   CubeIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A11.953 11.953 0 0112 16.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 013 12c0-.778.099-1.533.284-2.253m0 0a11.953 11.953 0 0119.432 0" />,
   FlagIcon: <path stroke-linecap="round" stroke-linejoin="round"d="M3 3v1.5M3 21v-6M3 9h18m-3 2.818l-3.182-1.454m-4.364 1.454L12 10.5M8.25 10.5h2.25M3 13.5h2.25M3 19.5h2.25"/>,
+  ArchiveBoxIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />,
+  CheckIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />,
+  ArrowLeftIcon: <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />,
   UserIcon: <path stroke-linecap="round"stroke-linejoin="round"d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a1.5 1.5 0 011.892-1.892L12 17.502L17.607 18.226a1.5 1.5 0 011.892 1.892l-.582 2.914m-13.885-3.597a1.5 1.5 0 01-1.892 1.892L3 21.001" />
 };
 
@@ -152,6 +155,8 @@ export const ChartBarIcon = createOutlineIcon(iconPaths.ChartBarIcon);
 export const CubeIcon = createOutlineIcon(iconPaths.CubeIcon);
 export const FlagIcon = createOutlineIcon(iconPaths.FlagIcon);
 export const UserIcon = createOutlineIcon(iconPaths.UserIcon);
-
+export const ArchiveBoxIcon = createOutlineIcon(iconPaths.ArchiveBoxIcon);
+export const CheckIcon = createOutlineIcon(iconPaths.CheckIcon);
+export const ArrowLeftIcon = createOutlineIcon(iconPaths.ArrowLeftIcon);
 // --- Solid Icons (if any needed) ---
 // Example: export const SolidPlusIcon = createIcon(iconPaths.PlusIcon);

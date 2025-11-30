@@ -1,11 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { NavigationState, User, ProjectStatus } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { useAppStore } from '@/stores/useAppStore';
+import { useToast } from '@/hooks/useToast';
 import ProjectCard from '@/components/projects/ProjectCard';
-import { FolderIcon, PlusIcon, SearchIcon, FunnelIcon, XMarkIcon } from '@/components/icons';
+import BulkActionsToolbar from '@/components/projects/BulkActionsToolbar';
+import ProjectAnalytics from '@/components/projects/ProjectAnalytics';
+import { FolderIcon, PlusIcon, SearchIcon, FunnelIcon, XMarkIcon, ArchiveBoxIcon, CheckIcon, ChartBarSquareIcon } from '@/components/icons';
 import EmptyState from '@/components/common/EmptyState';
 
 interface ProjectListPageProps {
@@ -14,35 +17,99 @@ interface ProjectListPageProps {
 
 const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const { t } = useTranslation();
-  const { projects, deleteProject } = useProjectStore();
+  const { 
+    projects, 
+    deleteProject, 
+    loading, 
+    subscribeToProjects, 
+    unsubscribeFromProjects,
+    bulkArchiveProjects,
+    bulkRestoreProjects,
+    bulkDeleteProjects,
+    bulkUpdateStatus
+  } = useProjectStore();
   const { currentUser, users } = useUserStore();
   const { accreditationPrograms } = useAppStore();
+  const { showToast } = useToast();
   
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | 'all'>('all');
+  const [programFilter, setProgramFilter] = useState<string>('all');
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all');
   const [dateFilter, setDateFilter] = useState<{ start: string; end: string }>({ start: '', end: '' });
   const [showFilters, setShowFilters] = useState(false);
+  const [showArchived, setShowArchived] = useState(false);
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   const programMap = useMemo(() => new Map(accreditationPrograms.map(p => [p.id, p.name])), [accreditationPrograms]);
 
   const filteredProjects = useMemo(() => {
     return projects.filter(p => {
-      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      // Archive filter
+      const matchesArchived = showArchived ? p.archived === true : p.archived !== true;
+      if (!matchesArchived) return false;
+
+      const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           p.description?.toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
       
+      const matchesProgram = programFilter === 'all' || p.programId === programFilter;
+      
       const matchesAssignee = assigneeFilter === 'all' || 
-        p.projectLead.id === assigneeFilter || 
+        p.projectLead?.id === assigneeFilter || 
         p.checklist.some(item => item.assignedTo === assigneeFilter);
 
       const matchesDate = (!dateFilter.start || new Date(p.startDate) >= new Date(dateFilter.start)) &&
-                          (!dateFilter.end || (p.endDate && new Date(p.endDate) <= new Date(dateFilter.end)));
+                            (!dateFilter.end || (p.endDate && new Date(p.endDate) <= new Date(dateFilter.end)));
 
-      return matchesSearch && matchesStatus && matchesAssignee && matchesDate;
+      return matchesSearch && matchesStatus && matchesProgram && matchesAssignee && matchesDate;
     });
-  }, [projects, searchTerm, statusFilter, assigneeFilter, dateFilter]);
+  }, [projects, searchTerm, statusFilter, programFilter, assigneeFilter, dateFilter, showArchived]);
   
+  const handleSelectProject = (projectId: string) => {
+    setSelectedProjects(prev => {
+      if (prev.includes(projectId)) {
+        return prev.filter(id => id !== projectId);
+      } else {
+        return [...prev, projectId];
+      }
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedProjects.length === filteredProjects.length) {
+      setSelectedProjects([]);
+    } else {
+      setSelectedProjects(filteredProjects.map(p => p.id));
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    await bulkArchiveProjects(selectedProjects);
+    setSelectedProjects([]);
+    showToast(t('projectsArchivedSuccessfully'), 'success');
+  };
+
+  const handleBulkRestore = async () => {
+    await bulkRestoreProjects(selectedProjects);
+    setSelectedProjects([]);
+    showToast(t('projectsRestoredSuccessfully'), 'success');
+  };
+
+  const handleBulkDelete = async () => {
+    await bulkDeleteProjects(selectedProjects);
+    setSelectedProjects([]);
+    showToast(t('projectsDeletedSuccessfully'), 'success');
+  };
+
+  const handleBulkUpdateStatus = async (status: ProjectStatus) => {
+    await bulkUpdateStatus(selectedProjects, status);
+    setSelectedProjects([]);
+    showToast(t('projectsUpdatedSuccessfully'), 'success');
+  };
+
   const handleDelete = (projectId: string) => {
     if (window.confirm(t('areYouSureDeleteProject'))) {
         deleteProject(projectId);
@@ -51,6 +118,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const clearFilters = () => {
     setStatusFilter('all');
+    setProgramFilter('all');
     setAssigneeFilter('all');
     setDateFilter({ start: '', end: '' });
     setSearchTerm('');
@@ -58,6 +126,20 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   return (
     <div className="space-y-6">
+      {selectedProjects.length > 0 && (
+        <div className="sticky top-4 z-40 animate-fadeIn">
+          <BulkActionsToolbar
+            selectedCount={selectedProjects.length}
+            onArchive={handleBulkArchive}
+            onRestore={handleBulkRestore}
+            onDelete={handleBulkDelete}
+            onUpdateStatus={handleBulkUpdateStatus}
+            onClearSelection={() => setSelectedProjects([])}
+            showRestore={showArchived}
+          />
+        </div>
+      )}
+
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div className="flex items-center space-x-3 rtl:space-x-reverse">
           <FolderIcon className="h-8 w-8 text-brand-primary" />
@@ -65,10 +147,26 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">{t('accreditationProjects')}</h1>
           </div>
         </div>
-        <button onClick={() => setNavigation({ view: 'createProject' })} className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto">
-          <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-          {t('createNewProject')}
-        </button>
+        <div className="flex gap-3 w-full md:w-auto">
+            <button 
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className={`px-4 py-2.5 rounded-lg border flex items-center justify-center gap-2 font-medium transition-colors w-full md:w-auto ${showAnalytics ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200'}`}
+            >
+                <ChartBarSquareIcon className="w-5 h-5" />
+                {showAnalytics ? t('hideAnalytics') : t('showAnalytics')}
+            </button>
+            <button 
+                onClick={() => setShowArchived(!showArchived)}
+                className={`px-4 py-2.5 rounded-lg border flex items-center justify-center gap-2 font-medium transition-colors w-full md:w-auto ${showArchived ? 'bg-slate-800 text-white border-slate-800' : 'bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200'}`}
+            >
+                <ArchiveBoxIcon className="w-5 h-5" />
+                {showArchived ? t('hideArchived') : t('showArchived')}
+            </button>
+            <button onClick={() => setNavigation({ view: 'createProject' })} className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto">
+            <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+            {t('createNewProject')}
+            </button>
+        </div>
       </div>
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
@@ -90,7 +188,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 <FunnelIcon className="w-5 h-5" />
                 {t('filterByStatus')}
             </button>
-             {(statusFilter !== 'all' || assigneeFilter !== 'all' || dateFilter.start || dateFilter.end) && (
+             {(statusFilter !== 'all' || programFilter !== 'all' || assigneeFilter !== 'all' || dateFilter.start || dateFilter.end) && (
                 <button onClick={clearFilters} className="text-red-500 hover:text-red-700 text-sm font-medium px-2">
                     {t('clearFilters')}
                 </button>
@@ -99,6 +197,19 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
         {showFilters && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-fadeIn">
+                <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('program')}</label>
+                    <select 
+                        value={programFilter} 
+                        onChange={(e) => setProgramFilter(e.target.value)}
+                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                    >
+                        <option value="all">{t('allPrograms')}</option>
+                        {accreditationPrograms.map(program => (
+                            <option key={program.id} value={program.id}>{program.name}</option>
+                        ))}
+                    </select>
+                </div>
                 <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('filterByStatus')}</label>
                     <select 
@@ -126,32 +237,39 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                     </select>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('startDate')}</label>
-                    <input 
-                        type="date" 
-                        value={dateFilter.start} 
-                        onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
-                    />
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('endDate')}</label>
-                    <input 
-                        type="date" 
-                        value={dateFilter.end} 
-                        onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                        className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
-                    />
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{t('dateRange')}</label>
+                    <div className="flex gap-2">
+                        <input 
+                            type="date" 
+                            value={dateFilter.start} 
+                            onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
+                            className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                            placeholder={t('startDate')}
+                        />
+                    </div>
                 </div>
             </div>
         )}
       </div>
       
-      {filteredProjects.length > 0 ? (
+      {/* Analytics Section */}
+      {showAnalytics && (
+        <div className="animate-fadeIn">
+          <ProjectAnalytics projects={filteredProjects} />
+        </div>
+      )}
+      
+      {loading ? (
+        <div className="flex justify-center items-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+        </div>
+      ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredProjects.map(p => {
             const assignedUserIds = new Set(p.checklist.map(item => item.assignedTo).filter(Boolean));
-            assignedUserIds.add(p.projectLead.id);
+            if (p.projectLead?.id) {
+              assignedUserIds.add(p.projectLead.id);
+            }
             const teamMembers = Array.from(assignedUserIds).map(id => users.find(u => u.id === id)).filter((u): u is User => !!u);
 
             return (
@@ -162,6 +280,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 onSelect={() => setNavigation({ view: 'projectDetail', projectId: p.id })}
                 onEdit={() => setNavigation({ view: 'editProject', projectId: p.id })}
                 onDelete={() => handleDelete(p.id)}
+                selected={selectedProjects.includes(p.id)}
+                onToggleSelect={() => handleSelectProject(p.id)}
               />
             );
           })}
@@ -169,8 +289,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       ) : (
         <EmptyState 
             icon={FolderIcon} 
-            title={t('noProjectsFound')} 
-            message={t('tryAdjustingSearch')} 
+            title={searchTerm || statusFilter !== 'all' || programFilter !== 'all' || assigneeFilter !== 'all' ? t('noProjectsFound') : t('noProjects')} 
+            message={searchTerm || statusFilter !== 'all' || programFilter !== 'all' || assigneeFilter !== 'all' ? t('tryAdjustingSearch') : t('createFirstProject')} 
         />
       )}
     </div>
