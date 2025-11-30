@@ -15,7 +15,7 @@ const ProjectDetailHeader: React.FC<Props> = ({ project, programName, currentUse
     const { t } = useTranslation();
 
     const isFinalized = project.status === ProjectStatus.Finalized;
-    const canModify = (currentUser.role === UserRole.Admin || currentUser.id === project.projectLead.id);
+    const canModify = (currentUser.role === UserRole.Admin || currentUser.id === project.projectLead?.id);
 
     return (
         <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">
@@ -36,7 +36,7 @@ const ProjectDetailHeader: React.FC<Props> = ({ project, programName, currentUse
               </div>
           </div>
 
-          <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">{t('status')}: {t((project.status.charAt(0).toLowerCase() + project.status.slice(1).replace(/\s/g, '')) as any)}</p>
+          <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">{t('status')}: {project.status ? t((project.status.charAt(0).toLowerCase() + project.status.slice(1).replace(/\s/g, '')) as any) : 'N/A'}</p>
           <div className="mt-4">
             <div className="flex justify-between items-center mb-1"><span className="text-sm font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">{t('overallCompliance')}</span><span className="text-sm font-bold text-brand-primary">{Math.round(project.progress)}%</span></div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"><div className="bg-brand-primary h-2.5 rounded-full" style={{ width: `${project.progress}%` }}></div></div>

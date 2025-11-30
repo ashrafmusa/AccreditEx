@@ -16,12 +16,14 @@ interface ProjectCardProps {
     onSelect: () => void;
     onEdit: () => void;
     onDelete: () => void;
+    selected?: boolean;
+    onToggleSelect?: () => void;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, currentUser, onSelect, onEdit, onDelete }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, currentUser, onSelect, onEdit, onDelete, selected, onToggleSelect }) => {
   const { t } = useTranslation();
   const compliance = Math.round(project.progress);
-  const canModify = (currentUser.role === UserRole.Admin || currentUser.id === project.projectLead.id) && project.status !== ProjectStatus.Finalized;
+  const canModify = (currentUser.role === UserRole.Admin || currentUser.id === project.projectLead?.id) && project.status !== ProjectStatus.Finalized;
   const totalTasks = project.checklist.length;
   const completedTasks = project.checklist.filter(c => c.status === ComplianceStatus.Compliant).length;
   const openCapaCount = project.capaReports.filter(c => c.status === 'Open').length;
@@ -29,9 +31,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, currentUser, onSelec
   const colorClass = programColorMap[project.programName] || 'bg-gray-100 text-gray-700';
 
   return (
-    <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-xl shadow-sm border border-brand-border dark:border-dark-brand-border hover:shadow-lg hover:-translate-y-1 transition-all cursor-pointer flex flex-col h-full" onClick={onSelect}>
-        <div className="p-5 flex-grow">
-          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colorClass}`}>{project.programName}</span>
+    <div className={`bg-brand-surface dark:bg-dark-brand-surface rounded-xl shadow-sm border transition-all cursor-pointer flex flex-col h-full ${selected ? 'border-brand-primary ring-2 ring-brand-primary ring-opacity-50' : 'border-brand-border dark:border-dark-brand-border hover:shadow-lg hover:-translate-y-1'}`} onClick={onSelect}>
+        <div className="p-5 flex-grow relative">
+          <div className="flex justify-between items-start">
+            <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colorClass}`}>{project.programName}</span>
+            {onToggleSelect && (
+              <div onClick={(e) => { e.stopPropagation(); onToggleSelect(); }} className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${selected ? 'bg-brand-primary border-brand-primary' : 'border-slate-300 dark:border-slate-600 hover:border-brand-primary'}`}>
+                {selected && <CheckIcon className="w-3.5 h-3.5 text-white" />}
+              </div>
+            )}
+          </div>
           <h3 className="text-lg font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-3">{project.name}</h3>
           
           <div className="mt-4">

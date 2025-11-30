@@ -16,7 +16,7 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({ project }) => {
 
   const filteredChecklist = useMemo(() => {
     return project.checklist.filter(item => {
-      const matchesSearch = item.item.toLowerCase().includes(searchTerm.toLowerCase()) || item.standardId.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = (item.item?.toLowerCase() || '').includes(searchTerm.toLowerCase()) || (item.standardId?.toLowerCase() || '').includes(searchTerm.toLowerCase());
       const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
       return matchesSearch && matchesStatus;
     });

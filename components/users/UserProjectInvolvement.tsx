@@ -14,7 +14,7 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
     const userProjects = useMemo(() => {
         const projectSet = new Set<Project>();
         projects.forEach(p => {
-            if (p.projectLead.id === user.id || p.checklist.some(item => item.assignedTo === user.id)) {
+            if (p.projectLead?.id === user.id || p.checklist.some(item => item.assignedTo === user.id)) {
                 projectSet.add(p);
             }
         });

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavigationState, ProjectDetailView, User, Project } from '@/types';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
@@ -21,16 +21,49 @@ interface ProjectDetailPageProps {
 }
 
 const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ navigation, setNavigation }) => {
-  const { projects, updateProject, finalizeProject, updateDesignControls, generateReport } = useProjectStore();
+  const { projects, updateProject, finalizeProject, updateDesignControls, generateReport, loading } = useProjectStore();
   const { currentUser } = useUserStore();
-  const { accreditationPrograms, documents } = useAppStore();
+  const { accreditationPrograms } = useAppStore();
   const toast = useToast();
 
   const [activeView, setActiveView] = useState<ProjectDetailView>('overview');
   const [isSigning, setIsSigning] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [localLoading, setLocalLoading] = useState(true);
 
   const project = projects.find(p => p.id === navigation.projectId);
+  
+  // Real-time subscription for this specific project
+  useEffect(() => {
+    setLocalLoading(true);
+    
+    // Import projectService dynamically to subscribe to single project
+    import('@/services/projectService').then(({ subscribeToProject }) => {
+      const unsubscribe = subscribeToProject(navigation.projectId, (updatedProject) => {
+        if (updatedProject) {
+          // Project will be updated in the store automatically via the subscription
+          setLocalLoading(false);
+        } else {
+          // Project was deleted or doesn't exist
+          toast.error('Project not found');
+          setNavigation({ view: 'projects' });
+        }
+      });
+      
+      return () => {
+        unsubscribe();
+      };
+    });
+  }, [navigation.projectId, setNavigation, toast]);
+  
+  if (localLoading || loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand-primary"></div>
+      </div>
+    );
+  }
+  
   if (!project || !currentUser) {
     return <div>Project not found or user not loaded.</div>;
   }
@@ -74,7 +107,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ navigation, setNa
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 items-start">
-      <ProjectDetailSidebar activeView={activeView} setActiveView={setActiveView} />
+      <ProjectDetailSidebar project={project} activeView={activeView} setActiveView={setActiveView} />
       <main className="w-full lg:w-3/4 xl:w-4/5">
         <div className="space-y-6">
           <ProjectDetailHeader 

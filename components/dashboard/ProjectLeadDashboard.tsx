@@ -21,7 +21,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) =
 
     const myProjects = useMemo(() => {
         if (!currentUser) return [];
-        return projects.filter(p => p.projectLead.id === currentUser.id);
+        return projects.filter(p => p.projectLead?.id === currentUser.id);
     }, [projects, currentUser]);
 
     const leadStats = useMemo(() => {
@@ -71,7 +71,9 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) =
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                         {myProjects.map(p => {
                              const assignedUserIds = new Set(p.checklist.map(item => item.assignedTo).filter(Boolean));
-                             assignedUserIds.add(p.projectLead.id);
+                             if (p.projectLead?.id) {
+                                 assignedUserIds.add(p.projectLead.id);
+                             }
                              const teamMembers = Array.from(assignedUserIds).map(id => users.find(u => u.id === id)).filter((u): u is User => !!u);
                             return (
                                 <ProjectCard
