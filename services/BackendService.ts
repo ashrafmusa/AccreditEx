@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import { initialData } from './initialData';
 import { aiService } from '@/services/ai';
+import { storageService } from '@/services/storageService';
 
 class BackendService {
     private isInitialized = false;
@@ -153,7 +154,7 @@ class BackendService {
         throw new Error("Project not found");
     }
 
-    async generateProjectReport(project: Project, reportType: string, userName: string): Promise<AppDocument> {
+    async generateProjectReport(project: Project, reportType: string, userName: string, fileUrl?: string): Promise<AppDocument> {
         // Mock report generation
         const content = `<h1>${reportType === 'complianceSummary' ? 'Compliance Summary' : 'Report'} for ${project.name}</h1><p>Generated on ${new Date().toLocaleDateString()}.</p>`;
         const newReport: AppDocument = {
@@ -163,6 +164,7 @@ class BackendService {
             isControlled: false, // Or true if it should be controlled
             status: 'Approved',
             content: { en: content, ar: content },
+            fileUrl, // Add fileUrl if provided
             currentVersion: 1,
             versionHistory: [{ version: 1, date: new Date().toISOString(), uploadedBy: userName, content: { en: content, ar: content } }],
             uploadedAt: new Date().toISOString(),
@@ -199,21 +201,32 @@ class BackendService {
         const data = this._getAllData();
         const project = data.projects.find(p => p.id === projectId);
 
-        // 1. Create new document
+        // 1. Upload file if present
+        let fileUrl = docData.fileUrl;
+        if (docData.uploadedFile) {
+            fileUrl = await storageService.uploadDocument(
+                docData.uploadedFile,
+                `doc-evidence-${Date.now()}`,
+                (progress) => console.log('Upload progress:', progress)
+            );
+        }
+
+        // 2. Create new document
         const newDoc: AppDocument = {
             id: `doc-evidence-${Date.now()}`,
             name: docData.name,
             type: 'Evidence',
             isControlled: false,
             status: 'Approved',
-            content: { en: `Mock file: ${docData.uploadedFile.name}`, ar: `ملف وهمي: ${docData.uploadedFile.name}` },
+            content: { en: `File: ${docData.name.en}`, ar: `ملف: ${docData.name.ar}` },
+            fileUrl,
             currentVersion: 1,
             versionHistory: [],
             uploadedAt: new Date().toISOString(),
         };
         data.documents.push(newDoc);
 
-        // 2. Link to checklist item
+        // 3. Link to checklist item
         if (project) {
             const item = project.checklist.find(i => i.id === checklistItemId);
             if (item) {
@@ -223,6 +236,14 @@ class BackendService {
             }
         }
         throw new Error("Project or item not found");
+    }
+
+    async uploadDocumentFile(file: File, path?: string): Promise<string> {
+        return await storageService.uploadDocument(file, path);
+    }
+
+    async deleteDocumentFile(fileUrl: string): Promise<void> {
+        return await storageService.deleteDocument(fileUrl);
     }
 
     async startMockSurvey(projectId: string, surveyorId: string): Promise<{ updatedProject: Project, newSurvey: MockSurvey }> {

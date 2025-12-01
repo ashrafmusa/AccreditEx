@@ -1,6 +1,8 @@
+```typescript
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { AppDocument } from '@/types';
+import { storageService } from '@/services/storageService';
 
 const documentsCollection = collection(db, 'documents');
 
@@ -24,3 +26,12 @@ export const deleteDocument = async (documentId: string): Promise<void> => {
     const docRef = doc(db, 'documents', documentId);
     await deleteDoc(docRef);
 };
+
+export const uploadFile = async (file: File, path?: string): Promise<string> => {
+    return await storageService.uploadDocument(file, path);
+};
+
+export const deleteFile = async (fileUrl: string): Promise<void> => {
+    return await storageService.deleteDocument(fileUrl);
+};
+```
