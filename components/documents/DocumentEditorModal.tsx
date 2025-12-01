@@ -3,6 +3,7 @@ import { AppDocument, Standard } from '../../types';
 import { useTranslation } from '../../hooks/useTranslation';
 import { XMarkIcon } from '../icons';
 import DocumentEditorSidebar from './DocumentEditorSidebar';
+import RichTextEditor from './RichTextEditor';
 
 interface DocumentEditorModalProps {
   isOpen: boolean;
@@ -74,10 +75,11 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({ isOpen, onClo
             )}
             
             {isEditMode && viewingVersion === 'current' ? (
-              <textarea 
-                className="w-full h-full p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700" 
-                value={document.content[lang] || ''} 
-                onChange={e => setDocument(d => ({...d, content: {...d.content, [lang]: e.target.value}}))}
+              <RichTextEditor
+                content={document.content[lang] || ''}
+                onChange={(html) => setDocument(d => ({...d, content: {...d.content, [lang]: html}}))}
+                editable={true}
+                placeholder={t('startTyping') || 'Start typing...'}
               />
             ) : (
               <div className="prose dark:prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: currentContent[lang] || '' }} />

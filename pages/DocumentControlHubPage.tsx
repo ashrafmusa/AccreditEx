@@ -5,7 +5,7 @@ import { DocumentTextIcon, PlusIcon, ChevronDownIcon, CheckCircleIcon, ClockIcon
 import SignatureModal from '../components/common/SignatureModal';
 import DocumentMetadataModal from '../components/documents/DocumentMetadataModal';
 import ControlledDocumentsTable from '../components/documents/ControlledDocumentsTable';
-// FIX: Corrected import path for DocumentEditorModal
+import PDFViewerModal from '../components/documents/PDFViewerModal';
 import DocumentEditorModal from '../components/documents/DocumentEditorModal';
 import ProcessMapEditor from '../components/documents/ProcessMapEditor';
 import StatCard from '../components/common/StatCard';
@@ -15,7 +15,7 @@ interface DocumentControlHubPageProps {
   standards: Standard[];
   currentUser: User;
   onUpdateDocument: (updatedDocument: AppDocument) => void;
-  onCreateDocument: (data: { name: { en: string; ar: string }, type: AppDocument['type'] }) => void;
+  onCreateDocument: (data: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string }) => void;
   onAddProcessMap: (data: { name: { en: string; ar: string }}) => void;
   onDeleteDocument: (docId: string) => void;
   onApproveDocument: (docId: string, passwordAttempt: string) => void;
@@ -27,6 +27,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({ documen
   const [signingDoc, setSigningDoc] = useState<AppDocument | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
+  const [viewingPDF, setViewingPDF] = useState<AppDocument | null>(null);
 
   const canModify = currentUser.role === UserRole.Admin;
   
@@ -92,7 +93,13 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({ documen
         canModify={canModify}
         onApprove={(doc) => setSigningDoc(doc)}
         onDelete={onDeleteDocument}
-        onView={setViewingDoc}
+        onView={(doc) => {
+  if (doc.fileUrl && doc.fileUrl.endsWith('.pdf')) {
+    setViewingPDF(doc);
+  } else {
+    setViewingDoc(doc);
+  }
+}}
       />
 
       <DocumentMetadataModal isOpen={isMetaModalOpen} onClose={() => setIsMetaModalOpen(false)} onSave={onCreateDocument} />
@@ -126,6 +133,14 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({ documen
           onSave={handleSaveDocument}
         />
       )}
+      {viewingPDF && (
+  <PDFViewerModal
+    isOpen={!!viewingPDF}
+    onClose={() => setViewingPDF(null)}
+    fileUrl={viewingPDF.fileUrl || ''}
+    fileName={viewingPDF.name[lang]}
+  />
+)}
     </div>
   );
 };

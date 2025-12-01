@@ -29,7 +29,7 @@ interface AppState {
 
   // Documents
   addDocument: (doc: AppDocument) => void;
-  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'] }) => Promise<void>;
+  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string }) => Promise<void>;
   addProcessMap: (docData: { name: { en: string; ar: string }}) => Promise<void>;
   updateDocument: (doc: AppDocument) => Promise<void>;
   deleteDocument: (docId: string) => Promise<void>;
@@ -119,6 +119,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       isControlled: true,
       status: 'Draft',
       content: { en: '', ar: '' },
+      fileUrl: docData.fileUrl, // Add fileUrl from uploaded file
       currentVersion: 1,
       versionHistory: [],
       uploadedAt: new Date().toISOString(),
