@@ -50,6 +50,7 @@ export interface UserCompetency {
   issueDate: string;
   expiryDate?: string;
   evidenceDocumentId?: string;
+  evidenceDocumentIds?: string[];
 }
 
 export interface UserTrainingAssignment {

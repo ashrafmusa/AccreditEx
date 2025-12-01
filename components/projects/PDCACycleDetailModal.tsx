@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PDCACycle, PDCAStage, CAPAReport } from '@/types';
+import { PDCACycle, PDCAStage, CAPAReport, AppDocument } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { usePDCASuggestions } from '@/hooks/usePDCASuggestions';
 import PDCAMetricsChart from './PDCAMetricsChart';
@@ -12,6 +12,12 @@ import {
 } from '@/components/icons';
 import { useAppStore } from '@/stores/useAppStore';
 import DocumentPicker from '../common/DocumentPicker';
+import DocumentListItem from '../documents/DocumentListItem';
+import FileUploader from '../documents/FileUploader';
+import PDFViewerModal from '../documents/PDFViewerModal';
+import DocumentEditorModal from '../documents/DocumentEditorModal';
+import { storageService } from '@/services/storageService';
+import { getDocumentViewAction } from '@/utils/documentViewingHelper';
 
 interface PDCACycleDetailModalProps {
   isOpen: boolean;
@@ -33,6 +39,11 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
   const { documents } = useAppStore();
   const [activeTab, setActiveTab] = useState<PDCAStage | 'History'>('Plan');
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [showUploader, setShowUploader] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [viewingPDF, setViewingPDF] = useState<AppDocument | null>(null);
+  const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
   
   // Helper to get current stage
   const currentStage = type === 'cycle' 
@@ -64,6 +75,71 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
   const handleRemoveDocument = (docId: string) => {
     const currentIds = cycle.linkedDocumentIds || [];
     onUpdate({ ...cycle, linkedDocumentIds: currentIds.filter(id => id !== docId) });
+  };
+
+  const handleUploadDocument = () => {
+    setShowUploader(true);
+  };
+
+  const handleFilesSelected = async (files: File[]) => {
+    if (files.length === 0) return;
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const file = files[0];
+      const documentId = `pdca-${Date.now()}`;
+
+      const fileUrl = await storageService.uploadDocument(
+        file,
+        documentId,
+        (progress) => setUploadProgress(progress.progress)
+      );
+
+      const newDoc: AppDocument = {
+        id: documentId,
+        name: { en: file.name, ar: file.name },
+        type: 'Evidence',
+        isControlled: false,
+        status: 'Approved',
+        content: { en: '', ar: '' },
+        fileUrl,
+        currentVersion: 1,
+        versionHistory: [],
+        uploadedAt: new Date().toISOString(),
+      };
+
+      // Note: In a real app we would add this to the global store via addDocument
+      // For now we'll simulate it by updating the cycle's linked docs
+      // addDocument(newDoc); 
+
+      const currentIds = cycle.linkedDocumentIds || [];
+      onUpdate({ ...cycle, linkedDocumentIds: [...currentIds, documentId] });
+
+      setShowUploader(false);
+    } catch (error) {
+      console.error('Upload failed:', error);
+      alert('Upload failed. Please try again.');
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleViewDocument = (doc: AppDocument) => {
+    const action = getDocumentViewAction(doc);
+    
+    switch (action) {
+      case 'pdf':
+        setViewingPDF(doc);
+        break;
+      case 'richText':
+        setViewingDoc(doc);
+        break;
+      default:
+        console.log('Document cannot be viewed');
+    }
   };
 
   return (
@@ -259,8 +335,12 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                   {t('quickActions') || 'Quick Actions'}
                 </h4>
                 <div className="space-y-2">
-                  <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    {t('addEvidence') || 'Add Evidence Document'}
+                  <button 
+                    onClick={handleUploadDocument}
+                    className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  >
+                    <PaperClipIcon className="w-4 h-4" />
+                    {t('uploadDocument') || 'Upload Document'}
                   </button>
                   <button 
                     onClick={() => setIsPickerOpen(true)}
@@ -287,15 +367,14 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                   </h4>
                   <div className="space-y-2">
                     {linkedDocs.map(doc => (
-                      <div key={doc.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 text-sm group">
-                        <span className="truncate flex-1" title={doc.name[lang]}>{doc.name[lang]}</span>
-                        <button 
-                          onClick={() => handleRemoveDocument(doc.id)}
-                          className="text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity ml-2"
-                        >
-                          <XMarkIcon className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <DocumentListItem
+                        key={doc.id}
+                        document={doc}
+                        compact={true}
+                        showActions={true}
+                        onView={handleViewDocument}
+                        onRemove={handleRemoveDocument}
+                      />
                     ))}
                   </div>
                 </div>
@@ -325,6 +404,72 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
         selectedIds={cycle.linkedDocumentIds || []}
         multiSelect={true}
       />
+
+      {/* File Uploader Modal */}
+      {showUploader && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
+            <h3 className="text-lg font-semibold mb-4">{t('uploadDocument') || 'Upload Document'}</h3>
+            
+            <FileUploader
+              onFilesSelected={handleFilesSelected}
+              multiple={false}
+              maxFiles={1}
+              disabled={isUploading}
+            />
+
+            {isUploading && (
+              <div className="mt-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('uploading') || 'Uploading'}...
+                  </span>
+                  <span className="text-sm font-medium text-brand-primary">
+                    {Math.round(uploadProgress)}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div
+                    className="bg-brand-primary h-2 rounded-full transition-all duration-300"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={() => setShowUploader(false)}
+                disabled={isUploading}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {t('cancel') || 'Cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* PDF Viewer Modal */}
+      {viewingPDF && (
+        <PDFViewerModal
+          isOpen={!!viewingPDF}
+          onClose={() => setViewingPDF(null)}
+          fileUrl={viewingPDF.fileUrl || ''}
+          fileName={viewingPDF.name.en}
+        />
+      )}
+
+      {/* Document Editor Modal */}
+      {viewingDoc && (
+        <DocumentEditorModal
+          isOpen={!!viewingDoc}
+          onClose={() => setViewingDoc(null)}
+          document={viewingDoc}
+          onSave={(doc) => setViewingDoc(null)}
+          standards={[]}
+        />
+      )}
     </div>
   );
 };
