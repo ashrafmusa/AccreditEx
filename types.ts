@@ -120,6 +120,7 @@ export interface CAPAReport {
     sourceIncidentId?: string;
     description: string;
   rootCauseAnalysis: string;
+
   id: string;
   projectId: string;
   title: string;
@@ -157,7 +158,6 @@ export interface Standard {
   criticality?: StandardCriticality;
   subStandards?: SubStandard[];
 }
-
 export interface AppDocument {
   id: string;
   name: LocalizedString;
@@ -165,6 +165,7 @@ export interface AppDocument {
   isControlled: boolean;
   status: 'Draft' | 'Pending Review' | 'Approved' | 'Rejected' | 'Archived';
   content: any;
+  fileUrl?: string; // ADD THIS LINE - Optional URL to PDF or other file types
   processMapContent?: { nodes: ProcessNode[], edges: ProcessEdge[] };
   currentVersion: number;
   versionHistory: {
