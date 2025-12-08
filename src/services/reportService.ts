@@ -108,19 +108,7 @@ export const generateAIComplianceReport = async (
       en: aiResponse.content,
       ar: aiResponse.content // In production, translate to Arabic
     },
-    fileUrl: pdfUrl,
-    metadata: {
-      projectId: project.id,
-      reportType,
-      generatedBy: userName,
-      generatedAt: new Date().toISOString(),
-      projectProgress: project.progress,
-      complianceScore: calculateComplianceScore(project),
-      summary: aiResponse.summary,
-      recommendations: aiResponse.recommendations,
-      statistics: projectData,
-      pdfFileName: fileName
-    },
+      fileUrl: pdfUrl,
     currentVersion: 1,
     versionHistory: [{
       version: 1,
