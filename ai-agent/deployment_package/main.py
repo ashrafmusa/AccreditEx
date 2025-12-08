@@ -93,8 +93,8 @@ async def startup_event():
 async def health_check():
     """Health check endpoint"""
     return HealthResponse(
-        status="healthy" if agent and agent.agent else "unhealthy",
-        agent_initialized=agent is not None and agent.agent is not None,
+        status="healthy" if agent else "unhealthy",
+        agent_initialized=agent is not None,
         timestamp=datetime.utcnow().isoformat(),
         version="2.0.0"
     )
@@ -106,7 +106,7 @@ async def chat(request: ChatRequest):
     Chat with the AI agent (streaming response)
     Accepts optional context for context-aware responses
     """
-    if not agent or not agent.agent:
+    if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
@@ -223,10 +223,20 @@ async def upload_report(
         
         # Initialize Firebase Admin if not already done
         if not firebase_admin._apps:
-            # Use default credentials from environment
-            firebase_admin.initialize_app(options={
-                'storageBucket': 'accreditex-79c08.firebasestorage.app'
-            })
+            cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
+            if cred_json:
+                # Parse credentials from environment variable (Render.com)
+                import json
+                cred_dict = json.loads(cred_json)
+                cred = credentials.Certificate(cred_dict)
+                firebase_admin.initialize_app(cred, {
+                    'storageBucket': 'accreditex-79c08.firebasestorage.app'
+                })
+            else:
+                # Try default credentials (will work if GOOGLE_APPLICATION_CREDENTIALS is set)
+                firebase_admin.initialize_app(options={
+                    'storageBucket': 'accreditex-79c08.firebasestorage.app'
+                })
         
         # Decode base64 file data
         file_bytes = base64.b64decode(file_data)
