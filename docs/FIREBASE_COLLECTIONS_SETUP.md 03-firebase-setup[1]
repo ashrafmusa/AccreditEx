@@ -1,0 +1,151 @@
+# Firebase Collections Diagnostic
+
+## 🔍 Why The App Won't Start
+
+Your Firebase Project ID: `accreditex-79c08`
+
+### Root Cause
+
+The app initialization process requires the **appSettings** collection to exist in Firestore. If it's missing or empty, the app gets stuck on the LoadingScreen.
+
+### App Initialization Flow
+
+```
+AppInitializer starts
+  ↓
+Calls fetchAllAppData()
+  ↓
+Calls getAppSettings() from Firestore
+  ↓
+Waits for response
+  ↓
+Checks: if (isLoading || !appSettings)
+  ↓
+If appSettings is null → Shows LoadingScreen forever ❌
+```
+
+---
+
+## ✅ How to Fix It
+
+### Step 1: Open Firebase Console
+https://console.firebase.google.com/project/accreditex-79c08/firestore/databases/-/data
+
+### Step 2: Check if "appSettings" Collection Exists
+
+- **If it EXISTS**: Skip to Step 3
+- **If it DOESN'T EXIST**: Create it now
+
+### Step 3: Create "appSettings" Collection
+
+1. Click **"+ Start collection"**
+2. Collection ID: `appSettings`
+3. Document ID: `default`
+4. Add the following fields:
+
+| Field Name | Type | Value |
+|-----------|------|-------|
+| appName | string | "Accreditex" |
+| logoUrl | string | "" |
+| primaryColor | string | "#3B82F6" |
+| defaultLanguage | string | "en" |
+| defaultUserRole | string | "Admin" |
+| passwordPolicy | map | *See below* |
+| globeSettings | map | *See below* |
+| appearance | map | *See below* |
+| notifications | map | *See below* |
+| accessibility | map | *See below* |
+
+### Nested Objects
+
+**passwordPolicy** (create as Map):
+```
+minLength: 8 (number)
+requireUppercase: true (boolean)
+requireNumber: true (boolean)
+requireSymbol: false (boolean)
+```
+
+**globeSettings** (create as Map):
+```
+baseColor: "#1e40af" (string)
+markerColor: "#ef4444" (string)
+glowColor: "#3b82f6" (string)
+scale: 1 (number)
+darkness: 0.5 (number)
+lightIntensity: 1 (number)
+rotationSpeed: 0.1 (number)
+```
+
+**appearance** (create as Map):
+```
+compactMode: false (boolean)
+sidebarCollapsed: false (boolean)
+showAnimations: true (boolean)
+cardStyle: "default" (string)
+```
+
+**notifications** (create as Map):
+```
+emailNotifications: true (boolean)
+pushNotifications: true (boolean)
+taskReminders: true (boolean)
+projectUpdates: true (boolean)
+trainingDueDates: true (boolean)
+auditSchedules: true (boolean)
+```
+
+**accessibility** (create as Map):
+```
+fontSize: "medium" (string)
+highContrast: false (boolean)
+reduceMotion: false (boolean)
+screenReaderOptimized: false (boolean)
+```
+
+---
+
+## 🧪 Verification
+
+After creating the appSettings collection:
+
+1. **Refresh your app** in the browser
+2. **Open Browser DevTools** (F12)
+3. **Check the Console** for any errors
+4. **App should load successfully** ✅
+
+---
+
+## 📍 Firebase Console Quick Links
+
+- **Project**: https://console.firebase.google.com/project/accreditex-79c08
+- **Firestore**: https://console.firebase.google.com/project/accreditex-79c08/firestore/databases/-/data
+- **Settings**: https://console.firebase.google.com/project/accreditex-79c08/settings/general
+
+---
+
+## 🔧 Alternative: Use Firestore Emulator (Local Development)
+
+If you want to test locally without Firebase:
+
+```bash
+firebase emulator:start
+```
+
+This will create a local Firestore instance that the app can connect to.
+
+---
+
+## 📊 What Each Collection Does
+
+| Collection | Purpose | Required |
+|-----------|---------|----------|
+| appSettings | App configuration (colors, language, etc) | ✅ YES |
+| users | User profiles and roles | Optional |
+| projects | Accreditation projects | Optional |
+| standards | Quality standards | Optional |
+| documents | Controlled documents | Optional |
+| departments | Department info | Optional |
+
+The **appSettings** collection is the ONLY required one for the app to start.
+

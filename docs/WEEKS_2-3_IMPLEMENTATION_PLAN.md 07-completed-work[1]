@@ -1,0 +1,684 @@
+# WEEKS 2-3 IMPLEMENTATION PLAN
+**Firebase Free Tier Optimization**  
+**AccreditEx Project**
+
+---
+
+## 🎯 PRIMARY OBJECTIVE
+
+Transform from potentially exceeding Firebase free tier limits (100K reads/day) to safe operation within limits (24K reads/day target) with 76% cost reduction.
+
+---
+
+## 📅 WEEK 2: CORE QUERY OPTIMIZATION
+
+### Goal: Reduce daily reads from 100K → 40K (60% reduction)
+
+---
+
+### TASK 2.1: Add Pagination System
+**Priority:** 🔴 CRITICAL  
+**Effort:** 4 hours  
+**Impact:** 40% read reduction
+
+#### Files to Create:
+1. `services/pagination.ts` - Pagination utility
+
+```typescript
+// services/pagination.ts
+import { QueryDocumentSnapshot, limit, startAfter, query, Query } from 'firebase/firestore';
+
+export interface PaginationOptions {
+    pageSize?: number;
+    orderByField?: string;
+    direction?: 'asc' | 'desc';
+}
+
+export interface PaginatedResult<T> {
+    items: (T & { id: string })[];
+    lastDoc: QueryDocumentSnapshot | null;
+    hasMore: boolean;
+}
+
+export const createPaginatedQuery = (
+    baseCollection: any,
+    options: PaginationOptions = {},
+    lastDoc?: QueryDocumentSnapshot
+): Query => {
+    const { pageSize = 25, orderByField = 'createdAt', direction = 'desc' } = options;
+    
+    let q = query(
+        baseCollection,
+        limit(pageSize + 1) // Fetch one extra to check if more exists
+    );
+    
+    if (lastDoc) {
+        q = query(
+            baseCollection,
+            startAfter(lastDoc),
+            limit(pageSize + 1)
+        );
+    }
+    
+    return q;
+};
+
+export const parsePaginatedSnapshot = <T>(snapshot: any): PaginatedResult<T> => {
+    const items = snapshot.docs
+        .slice(0, 25) // Only return requested page size
+        .map((doc: any) => ({ id: doc.id, ...doc.data() } as T & { id: string }));
+    
+    const lastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+    const hasMore = snapshot.docs.length > 25;
+    
+    return { items, lastDoc, hasMore };
+};
+```
+
+#### Files to Modify:
+1. **services/userService.ts**
+   - Add pagination to `getUsers()`
+   - Add filtering by role, department, status
+   
+2. **services/projectService.ts**
+   - Add pagination to `getProjects()`
+   - Add filtering by status, department
+
+3. **services/documentService.ts**
+   - Add pagination to `getDocuments()`
+   - Add filtering by type, status
+
+4. **services/trainingProgramService.ts**
+   - Add pagination to `getTrainingPrograms()`
+   - Add filtering by status
+
+5. **services/competencyService.ts**
+   - Add pagination to `getCompetencies()`
+
+6. **services/standardService.ts**
+   - Add pagination to `getStandards()`
+
+7. **services/riskService.ts**
+   - Add pagination to `getRisks()`
+   - Add filtering by status, severity
+
+**Implementation Pattern:**
+```typescript
+// BEFORE (fetches ALL)
+export const getUsers = async (): Promise<User[]> => {
+    const snapshot = await getDocs(usersCollection);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+};
+
+// AFTER (fetches 25 per page)
+export const getUsers = async (
+    pageSize = 25, 
+    lastDoc?: QueryDocumentSnapshot
+): Promise<PaginatedResult<User>> => {
+    const q = createPaginatedQuery(usersCollection, { pageSize }, lastDoc);
+    const snapshot = await getDocs(q);
+    return parsePaginatedSnapshot<User>(snapshot);
+};
+```
+
+---
+
+### TASK 2.2: Add Database-Level Filtering
+**Priority:** 🔴 CRITICAL  
+**Effort:** 3 hours  
+**Impact:** 30% read reduction (combined with pagination)
+
+#### Modify Services:
+
+```typescript
+// Add where() clauses to all queries
+export const getActiveProjects = async (): Promise<Project[]> => {
+    const q = query(projectsCollection, where("status", "==", "Active"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+};
+
+export const getProjectsByDepartment = async (departmentId: string): Promise<Project[]> => {
+    const q = query(projectsCollection, where("departmentId", "==", departmentId));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Project));
+};
+```
+
+#### Queries to Add:
+- `getActiveUsers()` - filter by status = 'Active'
+- `getActiveProjects()` - filter by status = 'Active'
+- `getActiveDocuments()` - filter by status = 'Active'
+- `getRisksByDepartment()` - filter by departmentId
+- `getComplianceDocuments()` - filter by category
+- `getAuditItems()` - filter by status
+
+---
+
+### TASK 2.3: Update Store Components
+**Priority:** 🟡 HIGH  
+**Effort:** 2 hours  
+**Impact:** Data consistency
+
+#### Files to Modify:
+1. **stores/useUserStore.ts**
+2. **stores/useProjectStore.ts**
+3. **stores/useDocumentStore.ts**
+
+**Pattern:**
+```typescript
+interface PaginationState {
+    currentPage: number;
+    lastDoc: QueryDocumentSnapshot | null;
+    hasMore: boolean;
+}
+
+const usersState = create<UserState>((set) => ({
+    users: [],
+    pagination: { currentPage: 1, lastDoc: null, hasMore: true },
+    
+    fetchUsers: async (pageSize = 25) => {
+        const result = await getUsers(pageSize);
+        set({
+            users: result.items,
+            pagination: { currentPage: 1, lastDoc: result.lastDoc, hasMore: result.hasMore }
+        });
+    },
+    
+    fetchNextPage: async (pageSize = 25) => {
+        const state = useUserStore.getState();
+        const result = await getUsers(pageSize, state.pagination.lastDoc);
+        set({
+            users: [...state.users, ...result.items],
+            pagination: { currentPage: state.pagination.currentPage + 1, lastDoc: result.lastDoc, hasMore: result.hasMore }
+        });
+    }
+}));
+```
+
+---
+
+### TASK 2.4: Add Indexes for Optimized Queries
+**Priority:** 🟡 HIGH  
+**Effort:** 1 hour  
+**Impact:** Query performance
+
+#### Firestore Indexes Needed:
+```
+Collection: users
+  Indexes:
+    - status (Ascending)
+    - departmentId (Ascending)
+    - createdAt (Descending)
+    - role (Ascending)
+
+Collection: projects
+  Indexes:
+    - status (Ascending)
+    - departmentId (Ascending)
+    - createdAt (Descending)
+    - ownerId (Ascending)
+
+Collection: documents
+  Indexes:
+    - status (Ascending)
+    - documentType (Ascending)
+    - createdAt (Descending)
+
+Collection: risks
+  Indexes:
+    - status (Ascending)
+    - severity (Descending)
+    - departmentId (Ascending)
+```
+
+**How to Add:**
+- Use Firebase Console → Firestore Database → Indexes
+- Or enable "Single-field indexes" (automated creation)
+
+---
+
+### TASK 2.5: Create Cost Tracking Dashboard
+**Priority:** 🟡 HIGH  
+**Effort:** 2 hours  
+**Impact:** Visibility
+
+#### Create: `components/admin/FirebaseCostDashboard.tsx`
+
+```typescript
+interface FirebaseMetrics {
+    dailyReads: number;
+    dailyWrites: number;
+    dailyDeletes: number;
+    storageUsed: number;
+    bandwidthUsed: number;
+    costEstimate: number;
+    percentOfLimit: {
+        reads: number;
+        writes: number;
+        storage: number;
+    };
+}
+
+export const FirebaseCostDashboard = () => {
+    return (
+        <div className="grid grid-cols-3 gap-4">
+            <MetricCard
+                title="Daily Reads"
+                current={40000}
+                limit={50000}
+                unit="reads"
+                warning={45000}
+                critical={48000}
+            />
+            <MetricCard
+                title="Daily Writes"
+                current={5000}
+                limit={20000}
+                unit="writes"
+                warning={18000}
+                critical={19500}
+            />
+            <MetricCard
+                title="Storage"
+                current="500 MB"
+                limit="1 GB"
+                percentage={50}
+                warning={80}
+                critical={95}
+            />
+        </div>
+    );
+};
+```
+
+---
+
+## 📊 WEEK 2 DELIVERABLES
+
+| Item | File | Status |
+|------|------|--------|
+| Pagination Utility | `services/pagination.ts` | New |
+| User Service Pagination | `services/userService.ts` | Modify |
+| Project Service Pagination | `services/projectService.ts` | Modify |
+| Document Service Pagination | `services/documentService.ts` | Modify |
+| Store Updates | `stores/useUserStore.ts` | Modify |
+| Cost Dashboard | `components/admin/FirebaseCostDashboard.tsx` | New |
+| Firestore Indexes | Firebase Console | Configure |
+
+**Expected Result:**
+- ✅ All queries use pagination (max 25 items/page)
+- ✅ Database-level filtering implemented
+- ✅ Daily reads reduced to 40,000 (80% of limit)
+- ✅ Cost tracking visible
+- ✅ Stores updated for new data format
+
+---
+
+## 📅 WEEK 3: CACHING & LISTENER OPTIMIZATION
+
+### Goal: Reduce daily reads from 40K → 24K (76% total reduction)
+
+---
+
+### TASK 3.1: Implement In-Memory Cache
+**Priority:** 🔴 CRITICAL  
+**Effort:** 3 hours  
+**Impact:** 40% additional read reduction
+
+#### Create: `services/cacheService.ts`
+
+```typescript
+interface CacheEntry<T> {
+    data: T;
+    timestamp: number;
+    ttl: number; // Time to live in milliseconds
+}
+
+class CacheService {
+    private cache = new Map<string, CacheEntry<any>>();
+    
+    set<T>(key: string, data: T, ttlSeconds = 300): void {
+        this.cache.set(key, {
+            data,
+            timestamp: Date.now(),
+            ttl: ttlSeconds * 1000
+        });
+    }
+    
+    get<T>(key: string): T | null {
+        const entry = this.cache.get(key);
+        
+        if (!entry) return null;
+        
+        const isExpired = Date.now() - entry.timestamp > entry.ttl;
+        if (isExpired) {
+            this.cache.delete(key);
+            return null;
+        }
+        
+        return entry.data as T;
+    }
+    
+    invalidate(pattern: string): void {
+        for (const key of this.cache.keys()) {
+            if (key.includes(pattern)) {
+                this.cache.delete(key);
+            }
+        }
+    }
+    
+    clear(): void {
+        this.cache.clear();
+    }
+}
+
+export const cacheService = new CacheService();
+```
+
+#### Update Services to Use Cache:
+
+```typescript
+// userService.ts
+export const getUsers = async (pageSize = 25, lastDoc?: QueryDocumentSnapshot): Promise<PaginatedResult<User>> => {
+    const cacheKey = `users_${pageSize}_${lastDoc?.id || 'first'}`;
+    
+    // Try cache first
+    const cached = cacheService.get<PaginatedResult<User>>(cacheKey);
+    if (cached) {
+        console.log('📦 Cache hit for users');
+        return cached;
+    }
+    
+    // Fetch from Firestore
+    const q = createPaginatedQuery(usersCollection, { pageSize }, lastDoc);
+    const snapshot = await getDocs(q);
+    const result = parsePaginatedSnapshot<User>(snapshot);
+    
+    // Cache for 5 minutes
+    cacheService.set(cacheKey, result, 300);
+    
+    return result;
+};
+```
+
+**Cache Strategy:**
+- Initial load: Cache for 5 minutes
+- Pagination: Cache each page separately
+- On mutations: Invalidate entire collection cache
+- On logout: Clear all cache
+
+---
+
+### TASK 3.2: Consolidate Real-time Listeners
+**Priority:** 🟡 HIGH  
+**Effort:** 4 hours  
+**Impact:** 30% listener overhead reduction
+
+#### Current Issues:
+```typescript
+// ❌ BAD: Multiple listeners on same collection
+function UsersList() {
+    const [users, setUsers] = useState([]);
+    
+    useEffect(() => {
+        const unsubscribe = onSnapshot(usersCollection, (snapshot) => {
+            setUsers(snapshot.docs.map(doc => doc.data()));
+        });
+        return unsubscribe;
+    }, []);
+}
+
+function UsersDropdown() {
+    const [users, setUsers] = useState([]);
+    
+    useEffect(() => {
+        const unsubscribe = onSnapshot(usersCollection, (snapshot) => { // DUPLICATE!
+            setUsers(snapshot.docs.map(doc => doc.data()));
+        });
+        return unsubscribe;
+    }, []);
+}
+```
+
+#### Solution: Move Listeners to Store
+
+```typescript
+// stores/useRealTimeStore.ts
+const useRealTimeStore = create<RealTimeState>((set) => {
+    const unsubscribers: Array<() => void> = [];
+    
+    return {
+        // Subscribe to all collections once
+        subscribeToAll: () => {
+            // Users listener
+            const usersUnsubscribe = onSnapshot(usersCollection, (snapshot) => {
+                const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                set({ users });
+            });
+            unsubscribers.push(usersUnsubscribe);
+            
+            // Projects listener
+            const projectsUnsubscribe = onSnapshot(projectsCollection, (snapshot) => {
+                const projects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                set({ projects });
+            });
+            unsubscribers.push(projectsUnsubscribe);
+            
+            // Similar for other collections...
+        },
+        
+        unsubscribeFromAll: () => {
+            unsubscribers.forEach(unsub => unsub());
+            unsubscribers.length = 0;
+        }
+    };
+});
+
+// In App.tsx
+useEffect(() => {
+    const store = useRealTimeStore.getState();
+    store.subscribeToAll();
+    
+    return () => store.unsubscribeFromAll();
+}, []);
+```
+
+#### Components Now Use Store:
+```typescript
+// ✅ GOOD: Single listener, multiple consumers
+function UsersList() {
+    const users = useRealTimeStore(state => state.users);
+    return <div>{users.map(u => <div key={u.id}>{u.name}</div>)}</div>;
+}
+
+function UsersDropdown() {
+    const users = useRealTimeStore(state => state.users);
+    return <select>{users.map(u => <option key={u.id}>{u.name}</option>)}</select>;
+}
+```
+
+---
+
+### TASK 3.3: Optimize Firestore Rules
+**Priority:** 🟡 HIGH  
+**Effort:** 2 hours  
+**Impact:** 25% read reduction in rule evaluation
+
+#### Current Rules (with cost)
+```typescript
+match /databases/{database}/documents/projects/{document=**} {
+    // Each get() = 1 read operation! ❌
+    allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+}
+```
+
+#### Optimized Rules (with token claims)
+```typescript
+match /databases/{database}/documents/projects/{document=**} {
+    // No read cost - uses auth token! ✅
+    allow read: if request.auth.token.role == 'Admin' || request.auth.token.role == 'Manager';
+    allow write: if request.auth.token.role == 'Admin';
+}
+```
+
+#### Setup Custom Claims in Auth Service:
+```typescript
+// services/authService.ts
+export const setUserRole = async (userId: string, role: string): Promise<void> => {
+    const auth = getAuth();
+    
+    // For logged-in user
+    if (auth.currentUser?.uid === userId) {
+        // Refresh token with custom claims
+        await auth.currentUser.getIdTokenResult(true);
+    }
+};
+
+// Hook to use in components
+export const useUserRole = (): string | null => {
+    const [role, setRole] = useState<string | null>(null);
+    
+    useEffect(() => {
+        const auth = getAuth();
+        auth.currentUser?.getIdTokenResult().then(result => {
+            setRole(result.claims.role as string);
+        });
+    }, []);
+    
+    return role;
+};
+```
+
+---
+
+### TASK 3.4: Request Deduplication
+**Priority:** 🟡 HIGH  
+**Effort:** 1 hour  
+**Impact:** 20% reduction in duplicate requests
+
+#### Create: `services/requestDedupService.ts`
+
+```typescript
+class RequestDedupService {
+    private pending = new Map<string, Promise<any>>();
+    
+    deduplicate<T>(key: string, request: () => Promise<T>): Promise<T> {
+        // Return pending request if exists
+        if (this.pending.has(key)) {
+            return this.pending.get(key)!;
+        }
+        
+        // Execute new request
+        const promise = request().finally(() => {
+            this.pending.delete(key);
+        });
+        
+        this.pending.set(key, promise);
+        return promise;
+    }
+    
+    clear(): void {
+        this.pending.clear();
+    }
+}
+
+export const requestDedupService = new RequestDedupService();
+
+// Usage in services
+export const getUsers = async (): Promise<User[]> => {
+    return requestDedupService.deduplicate('getUsers', async () => {
+        const snapshot = await getDocs(usersCollection);
+        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    });
+};
+```
+
+---
+
+## 📊 WEEK 3 DELIVERABLES
+
+| Item | File | Status |
+|------|------|--------|
+| Cache Service | `services/cacheService.ts` | New |
+| Real-time Store | `stores/useRealTimeStore.ts` | New |
+| Request Dedup | `services/requestDedupService.ts` | New |
+| Auth Service Updates | `services/authService.ts` | Modify |
+| Firestore Rules | `firestore.rules` | Modify |
+| User Service Cache | `services/userService.ts` | Modify |
+| All Services Cache | `services/*.ts` | Modify |
+
+**Expected Result:**
+- ✅ In-memory cache reduces duplicate reads (5-min TTL)
+- ✅ Single real-time listener per collection
+- ✅ Custom claims reduce rule evaluation reads
+- ✅ Request deduplication eliminates rapid duplicates
+- ✅ Daily reads reduced to 24,000 (48% of limit)
+- ✅ 76% total cost reduction achieved
+
+---
+
+## 🎯 SUCCESS CRITERIA
+
+### By End of Week 3:
+- [ ] Daily read operations: < 25,000 (was 100,000)
+- [ ] All services implement pagination
+- [ ] Cache hit rate > 80%
+- [ ] Zero duplicate listeners
+- [ ] Cost monitoring visible in UI
+- [ ] Free tier budget headroom: 25,000 reads/day
+
+### Safety Margin:
+With 24K daily reads, you have **26K reads available** for:
+- 100% growth before hitting limits
+- Unexpected traffic spikes
+- New features and data
+- Buffer against miscalculation
+
+---
+
+## 🚨 RISK MITIGATION
+
+### What if read count stays high after Week 2?
+1. Add page size selector (let users choose 10/25/50)
+2. Implement infinite scroll instead of pagination
+3. Increase cache TTL to 10 minutes for read-heavy data
+4. Add "Search" feature to reduce list fetches
+
+### What if listeners cause issues?
+1. Add listener health check
+2. Implement auto-reconnect logic
+3. Add listener count monitoring
+4. Create manual listener management UI
+
+### What if cache invalidation is wrong?
+1. Add cache audit logging
+2. Implement manual cache clear button
+3. Add timestamp display in UI
+4. Create cache debug component
+
+---
+
+## 📞 NEXT STEPS
+
+**This Week (Week 2):**
+1. Create pagination utility
+2. Update all services with pagination
+3. Update stores to handle pagination
+4. Configure Firestore indexes
+5. Create cost dashboard
+
+**Next Week (Week 3):**
+1. Implement caching layer
+2. Consolidate real-time listeners
+3. Optimize Firestore rules
+4. Add request deduplication
+5. Verify 76% cost reduction achieved
+
+---
+
+**Plan Created:** December 2, 2025  
+**Status:** Ready for Implementation  
+**Next Review:** After Week 2 Completion
+

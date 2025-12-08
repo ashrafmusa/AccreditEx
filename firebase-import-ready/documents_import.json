@@ -1,0 +1,89 @@
+{
+  "collection": "documents",
+  "documentIdField": "id",
+  "documents": [
+    {
+      "id": "doc-1",
+      "name": {
+        "en": "Patient Identification Policy",
+        "ar": "سياسة تحديد هوية المريض"
+      },
+      "type": "Policy",
+      "isControlled": true,
+      "uploadedAt": "2023-10-26",
+      "status": "Approved",
+      "currentVersion": 3,
+      "reviewDate": "2024-10-25",
+      "approvedBy": "Mr. Ashraf Musa",
+      "approvalDate": "2023-10-26T10:00:00Z",
+      "versionHistory": [
+        {
+          "version": 3,
+          "date": "2023-10-26",
+          "uploadedBy": "Mr.Asharf Musa",
+          "content": {}
+        },
+        {
+          "version": 2,
+          "date": "2023-08-15",
+          "uploadedBy": "Mr. Ashraf Musa",
+          "content": {}
+        }
+      ],
+      "content": {
+        "en": "<h3>1. Purpose</h3><p>To ensure accurate patient identification to prevent medical errors.</p><h3>2. Policy</h3><p>At least two patient identifiers (e.g., full name and date of birth) must be used before administering medications, blood, or any other treatments.</p>",
+        "ar": "<h3>١. الغرض</h3><p>لضمان تحديد هوية المريض بدقة لمنع الأخطاء الطبية.</p><h3>٢. السياسة</h3><p>يجب استخدام معرفين على الأقل للمريض (مثل الاسم الكامل وتاريخ الميلاد) قبل إعطاء الأدوية أو الدم أو أي علاجات أخرى.</p>"
+      }
+    },
+    {
+      "id": "doc-2",
+      "name": {
+        "en": "QMS Annual Review Minutes",
+        "ar": "محضر المراجعة السنوية لنظام إدارة الجودة"
+      },
+      "type": "Report",
+      "isControlled": true,
+      "uploadedAt": "2024-04-15",
+      "status": "Draft",
+      "currentVersion": 1,
+      "versionHistory": [
+        {
+          "version": 1,
+          "date": "2024-04-15",
+          "uploadedBy": "Marcus Thorne",
+          "content": {}
+        }
+      ],
+      "content": {
+        "en": "<h4>Meeting Minutes: QMS Annual Review</h4><p>Date: April 15, 2024</p><p>Attendees: Dr. Reed, M. Thorne</p><p>Key Discussion Points: Reviewed DNV compliance. All major standards met. Minor improvements suggested for medication labeling.</p>",
+        "ar": "<h4>محضر الاجتماع: المراجعة السنوية لنظام إدارة الجودة</h4><p>التاريخ: ١٥ أبريل ٢٠٢٤</p><p>الحضور: د. ريد, م. ثورن</p><p>نقاط المناقشة الرئيسية: تمت مراجعة الامتثال لـ DNV. تم استيفاء جميع المعايير الرئيسية. تم اقتراح تحسينات طفيفة على عنونة الأدوية.</p>"
+      }
+    },
+    {
+      "id": "doc-3",
+      "name": {
+        "en": "Medication Storage Area Audit",
+        "ar": "تدقيق منطقة تخزين الأدوية"
+      },
+      "type": "Evidence",
+      "isControlled": false,
+      "uploadedAt": "2024-04-20",
+      "status": "Pending Review",
+      "currentVersion": 1,
+      "versionHistory": [
+        {
+          "version": 1,
+          "date": "2024-04-20",
+          "uploadedBy": "Lena Petrova",
+          "content": {}
+        }
+      ],
+      "content": {
+        "en": "<p>Audit conducted on April 20, 2024. All medication storage areas found to be compliant with temperature and labeling requirements. No major deficiencies noted.</p>",
+        "ar": "<p>تم إجراء التدقيق في ٢٠ أبريل ٢٠٢٤. تبين أن جميع مناطق تخزين الأدوية متوافقة مع متطلبات درجة الحرارة والعنونة. لم تلاحظ أي أوجه قصور رئيسية.</p>"
+      }
+    }
+  ],
+  "importedAt": "2025-12-05T04:55:30.818Z",
+  "documentCount": 3
+}

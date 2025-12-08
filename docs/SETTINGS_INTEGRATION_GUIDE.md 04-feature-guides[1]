@@ -1,0 +1,563 @@
+# Settings Pages Integration Guide
+
+**Purpose:** Step-by-step guide for integrating new components into existing settings pages  
+**Status:** Ready for implementation  
+**Difficulty:** Easy (copy-paste patterns)
+
+---
+
+## Quick Start: Copy-Paste Patterns
+
+### Pattern 1: FormGroup for Text Input
+
+**Before (Original Code):**
+```tsx
+<div>
+  <label htmlFor="name" className={labelClasses}>
+    {t("userName")}
+    <span className="text-red-500 ml-1">*</span>
+  </label>
+  <input
+    type="text"
+    id="name"
+    value={name}
+    onChange={(e) => handleNameChange(e.target.value)}
+    className={`${inputClasses} ${errors.name ? 'border-red-500 focus:ring-red-500' : ''}`}
+    placeholder="Your full name"
+  />
+  {errors.name && (
+    <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.name}</p>
+  )}
+</div>
+```
+
+**After (Using FormGroup):**
+```tsx
+<FormGroup
+  label={t("userName")}
+  required
+  error={errors.name}
+>
+  <EnhancedInput
+    type="text"
+    value={name}
+    onChange={(e) => handleNameChange(e.target.value)}
+    placeholder="Your full name"
+    invalid={!!errors.name}
+  />
+</FormGroup>
+```
+
+**Benefits:** Less code, automatic error display, consistent styling, better accessibility
+
+---
+
+### Pattern 2: AdvancedToggle for Boolean Settings
+
+**Before (Original Code):**
+```tsx
+<ToggleSwitch
+  label={t("emailNotifications")}
+  description={t("emailNotificationsDescription")}
+  enabled={notifications.emailNotifications}
+  setEnabled={() => handleNotificationChange("emailNotifications")}
+/>
+```
+
+**After (Using AdvancedToggle):**
+```tsx
+<AdvancedToggle
+  label={t("emailNotifications")}
+  description={t("emailNotificationsDescription")}
+  checked={notifications.emailNotifications}
+  onChange={() => handleNotificationChange("emailNotifications")}
+  color="blue"
+  size="md"
+/>
+```
+
+**Benefits:** More customization (colors, sizes), better descriptions, improved UX
+
+---
+
+### Pattern 3: SliderInput for Numeric Values
+
+**Before (Original Code):**
+```tsx
+<div>
+  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+    Data Retention Period (days)
+  </label>
+  <div className="flex items-center gap-4">
+    <input
+      type="range"
+      min="30"
+      max="365"
+      step="1"
+      value={usageMonitor.dataRetentionDays}
+      onChange={(e) =>
+        handleUsageMonitorChange("dataRetentionDays", parseInt(e.target.value))
+      }
+      className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
+    />
+    <span className="text-lg font-bold text-gray-900 dark:text-white min-w-12 text-right">
+      {usageMonitor.dataRetentionDays}
+    </span>
+  </div>
+</div>
+```
+
+**After (Using SliderInput):**
+```tsx
+<FormGroup label="Data Retention Period (days)">
+  <SliderInput
+    min={30}
+    max={365}
+    step={1}
+    value={usageMonitor.dataRetentionDays}
+    onChange={(e) =>
+      handleUsageMonitorChange("dataRetentionDays", parseInt(e.target.value))
+    }
+    showValue
+    unit=" days"
+    color="blue"
+  />
+</FormGroup>
+```
+
+**Benefits:** Cleaner code, value display included, color variants, form consistency
+
+---
+
+### Pattern 4: EnhancedSelect for Dropdowns
+
+**Before (Original Code):**
+```tsx
+<div>
+  <label htmlFor="fontSize" className={labelClasses}>
+    {t("fontSize")}
+  </label>
+  <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+    {t("fontSizeDescription")}
+  </p>
+  <select
+    id="fontSize"
+    value={accessibility.fontSize}
+    onChange={(e) =>
+      handleAccessibilityChange((a) => ({
+        ...a,
+        fontSize: e.target.value as any,
+      }))
+    }
+    className="mt-1 w-full max-w-xs border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white dark:bg-gray-700 dark:text-white"
+  >
+    <option value="small">{t("small")}</option>
+    <option value="medium">{t("medium")}</option>
+    <option value="large">{t("large")}</option>
+    <option value="extra-large">{t("extraLarge")}</option>
+  </select>
+</div>
+```
+
+**After (Using EnhancedSelect + FormGroup):**
+```tsx
+<FormGroup
+  label={t("fontSize")}
+  description={t("fontSizeDescription")}
+>
+  <EnhancedSelect
+    value={accessibility.fontSize}
+    onChange={(e) =>
+      handleAccessibilityChange((a) => ({
+        ...a,
+        fontSize: e.target.value as any,
+      }))
+    }
+    options={[
+      { value: "small", label: t("small") },
+      { value: "medium", label: t("medium") },
+      { value: "large", label: t("large") },
+      { value: "extra-large", label: t("extraLarge") },
+    ]}
+  />
+</FormGroup>
+```
+
+**Benefits:** Consistent styling, description support, cleaner option syntax
+
+---
+
+### Pattern 5: SettingsPanel for Sections
+
+**Before (Original Code):**
+```tsx
+<SettingsCard
+  title={t("passwordPolicy")}
+  description={t("passwordPolicyDescription")}
+>
+  <div className="space-y-8">
+    <SettingsSection
+      title="Password Requirements"
+      description="Configure minimum password complexity standards"
+    >
+      {/* Content */}
+    </SettingsSection>
+  </div>
+</SettingsCard>
+```
+
+**After (Using SettingsPanel):**
+```tsx
+<SettingsPanel
+  title={t("passwordPolicy")}
+  description={t("passwordPolicyDescription")}
+  icon={LockClosedIcon}
+  variant="default"
+  collapsible
+>
+  <SettingsSection
+    title="Password Requirements"
+    description="Configure minimum password complexity standards"
+  >
+    {/* Content */}
+  </SettingsSection>
+</SettingsPanel>
+```
+
+**Benefits:** Icon support, collapsible sections, color variants, cleaner API
+
+---
+
+## Integration Checklist
+
+### For Each Settings Page:
+
+- [ ] **Step 1:** Add imports
+  ```tsx
+  import { 
+    SettingsPanel, 
+    FormGroup, 
+    AdvancedToggle, 
+    EnhancedInput,
+    EnhancedSelect,
+    SliderInput 
+  } from './index';
+  ```
+
+- [ ] **Step 2:** Replace form groups
+  - Text inputs → FormGroup + EnhancedInput
+  - Toggles → AdvancedToggle
+  - Selects → FormGroup + EnhancedSelect
+  - Sliders → FormGroup + SliderInput
+
+- [ ] **Step 3:** Update container
+  - SettingsCard → SettingsPanel (optional)
+  - Or keep SettingsCard if working well
+
+- [ ] **Step 4:** Test
+  - Verify form submission works
+  - Check validation displays
+  - Test responsive design
+
+- [ ] **Step 5:** Build
+  - `npm run build`
+  - Verify no errors
+
+---
+
+## Migration Template
+
+Use this template for each settings page:
+
+```tsx
+import React, { useState } from 'react';
+import { useAppStore } from '@/stores/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import SettingsCard from './SettingsCard';
+import SettingsButton from "./SettingsButton";
+import SettingsAlert from "./SettingsAlert";
+import { useToast } from "@/hooks/useToast";
+import { CheckIcon } from "@/components/icons";
+// 👇 NEW IMPORTS
+import { 
+  SettingsPanel, 
+  FormGroup, 
+  AdvancedToggle, 
+  EnhancedInput,
+  EnhancedSelect,
+  SliderInput 
+} from './index';
+
+const PageNameSettingsPage: React.FC = () => {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const { appSettings, updateAppSettings } = useAppStore();
+
+  const [settings, setSettings] = useState({
+    // Your state here
+  });
+
+  const [hasChanges, setHasChanges] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // ... existing handlers ...
+
+  return (
+    <div className="space-y-6">
+      {hasChanges && (
+        <SettingsAlert
+          type="warning"
+          title={t("unsavedChanges")}
+          dismissible
+        />
+      )}
+
+      <SettingsPanel
+        title="Section Title"
+        description="Section description"
+        collapsible
+      >
+        {/* 👇 Use FormGroup + Enhanced Components */}
+        <FormGroup label="Label" required>
+          <EnhancedInput
+            type="text"
+            value={settings.field}
+            onChange={(e) => handleChange("field", e.target.value)}
+          />
+        </FormGroup>
+
+        <FormGroup label="Toggle Label">
+          <AdvancedToggle
+            checked={settings.enabled}
+            onChange={() => handleChange("enabled", !settings.enabled)}
+          />
+        </FormGroup>
+
+        <FormGroup label="Select Label">
+          <EnhancedSelect
+            value={settings.option}
+            onChange={(e) => handleChange("option", e.target.value)}
+            options={[
+              { value: "a", label: "Option A" },
+              { value: "b", label: "Option B" },
+            ]}
+          />
+        </FormGroup>
+      </SettingsPanel>
+
+      <div className="flex gap-3 justify-end">
+        <SettingsButton
+          variant="secondary"
+          onClick={handleCancel}
+          disabled={!hasChanges || loading}
+        >
+          {t("cancel")}
+        </SettingsButton>
+        <SettingsButton
+          variant="primary"
+          onClick={handleSave}
+          disabled={!hasChanges || loading}
+          loading={loading}
+          icon={!loading && hasChanges ? CheckIcon : undefined}
+        >
+          {loading ? t("saving") : t("saveChanges")}
+        </SettingsButton>
+      </div>
+    </div>
+  );
+};
+
+export default PageNameSettingsPage;
+```
+
+---
+
+## Component API Quick Reference
+
+### FormGroup
+```tsx
+<FormGroup
+  label="Field Label"                    // Required
+  description="Helper text"              // Optional
+  error="Error message"                  // Optional
+  success="Success message"              // Optional
+  info="Info message"                    // Optional
+  required={true}                        // Optional
+  layout="vertical"                      // 'vertical' | 'horizontal'
+>
+  {/* Input component */}
+</FormGroup>
+```
+
+### AdvancedToggle
+```tsx
+<AdvancedToggle
+  checked={boolean}                      // Required
+  onChange={(checked) => {}}             // Required
+  label="Toggle Label"                   // Optional
+  description="Description"              // Optional
+  color="blue"                           // 'blue' | 'green' | 'red' | 'purple' | 'amber'
+  size="md"                              // 'sm' | 'md' | 'lg'
+  disabled={false}                       // Optional
+  showLabels={false}                     // Optional (shows On/Off)
+/>
+```
+
+### EnhancedInput
+```tsx
+<EnhancedInput
+  type="text"                            // Optional
+  value={string}                         // Required
+  onChange={(e) => {}}                   // Required
+  placeholder="Placeholder text"         // Optional
+  icon={IconComponent}                   // Optional (left icon)
+  rightIcon={IconComponent}              // Optional (right icon)
+  valid={false}                          // Optional (green border)
+  invalid={false}                        // Optional (red border)
+  disabled={false}                       // Optional
+/>
+```
+
+### EnhancedSelect
+```tsx
+<EnhancedSelect
+  value={string}                         // Required
+  onChange={(e) => {}}                   // Required
+  options={[                             // Required
+    { value: "a", label: "Option A" }
+  ]}
+  placeholder="Select..."                // Optional
+  icon={IconComponent}                   // Optional
+  disabled={false}                       // Optional
+/>
+```
+
+### SliderInput
+```tsx
+<SliderInput
+  min={0}                                // Required
+  max={100}                              // Required
+  value={number}                         // Required
+  onChange={(value) => {}}               // Required
+  step={1}                               // Optional
+  showValue={true}                       // Optional
+  unit=" units"                          // Optional
+  color="blue"                           // Optional
+  disabled={false}                       // Optional
+/>
+```
+
+### SettingsPanel
+```tsx
+<SettingsPanel
+  title="Panel Title"                    // Optional
+  description="Panel description"        // Optional
+  icon={IconComponent}                   // Optional
+  variant="default"                      // 'default' | 'accent' | 'danger' | 'success'
+  collapsible={false}                    // Optional
+  defaultOpen={true}                     // Optional (if collapsible)
+  footer={<div>Footer content</div>}     // Optional
+>
+  {/* Content */}
+</SettingsPanel>
+```
+
+---
+
+## Testing Checklist
+
+After integrating components, verify:
+
+- [ ] Form inputs display correctly
+- [ ] Validation messages show/hide
+- [ ] Save button enables/disables correctly
+- [ ] Changes are detected (hasChanges state)
+- [ ] Cancel reverts all changes
+- [ ] Responsive design on mobile
+- [ ] Keyboard navigation works
+- [ ] Dark mode looks good
+- [ ] Translations display correctly
+- [ ] No TypeScript errors
+
+---
+
+## Recommended Integration Order
+
+**Quick Wins (30 min each):**
+1. ProfileSettingsPage - Text inputs + EnhancedInput
+2. NotificationSettingsPage - AdvancedToggle
+3. SecuritySettingsPage - SliderInput
+
+**Medium (45 min each):**
+4. AppearanceSettingsPage - EnhancedSelect
+5. AccessibilitySettingsPage - SliderInput + EnhancedSelect
+6. UsersSettingsPage - SliderInput
+
+**Additional (30 min each):**
+7. UsageMonitorSettingsPage - SliderInput
+8. DataSettingsPage - SettingsPanel wrapper
+
+---
+
+## Common Patterns
+
+### Save Changes Handler
+```tsx
+const handleSave = async () => {
+  setLoading(true);
+  try {
+    await updateAppSettings({
+      ...appSettings!,
+      // Your updated settings
+    });
+    setHasChanges(false);
+    toast.success(t("settingsUpdated"));
+  } catch (error) {
+    toast.error(t("settingsUpdateFailed"));
+  } finally {
+    setLoading(false);
+  }
+};
+```
+
+### Change Detection
+```tsx
+const handleFieldChange = (field: string, value: any) => {
+  const newSettings = { ...settings, [field]: value };
+  setSettings(newSettings);
+  // Detect if anything changed
+  setHasChanges(
+    JSON.stringify(newSettings) !== JSON.stringify(initialSettings)
+  );
+};
+```
+
+### Validation Error Display
+```tsx
+<FormGroup
+  label="Email"
+  error={errors.email}    // Will display if truthy
+>
+  <EnhancedInput
+    type="email"
+    invalid={!!errors.email}  // Red border if error
+    value={email}
+    onChange={(e) => {
+      setEmail(e.target.value);
+      if (errors.email) setErrors({ ...errors, email: '' });
+    }}
+  />
+</FormGroup>
+```
+
+---
+
+## Summary
+
+All 10 settings pages are now **import-ready** and can be gradually enhanced with the new component library. Start with any page and follow these copy-paste patterns for quick integration.
+
+**Expected time to integrate all pages:** 4-5 hours  
+**Difficulty level:** Easy  
+**Breaking changes:** None  
+
+Ready to enhance settings pages whenever you are!

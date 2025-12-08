@@ -1,0 +1,416 @@
+# Page Audit Report - AccreditEx Application
+
+**Date:** December 2, 2025  
+**Total Pages Audited:** 32 pages  
+**Report Type:** Functional Overlap & Merge Opportunity Analysis
+
+---
+
+## Executive Summary
+
+After comprehensive analysis of all 32 pages in the application, **4 HIGH-PRIORITY merge opportunities** have been identified that can improve UX/UI without impacting functionality:
+
+1. **DocumentsPage ↔ DocumentControlHubPage** - Duplicate document management
+2. **AuditHubPage ↔ AuditLogPage** - Related audit functionality spread across pages
+3. **ProjectListPage ↔ ProjectDetailPage** - List/detail separation (consider unified interface)
+4. **TrainingDetailPage ↔ TrainingHubPage** - Training management scattered
+
+---
+
+## Page Categories & Functional Groups
+
+### 1. **List/Detail Pages** (Core Content Management)
+- ProjectListPage ← → ProjectDetailPage
+- TrainingHubPage ← → TrainingDetailPage
+- DepartmentsPage ← → DepartmentDetailPage
+- AccreditationHubPage (no detail view - redirects to StandardsPage)
+
+### 2. **Hub/Dashboard Pages** (Multi-tab Interfaces)
+- RiskHubPage (4 tabs: register, capa, incidents, checks)
+- TrainingHubPage (2 tabs: myTraining, admin)
+- DocumentControlHubPage (3 categories: all, my_documents, recent)
+- DataHubPage (statistics + export/import)
+
+### 3. **Standalone Pages** (No Related Pages)
+- DashboardPage (main entry)
+- LoginPage (authentication)
+- OnboardingPage (new users)
+- AnalyticsPage (analytics dashboard)
+- QualityInsightsPage (insights dashboard)
+- CalendarPage (calendar view)
+- MyTasksPage (task management)
+- UserProfilePage (user profile detail)
+- CertificatePage (certificate viewer)
+- CreateProjectPage (project creation flow)
+- ProjectOverview (project overview - used in ProjectDetailPage)
+- DesignControlsPage (design controls - used in ProjectDetailPage)
+- MockSurveyPage (survey - used in ProjectDetailPage)
+- MockSurveyListPage (survey list - used in ProjectDetailPage)
+- MessagingPage (messaging system)
+- UsersPage (user management)
+- DocumentsPage (DEPRECATED - placeholder)
+
+---
+
+## HIGH-PRIORITY MERGE OPPORTUNITIES
+
+### 🔴 **CRITICAL #1: DocumentsPage ↔ DocumentControlHubPage**
+
+**Current State:**
+```
+DocumentsPage (pages/DocumentsPage.tsx) - 12 LINES
+└─ Placeholder page with redirect notice
+
+DocumentControlHubPage (pages/DocumentControlHubPage.tsx) - 220+ LINES  
+├─ Document editor modal
+├─ Process map editor
+├─ Document search & filters
+├─ Metadata management
+├─ PDF viewer
+└─ Signature modal
+```
+
+**Issue:** DocumentsPage is literally a placeholder that says "Please navigate to the Document Control Hub." Users see two separate menu items pointing to the same functionality.
+
+**Impact:** Confusing UX - users don't know which page to visit.
+
+**Recommendation:** 
+- ✅ **DELETE** `DocumentsPage.tsx`
+- ✅ **KEEP** `DocumentControlHubPage.tsx` as the only document management interface
+- ✅ Update navigation to point only to DocumentControlHubPage
+- ✅ Rename to just `DocumentsPage.tsx` (shorter, clearer)
+
+**Effort:** LOW (< 30 minutes)
+- Remove 1 file
+- Update navigation imports in MainRouter, NavigationRail, MobileSidebar
+- Update types.ts if 'documents' nav view references DocumentsPage
+
+**Risk:** MINIMAL - DocumentsPage is already a placeholder
+
+---
+
+### 🔴 **CRITICAL #2: AuditHubPage ↔ AuditLogPage**
+
+**Current State:**
+```
+AuditHubPage (pages/AuditHubPage.tsx) - 94 LINES
+└─ Audit plan management
+   ├─ Create audit plan
+   ├─ Edit audit plan
+   ├─ Delete audit plan
+   └─ Run audit
+
+AuditLogPage (pages/AuditLogPage.tsx) - 60 LINES
+└─ Activity log viewer
+   ├─ Search activity logs
+   ├─ Filter by user/action
+   └─ Display timestamps
+```
+
+**Issue:** AuditLogPage is a READ-ONLY activity log viewer, while AuditHubPage is for managing AUDIT PLANS. These are related but different concepts that users expect in one place (like "Audit Management Hub").
+
+**Current Usage:**
+- AuditLogPage is embedded in ProjectDetailPage as a sub-view
+- AuditHubPage is a main navigation item
+- Users must navigate between two pages to see audit plans + activity history
+
+**Recommendation:**
+- ✅ **MERGE** AuditLogPage into AuditHubPage as a second tab
+- ✅ Create 2-tab interface in AuditHubPage:
+  - Tab 1: "Audit Plans" (current AuditHubPage content)
+  - Tab 2: "Audit Log" (current AuditLogPage content)
+- ✅ Keep ProjectDetailPage usage: embed AuditLogPage component directly
+- ✅ Update types.ts to support 'audit' view with optional activeTab
+
+**Effort:** MEDIUM (1-2 hours)
+- Move AuditLogPage table logic to AuditHubPage as new tab
+- Add tab state management to AuditHubPage
+- Update ProjectDetailPage to still use AuditLogPage component
+- Update navigation
+
+**Risk:** LOW - Both pages are independent logic blocks, easy to separate tabs
+
+**Benefit:**
+- Unified audit management experience
+- Better discoverability
+- Reduced navigation steps
+- Pattern consistency with RiskHubPage & TrainingHubPage
+
+---
+
+### 🟠 **HIGH #3: ProjectListPage ↔ ProjectDetailPage** (Consider Unified View)
+
+**Current State:**
+```
+ProjectListPage (pages/ProjectListPage.tsx) - 301 LINES
+├─ List view with cards/grid
+├─ Search & advanced filters
+│  ├─ Status filter
+│  ├─ Program filter
+│  ├─ Assignee filter
+│  └─ Date range filter
+├─ Bulk actions
+│  ├─ Bulk archive
+│  ├─ Bulk restore
+│  ├─ Bulk delete
+│  └─ Bulk status update
+├─ Analytics toggle
+└─ Individual selection (checkboxes)
+
+ProjectDetailPage (pages/ProjectDetailPage.tsx) - 146 LINES
+├─ Detail view with tabs
+│  ├─ Overview
+│  ├─ Checklist
+│  ├─ Design Controls
+│  ├─ Audit Log
+│  ├─ Mock Survey
+│  └─ PDCA Cycle
+├─ Signature modal
+├─ Report generation
+└─ Real-time subscriptions
+```
+
+**Issue:** Users must navigate away from list to see details. Modern UX expects split-panel or modal view for details without losing list context.
+
+**Alternative Patterns:**
+1. **Split Panel** (Recommended): Show list on left, details on right (like email clients)
+2. **Modal/Drawer**: Click item → drawer opens with details, list stays visible behind
+3. **Keep Current**: Pages work well, but follow older UX pattern
+
+**Recommendation:** 
+- ✅ **DO NOT MERGE NOW** - More complex, requires UI overhaul
+- 🎯 **FUTURE ENHANCEMENT**: Consider split-panel redesign in Phase 2
+- ✅ Current implementation is functional and clear
+
+**Effort:** HIGH (4-6 hours) - Future consideration only
+
+---
+
+### 🟠 **HIGH #4: TrainingDetailPage ↔ TrainingHubPage** (Consider Better Organization)
+
+**Current State:**
+```
+TrainingHubPage (pages/TrainingHubPage.tsx) - 70 LINES
+├─ Role-based tabs (Admin only):
+│  ├─ My Training (all users)
+│  └─ Admin Panel (admins only)
+├─ My Training Tab:
+│  └─ MyTrainingTab component (training list)
+└─ Admin Tab:
+   └─ TrainingAdminTab component (manage trainings)
+
+TrainingDetailPage (pages/TrainingDetailPage.tsx) - 95 LINES
+├─ Training content view
+├─ Quiz interface
+├─ Results display
+└─ Certificate redirect
+```
+
+**Issue:** TrainingDetailPage is reached from MyTrainingTab but exists as separate page. Navigation flow: TrainingHub → MyTrainingTab → TrainingDetailPage. Users must navigate through hierarchy.
+
+**Current Flow:**
+```
+TrainingHubPage
+├─ MyTrainingTab (component)
+│  └─ [Click training] → Navigate to TrainingDetailPage
+└─ TrainingAdminTab (component)
+```
+
+**Recommendation:**
+- ✅ **KEEP CURRENT STRUCTURE** - It works well
+- ✅ Consider moving TrainingDetailPage content into modal/drawer (future)
+- ✅ For now: Structure is clear and functional, no merge needed
+
+**Reason:** The separation is intentional (hub for listing, detail page for content/quiz). Merging would make TrainingHubPage too complex.
+
+---
+
+## MEDIUM-PRIORITY ISSUES
+
+### 🟡 **ISSUE #5: DepartmentsPage ↔ DepartmentDetailPage** (Potential Improvement)
+
+**Current State:**
+```
+DepartmentsPage (pages/DepartmentsPage.tsx) - 102 LINES
+├─ Department list with cards
+├─ Create department modal
+├─ Department statistics (users, tasks, compliance)
+└─ [Click department] → Navigate to DepartmentDetailPage
+
+DepartmentDetailPage (pages/DepartmentDetailPage.tsx) - 74 LINES
+├─ Department detail view
+├─ Users in department
+├─ Tasks in department
+├─ Compliance score
+└─ Edit/delete buttons
+```
+
+**Issue:** Similar to ProjectListPage/DetailPage - detail requires navigation away.
+
+**Recommendation:**
+- ✅ **OPTIONAL IMPROVEMENT**: Consider modal view for quick details
+- ✅ Current implementation is acceptable
+- ✅ Not urgent - low priority for UX improvement
+
+---
+
+### 🟡 **ISSUE #6: DesignControlsPage Usage**
+
+**Current State:**
+```
+DesignControlsPage (pages/DesignControlsPage.tsx)
+└─ Embedded in ProjectDetailPage as activeView tab
+└─ Never used as standalone page
+```
+
+**Issue:** DesignControlsPage is in the `/pages` directory but functions as a component (always embedded).
+
+**Recommendation:**
+- ✅ **MOVE** `DesignControlsPage.tsx` → `components/projects/DesignControlsComponent.tsx`
+- ✅ Update ProjectDetailPage import path
+- ✅ Rename to `DesignControlsComponent.tsx` for clarity
+
+**Effort:** LOW (15 minutes) - purely organizational
+
+---
+
+### 🟡 **ISSUE #7: MockSurveyPage & MockSurveyListPage Usage**
+
+**Current State:**
+```
+MockSurveyPage (pages/MockSurveyPage.tsx)
+└─ Embedded in ProjectDetailPage as activeView tab
+
+MockSurveyListPage (pages/MockSurveyListPage.tsx)
+└─ Used in ProjectDetailPage
+```
+
+**Issue:** Both are page files but function as components (always embedded in ProjectDetailPage).
+
+**Recommendation:**
+- ✅ **MOVE** to `components/projects/` directory
+- ✅ Rename to `SurveyComponent.tsx` and `SurveyListComponent.tsx`
+- ✅ Update ProjectDetailPage imports
+
+**Effort:** LOW (15 minutes) - purely organizational
+
+---
+
+## LOW-PRIORITY OBSERVATIONS
+
+### ✅ Well-Organized Pages (No Issues)
+
+**Dashboard/Analytics:**
+- DashboardPage - Main entry point ✓
+- AnalyticsPage - Separate analytics dashboard ✓
+- QualityInsightsPage - Insights-specific dashboard ✓
+
+**Core Management:**
+- UsersPage - User management (list with modal for edit) ✓
+- StandardsPage - Standards management within program ✓
+- ProjectOverview - Project overview component ✓
+
+**Single-Purpose Pages:**
+- LoginPage - Authentication ✓
+- OnboardingPage - Onboarding flow ✓
+- CalendarPage - Calendar view ✓
+- MyTasksPage - Task management ✓
+- UserProfilePage - User profile detail ✓
+- CertificatePage - Certificate viewer ✓
+- CreateProjectPage - Project creation wizard ✓
+- DataHubPage - Data management & export ✓
+- MessagingPage - User messaging ✓
+
+**Hub Pages (Well Structured):**
+- RiskHubPage (4 tabs) - Clear organization ✓
+- AccreditationHubPage - Program management ✓
+
+---
+
+## Summary Table
+
+| Merge Opportunity | Priority | Current State | Recommendation | Effort | Risk | UX Impact |
+|---|---|---|---|---|---|---|
+| DocumentsPage ↔ DocumentControlHubPage | 🔴 CRITICAL | Duplicate | DELETE DocumentsPage | 30min | LOW | MAJOR |
+| AuditHubPage ↔ AuditLogPage | 🔴 CRITICAL | Separate | MERGE as 2 tabs | 1-2hr | LOW | MAJOR |
+| ProjectListPage ↔ ProjectDetailPage | 🟠 HIGH | Separate pages | Keep for now, future split-panel | - | - | MEDIUM |
+| TrainingDetailPage ↔ TrainingHubPage | 🟠 HIGH | Separate pages | Keep current structure | - | - | LOW |
+| DepartmentsPage ↔ DepartmentDetailPage | 🟡 MEDIUM | Separate pages | Optional modal improvement | - | - | LOW |
+| DesignControlsPage placement | 🟡 MEDIUM | In /pages dir | Move to /components | 15min | MINIMAL | NONE |
+| MockSurveyPage/ListPage placement | 🟡 MEDIUM | In /pages dir | Move to /components | 15min | MINIMAL | NONE |
+
+---
+
+## Implementation Roadmap
+
+### **Phase 1: Critical Issues (Immediate)** 
+**Effort:** ~2 hours | **Impact:** HIGH UX improvement
+
+1. ✅ Remove DocumentsPage (placeholder deletion)
+2. ✅ Merge AuditLogPage into AuditHubPage (add tab)
+3. ✅ Update navigation in 3 files (MainRouter, NavigationRail, MobileSidebar)
+4. ✅ Test navigation and tab switching
+
+### **Phase 2: Organization (Optional, Quick Wins)**
+**Effort:** ~30 minutes | **Impact:** Code cleanliness
+
+1. ✅ Move DesignControlsPage → components/projects/
+2. ✅ Move MockSurveyPage & MockSurveyListPage → components/projects/
+3. ✅ Update imports in ProjectDetailPage
+4. ✅ No functional changes
+
+### **Phase 3: Future Enhancement (Next Quarter)**
+**Effort:** 4-6 hours | **Impact:** Modern UX
+
+1. 🎯 Consider split-panel redesign for ProjectListPage ↔ ProjectDetailPage
+2. 🎯 Optional: Consider drawer view for DepartmentDetailPage
+3. 🎯 Optional: Consider modal for TrainingDetailPage details
+
+---
+
+## Questions for Product Team
+
+1. **DocumentsPage**: Should we deprecate the placeholder or was this intentional?
+2. **Audit Management**: Would users prefer a single "Audit Hub" with both plans + logs, or do they like the separation?
+3. **Project Management**: Would a split-panel list/detail view be beneficial, or is current separate-page design preferred?
+4. **Training Details**: Should quiz results open in modal vs. separate page?
+
+---
+
+## File Structure Recommendations
+
+### Current Issues
+```
+pages/
+├─ DocumentsPage.tsx (DEPRECATED - placeholder)
+├─ DesignControlsPage.tsx (should be component)
+├─ MockSurveyPage.tsx (should be component)
+└─ MockSurveyListPage.tsx (should be component)
+```
+
+### Recommended Structure
+```
+pages/
+├─ (remove DocumentsPage.tsx)
+├─ DocumentControlHubPage.tsx (renamed to DocumentsPage? or keep as is)
+└─ (no change to others)
+
+components/
+├─ projects/
+│  ├─ DesignControlsComponent.tsx (moved from pages)
+│  ├─ SurveyComponent.tsx (moved from pages as MockSurveyPage)
+│  └─ SurveyListComponent.tsx (moved from pages as MockSurveyListPage)
+├─ audits/
+│  └─ AuditLogTab.tsx (extracted from pages/AuditLogPage.tsx)
+└─ (rest unchanged)
+```
+
+---
+
+## Conclusion
+
+**Quick Wins Available:** 2 high-impact changes (DocumentsPage deletion + AuditHubPage merge) with LOW risk and HIGH UX benefit.
+
+**Recommended First Action:** Delete DocumentsPage and merge AuditHubPage ↔ AuditLogPage. Both are straightforward and improve user experience immediately.
+
+**Not Recommended Now:** Refactoring ProjectListPage/DetailPage structure - current design is functional and modern pattern would require significant redesign.

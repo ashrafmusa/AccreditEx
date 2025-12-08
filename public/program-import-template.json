@@ -1,0 +1,26 @@
+[
+  {
+    "id": "prog-jci",
+    "name": "JCI",
+    "description": {
+      "en": "Joint Commission International standards for patient safety and quality of care.",
+      "ar": "معايير اللجنة المشتركة الدولية لسلامة المرضى وجودة الرعاية."
+    }
+  },
+  {
+    "id": "prog-dnv",
+    "name": "DNV",
+    "description": {
+      "en": "DNV GL standards, integrating ISO 9001 quality management with healthcare requirements.",
+      "ar": "معايير DNV GL، التي تدمج إدارة الجودة ISO 9001 مع المتطلبات الصحية."
+    }
+  },
+  {
+    "id": "prog-custom",
+    "name": "Custom Program",
+    "description": {
+      "en": "Your custom accreditation program requirements.",
+      "ar": "متطلبات برنامج الاعتماد المخصص الخاص بك."
+    }
+  }
+]

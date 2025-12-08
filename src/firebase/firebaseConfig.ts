@@ -1,0 +1,52 @@
+import * as firebase from "firebase/app";
+import { getAuth, Auth } from "firebase/auth";
+import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
+import { authTokenOptimizer } from "@/services/authTokenOptimizer";
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// NOTE: Replace with your actual Firebase project configuration
+const firebaseConfig = {
+    apiKey: import.meta.env.VITE_API_KEY,
+    authDomain: import.meta.env.VITE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_APP_ID,
+    measurementId: import.meta.env.VITE_MEASUREMENT_ID
+};
+
+// Initialize Firebase
+const app = !firebase.getApps().length ? firebase.initializeApp(firebaseConfig) : firebase.getApp();
+
+export const db = getFirestore(app);
+export const storage = getStorage(app);
+
+// Lazy initialize auth - only when needed (after login page)
+let authInstance: Auth | null = null;
+
+export const getAuthInstance = (): Auth => {
+    if (!authInstance) {
+        authInstance = getAuth(app);
+        // Initialize auth token optimizer only after auth is ready
+        authTokenOptimizer.initialize(authInstance);
+    }
+    return authInstance;
+};
+
+export const auth = getAuthInstance();
+
+// Enable offline persistence for free tier optimization
+// Reduces reads by caching data locally
+try {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('Multiple tabs open, persistence disabled');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Browser does not support persistence');
+        }
+    });
+} catch (error) {
+    // Handle cases where persistence is already enabled
+}

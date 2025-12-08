@@ -1,0 +1,577 @@
+{
+  "collection": "projects",
+  "documentIdField": "id",
+  "documents": [
+    {
+      "id": "proj-ch1-gal",
+      "name": "Chapter 1: Governance & Leadership Implementation",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 1",
+      "chapterCode": "GAL",
+      "status": "In Progress",
+      "startDate": "2024-01-15",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-1",
+        "name": "Mr. Ashraf Musa",
+        "email": "excellencequestconsultancy@gmail.com",
+        "role": "Admin"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch1-1",
+          "timestamp": "2024-01-15T09:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch1-1",
+          "standardId": "OHAS.GAL.1",
+          "item": "A governing body is established with clear authority and responsibility for the organization.",
+          "status": "Compliant",
+          "assignedTo": "user-1",
+          "notes": "Board charter updated and roles defined.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch1-2",
+          "standardId": "OHAS.GAL.2",
+          "item": "The organization establishes policies and procedures for quality management.",
+          "status": "Compliant",
+          "assignedTo": "user-2",
+          "notes": "Quality policy documented and communicated to all staff.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-01-15T09:00:00.000Z",
+      "updatedAt": "2024-01-15T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch2-hrm",
+      "name": "Chapter 2: Human Resources Management",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 2",
+      "chapterCode": "HRM",
+      "status": "In Progress",
+      "startDate": "2024-02-01",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-6",
+        "name": "Fatima Al-Sayed",
+        "email": "f.alsayed@healthcare.com",
+        "role": "Project Lead"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch2-1",
+          "timestamp": "2024-02-01T10:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch2-1",
+          "standardId": "OHAS.HRM.1",
+          "item": "The organization has effective human resource management policies and procedures.",
+          "status": "In Progress",
+          "assignedTo": "user-6",
+          "notes": "HR policies being updated to align with OHAS framework.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Review all HR policies. 2. Update job descriptions. 3. Implement new competency framework.",
+          "comments": []
+        },
+        {
+          "id": "cl-ch2-2",
+          "standardId": "OHAS.HRM.2",
+          "item": "The organization ensures adequate staffing and working conditions.",
+          "status": "Partially Compliant",
+          "assignedTo": "user-6",
+          "notes": "Staffing levels adequate, working conditions improvements underway.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Complete occupational health assessment. 2. Implement safety improvements.",
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-02-01T09:00:00.000Z",
+      "updatedAt": "2024-02-01T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch3-css",
+      "name": "Chapter 3: Compulsory Safety Standards",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 3",
+      "chapterCode": "CSS",
+      "status": "In Progress",
+      "startDate": "2024-03-01",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-2",
+        "name": "Marcus Thorne",
+        "email": "m.thorne@healthcare.com",
+        "role": "Project Lead"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch3-1",
+          "timestamp": "2024-03-01T11:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch3-1",
+          "standardId": "OHAS.CSS.1",
+          "item": "Patient identification and safety is ensured throughout care delivery.",
+          "status": "Partially Compliant",
+          "assignedTo": "user-3",
+          "notes": "Electronic ID system implementation in progress.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Complete system configuration. 2. Staff training. 3. Compliance audit.",
+          "comments": []
+        },
+        {
+          "id": "cl-ch3-2",
+          "standardId": "OHAS.CSS.2",
+          "item": "Effective communication is implemented to ensure patient safety.",
+          "status": "Compliant",
+          "assignedTo": "user-4",
+          "notes": "SBAR protocol hospital-wide adoption completed.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch3-3",
+          "standardId": "OHAS.CSS.3",
+          "item": "Medication safety is ensured through proper management and administration.",
+          "status": "In Progress",
+          "assignedTo": "user-4",
+          "notes": "Five-rights verification process being standardized.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Finalize medication protocols. 2. Staff training. 3. Audit implementation.",
+          "comments": []
+        },
+        {
+          "id": "cl-ch3-4",
+          "standardId": "OHAS.CSS.4",
+          "item": "Infection prevention and control measures are implemented.",
+          "status": "Compliant",
+          "assignedTo": "user-10",
+          "notes": "Hand hygiene compliance at 92%. IPC protocols updated.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch3-5",
+          "standardId": "OHAS.CSS.5",
+          "item": "Surgical safety measures are implemented to prevent adverse events.",
+          "status": "Compliant",
+          "assignedTo": "user-8",
+          "notes": "WHO surgical safety checklist fully integrated in OR.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-03-01T09:00:00.000Z",
+      "updatedAt": "2024-03-01T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch4-smcs",
+      "name": "Chapter 4: Specialized Medical Care Services",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 4",
+      "chapterCode": "SMCS",
+      "status": "Not Started",
+      "startDate": "2024-04-01",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-5",
+        "name": "Dr. Sarah Al-Hamad",
+        "email": "s.alhamad@healthcare.com",
+        "role": "Admin"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch4-1",
+          "timestamp": "2024-03-20T14:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch4-1",
+          "standardId": "OHAS.SMCS.1",
+          "item": "The organization provides specialized medical care services based on its scope of services.",
+          "status": "NotApplicable",
+          "assignedTo": null,
+          "notes": "To be initiated in April 2024.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch4-2",
+          "standardId": "OHAS.SMCS.2",
+          "item": "Emergency care services are organized and accessible.",
+          "status": "NotApplicable",
+          "assignedTo": null,
+          "notes": "Emergency services audit planned.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-04-01T09:00:00.000Z",
+      "updatedAt": "2024-04-01T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch5-qrm",
+      "name": "Chapter 5: Quality and Risk Management",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 5",
+      "chapterCode": "QRM",
+      "status": "In Progress",
+      "startDate": "2024-03-01",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-2",
+        "name": "Marcus Thorne",
+        "email": "m.thorne@healthcare.com",
+        "role": "Project Lead"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch5-1",
+          "timestamp": "2024-03-01T12:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch5-1",
+          "standardId": "OHAS.QRM.1",
+          "item": "The organization has a comprehensive quality management system.",
+          "status": "Compliant",
+          "assignedTo": "user-2",
+          "notes": "QMS established with clear objectives and continuous improvement processes.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch5-2",
+          "standardId": "OHAS.QRM.2",
+          "item": "Risk management processes are implemented to identify and mitigate risks.",
+          "status": "In Progress",
+          "assignedTo": "user-2",
+          "notes": "Risk register established. Risk assessment process being finalized.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Complete risk assessments. 2. Develop mitigation plans. 3. Assign risk owners.",
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-03-01T09:00:00.000Z",
+      "updatedAt": "2024-03-01T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch6-ipc",
+      "name": "Chapter 6: Infection Prevention and Control",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 6",
+      "chapterCode": "IPC",
+      "status": "In Progress",
+      "startDate": "2024-03-15",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-6",
+        "name": "Fatima Al-Sayed",
+        "email": "f.alsayed@healthcare.com",
+        "role": "Project Lead"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch6-1",
+          "timestamp": "2024-03-15T09:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch6-1",
+          "standardId": "OHAS.IPC.1",
+          "item": "Infection prevention and control program is established and managed.",
+          "status": "In Progress",
+          "assignedTo": "user-6",
+          "notes": "IPC committee formed. Policies and procedures being developed.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Establish IPC committee. 2. Develop IPC policies. 3. Staff training. 4. Monitor compliance.",
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-03-15T09:00:00.000Z",
+      "updatedAt": "2024-03-15T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch7-mmu",
+      "name": "Chapter 7: Medication Management and Use",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 7",
+      "chapterCode": "MMU",
+      "status": "Not Started",
+      "startDate": "2024-05-01",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-4",
+        "name": "Samuel Chen",
+        "email": "s.chen@healthcare.com",
+        "role": "Team Member"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch7-1",
+          "timestamp": "2024-04-15T10:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch7-1",
+          "standardId": "OHAS.MMU.1",
+          "item": "Medications are properly managed from procurement to administration.",
+          "status": "NotApplicable",
+          "assignedTo": null,
+          "notes": "Project starting May 2024. Pharmacy assessment planned.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-05-01T09:00:00.000Z",
+      "updatedAt": "2024-05-01T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch8-pre",
+      "name": "Chapter 8: Patient Rights and Education",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 8",
+      "chapterCode": "PRE",
+      "status": "Not Started",
+      "startDate": "2024-05-15",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-5",
+        "name": "Dr. Sarah Al-Hamad",
+        "email": "s.alhamad@healthcare.com",
+        "role": "Admin"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch8-1",
+          "timestamp": "2024-05-01T11:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch8-1",
+          "standardId": "OHAS.PRE.1",
+          "item": "Patient rights are respected and protected throughout the organization.",
+          "status": "NotApplicable",
+          "assignedTo": null,
+          "notes": "Patient rights charter to be developed.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch8-2",
+          "standardId": "OHAS.PRE.2",
+          "item": "Patients receive education to promote health and well-being.",
+          "status": "NotApplicable",
+          "assignedTo": null,
+          "notes": "Patient education programs to be designed.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-05-15T09:00:00.000Z",
+      "updatedAt": "2024-05-15T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch9-ims",
+      "name": "Chapter 9: Information Management System",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 9",
+      "chapterCode": "IMS",
+      "status": "In Progress",
+      "startDate": "2024-02-15",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-7",
+        "name": "James Wilson",
+        "email": "j.wilson@healthcare.com",
+        "role": "Project Lead"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch9-1",
+          "timestamp": "2024-02-15T13:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch9-1",
+          "standardId": "OHAS.IMS.1",
+          "item": "The organization has a comprehensive information management system.",
+          "status": "In Progress",
+          "assignedTo": "user-7",
+          "notes": "IT infrastructure assessment completed. System upgrades planned.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Implement data security measures. 2. Deploy EHR system. 3. Staff training.",
+          "comments": []
+        },
+        {
+          "id": "cl-ch9-2",
+          "standardId": "OHAS.IMS.2",
+          "item": "Patient records are accurate, complete, and accessible.",
+          "status": "In Progress",
+          "assignedTo": "user-7",
+          "notes": "Electronic health records system implementation underway.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Finalize EHR configuration. 2. Migrate existing records. 3. Audit data quality.",
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-02-15T09:00:00.000Z",
+      "updatedAt": "2024-02-15T09:00:00.000Z"
+    },
+    {
+      "id": "proj-ch10-fms",
+      "name": "Chapter 10: Facility Management System",
+      "programId": "prog-ohap",
+      "chapter": "Chapter 10",
+      "chapterCode": "FMS",
+      "status": "In Progress",
+      "startDate": "2024-02-01",
+      "endDate": null,
+      "projectLead": {
+        "id": "user-12",
+        "name": "Robert Brown",
+        "email": "r.brown@healthcare.com",
+        "role": "Team Member"
+      },
+      "activityLog": [
+        {
+          "id": "log-ch10-1",
+          "timestamp": "2024-02-01T08:00:00Z",
+          "user": "Mr. Ashraf Musa",
+          "action": {
+            "en": "Project Created",
+            "ar": "تم إنشاء المشروع"
+          }
+        }
+      ],
+      "mockSurveys": [],
+      "capaReports": [],
+      "designControls": [],
+      "checklist": [
+        {
+          "id": "cl-ch10-1",
+          "standardId": "OHAS.FMS.1",
+          "item": "The organization provides a safe, clean, and functional physical environment.",
+          "status": "Compliant",
+          "assignedTo": "user-12",
+          "notes": "Facilities audit completed. Safety standards implemented.",
+          "evidenceFiles": [],
+          "actionPlan": null,
+          "comments": []
+        },
+        {
+          "id": "cl-ch10-2",
+          "standardId": "OHAS.FMS.2",
+          "item": "The organization manages occupational health and safety.",
+          "status": "In Progress",
+          "assignedTo": "user-12",
+          "notes": "Occupational health assessment underway. Safety improvements planned.",
+          "evidenceFiles": [],
+          "actionPlan": "1. Complete hazard assessment. 2. Implement controls. 3. Staff training.",
+          "comments": []
+        }
+      ],
+      "createdAt": "2024-02-01T09:00:00.000Z",
+      "updatedAt": "2024-02-01T09:00:00.000Z"
+    }
+  ]
+}

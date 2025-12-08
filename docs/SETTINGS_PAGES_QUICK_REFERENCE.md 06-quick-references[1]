@@ -1,0 +1,217 @@
+# Quick Reference: New Settings Pages
+
+## How to Access
+
+1. Open Settings (via main menu)
+2. In the left sidebar, click:
+   - **"Usage Monitor"** → UsageMonitorSettingsPage
+   - **"User Management"** → UsersSettingsPage
+
+## Usage Monitor Settings
+
+### Data Collection
+- **Track Page Views**: Monitor which pages are accessed and how often
+- **Track User Actions**: Monitor user interactions and activities  
+- **Track Performance Metrics**: Monitor app performance and resource usage
+
+### Data Management
+- **Data Retention Period**: How long to keep usage data (30-365 days, default: 90)
+- **Auto Export Enabled**: Automatically export usage reports
+
+### Alerts
+- **Alert Threshold**: When to trigger alerts (10-100%, default: 80%)
+
+---
+
+## User Management Settings
+
+### User Accounts
+- **Enable User Management**: Allow creation and management of user accounts
+- **Require Email Verification**: Users must verify email before accessing
+
+### Inactivity Management
+- **Auto-Deactivate Inactive Users**: Toggle to enable
+- **Inactivity Threshold**: Days before auto-deactivation (7-365, default: 90)
+  *(only shown when auto-deactivation is enabled)*
+
+### Session Security
+- **Session Timeout**: How long before auto-logout (5-480 minutes, default: 30)
+
+### Login Security
+- **Max Failed Login Attempts**: Lockout after this many failed attempts (3-20, default: 5)
+- **Account Lockout Duration**: How long account stays locked (5-120 minutes, default: 15)
+
+---
+
+## Common Tasks
+
+### Save Settings
+1. Make changes using toggles and sliders
+2. Click **"Save Changes"** button
+3. Wait for confirmation toast
+4. Settings are automatically persisted to the database
+
+### Cancel Changes
+1. Make changes using toggles and sliders
+2. Click **"Cancel"** button
+3. All changes revert to previously saved values
+
+### Detect Unsaved Changes
+- A yellow/amber alert appears at the top
+- "Save Changes" button is only enabled when there are changes
+- "Cancel" button is only enabled when there are changes
+
+---
+
+## API Integration
+
+### Persist Settings
+```typescript
+const { appSettings, updateAppSettings } = useAppStore();
+
+await updateAppSettings({
+  ...appSettings!,
+  usageMonitor: { /* settings */ },
+  users: { /* settings */ }
+});
+```
+
+### Read Current Settings
+```typescript
+const currentUsageMonitor = appSettings?.usageMonitor;
+const currentUserSettings = appSettings?.users;
+```
+
+---
+
+## Type Definitions
+
+```typescript
+// Usage Monitor
+interface UsageMonitorSettings {
+  trackPageViews: boolean;
+  trackUserActions: boolean;
+  trackPerformanceMetrics: boolean;
+  dataRetentionDays: number;
+  autoExportEnabled: boolean;
+  alertThreshold: number;
+}
+
+// User Management
+interface UsersSettings {
+  enableUserManagement: boolean;
+  requireEmailVerification: boolean;
+  autoDeactivateInactiveUsers: boolean;
+  inactivityThresholdDays: number;
+  sessionTimeoutMinutes: number;
+  maxLoginAttempts: number;
+  lockoutDurationMinutes: number;
+}
+```
+
+---
+
+## Keyboard Shortcuts
+
+| Action | Key |
+|--------|-----|
+| Focus next field | Tab |
+| Adjust slider | Arrow Keys (when focused) |
+| Toggle switch | Space |
+| Save | Ctrl+S (if implemented) |
+
+---
+
+## Troubleshooting
+
+### Changes Not Saving
+- Check network connection
+- Verify user has admin permissions
+- Check browser console for errors
+- Try clearing cache and refresh
+
+### Settings Show Old Values
+- Refresh the page (F5)
+- Clear localStorage if needed
+- Check that you're in the right settings section
+
+### Toggles Not Working
+- Ensure JavaScript is enabled
+- Try refreshing the page
+- Check browser console for errors
+- Try a different browser
+
+---
+
+## Component Architecture
+
+```
+SettingsLayout
+├── NavItems (sidebar)
+│   ├── Usage Monitor → UsageMonitorSettingsPage
+│   └── User Management → UsersSettingsPage
+└── renderSection()
+    ├── SettingsCard
+    ├── SettingsSection
+    ├── SettingsAlert
+    ├── ToggleSwitch
+    └── Input[range]
+```
+
+---
+
+## Localization Keys
+
+The following translation keys are used (automatically handled):
+- `cancel` - Cancel button text
+- `saveChanges` - Save button text
+- `saving` - Loading state text
+- `unsavedChanges` - Alert title
+- `settingsUpdated` - Success message
+- `settingsUpdateFailed` - Error message
+
+---
+
+## Browser Support
+
+✅ Chrome/Edge (v90+)
+✅ Firefox (v88+)
+✅ Safari (v14+)
+✅ Mobile browsers (iOS Safari, Chrome Mobile)
+
+---
+
+## Performance Notes
+
+- Settings are lazy-loaded (only when section is selected)
+- Change detection is efficient (O(n) string comparison)
+- No external API calls until save is clicked
+- Optimized for 1000+ settings entries
+
+---
+
+## Security Considerations
+
+⚠️ **User Management Changes Impact:**
+- Session timeout changes affect existing sessions after next refresh
+- Login attempt changes only affect new logins
+- Inactivity deactivation runs on user's next activity check
+- Changes require admin role
+
+🔒 **Security Notice:**
+- All settings are stored in database
+- Changes are audited (implement in production)
+- Settings are not synced in real-time across tabs
+- Refresh required to see other users' setting changes
+
+---
+
+## Future Enhancements
+
+- [ ] Bulk import/export settings
+- [ ] Settings profiles/templates
+- [ ] Audit log for all changes
+- [ ] Real-time sync across tabs
+- [ ] Advanced scheduling for data cleanup
+- [ ] Custom alert rules and notifications
+- [ ] User activity analytics dashboard

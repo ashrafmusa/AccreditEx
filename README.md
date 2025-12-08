@@ -16,26 +16,6 @@ AccreditEx is a modern, AI-powered desktop application designed to support healt
 - [Backend & Data Persistence](#backend--data-persistence)
 - [AI Integration](#ai-integration)
 - [Contributing](#contributing)
-- [License](#license)
-
-## Getting Started
-
-The application is designed to run without a build step.
-
-1.  **Configure Firebase**: Open `firebase/firebaseConfig.ts` and replace the placeholder configuration with your own Firebase project's credentials.
-2.  **Set up Firebase**: In your Firebase project console, enable "Email/Password" authentication and create a Firestore database.
-3.  **Run the Application**: Open the `index.html` file in your browser.
-4.  The application will initialize. If it's the first time connecting to your database, it will seed it with the initial data.
-
-**Demo Credentials:**
--   **Email**: `e.reed@healthcare.com`
--   **Password**: `password123`
-
-## Features
-
--   **Training & Competency Management**:
-    -   **Training Hub**: A full-featured module with interactive content, quizzes, and automated certificate generation.
-    -   **User Profile & Competency Hub**: A detailed "digital HR file" for each staff member, tracking their job title, hire date, project involvement, training history, and a full list of their professional competencies and certifications with issue/expiry date tracking.
 -   **Departmental Management**: Organize users into departments, view detailed performance dashboards, and assign tasks effectively.
 -   **Bilingual & RTL Support**: Full support for English and Arabic, including a right-to-left (RTL) interface.
 -   **Light & Dark Mode**: A comfortable viewing experience in any lighting condition.
@@ -49,7 +29,7 @@ The application is designed to run without a build step.
 -   **State Management**: Zustand
 -   **Charting**: Recharts
 -   **AI Integration**: Google Gemini API (`@google/genai`)
--   **Build System**: None (utilizes modern browser features like `importmap`)
+-   **Build System**: Vite
 
 ## Architectural Approach
 
@@ -112,7 +92,7 @@ AI-powered features are provided by the Google Gemini API.
 
 -   All API calls are centralized in `services/ai.ts`.
 -   The application requires a valid Google Gemini API key to be available in the execution environment.
--   **API Key Configuration**: The API key **must** be available as `process.env.API_KEY`. The application is designed to use this key automatically without any user input.
+-   **API Key Configuration**: The API key **must** be set in your `.env` file as `VITE_GEMINI_API_KEY`.
 
 ## Contributing
 

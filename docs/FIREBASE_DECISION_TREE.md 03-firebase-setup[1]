@@ -1,0 +1,425 @@
+# FIREBASE FREE TIER - DEVELOPER DECISION TREE
+**Quick Reference for Implementation Choices**
+
+---
+
+## 🤔 WHEN TO PAGINATE VS FILTER VS CACHE
+
+### Question 1: Is this a collection the user sees as a list?
+```
+YES → Use PAGINATION (userList, projectList, documentList)
+      ✓ Break into 25-item pages
+      ✓ "Load More" or infinite scroll UI
+      
+NO → Use FILTERING (getting users by role, projects by status)
+     ✓ Add where() clause to query
+     ✓ Fetch only needed subset
+```
+
+### Question 2: Does the user access this data repeatedly?
+```
+YES → Use CACHING (user profile, app settings, standard lists)
+      ✓ Cache for 5 minutes
+      ✓ Invalidate on mutations
+      ✓ Clear on logout
+      
+NO → No caching needed (one-time reads)
+     ✓ Still use pagination/filtering
+     ✓ But don't cache the result
+```
+
+### Question 3: Does this data need real-time updates?
+```
+YES → Use LISTENER (dashboard stats, project status, task changes)
+      ✓ Single listener in store
+      ✓ All components subscribe to store
+      ✓ Automatic updates on any change
+      
+NO → Use QUERY (search results, reports, historical data)
+     ✓ Fetch once
+     ✓ Use pagination if large
+     ✓ Cache if accessed frequently
+```
+
+---
+
+## 📋 DECISION MATRIX
+
+| Feature | Pagination | Filtering | Caching | Listener |
+|---------|-----------|-----------|---------|----------|
+| **When** | List views | Specific subset | Repeated access | Live data |
+| **Example** | Users page | Active projects | User profile | Dashboard |
+| **Read Cost** | Low (25 items) | Low (subset only) | Zero (if cached) | Per change |
+| **Implementation** | Medium | Easy | Medium | Hard |
+| **Code Location** | Service | Service | Service | Store |
+| **Invalidation** | N/A | N/A | On mutation | Automatic |
+
+---
+
+## 🛠️ IMPLEMENTATION BY USE CASE
+
+### USE CASE 1: User List Page
+```
+Requirements:
+- Display 100+ users in a list
+- Ability to search/filter
+- Good performance with many users
+
+Implementation:
+1. getPaginatedUsers(pageSize=25, lastDoc) → Pagination
+2. getActiveUsers() → Filtering (show only active)
+3. Cache results for 5 min
+4. Use infinite scroll or "Load More" button
+
+Code Pattern:
+const { users, lastDoc, hasMore } = await getActiveUsers(25);
+if (hasMore) {
+    const next = await getActiveUsers(25, lastDoc);
+}
+```
+
+---
+
+### USE CASE 2: Project Detail Page
+```
+Requirements:
+- Show single project with full details
+- Quick access to related data
+- Real-time updates on changes
+
+Implementation:
+1. getProjectById(id) → Single doc fetch (fast, 1 read)
+2. Cache for 5 min (or until mutation)
+3. Listen to project document for real-time updates
+4. Listen to related documents (tasks, documents) separately
+
+Code Pattern:
+const project = useProjectStore(state => state.selectedProject);
+useEffect(() => {
+    const unsub = onSnapshot(doc(projectsCollection, id), (snap) => {
+        store.setSelectedProject(snap.data());
+    });
+    return unsub;
+}, [id]);
+```
+
+---
+
+### USE CASE 3: Dashboard Statistics
+```
+Requirements:
+- Show live counts/stats
+- Update when data changes
+- Good performance with many queries
+
+Implementation:
+1. Single listener on collections
+2. Store aggregates the counts
+3. All dashboard widgets read from store
+4. Real-time updates automatic
+
+Code Pattern:
+// In store
+const unsubscribe = onSnapshot(projectsCollection, (snap) => {
+    const total = snap.size;
+    const active = snap.docs.filter(d => d.data().status === 'Active').length;
+    set({ projectCount: total, activeProjects: active });
+});
+
+// In component
+const stats = useDashboardStore(state => ({
+    projectCount: state.projectCount,
+    activeProjects: state.activeProjects
+}));
+```
+
+---
+
+### USE CASE 4: Search/Filter Modal
+```
+Requirements:
+- Filter large collection by multiple criteria
+- User can type to search
+- Fast response
+
+Implementation:
+1. Database filtering with where() clauses
+2. Multiple filters combined (AND logic)
+3. No pagination needed (filtered set is small)
+4. Cache results while modal is open
+
+Code Pattern:
+const q = query(
+    projectsCollection,
+    where("status", "==", "Active"),
+    where("departmentId", "==", selectedDept),
+    where("name", ">=", searchText),
+    where("name", "<=", searchText + "\uf8ff"),
+    limit(100)
+);
+const results = await getDocs(q);
+```
+
+---
+
+### USE CASE 5: Bulk Operations
+```
+Requirements:
+- Update many documents
+- Efficient writes
+- Transaction safety
+
+Implementation:
+1. Batch writes (max 500 per batch)
+2. No pagination needed
+3. Wrap in transaction for safety
+4. Invalidate cache after
+
+Code Pattern:
+const batch = writeBatch(db);
+selectedUsers.forEach(user => {
+    const userRef = doc(usersCollection, user.id);
+    batch.update(userRef, { status: "Inactive" });
+});
+await batch.commit();
+cacheService.invalidate('users');
+```
+
+---
+
+## 🚨 ANTI-PATTERNS (Don't Do This)
+
+### ❌ ANTI-PATTERN 1: Fetch All, Filter Client-Side
+```typescript
+// ❌ BAD: Fetches all 1000 docs, filters in JavaScript
+const allDocs = await getDocs(documentsCollection);
+const activeOnly = allDocs.filter(d => d.status === 'Active');
+
+// ✅ GOOD: Fetches only active docs
+const q = query(documentsCollection, where("status", "==", "Active"));
+const activeOnly = await getDocs(q);
+// Cost: 50 reads vs 1000 reads
+```
+
+### ❌ ANTI-PATTERN 2: Duplicate Listeners
+```typescript
+// ❌ BAD: Multiple components, multiple listeners
+function Component1() {
+    useEffect(() => {
+        const unsub = onSnapshot(projectsCollection, /* ... */);
+        return unsub;
+    }, []);
+}
+
+function Component2() {
+    useEffect(() => {
+        const unsub = onSnapshot(projectsCollection, /* ... */); // DUPLICATE!
+        return unsub;
+    }, []);
+}
+
+// ✅ GOOD: Single listener in store
+const useProjectStore = create(() => {
+    useEffect(() => {
+        const unsub = onSnapshot(projectsCollection, /* ... */);
+        return unsub;
+    }, []);
+});
+
+function Component1() {
+    const projects = useProjectStore(state => state.projects);
+}
+
+function Component2() {
+    const projects = useProjectStore(state => state.projects);
+}
+```
+
+### ❌ ANTI-PATTERN 3: No Pagination
+```typescript
+// ❌ BAD: Fetches all items, even if not displayed
+const allItems = await getDocs(itemsCollection); // Maybe 10K items
+// Costs: 10K reads, slow page load, memory issues
+
+// ✅ GOOD: Fetch only what's visible
+const q = query(itemsCollection, limit(25));
+const items = await getDocs(q); // 25 reads, fast, efficient
+```
+
+### ❌ ANTI-PATTERN 4: Forget to Clean Up Listeners
+```typescript
+// ❌ BAD: Listener never unsubscribed (memory leak + costs)
+useEffect(() => {
+    onSnapshot(projectsCollection, (snap) => {
+        setProjects(snap.docs);
+    });
+    // Missing: return unsubscribe function!
+}, []);
+
+// ✅ GOOD: Clean up listener
+useEffect(() => {
+    const unsub = onSnapshot(projectsCollection, (snap) => {
+        setProjects(snap.docs);
+    });
+    return () => unsub(); // IMPORTANT!
+}, []);
+```
+
+---
+
+## 🎯 QUICK REFERENCE CHECKLIST
+
+### Before Writing a Query
+
+- [ ] **Is this a list?** → Use pagination (limit 25)
+- [ ] **Fetch specific subset?** → Use where() filters
+- [ ] **Accessed repeatedly?** → Use caching (5 min TTL)
+- [ ] **Need real-time updates?** → Use listener (in store, not component)
+- [ ] **Combining multiple filters?** → Use AND conditions, not separate queries
+- [ ] **Sorting needed?** → Use orderBy() at DB level, not client-side
+- [ ] **Need total count?** → Query with limit anyway, then add count query
+- [ ] **Paging through results?** → Use startAfter(lastDoc) with limit
+
+### After Writing a Query
+
+- [ ] **Query has explicit limit()** ✓
+- [ ] **Using where() when possible** ✓
+- [ ] **Listener is in store (if needed)** ✓
+- [ ] **Component uses store listener (not own listener)** ✓
+- [ ] **Cache invalidation on mutation** ✓
+- [ ] **Error handling in place** ✓
+- [ ] **Loading states handled** ✓
+- [ ] **No console warnings** ✓
+
+---
+
+## 📊 QUICK COST CALCULATOR
+
+### How many reads per operation?
+
+```
+getDocs(collection) = 1 read per document
+    Example: 100 users = 100 reads
+
+getDocs(query(collection, limit(25))) = 1 read per document in result
+    Example: Paginated query = 25 reads
+
+getDocs(query(collection, where(...))) = 1 read per matching document
+    Example: Filter 100 docs to 20 = 20 reads
+
+onSnapshot(collection) = 1 read per document FIRST TIME
+    Then 0 reads for updates (just sends changes)
+    Example: 100 docs = 100 reads once, then free updates
+
+Query with no results = 0 reads
+    Example: where("id", "==", "nonexistent") = 0 reads
+```
+
+### Worst Case (What to Avoid)
+```
+getDocs(allUsersCollection) = 10,000 reads (all users)
+× onLoad + onRefresh = 20,000 reads/day
+× 5 components doing same thing = 100,000 reads/day
+= EXCEEDS FREE TIER
+
+Cost: $60/month
+Solution: Use pagination + 1 listener = 5,000 reads/day
+Result: FREE
+```
+
+---
+
+## 🤖 RULE OF THUMB
+
+**For every query, ask:**
+1. "Can I limit the results?" → Add `limit()`
+2. "Can I filter at database?" → Add `where()`
+3. "Will users access this repeatedly?" → Add `cache()`
+4. "Do multiple components need this?" → Move to `store`
+5. "Does this need real-time?" → Use `onSnapshot()` in store only
+
+**If ALL questions = YES:** You have an optimal query
+
+---
+
+## 📚 CODE SNIPPETS BY USE CASE
+
+### List View with Pagination
+```typescript
+export const useUsersPage = () => {
+    const [users, setUsers] = useState<User[]>([]);
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+
+    const loadMore = async () => {
+        const q = query(usersCollection, limit(26), startAfter(lastDoc || 0));
+        const snap = await getDocs(q);
+        
+        const newUsers = snap.docs.slice(0, 25).map(doc => doc.data());
+        setUsers(prev => [...prev, ...newUsers]);
+        setLastDoc(snap.docs[24]);
+        setHasMore(snap.docs.length > 25);
+    };
+
+    useEffect(() => {
+        loadMore(); // Initial load
+    }, []);
+
+    return { users, hasMore, loadMore };
+};
+```
+
+### Detail View with Real-time Updates
+```typescript
+export const useProjectDetail = (projectId: string) => {
+    const [project, setProject] = useState<Project | null>(null);
+
+    useEffect(() => {
+        const projectRef = doc(projectsCollection, projectId);
+        const unsub = onSnapshot(projectRef, (snap) => {
+            if (snap.exists()) {
+                setProject(snap.data() as Project);
+            }
+        });
+
+        return unsub;
+    }, [projectId]);
+
+    return project;
+};
+```
+
+### Filtered Search with Caching
+```typescript
+const cache = new Map<string, any>();
+
+export const searchProjects = async (searchText: string) => {
+    const cacheKey = `search_${searchText}`;
+    
+    if (cache.has(cacheKey)) {
+        return cache.get(cacheKey);
+    }
+
+    const q = query(
+        projectsCollection,
+        where("name", ">=", searchText),
+        where("name", "<=", searchText + "\uf8ff"),
+        limit(50)
+    );
+    
+    const snap = await getDocs(q);
+    const results = snap.docs.map(doc => doc.data());
+    
+    cache.set(cacheKey, results);
+    setTimeout(() => cache.delete(cacheKey), 5 * 60 * 1000); // 5 min
+    
+    return results;
+};
+```
+
+---
+
+**Decision Tree Created:** December 2, 2025  
+**Status:** Ready for Developer Reference  
+**Use:** When uncertain about query optimization approach
+

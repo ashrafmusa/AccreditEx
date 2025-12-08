@@ -1,54 +1,103 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permissive rules for initial data seeding.
-    // This allows the application to write the initial dataset without authentication.
-    // WARNING: These rules are temporary and should be secured after the initial seeding.
-
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return isAuthenticated() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
+    }
+    
+    function isAdmin() {
+      return getUserRole() == 'Admin';
+    }
+    
+    function isProjectLead() {
+      return getUserRole() in ['Admin', 'ProjectLead'];
+    }
+    
+    function isAssignedToProject(projectId) {
+      return isAuthenticated() && 
+             request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers;
+    }
+    
+    // Metadata collection (system use only)
     match /_metadata/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
-    match /users/{docId} {
-      allow read, write: if true;
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin();
+      allow update: if isAdmin() || request.auth.uid == userId;
+      allow delete: if isAdmin();
     }
-    match /projects/{docId} {
-      allow read, write: if true;
+    
+    // Projects collection
+    match /projects/{projectId} {
+      allow read: if isAuthenticated();
+      allow create: if isProjectLead();
+      allow update: if isAdmin() || isAssignedToProject(projectId);
+      allow delete: if isAdmin();
     }
+    
+    // Documents collection
     match /documents/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
     }
+    
+    // Standards collection
     match /standards/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
+    
+    // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
+    
+    // Departments collection
     match /departments/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
+    
+    // Training Programs collection
     match /trainingPrograms/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isProjectLead();
+      allow update: if isProjectLead();
+      allow delete: if isAdmin();
     }
+    
+    // Competencies collection
     match /competencies/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
+    
+    // Risks collection
     match /risks/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAdmin();
     }
+    
+    // App Settings collection (admin only)
     match /appSettings/{docId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
-
-    // Once seeding is complete, you should replace the permissive rules above
-    // with more secure rules that require authentication. For example:
-    //
-    // match /projects/{projectId} {
-    //   allow read, write: if request.auth != null;
-    // }
-    //
-    // match /users/{userId} {
-    //  allow read: if request.auth != null;
-    //  allow write: if request.auth.uid == userId;
-    // }
   }
 }

@@ -1,0 +1,93 @@
+[
+  {
+    "id": "dep-1",
+    "name": {
+      "en": "Nursing",
+      "ar": "التمريض"
+    },
+    "requiredCompetencyIds": ["comp-bls", "comp-acls"]
+  },
+  {
+    "id": "dep-2",
+    "name": {
+      "en": "Pharmacy",
+      "ar": "الصيدلية"
+    }
+  },
+  {
+    "id": "dep-3",
+    "name": {
+      "en": "Laboratory",
+      "ar": "المختبر"
+    }
+  },
+  {
+    "id": "dep-4",
+    "name": {
+      "en": "Radiology",
+      "ar": "الأشعة"
+    }
+  },
+  {
+    "id": "dep-5",
+    "name": {
+      "en": "Quality Management",
+      "ar": "إدارة الجودة"
+    },
+    "requiredCompetencyIds": ["comp-cphq"]
+  },
+  {
+    "id": "dep-6",
+    "name": {
+      "en": "Infection Control",
+      "ar": "مكافحة العدوى"
+    },
+    "requiredCompetencyIds": ["comp-cic"]
+  },
+  {
+    "id": "dep-7",
+    "name": {
+      "en": "Administration",
+      "ar": "الإدارة"
+    }
+  },
+  {
+    "id": "dep-8",
+    "name": {
+      "en": "Facilities Management",
+      "ar": "إدارة المنشآت"
+    },
+    "description": {
+      "en": "Responsible for maintenance, safety, and operations of healthcare facilities",
+      "ar": "مسؤول عن صيانة وسلامة وتشغيل منشآت الرعاية الصحية"
+    },
+    "ohasChapter": "Chapter 10 - Facility Management System (FMS)",
+    "requiredCompetencyIds": []
+  },
+  {
+    "id": "dep-9",
+    "name": {
+      "en": "Human Resources",
+      "ar": "الموارد البشرية"
+    },
+    "description": {
+      "en": "Manages staffing, training, and personnel development",
+      "ar": "يدير التوظيف والتدريب وتطوير الموظفين"
+    },
+    "ohasChapter": "Chapter 2 - Human Resources Management (HRM)",
+    "requiredCompetencyIds": []
+  },
+  {
+    "id": "dep-10",
+    "name": {
+      "en": "Information Technology",
+      "ar": "تكنولوجيا المعلومات"
+    },
+    "description": {
+      "en": "Manages information systems, data security, and IT infrastructure",
+      "ar": "يدير أنظمة المعلومات وأمان البيانات والبنية التحتية لتكنولوجيا المعلومات"
+    },
+    "ohasChapter": "Chapter 9 - Information Management System (IMS)",
+    "requiredCompetencyIds": []
+  }
+]

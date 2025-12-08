@@ -3,7 +3,7 @@ AccreditEx AI Agent API - Render.com Deployment
 FastAPI application for the unified AccreditEx AI agent with context awareness
 """
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
 from pydantic import BaseModel, Field
@@ -12,6 +12,7 @@ import uvicorn
 import os
 import logging
 from datetime import datetime
+import base64
 
 # Import the unified agent
 import sys
@@ -205,6 +206,60 @@ async def get_training_recommendations(
         logger.error(f"Training recommendations error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# Upload report to Firebase Storage (bypasses browser CORS)
+@app.post("/upload-report")
+async def upload_report(
+    project_id: str = File(...),
+    file_data: str = File(...),
+    file_name: str = File(...)
+):
+    """
+    Upload PDF report to Firebase Storage from backend
+    Bypasses browser CORS restrictions
+    """
+    try:
+        import firebase_admin
+        from firebase_admin import credentials, storage
+        
+        # Initialize Firebase Admin if not already done
+        if not firebase_admin._apps:
+            # Use default credentials from environment
+            firebase_admin.initialize_app(options={
+                'storageBucket': 'accreditex-79c08.firebasestorage.app'
+            })
+        
+        # Decode base64 file data
+        file_bytes = base64.b64decode(file_data)
+        
+        # Get storage bucket
+        bucket = storage.bucket()
+        
+        # Create blob path
+        blob_path = f"reports/{project_id}/{file_name}"
+        blob = bucket.blob(blob_path)
+        
+        # Upload file
+        blob.upload_from_string(
+            file_bytes,
+            content_type='application/pdf'
+        )
+        
+        # Make public and get URL
+        blob.make_public()
+        download_url = blob.public_url
+        
+        logger.info(f"Report uploaded successfully: {blob_path}")
+        
+        return JSONResponse(content={
+            "success": True,
+            "downloadUrl": download_url,
+            "path": blob_path
+        })
+        
+    except Exception as e:
+        logger.error(f"Report upload error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Root endpoint
 @app.get("/")
 async def root():
@@ -217,7 +272,8 @@ async def root():
             "Context-aware chat",
             "Document compliance checking",
             "Risk assessment",
-            "Training recommendations"
+            "Training recommendations",
+            "Report upload (CORS bypass)"
         ]
     }
 

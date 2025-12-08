@@ -1,0 +1,897 @@
+# Analytics & Reporting API Documentation
+
+**Phase 6: Advanced Analytics & Reporting**
+
+## Table of Contents
+1. [Analytics Service API](#analytics-service-api)
+2. [Reporting Service API](#reporting-service-api)
+3. [React Hooks API](#react-hooks-api)
+4. [UI Components API](#ui-components-api)
+5. [Data Structures](#data-structures)
+6. [Examples](#examples)
+
+---
+
+## Analytics Service API
+
+### Overview
+The `AnalyticsService` provides real-time analytics on HIS integration performance, data quality, and system health.
+
+### Service Methods
+
+#### `getPerformanceAnalysis(configId: string, days?: number)`
+Analyzes sync performance over a specified period.
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+- `days` (number, optional): Days to analyze (default: 30)
+
+**Returns:**
+```typescript
+{
+  totalSyncs: number;
+  successSyncs: number;
+  failedSyncs: number;
+  successRate: number;
+  averageDuration: number;
+  minDuration: number;
+  maxDuration: number;
+  totalRecordsSynced: number;
+  conflictCount: number;
+}
+```
+
+**Example:**
+```typescript
+const performance = analyticsService.getPerformanceAnalysis('epic-prod', 30);
+console.log(`Success Rate: ${performance.successRate}%`);
+```
+
+---
+
+#### `getDataQualityMetrics(configId: string)`
+Assesses data quality and integrity.
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+
+**Returns:**
+```typescript
+{
+  totalRecords: number;
+  validRecords: number;
+  invalidRecords: number;
+  validationErrorRate: number;
+  dataIntegrity: number;
+  duplicateCount: number;
+  missingFieldErrors: Record<string, number>;
+}
+```
+
+**Example:**
+```typescript
+const quality = analyticsService.getDataQualityMetrics('cerner-test');
+if (quality.validationErrorRate > 5) {
+  // Alert on high error rate
+}
+```
+
+---
+
+#### `calculateHealthScore(configId: string)`
+Generates overall system health score (0-100).
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+
+**Returns:**
+```typescript
+{
+  overall: number;          // 0-100
+  syncHealth: number;       // 0-100
+  dataQuality: number;      // 0-100
+  systemStability: number;  // 0-100
+  performanceTrend: 'improving' | 'stable' | 'declining';
+}
+```
+
+**Scoring:**
+- 80-100: Excellent
+- 60-79: Good
+- 40-59: Fair
+- Below 40: Critical
+
+**Example:**
+```typescript
+const health = analyticsService.calculateHealthScore('epic-prod');
+if (health.overall < 60) {
+  sendAlert(`System health critical: ${health.overall}/100`);
+}
+```
+
+---
+
+#### `getTrendData(configId: string, days?: number)`
+Retrieves daily trend data for performance metrics.
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+- `days` (number, optional): Number of days (default: 30)
+
+**Returns:**
+```typescript
+Array<{
+  timestamp: string;           // ISO date
+  syncCount: number;
+  successRate: number;
+  averageDuration: number;
+  errorCount: number;
+  conflictRate: number;
+}>
+```
+
+**Example:**
+```typescript
+const trends = analyticsService.getTrendData('epic-prod', 7);
+trends.forEach(day => {
+  console.log(`${day.timestamp}: ${day.successRate}% success rate`);
+});
+```
+
+---
+
+#### `getInsights(configId: string)`
+Generates AI-like insights and recommendations.
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+
+**Returns:**
+```typescript
+Array<{
+  type: 'anomaly' | 'warning' | 'trend' | 'recommendation' | 'observation';
+  title: string;
+  message: string;
+  recommendation: string;
+}>
+```
+
+**Example:**
+```typescript
+const insights = analyticsService.getInsights('epic-prod');
+insights.forEach(insight => {
+  if (insight.type === 'anomaly') {
+    console.warn(`⚠️ ${insight.title}: ${insight.message}`);
+  }
+});
+```
+
+---
+
+#### `getSyncStatistics(configId: string)`
+Detailed sync statistics by status.
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+
+**Returns:**
+```typescript
+{
+  totalSyncs: number;
+  successCount: number;
+  failureCount: number;
+  pendingCount: number;
+  successRate: number;
+  averageDuration: number;
+  byStatus: Record<string, number>;
+}
+```
+
+---
+
+#### `compareConfigurations(configIds: string[])`
+Compares performance across multiple HIS systems.
+
+**Parameters:**
+- `configIds` (string[]): Array of configuration identifiers
+
+**Returns:**
+```typescript
+{
+  [configId]: {
+    performance: PerformanceAnalysis;
+    quality: DataQualityMetrics;
+    health: HealthScore;
+  };
+}
+```
+
+**Example:**
+```typescript
+const comparison = analyticsService.compareConfigurations([
+  'epic-prod',
+  'cerner-test',
+  'fhir-staging'
+]);
+
+Object.entries(comparison).forEach(([config, metrics]) => {
+  console.log(`${config}: ${metrics.health.overall}/100`);
+});
+```
+
+---
+
+#### `recordSyncMetric(metric: SyncMetric)`
+Records a new sync metric (called automatically by sync service).
+
+**Parameters:**
+```typescript
+{
+  configId: string;
+  timestamp: number;
+  duration: number;
+  recordsCount: number;
+  status: 'success' | 'failed' | 'partial';
+  errorMessage?: string;
+  conflictCount?: number;
+}
+```
+
+---
+
+#### `exportReport(configId: string, days?: number)`
+Exports analytics as JSON.
+
+**Parameters:**
+- `configId` (string): Configuration identifier
+- `days` (number, optional): Days to include
+
+**Returns:** JSON string with complete analytics data
+
+---
+
+## Reporting Service API
+
+### Overview
+The `ReportingService` generates, schedules, and manages reports.
+
+### Service Methods
+
+#### `generateReport(name, configIds, from, to, sections, format)`
+Generates a custom report.
+
+**Parameters:**
+- `name` (string): Report name
+- `configIds` (string[]): Configuration IDs to include
+- `from` (Date): Start date
+- `to` (Date): End date
+- `sections` (string[]): Report sections to include
+  - 'overview', 'performance', 'quality', 'health', 'trends', 'insights'
+- `format` ('json' | 'csv' | 'html'): Output format
+
+**Returns:**
+```typescript
+{
+  id: string;
+  name: string;
+  type: 'custom';
+  generatedAt: Date;
+  period: { from: Date; to: Date };
+  configIds: string[];
+  format: string;
+  content: string;
+  fileSize: number;
+}
+```
+
+**Example:**
+```typescript
+const report = reportingService.generateReport(
+  'Weekly Summary',
+  ['epic-prod', 'cerner-test'],
+  new Date('2024-01-01'),
+  new Date(),
+  ['performance', 'health', 'insights'],
+  'html'
+);
+```
+
+---
+
+#### `getReports(filter?)`
+Retrieves reports with optional filtering.
+
+**Parameters:**
+```typescript
+{
+  templateId?: string;
+  from?: Date;
+  to?: Date;
+  limit?: number;
+}
+```
+
+**Returns:** Report[]
+
+---
+
+#### `getReport(reportId: string)`
+Retrieves a specific report.
+
+**Returns:** Report | undefined
+
+---
+
+#### `downloadReport(reportId: string)`
+Downloads report as Blob.
+
+**Returns:** Blob | null
+
+**Example:**
+```typescript
+const blob = reportingService.downloadReport('report-123');
+if (blob) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'report.json';
+  a.click();
+}
+```
+
+---
+
+#### `emailReport(reportId: string, recipients: string[])`
+Sends report via email (requires email service integration).
+
+**Parameters:**
+- `reportId` (string): Report ID
+- `recipients` (string[]): Email addresses
+
+**Returns:** Promise<boolean>
+
+---
+
+#### `createTemplate(template)`
+Creates a custom report template.
+
+**Parameters:**
+```typescript
+{
+  name: string;
+  description: string;
+  schedule?: string;        // Cron pattern
+  recipients?: string[];
+  sections: string[];       // 'overview', 'performance', etc.
+}
+```
+
+**Returns:** ReportTemplate
+
+---
+
+#### `scheduleReport(templateId, frequency, time, dayOfWeek?, dayOfMonth?)`
+Schedules a report from a template.
+
+**Parameters:**
+- `templateId` (string): Template ID
+- `frequency` ('daily' | 'weekly' | 'monthly')
+- `time` (string): Time in HH:mm format
+- `dayOfWeek` (number, 0-6): For weekly reports
+- `dayOfMonth` (number, 1-31): For monthly reports
+
+**Returns:** ReportSchedule
+
+---
+
+#### `getSchedules(enabled?)`
+Retrieves report schedules.
+
+**Parameters:**
+- `enabled` (boolean, optional): Filter by enabled status
+
+**Returns:** ReportSchedule[]
+
+---
+
+#### `updateSchedule(scheduleId, updates)`
+Updates a report schedule.
+
+**Returns:** ReportSchedule | null
+
+---
+
+#### `deleteSchedule(scheduleId: string)`
+Deletes a report schedule.
+
+**Returns:** boolean
+
+---
+
+#### `getReportStatistics()`
+Gets report system statistics.
+
+**Returns:**
+```typescript
+{
+  totalReports: number;
+  totalTemplates: number;
+  activeSchedules: number;
+  reportsByType: Record<string, number>;
+  totalSize: number;
+}
+```
+
+---
+
+## React Hooks API
+
+### `useAnalytics(configId: string)`
+
+Main hook for accessing analytics data.
+
+**Returns:**
+```typescript
+{
+  performance: PerformanceAnalysis | null;
+  quality: DataQualityMetrics | null;
+  health: HealthScore | null;
+  isLoading: boolean;
+  error: string | null;
+}
+```
+
+**Example:**
+```typescript
+function Analytics({ configId }) {
+  const { performance, quality, health, isLoading } = useAnalytics(configId);
+  
+  if (isLoading) return <div>Loading...</div>;
+  return (
+    <div>
+      <p>Health: {health?.overall}/100</p>
+      <p>Success Rate: {performance?.successRate}%</p>
+    </div>
+  );
+}
+```
+
+---
+
+### `useTrends(configId: string, initialPeriod?: number)`
+
+Trend data access with period selection.
+
+**Returns:**
+```typescript
+{
+  data: TrendData[];
+  period: number;
+  isLoading: boolean;
+  error: string | null;
+  setPeriod: (days: number) => void;
+}
+```
+
+---
+
+### `useInsights(configId: string)`
+
+Access system insights and recommendations.
+
+**Returns:**
+```typescript
+{
+  insights: Insight[];
+  isLoading: boolean;
+  error: string | null;
+  refresh: () => void;
+}
+```
+
+---
+
+### `useComparison(initialConfigs?: string[])`
+
+Multi-configuration comparison.
+
+**Returns:**
+```typescript
+{
+  configs: string[];
+  metrics: Record<string, ComparisonMetrics>;
+  isLoading: boolean;
+  error: string | null;
+  addConfig: (configId: string) => void;
+  removeConfig: (configId: string) => void;
+}
+```
+
+---
+
+### `useReport()`
+
+Report management hook.
+
+**Returns:**
+```typescript
+{
+  reports: Report[];
+  templates: ReportTemplate[];
+  schedules: ReportSchedule[];
+  isLoading: boolean;
+  error: string | null;
+  generateReport: (name, configIds, from, to) => Promise<Report>;
+  downloadReport: (reportId) => Blob | null;
+  emailReport: (reportId, recipients) => Promise<boolean>;
+}
+```
+
+---
+
+### `useSyncStatistics(configId: string)`
+
+Quick access to sync statistics.
+
+**Returns:** SyncStatistics
+
+---
+
+### `useHealthScore(configId: string)`
+
+Quick access to health score.
+
+**Returns:** HealthScore
+
+---
+
+### `useDataQuality(configId: string)`
+
+Quick access to data quality metrics.
+
+**Returns:** DataQualityMetrics
+
+---
+
+## UI Components API
+
+### `<AnalyticsDashboard />`
+
+**Props:**
+```typescript
+{
+  configId?: string;        // Default: 'default'
+  title?: string;           // Default: 'HIS Integration Analytics'
+}
+```
+
+**Features:**
+- 6-tab interface
+- Real-time refresh
+- Report generation
+- Multi-section analytics
+
+---
+
+### `<AnalyticsOverview />`
+
+**Props:**
+```typescript
+{
+  configId: string;
+}
+```
+
+**Displays:**
+- System health card
+- Performance metrics
+- Data quality summary
+- Additional metrics
+
+---
+
+### `<TrendChart />`
+
+**Props:**
+```typescript
+{
+  configId: string;
+}
+```
+
+**Features:**
+- SVG line chart
+- Period selection (7d, 14d, 30d, 60d)
+- Metric selection (success rate, duration, count)
+- Statistics
+
+---
+
+### `<HealthScoreGauge />`
+
+**Props:**
+```typescript
+{
+  configId: string;
+  showDetails?: boolean;    // Default: true
+}
+```
+
+**Displays:**
+- SVG gauge (0-100)
+- Status indicator
+- Component breakdown
+- Trend indicator
+
+---
+
+### `<InsightsPanel />`
+
+**Props:**
+```typescript
+{
+  configId: string;
+}
+```
+
+**Features:**
+- Expandable insight cards
+- Recommendations
+- Refresh functionality
+- Type-based color coding
+
+---
+
+### `<DataQualityPanel />`
+
+**Props:**
+```typescript
+{
+  configId: string;
+}
+```
+
+**Displays:**
+- Quality score gauge
+- Metric cards
+- Detected issues
+- Error rate analysis
+
+---
+
+## Data Structures
+
+### SyncMetric
+```typescript
+{
+  configId: string;
+  timestamp: number;
+  duration: number;
+  recordsCount: number;
+  status: 'success' | 'failed' | 'partial';
+  errorMessage?: string;
+  conflictCount?: number;
+}
+```
+
+### TrendData
+```typescript
+{
+  timestamp: string;
+  syncCount: number;
+  successRate: number;
+  averageDuration: number;
+  errorCount: number;
+  conflictRate: number;
+}
+```
+
+### Insight
+```typescript
+{
+  type: 'anomaly' | 'warning' | 'trend' | 'recommendation' | 'observation';
+  title: string;
+  message: string;
+  recommendation: string;
+}
+```
+
+### HealthScore
+```typescript
+{
+  overall: number;
+  syncHealth: number;
+  dataQuality: number;
+  systemStability: number;
+  performanceTrend: 'improving' | 'stable' | 'declining';
+}
+```
+
+---
+
+## Examples
+
+### Example 1: Display Health Dashboard
+```typescript
+import { AnalyticsDashboard } from './components/analytics';
+
+export function Dashboard() {
+  return (
+    <AnalyticsDashboard 
+      configId="epic-production"
+      title="Epic Production Analytics"
+    />
+  );
+}
+```
+
+### Example 2: Track Performance Over Time
+```typescript
+import { useTrends } from './hooks/useAnalyticsHooks';
+
+export function PerformanceChart() {
+  const { data, period, setPeriod } = useTrends('epic-prod', 30);
+
+  return (
+    <div>
+      <button onClick={() => setPeriod(7)}>7 Days</button>
+      <button onClick={() => setPeriod(30)}>30 Days</button>
+      {data.map(point => (
+        <div key={point.timestamp}>
+          {point.timestamp}: {point.successRate}% success
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+### Example 3: Generate Weekly Report
+```typescript
+import { useReport } from './hooks/useAnalyticsHooks';
+
+export function ReportGenerator() {
+  const { generateReport, downloadReport } = useReport();
+
+  const handleGenerateWeekly = async () => {
+    const to = new Date();
+    const from = new Date(to);
+    from.setDate(from.getDate() - 7);
+
+    const report = await generateReport(
+      'Weekly Summary',
+      ['epic-prod', 'cerner-test'],
+      from,
+      to,
+      ['performance', 'health', 'trends', 'insights'],
+      'html'
+    );
+
+    const blob = downloadReport(report.id);
+    if (blob) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `report-${new Date().toISOString()}.html`;
+      a.click();
+    }
+  };
+
+  return <button onClick={handleGenerateWeekly}>Generate Weekly Report</button>;
+}
+```
+
+### Example 4: Monitor System Health
+```typescript
+import { useHealthScore } from './hooks/useAnalyticsHooks';
+
+export function HealthMonitor() {
+  const health = useHealthScore('epic-prod');
+
+  if (health.overall < 60) {
+    return (
+      <div className="alert alert-error">
+        <h3>System Health Critical!</h3>
+        <p>Health Score: {health.overall}/100</p>
+        <ul>
+          <li>Sync Health: {health.syncHealth}%</li>
+          <li>Data Quality: {health.dataQuality}%</li>
+          <li>Stability: {health.systemStability}%</li>
+          <li>Trend: {health.performanceTrend}</li>
+        </ul>
+      </div>
+    );
+  }
+
+  return <div className="alert alert-success">All systems healthy</div>;
+}
+```
+
+### Example 5: Compare Multiple Configurations
+```typescript
+import { useComparison } from './hooks/useAnalyticsHooks';
+
+export function ConfigurationComparison() {
+  const { configs, metrics, addConfig, removeConfig } = useComparison([
+    'epic-prod',
+    'cerner-test'
+  ]);
+
+  return (
+    <div>
+      <div>
+        <button onClick={() => addConfig('fhir-staging')}>Add FHIR</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Configuration</th>
+            <th>Health Score</th>
+            <th>Success Rate</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {configs.map(configId => (
+            <tr key={configId}>
+              <td>{configId}</td>
+              <td>{metrics[configId]?.health.overall}/100</td>
+              <td>{metrics[configId]?.performance.successRate}%</td>
+              <td>
+                <button onClick={() => removeConfig(configId)}>
+                  Remove
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+```
+
+---
+
+## Best Practices
+
+1. **Caching:** Data is cached in LocalStorage. Refresh manually when needed.
+2. **Error Handling:** Always check `isLoading` and `error` states.
+3. **Performance:** Use specific hooks instead of AnalyticsService directly for better optimization.
+4. **Reports:** Schedule reports for recurring needs rather than generating on-demand.
+5. **Health Monitoring:** Set up alerts for health scores below 60.
+
+---
+
+## Troubleshooting
+
+### No analytics data showing
+- Ensure sync service has recorded metrics (minimum 1 sync)
+- Check browser console for errors
+- Verify `configId` is correct
+
+### Reports not generating
+- Confirm configurations exist
+- Ensure date range is valid
+- Check selected sections
+
+### Missing insights
+- Need sufficient historical data (recommended: 7+ days)
+- Check for active sync operations
+- Review error logs
+
+---
+
+## Summary
+
+Phase 6 provides a complete analytics and reporting infrastructure with:
+- 30+ API methods
+- 8 React hooks
+- 6 UI components
+- Real-time insights
+- Multi-format reports
+- Health monitoring
+- Performance tracking
+- Data quality assessment
+
+All components are production-ready and fully typed with TypeScript.
