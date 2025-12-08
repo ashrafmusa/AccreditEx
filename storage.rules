@@ -1,0 +1,65 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUserRole() {
+      return isAuthenticated() ? 
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role : 
+        null;
+    }
+    
+    function isAdmin() {
+      return getUserRole() == 'Admin';
+    }
+    
+    function isProjectLead() {
+      return getUserRole() in ['Admin', 'ProjectLead'];
+    }
+    
+    // Program documents - accessible by all authenticated users, managed by admin
+    match /documents/programs/{programId}/{allFiles=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Standard documents - accessible by all authenticated users, managed by admin
+    match /documents/standards/{standardId}/{allFiles=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // User profile documents - accessible by owner and admin
+    match /documents/users/{userId}/{allFiles=**} {
+      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth.uid == userId || isAdmin();
+      allow delete: if isAdmin();
+    }
+    
+    // Project documents - accessible by project members and admin
+    match /documents/projects/{projectId}/{allFiles=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin() || isProjectLead();
+      allow delete: if isAdmin();
+    }
+    
+    // Reports - accessible by authenticated users
+    match /reports/{projectId}/{allFiles=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+    
+    // General documents accessible by authenticated users
+    match /documents/{allPaths=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated();
+      allow delete: if isAdmin();
+    }
+  }
+}

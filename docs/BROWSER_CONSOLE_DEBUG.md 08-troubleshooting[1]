@@ -1,0 +1,143 @@
+# Browser Console Debugging Guide
+
+## How to Check Browser Console for Errors
+
+### Step 1: Open DevTools
+Press **F12** on your keyboard
+
+### Step 2: Go to "Console" Tab
+Click the "Console" tab in DevTools
+
+### Step 3: Look for Error Messages
+
+#### ✅ If you see NO errors:
+- App should be loading fine
+- Check if it's on LoadingScreen (still loading)
+- Wait up to 30 seconds if Firebase is slow
+- App should load with default settings if Firebase is unreachable
+
+#### ❌ If you see these errors:
+
+**Error: "Cannot read property 'appName' of undefined"**
+```
+Cause: appSettings collection is empty or missing
+Fix: Create appSettings collection in Firebase (see FIREBASE_COLLECTIONS_SETUP.md)
+```
+
+**Error: "Failed to load application. Firebase connection timeout"**
+```
+Cause: Network can't reach Firebase (this is OK with timeout fix)
+Fix: App should load in offline mode after 30 seconds
+     If not, check if service workers are blocking requests
+```
+
+**Error: "Document not found"**
+```
+Cause: appSettings document was deleted or never created
+Fix: Create a new appSettings document in Firestore
+```
+
+**Error: "Permission denied"**
+```
+Cause: Firestore security rules blocking read access
+Fix: Update Firestore rules to allow reads from authenticated users
+     Or temporarily set rules to allow all reads for testing:
+     
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true;
+       }
+     }
+```
+
+---
+
+## What to Check in Browser DevTools
+
+### Network Tab
+1. Click "Network" tab
+2. Refresh page (Ctrl+R)
+3. Look for requests to Firebase domains:
+   - `firestore.googleapis.com` - should succeed (200 status)
+   - `securetoken.googleapis.com` - should succeed (200 status)
+   - If these show timeout/404 → network issue (expected with timeout fix)
+
+### Application Tab
+1. Click "Application" tab
+2. Look at "Local Storage" for `accreditex-` prefixed keys
+3. Check "IndexedDB" for `accreditex_db` (where app caches data)
+
+### Console Tab (Main Debugging)
+Look for:
+- Errors (red) → Something went wrong
+- Warnings (yellow) → Might not be critical
+- Info (blue) → Informational messages
+
+---
+
+## Step-by-Step Debug Checklist
+
+- [ ] Open browser DevTools (F12)
+- [ ] Go to Console tab
+- [ ] Refresh page (Ctrl+R)
+- [ ] Wait 5 seconds for initial load
+- [ ] Check for any red error messages
+- [ ] If appName error → Create appSettings in Firebase
+- [ ] If timeout error → Check internet connection
+- [ ] If permission error → Update Firestore security rules
+- [ ] Wait up to 30 seconds for timeout
+- [ ] If still not loading, check Network tab
+- [ ] If Network shows firebase requests failing → Network/firewall issue
+
+---
+
+## Common Scenarios
+
+### Scenario 1: App Shows LoadingScreen
+- **Duration**: < 5 seconds → Normal, Firebase is loading
+- **Duration**: 30 seconds → Firebase timeout, will load with defaults
+- **Duration**: > 30 seconds → Something is stuck, check console
+
+### Scenario 2: Error About appName
+- appSettings collection is missing
+- Create it in Firebase Console with the required fields
+
+### Scenario 3: Permission Denied Error
+- Firestore security rules are too restrictive
+- Temporarily allow read access for testing
+
+### Scenario 4: Network Timeout
+- Expected with current network issue
+- App should fall back to defaults after 30 seconds
+- If not, check if service workers are blocking requests
+
+---
+
+## Quick Test Command
+
+You can test Firebase connectivity from your browser console:
+
+```javascript
+// Test if app can reach Firebase
+fetch('https://firestore.googleapis.com/v1/projects/accreditex-79c08/databases/(default)', {
+  method: 'GET',
+  headers: {
+    'Authorization': 'Bearer YOUR_ID_TOKEN'
+  }
+})
+.then(r => console.log('Firebase reachable:', r.status))
+.catch(e => console.log('Firebase unreachable:', e.message))
+```
+
+---
+
+## Still Not Working?
+
+1. Check FIREBASE_COLLECTIONS_SETUP.md for detailed setup
+2. Verify appSettings exists in Firebase Console
+3. Verify all required fields are present
+4. Check Firestore security rules allow reads
+5. Check internet connection (try visiting google.com)
+6. Try clearing browser cache (Ctrl+Shift+Delete)
+7. Try in a different browser
+

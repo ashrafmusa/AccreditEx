@@ -14,6 +14,13 @@
     ]
   },
   "firestore": {
-    "rules": "firestore.rules"
-  }
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": [
+    {
+      "bucket": "accreditex-79c08.firebasestorage.app",
+      "rules": "storage.rules"
+    }
+  ]
 }

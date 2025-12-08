@@ -1,0 +1,201 @@
+# Firebase CLI Setup Guide
+
+## 🎯 Quick Start
+
+Your app requires the **appSettings** collection in Firestore. Here's how to create it using Firebase CLI:
+
+---
+
+## 📋 Settings to Upload
+
+Copy this JSON and use it to create your appSettings document:
+
+```json
+{
+  "appName": "AccreditEx",
+  "logoUrl": "",
+  "primaryColor": "#4f46e5",
+  "defaultLanguage": "en",
+  "defaultUserRole": "TeamMember",
+  "passwordPolicy": {
+    "minLength": 8,
+    "requireUppercase": false,
+    "requireNumber": false,
+    "requireSymbol": false
+  },
+  "globeSettings": {
+    "baseColor": "#1e293b",
+    "markerColor": "#818cf8",
+    "glowColor": "#4f46e5",
+    "scale": 2.5,
+    "darkness": 0.9,
+    "lightIntensity": 1.2,
+    "rotationSpeed": 0.02
+  },
+  "appearance": {
+    "compactMode": false,
+    "sidebarCollapsed": false,
+    "showAnimations": true,
+    "cardStyle": "elevated"
+  },
+  "notifications": {
+    "emailNotifications": true,
+    "pushNotifications": false,
+    "taskReminders": true,
+    "projectUpdates": true,
+    "trainingDueDates": true,
+    "auditSchedules": true
+  },
+  "accessibility": {
+    "fontSize": "medium",
+    "highContrast": false,
+    "reduceMotion": false,
+    "screenReaderOptimized": false
+  }
+}
+```
+
+---
+
+## ✅ Method 1: Firebase Console (Easiest - No CLI Needed)
+
+### Step 1: Open Firebase Console
+https://console.firebase.google.com/project/accreditex-79c08/firestore/data
+
+### Step 2: Create Collection
+1. Click **"+ Start collection"**
+2. Collection ID: `appSettings`
+3. Click **"Next"**
+
+### Step 3: Create Document
+1. Document ID: `default`
+2. Click **"Save"**
+
+### Step 4: Add Fields
+The console will open field editor. Add each field from the JSON above:
+
+| Field | Type | Value |
+|-------|------|-------|
+| appName | string | "AccreditEx" |
+| logoUrl | string | "" |
+| primaryColor | string | "#4f46e5" |
+| defaultLanguage | string | "en" |
+| defaultUserRole | string | "TeamMember" |
+| passwordPolicy | map | (add nested fields) |
+| globeSettings | map | (add nested fields) |
+| appearance | map | (add nested fields) |
+| notifications | map | (add nested fields) |
+| accessibility | map | (add nested fields) |
+
+### Step 5: Test
+1. Refresh your app
+2. App should load successfully
+
+---
+
+## 🔧 Method 2: Firebase CLI (Requires Authentication)
+
+### Step 1: Install Firebase CLI
+```bash
+npm install -g firebase-tools
+```
+
+### Step 2: Authenticate
+```bash
+firebase login
+```
+
+### Step 3: Create appSettings.json File
+Save the JSON above as `appSettings.json` in your project root.
+
+### Step 4: Import to Firestore
+```bash
+firebase --project=accreditex-79c08 firestore:set appSettings/default --merge < appSettings.json
+```
+
+### Step 5: Verify
+```bash
+firebase --project=accreditex-79c08 firestore:get appSettings/default
+```
+
+You should see the settings you just imported.
+
+---
+
+## 💻 Method 3: Firebase Emulator (Local Development)
+
+### Step 1: Install Firebase CLI
+```bash
+npm install -g firebase-tools
+```
+
+### Step 2: Start Emulator
+```bash
+firebase emulator:start
+```
+
+### Step 3: Access Emulator UI
+Open: http://localhost:4000
+
+### Step 4: Create Collection in Emulator
+In the Firestore Emulator UI, create the appSettings collection manually or import the JSON.
+
+### Step 5: Configure App
+Your app will automatically connect to the emulator (if FIREBASE_EMULATOR_HOST env var is set).
+
+---
+
+## 🧪 Verification
+
+After creating appSettings, test with this command:
+
+```bash
+firebase --project=accreditex-79c08 firestore:get appSettings/default
+```
+
+Expected output:
+```
+[DEFAULT] {
+  "appName": "AccreditEx",
+  "logoUrl": "",
+  "primaryColor": "#4f46e5",
+  ...
+}
+```
+
+---
+
+## 🚀 After Setup
+
+1. **Refresh your app** in browser
+2. **Check console** (F12) for any errors
+3. **Verify** app loads successfully
+4. **Test** that you can navigate the app
+
+---
+
+## 🆘 Troubleshooting
+
+### "Permission denied" Error
+- Update Firestore security rules
+- Or temporarily set rules to `allow read, write: if true;`
+
+### "Collection not found" Error
+- Verify you created the collection correctly
+- Check collection name is exactly "appSettings"
+- Check document ID is "default"
+
+### App still shows LoadingScreen
+- Verify appSettings exists in Firebase Console
+- Check all required fields are present
+- Open DevTools (F12) and check console for errors
+- Wait 30 seconds (timeout fallback)
+
+---
+
+## 📞 Firebase Project Details
+
+- **Project ID**: accreditex-79c08
+- **Auth Domain**: accreditex-79c08.firebaseapp.com
+- **Firestore URL**: https://console.firebase.google.com/project/accreditex-79c08/firestore
+

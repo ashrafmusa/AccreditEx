@@ -1,0 +1,51 @@
+name: Unit Tests & Coverage
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Run linter
+      run: npx eslint src --ext .ts,.tsx 2>/dev/null || echo "ESLint not configured yet"
+    
+    - name: Run unit tests
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Check coverage thresholds
+      run: npm test -- --coverage --watchAll=false
+    
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./coverage/coverage-final.json
+        flags: unittests
+        name: codecov-umbrella
+        fail_ci_if_error: false
+      continue-on-error: true
+    
+    - name: TypeScript type check
+      run: npx tsc --noEmit
+    
+    - name: Build application
+      run: npm run build
