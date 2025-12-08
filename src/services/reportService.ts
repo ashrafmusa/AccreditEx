@@ -1,6 +1,6 @@
 /**
  * Report Service
- * AI-powered compliance report generation with Firebase integration and PDF export
+ * AI-powered compliance report generation with Cloudinary storage and PDF export
  */
 
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
@@ -8,6 +8,7 @@ import { db } from '@/firebase/firebaseConfig';
 import { Project, AppDocument, ComplianceStatus } from '@/types';
 import { freeTierMonitor } from './freeTierMonitor';
 import { generatePDFReport, downloadPDF } from './pdfReportGenerator';
+import cloudinaryService from './cloudinaryService';
 
 const API_BASE_URL = 'https://accreditex.onrender.com';
 
@@ -70,30 +71,18 @@ export const generateAIComplianceReport = async (
     generatedAt: new Date().toISOString()
   });
 
-  // Upload PDF via backend to bypass CORS
-  const pdfBuffer = await pdfBlob.arrayBuffer();
-  const base64Data = btoa(
-    new Uint8Array(pdfBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-  );
-  
+    // Convert Blob to File for Cloudinary upload
   const pdfFileName = `compliance_report_${Date.now()}.pdf`;
+    const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
   
-  const formData = new FormData();
-  formData.append('project_id', project.id);
-  formData.append('file_data', base64Data);
-  formData.append('file_name', pdfFileName);
-
-  const uploadResponse = await fetch('https://accreditex.onrender.com/upload-report', {
-    method: 'POST',
-    body: formData
-  });
-
-  if (!uploadResponse.ok) {
-    throw new Error('Failed to upload PDF report');
-  }
-
-  const uploadResult = await uploadResponse.json();
-  const pdfUrl = uploadResult.downloadUrl;
+    // Upload PDF to Cloudinary
+    const pdfUrl = await cloudinaryService.uploadDocument(
+        pdfFile,
+        `reports/${project.id}`,
+        (progress) => {
+            console.log(`Upload progress: ${progress.progress.toFixed(0)}%`);
+        }
+  );
 
   // Create document object for Firebase
   const reportDocument: Omit<AppDocument, 'id'> = {
