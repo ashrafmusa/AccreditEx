@@ -133,35 +133,35 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           {/* Text Formatting */}
           <MenuButton
             onClick={() => editor.chain().focus().toggleBold().run()}
-            active={editor.isActive('bold')}
+            active={editor.isActive("bold")}
             title="Bold (Ctrl+B)"
           >
             <BoldIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            active={editor.isActive('italic')}
+            active={editor.isActive("italic")}
             title="Italic (Ctrl+I)"
           >
             <ItalicIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleUnderline().run()}
-            active={editor.isActive('underline')}
+            active={editor.isActive("underline")}
             title="Underline (Ctrl+U)"
           >
             <UnderlineIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleStrike().run()}
-            active={editor.isActive('strike')}
+            active={editor.isActive("strike")}
             title="Strikethrough"
           >
             <StrikethroughIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleCode().run()}
-            active={editor.isActive('code')}
+            active={editor.isActive("code")}
             title="Code"
           >
             <CodeIcon className="w-4 h-4" />
@@ -170,11 +170,13 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
 
           {/* Headings */}
-          {[1, 2, 3].map((level) => (
+          {([1, 2, 3] as const).map((level) => (
             <MenuButton
               key={level}
-              onClick={() => editor.chain().focus().toggleHeading({ level: level as any }).run()}
-              active={editor.isActive('heading', { level })}
+              onClick={() =>
+                editor.chain().focus().toggleHeading({ level }).run()
+              }
+              active={editor.isActive("heading", { level })}
               title={`Heading ${level}`}
             >
               <span className="text-sm font-semibold">H{level}</span>
@@ -186,14 +188,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           {/* Lists */}
           <MenuButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            active={editor.isActive('bulletList')}
+            active={editor.isActive("bulletList")}
             title="Bullet List"
           >
             <ListBulletIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            active={editor.isActive('orderedList')}
+            active={editor.isActive("orderedList")}
             title="Numbered List"
           >
             <ListNumberIcon className="w-4 h-4" />
@@ -204,12 +206,16 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           {/* Block Elements */}
           <MenuButton
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            active={editor.isActive('blockquote')}
+            active={editor.isActive("blockquote")}
             title="Quote"
           >
             <QuoteIcon className="w-4 h-4" />
           </MenuButton>
-          <MenuButton onClick={addLink} active={editor.isActive('link')} title="Add Link">
+          <MenuButton
+            onClick={addLink}
+            active={editor.isActive("link")}
+            title="Add Link"
+          >
             <LinkIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton onClick={addImage} title="Add Image">

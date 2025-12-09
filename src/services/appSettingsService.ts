@@ -66,7 +66,13 @@ const getDefaultSettings = (): AppSettings => ({
         compactMode: false,
         sidebarCollapsed: false,
         showAnimations: true,
-        cardStyle: 'elevated'
+        cardStyle: 'elevated',
+        customColors: {
+            primary: '#4f46e5',
+            success: '#22c55e',
+            warning: '#f97316',
+            danger: '#ef4444'
+        }
     },
     notifications: {
         emailNotifications: true,

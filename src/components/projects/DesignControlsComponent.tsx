@@ -1,15 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Project, AppDocument, DesignControlItem, ComplianceStatus } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
-import { PlusIcon, TrashIcon, PaperClipIcon, XMarkIcon, UploadIcon } from '@/components/icons';
-import DocumentPicker from '@/components/common/DocumentPicker';
-import DocumentListItem from '@/components/documents/DocumentListItem';
-import FileUploader from '@/components/documents/FileUploader';
-import PDFViewerModal from '@/components/documents/PDFViewerModal';
-import DocumentEditorModal from '@/components/documents/DocumentEditorModal';
-import { useAppStore } from '@/stores/useAppStore';
-import { storageService } from '@/services/storageService';
-import { getDocumentViewAction } from '@/utils/documentViewingHelper';
+import React, { useState, useEffect } from "react";
+import {
+  Project,
+  AppDocument,
+  DesignControlItem,
+  ComplianceStatus,
+} from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  PlusIcon,
+  TrashIcon,
+  PaperClipIcon,
+  XMarkIcon,
+  UploadIcon,
+} from "@/components/icons";
+import DocumentPicker from "@/components/common/DocumentPicker";
+import DocumentListItem from "@/components/documents/DocumentListItem";
+import FileUploader from "@/components/documents/FileUploader";
+import PDFViewerModal from "@/components/documents/PDFViewerModal";
+import DocumentEditorModal from "@/components/documents/DocumentEditorModal";
+import { useAppStore } from "@/stores/useAppStore";
+import { storageService } from "@/services/storageService";
+import { getDocumentViewAction } from "@/utils/documentViewingHelper";
 
 interface DesignControlsComponentProps {
   project: Project;
@@ -18,7 +29,12 @@ interface DesignControlsComponentProps {
   onSave: (designControls: DesignControlItem[]) => void;
 }
 
-const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ project, documents, isFinalized, onSave }) => {
+const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
+  project,
+  documents,
+  isFinalized,
+  onSave,
+}) => {
   const { t, lang } = useTranslation();
   const { addDocument } = useAppStore();
   const [controls, setControls] = useState<DesignControlItem[]>([]);
@@ -34,7 +50,11 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
     setControls(JSON.parse(JSON.stringify(project.designControls || [])));
   }, [project.designControls]);
 
-  const handleUpdate = (index: number, field: keyof DesignControlItem, value: any) => {
+  const handleUpdate = (
+    index: number,
+    field: keyof DesignControlItem,
+    value: any
+  ) => {
     const newControls = [...controls];
     (newControls[index] as any)[field] = value;
     setControls(newControls);
@@ -43,11 +63,11 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
   const addRow = () => {
     const newRow: DesignControlItem = {
       id: `dc-${Date.now()}`,
-      requirement: '',
-      policyProcess: '',
-      implementationEvidence: '',
-      auditFindings: '',
-      outcomeKPI: '',
+      requirement: "",
+      policyProcess: "",
+      implementationEvidence: "",
+      auditFindings: "",
+      outcomeKPI: "",
       status: ComplianceStatus.NotApplicable,
       linkedDocumentIds: [],
     };
@@ -57,10 +77,10 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
   const removeRow = (index: number) => {
     setControls(controls.filter((_, i) => i !== index));
   };
-  
+
   const handleSave = () => {
     onSave(controls);
-    alert('Changes saved!');
+    alert("Changes saved!");
   };
 
   const handleLinkDocument = (rowIndex: number) => {
@@ -73,8 +93,13 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
       const newControls = [...controls];
       // Add new documents, avoiding duplicates
       const existingIds = newControls[currentRowIndex].linkedDocumentIds;
-      const uniqueNewIds = documentIds.filter(id => !existingIds.includes(id));
-      newControls[currentRowIndex].linkedDocumentIds = [...existingIds, ...uniqueNewIds];
+      const uniqueNewIds = documentIds.filter(
+        (id) => !existingIds.includes(id)
+      );
+      newControls[currentRowIndex].linkedDocumentIds = [
+        ...existingIds,
+        ...uniqueNewIds,
+      ];
       setControls(newControls);
     }
     setPickerOpen(false);
@@ -83,7 +108,9 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
 
   const handleRemoveDocument = (rowIndex: number, docId: string) => {
     const newControls = [...controls];
-    newControls[rowIndex].linkedDocumentIds = newControls[rowIndex].linkedDocumentIds.filter(id => id !== docId);
+    newControls[rowIndex].linkedDocumentIds = newControls[
+      rowIndex
+    ].linkedDocumentIds.filter((id) => id !== docId);
     setControls(newControls);
   };
   const handleUploadDocument = (rowIndex: number) => {
@@ -92,7 +119,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
   };
   const handleFilesSelected = async (files: File[]) => {
     if (files.length === 0 || currentRowIndex === null) return;
-    
+
     setIsUploading(true);
     setUploadProgress(0);
     try {
@@ -106,10 +133,10 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
       const newDoc: AppDocument = {
         id: documentId,
         name: { en: file.name, ar: file.name },
-        type: 'Evidence',
+        type: "Evidence",
         isControlled: false,
-        status: 'Approved',
-        content: { en: '', ar: '' },
+        status: "Approved",
+        content: { en: "", ar: "" },
         fileUrl,
         currentVersion: 1,
         versionHistory: [],
@@ -119,13 +146,13 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
       const newControls = [...controls];
       newControls[currentRowIndex].linkedDocumentIds = [
         ...newControls[currentRowIndex].linkedDocumentIds,
-        documentId
+        documentId,
       ];
       setControls(newControls);
       setShowUploader(false);
       setCurrentRowIndex(null);
     } catch (error) {
-      alert('Upload failed. Please try again.');
+      alert("Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -133,7 +160,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
   };
   const handleViewDocument = (doc: AppDocument) => {
     const action = getDocumentViewAction(doc);
-    
+
     switch (action) {
       case "pdf":
         setViewingPDF(doc);
@@ -147,38 +174,82 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
     }
   };
   const getDocumentName = (docId: string) => {
-    const doc = documents.find(d => d.id === docId);
-    if (!doc) return 'Unknown Document';
-    return lang === 'ar' ? doc.name.ar : doc.name.en;
+    const doc = documents.find((d) => d.id === docId);
+    if (!doc) return "Unknown Document";
+    return lang === "ar" ? doc.name.ar : doc.name.en;
   };
 
-  const textareaClasses = "w-full min-h-[80px] p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:dark:bg-gray-900";
-  const selectClasses = "w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:dark:bg-gray-900";
+  const textareaClasses =
+    "w-full min-h-[80px] p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:dark:bg-gray-900";
+  const selectClasses =
+    "w-full p-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-800 dark:text-white disabled:bg-gray-100 disabled:dark:bg-gray-900";
 
   return (
     <div className="space-y-6">
       <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h2 className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">Evidence Matrix</h2>
-            <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">Trace compliance from standard requirements to implementation evidence.</p>
+            <h2 className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              Evidence Matrix
+            </h2>
+            <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+              Trace compliance from standard requirements to implementation
+              evidence.
+            </p>
           </div>
-          {!isFinalized && <button onClick={handleSave} className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 font-semibold shadow-sm w-full sm:w-auto">{t('saveChanges')}</button>}
+          {!isFinalized && (
+            <button
+              onClick={handleSave}
+              className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 font-semibold shadow-sm w-full sm:w-auto"
+            >
+              {t("saveChanges")}
+            </button>
+          )}
         </div>
       </div>
-      
+
       <div className="overflow-x-auto">
         <div className="min-w-full inline-block align-middle">
-          <div className="border rounded-lg shadow overflow-hidden dark:border-dark-brand-border">
+          <TableContainer>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Standard Requirement</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Policy/Process</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Implementation Evidence</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Audit Findings</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Outcome/KPI</th>
-                  <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    Standard Requirement
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    Policy/Process
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    Implementation Evidence
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    Audit Findings
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    Outcome/KPI
+                  </th>
+                  <th
+                    scope="col"
+                    className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
+                  >
+                    Status
+                  </th>
                   <th scope="col" className="w-12 px-4 py-3"></th>
                 </tr>
               </thead>
@@ -186,108 +257,148 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
                 {controls.map((row, index) => (
                   <tr key={row.id}>
                     <td className="p-2 align-top">
-                      <textarea 
-                        value={row.requirement} 
-                        onChange={(e) => handleUpdate(index, 'requirement', e.target.value)} 
-                        disabled={isFinalized} 
+                      <textarea
+                        value={row.requirement}
+                        onChange={(e) =>
+                          handleUpdate(index, "requirement", e.target.value)
+                        }
+                        disabled={isFinalized}
                         className={textareaClasses}
                         placeholder="Enter requirement..."
                       />
                     </td>
                     <td className="p-2 align-top">
-                      <textarea 
-                        value={row.policyProcess} 
-                        onChange={(e) => handleUpdate(index, 'policyProcess', e.target.value)} 
-                        disabled={isFinalized} 
-                        className={textareaClasses} 
+                      <textarea
+                        value={row.policyProcess}
+                        onChange={(e) =>
+                          handleUpdate(index, "policyProcess", e.target.value)
+                        }
+                        disabled={isFinalized}
+                        className={textareaClasses}
                       />
                     </td>
                     <td className="p-2 align-top">
-                      <textarea 
-                        value={row.implementationEvidence} 
-                        onChange={(e) => handleUpdate(index, 'implementationEvidence', e.target.value)} 
-                        disabled={isFinalized} 
-                        className={textareaClasses} 
+                      <textarea
+                        value={row.implementationEvidence}
+                        onChange={(e) =>
+                          handleUpdate(
+                            index,
+                            "implementationEvidence",
+                            e.target.value
+                          )
+                        }
+                        disabled={isFinalized}
+                        className={textareaClasses}
                       />
                     </td>
                     <td className="p-2 align-top">
-                      <textarea 
-                        value={row.auditFindings} 
-                        onChange={(e) => handleUpdate(index, 'auditFindings', e.target.value)} 
-                        disabled={isFinalized} 
-                        className={textareaClasses} 
+                      <textarea
+                        value={row.auditFindings}
+                        onChange={(e) =>
+                          handleUpdate(index, "auditFindings", e.target.value)
+                        }
+                        disabled={isFinalized}
+                        className={textareaClasses}
                       />
                     </td>
                     <td className="p-2 align-top">
-                      <textarea 
-                        value={row.outcomeKPI} 
-                        onChange={(e) => handleUpdate(index, 'outcomeKPI', e.target.value)} 
-                        disabled={isFinalized} 
-                        className={textareaClasses} 
+                      <textarea
+                        value={row.outcomeKPI}
+                        onChange={(e) =>
+                          handleUpdate(index, "outcomeKPI", e.target.value)
+                        }
+                        disabled={isFinalized}
+                        className={textareaClasses}
                       />
                       <div className="mt-2">
-                        <button 
+                        <button
                           onClick={() => handleLinkDocument(index)}
-                          disabled={isFinalized} 
+                          disabled={isFinalized}
                           className="text-xs flex items-center gap-1 text-brand-primary hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
                         >
-                          <PaperClipIcon className="w-3 h-3"/>
-                          {t('linkDocument')}
+                          <PaperClipIcon className="w-3 h-3" />
+                          {t("linkDocument")}
                         </button>
-                        <button 
-  onClick={() => handleUploadDocument(index)}
-  disabled={isFinalized} 
-  className="text-xs flex items-center gap-1 text-brand-primary hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
->
-  <UploadIcon className="w-3 h-3"/>
-  {t('uploadDocument') || 'Upload'}
-</button>
+                        <button
+                          onClick={() => handleUploadDocument(index)}
+                          disabled={isFinalized}
+                          className="text-xs flex items-center gap-1 text-brand-primary hover:underline disabled:text-gray-400 disabled:cursor-not-allowed"
+                        >
+                          <UploadIcon className="w-3 h-3" />
+                          {t("uploadDocument") || "Upload"}
+                        </button>
                       </div>
 
-{/* Display linked documents */}
-{row.linkedDocumentIds.length > 0 && (
-  <div className="mt-2 space-y-1">
-    {row.linkedDocumentIds.map(docId => {
-      const doc = documents.find(d => d.id === docId);
-      if (!doc) return null;
-      return (
-        <DocumentListItem
-          key={docId}
-          document={doc}
-          compact={true}
-          showActions={true}
-          onView={handleViewDocument}
-          onRemove={!isFinalized ? () => handleRemoveDocument(index, docId) : undefined}
-        />
-      );
-    })}
-  </div>
+                      {/* Display linked documents */}
+                      {row.linkedDocumentIds.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {row.linkedDocumentIds.map((docId) => {
+                            const doc = documents.find((d) => d.id === docId);
+                            if (!doc) return null;
+                            return (
+                              <DocumentListItem
+                                key={docId}
+                                document={doc}
+                                compact={true}
+                                showActions={true}
+                                onView={handleViewDocument}
+                                onRemove={
+                                  !isFinalized
+                                    ? () => handleRemoveDocument(index, docId)
+                                    : undefined
+                                }
+                              />
+                            );
+                          })}
+                        </div>
                       )}
                     </td>
                     <td className="p-2 align-top">
-                      <select 
-                        value={row.status} 
-                        onChange={(e) => handleUpdate(index, 'status', e.target.value as ComplianceStatus)} 
-                        disabled={isFinalized} 
+                      <select
+                        value={row.status}
+                        onChange={(e) =>
+                          handleUpdate(
+                            index,
+                            "status",
+                            e.target.value as ComplianceStatus
+                          )
+                        }
+                        disabled={isFinalized}
                         className={selectClasses}
                       >
-                        {Object.values(ComplianceStatus).map(status => (
-                          <option key={status} value={status}>{status}</option>
+                        {Object.values(ComplianceStatus).map((status) => (
+                          <option key={status} value={status}>
+                            {status}
+                          </option>
                         ))}
                       </select>
                     </td>
                     <td className="p-2 align-middle">
-                      {!isFinalized && <button onClick={() => removeRow(index)} className="p-1 text-red-500 hover:text-red-700"><TrashIcon className="w-5 h-5"/></button>}
+                      {!isFinalized && (
+                        <button
+                          onClick={() => removeRow(index)}
+                          className="p-1 text-red-500 hover:text-red-700"
+                        >
+                          <TrashIcon className="w-5 h-5" />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableContainer>
         </div>
       </div>
-      {!isFinalized && <button onClick={addRow} className="flex items-center gap-2 text-sm font-semibold text-brand-primary hover:underline"><PlusIcon className="w-4 h-4" /> Add New Item</button>}
-      
+      {!isFinalized && (
+        <button
+          onClick={addRow}
+          className="flex items-center gap-2 text-sm font-semibold text-brand-primary hover:underline"
+        >
+          <PlusIcon className="w-4 h-4" /> Add New Item
+        </button>
+      )}
+
       {/* Document Picker Modal */}
       <DocumentPicker
         isOpen={pickerOpen}
@@ -297,15 +408,21 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
         }}
         onSelect={handleDocumentsSelected}
         documents={documents}
-        selectedIds={currentRowIndex !== null ? controls[currentRowIndex]?.linkedDocumentIds : []}
+        selectedIds={
+          currentRowIndex !== null
+            ? controls[currentRowIndex]?.linkedDocumentIds
+            : []
+        }
         multiSelect={true}
       />
       {/* File Uploader Modal */}
       {showUploader && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold mb-4">{t('uploadDocument') || 'Upload Document'}</h3>
-            
+            <h3 className="text-lg font-semibold mb-4">
+              {t("uploadDocument") || "Upload Document"}
+            </h3>
+
             <FileUploader
               onFilesSelected={handleFilesSelected}
               multiple={false}
@@ -316,7 +433,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
               <div className="mt-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('uploading') || 'Uploading'}...
+                    {t("uploading") || "Uploading"}...
                   </span>
                   <span className="text-sm font-medium text-brand-primary">
                     {Math.round(uploadProgress)}%
@@ -332,11 +449,14 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
             )}
             <div className="mt-6 flex justify-end gap-3">
               <button
-                onClick={() => { setShowUploader(false); setCurrentRowIndex(null); }}
+                onClick={() => {
+                  setShowUploader(false);
+                  setCurrentRowIndex(null);
+                }}
                 disabled={isUploading}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors disabled:opacity-50"
               >
-                {t('cancel') || 'Cancel'}
+                {t("cancel") || "Cancel"}
               </button>
             </div>
           </div>
@@ -347,7 +467,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({ proje
         <PDFViewerModal
           isOpen={!!viewingPDF}
           onClose={() => setViewingPDF(null)}
-          fileUrl={viewingPDF.fileUrl || ''}
+          fileUrl={viewingPDF.fileUrl || ""}
           fileName={viewingPDF.name.en}
         />
       )}

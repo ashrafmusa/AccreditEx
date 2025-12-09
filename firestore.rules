@@ -24,6 +24,25 @@ service cloud.firestore {
              request.auth.uid in get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers;
     }
     
+    // Validate data size limits to prevent abuse
+    function isValidSize(data) {
+      return request.resource.size < 5000000; // 5MB limit
+    }
+    
+    // Validate that required fields exist
+    function hasRequiredUserFields() {
+      return request.resource.data.keys().hasAll(['email', 'name', 'role']);
+    }
+    
+    function hasRequiredProjectFields() {
+      return request.resource.data.keys().hasAll(['name', 'programId', 'projectLeadId', 'startDate']);
+    }
+    
+    // Prevent privilege escalation on user updates
+    function cannotEscalatePrivilege() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']) || isAdmin();
+    }
+    
     // Metadata collection (system use only)
     match /_metadata/{docId} {
       allow read: if isAuthenticated();
@@ -33,71 +52,71 @@ service cloud.firestore {
     // Users collection
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAdmin();
-      allow update: if isAdmin() || request.auth.uid == userId;
+      allow create: if isAdmin() && hasRequiredUserFields() && isValidSize(request.resource.data);
+      allow update: if (isAdmin() || request.auth.uid == userId) && cannotEscalatePrivilege() && isValidSize(request.resource.data);
       allow delete: if isAdmin();
     }
     
     // Projects collection
     match /projects/{projectId} {
       allow read: if isAuthenticated();
-      allow create: if isProjectLead();
-      allow update: if isAdmin() || isAssignedToProject(projectId);
+      allow create: if isProjectLead() && hasRequiredProjectFields() && isValidSize(request.resource.data);
+      allow update: if (isAdmin() || isAssignedToProject(projectId)) && isValidSize(request.resource.data);
       allow delete: if isAdmin();
     }
     
     // Documents collection
     match /documents/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSize(request.resource.data);
+      allow update: if isAuthenticated() && isValidSize(request.resource.data);
       allow delete: if isAdmin();
     }
     
     // Standards collection
     match /standards/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidSize(request.resource.data);
     }
     
     // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidSize(request.resource.data);
     }
     
     // Departments collection
     match /departments/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidSize(request.resource.data);
     }
     
     // Training Programs collection
     match /trainingPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isProjectLead();
-      allow update: if isProjectLead();
+      allow create: if isProjectLead() && isValidSize(request.resource.data);
+      allow update: if isProjectLead() && isValidSize(request.resource.data);
       allow delete: if isAdmin();
     }
     
     // Competencies collection
     match /competencies/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidSize(request.resource.data);
     }
     
     // Risks collection
     match /risks/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSize(request.resource.data);
+      allow update: if isAuthenticated() && isValidSize(request.resource.data);
       allow delete: if isAdmin();
     }
     
     // App Settings collection (admin only)
     match /appSettings/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidSize(request.resource.data);
     }
   }
 }

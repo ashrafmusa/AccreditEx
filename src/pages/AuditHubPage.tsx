@@ -10,6 +10,7 @@ import { useUserStore } from "../stores/useUserStore";
 import { useProjectStore } from "../stores/useProjectStore";
 import { AuditPlan, ActivityLogItem } from "../types";
 import AuditPlanModal from "../components/audits/AuditPlanModal";
+import { Button, Input, TableContainer } from "@/components/ui";
 
 interface AuditHubPageProps {
   setNavigation: (state: any) => void;
@@ -51,8 +52,10 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
   };
 
   const formatAuditsText = (itemCount: number, frequency: string) => {
-    const frequencyText = frequency === 'weekly' ? t('weekly') : t('monthly');
-    return `${t('auditLog')} ${itemCount} ${t('itemsToAudit')} ${frequencyText}`;
+    const frequencyText = frequency === "weekly" ? t("weekly") : t("monthly");
+    return `${t("auditLog")} ${itemCount} ${t(
+      "itemsToAudit"
+    )} ${frequencyText}`;
   };
 
   const filteredLog = useMemo(() => {
@@ -88,16 +91,16 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
           </div>
         </div>
         {activeTab === "plans" && (
-          <button
+          <Button
             onClick={() => {
               setEditingPlan(null);
               setIsModalOpen(true);
             }}
-            className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto"
+            className="w-full md:w-auto"
           >
             <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
             {t("newAuditPlan")}
-          </button>
+          </Button>
         )}
       </div>
 
@@ -149,28 +152,34 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
                     </p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-sm">{t('auditor')}: {auditor?.name}</span>
-                    <button
+                    <span className="text-sm">
+                      {t("auditor")}: {auditor?.name}
+                    </span>
+                    <Button
                       onClick={() => runAudit(plan.id)}
-                      className="text-sm font-semibold text-brand-primary hover:underline"
+                      variant="ghost"
+                      size="sm"
                     >
                       {t("runAudit")}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => {
                         setEditingPlan(plan);
                         setIsModalOpen(true);
                       }}
-                      className="p-1"
+                      variant="ghost"
+                      size="sm"
                     >
                       {t("edit")}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       onClick={() => handleDeletePlan(plan.id)}
-                      className="p-1"
+                      variant="ghost"
+                      size="sm"
+                      className="text-red-500 hover:text-red-700"
                     >
                       {t("delete")}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -192,18 +201,17 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
                 {t("auditLog")}
               </h2>
             </div>
-            <div className="relative w-full sm:w-auto sm:max-w-xs">
-              <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
+            <div className="w-full sm:w-auto sm:max-w-xs">
+              <Input
                 type="text"
                 placeholder={t("searchActivity")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full ltr:pl-10 rtl:pr-10 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-brand-primary focus:border-brand-primary text-sm bg-white dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                leftIcon={<SearchIcon className="h-5 w-5" />}
               />
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <TableContainer>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
               <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
@@ -261,7 +269,7 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
                 {searchTerm ? t("noProjectsFound") : t("noActivity")}
               </p>
             )}
-          </div>
+          </TableContainer>
         </div>
       )}
 

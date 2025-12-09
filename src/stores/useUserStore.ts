@@ -6,6 +6,8 @@ import { collection, query, where, getDocs, setDoc, deleteDoc, doc } from 'fireb
 // MIGRATION: Replaced BackendService with Firebase services
 import { getUsers } from '@/services/userService';
 import { deviceSessionService } from '@/services/deviceSessionService';
+import { handleError, AppError, AuthenticationError } from '@/services/errorHandling';
+import { logger } from '@/services/logger';
 
 interface UserState {
   currentUser: User | null;
@@ -47,7 +49,7 @@ export const useUserStore = create<UserState>((set, get) => ({
           
           // Track device session (non-blocking)
           deviceSessionService.createOrUpdateSession(user.id).catch(err => 
-            console.error('Failed to track session:', err)
+            logger.warn('Failed to track session', err)
           );
           
           return user;
@@ -65,7 +67,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     if (currentUser) {
       const currentDeviceId = deviceSessionService.getCurrentDeviceId();
       await deviceSessionService.signOutDevice(currentUser.id, currentDeviceId).catch(err =>
-        console.error('Failed to remove session:', err)
+        logger.warn('Failed to remove session', err)
       );
     }
     
@@ -81,7 +83,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       const newUser: User = { ...userData, id: userId };
       set(state => ({ users: [...state.users, newUser] }));
     } catch (error) {
-      throw error;
+      handleError(error, 'addUser');
+      throw new AppError('Failed to add user', 'OPERATION_FAILED');
     }
   },
   updateUser: async (updatedUser) => {
@@ -93,7 +96,8 @@ export const useUserStore = create<UserState>((set, get) => ({
         currentUser: state.currentUser?.id === updatedUser.id ? updatedUser : state.currentUser
       }));
     } catch (error) {
-      throw error;
+      handleError(error, 'updateUser');
+      throw new AppError('Failed to update user', 'OPERATION_FAILED');
     }
   },
   deleteUser: async (userId) => {
@@ -102,7 +106,8 @@ export const useUserStore = create<UserState>((set, get) => ({
       await deleteDoc(userRef);
       set(state => ({ users: state.users.filter(u => u.id !== userId) }));
     } catch (error) {
-      throw error;
+      handleError(error, 'deleteUser');
+      throw new AppError('Failed to delete user', 'OPERATION_FAILED');
     }
   },
 }));

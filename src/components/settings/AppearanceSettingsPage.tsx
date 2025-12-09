@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState, useEffect } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
@@ -47,6 +47,14 @@ const AppearanceSettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const applyCustomColors = (colors: typeof appearance.customColors) => {
+    const root = document.documentElement;
+    root.style.setProperty("--user-primary", colors.primary);
+    root.style.setProperty("--user-success", colors.success);
+    root.style.setProperty("--user-warning", colors.warning);
+    root.style.setProperty("--user-danger", colors.danger);
+  };
+
   const handleAppearanceChange = (
     updater: (prev: typeof appearance) => typeof appearance
   ) => {
@@ -77,6 +85,9 @@ const AppearanceSettingsPage: React.FC = () => {
       } else {
         document.documentElement.classList.add("reduce-motion");
       }
+
+      // Apply custom colors
+      applyCustomColors(appearance.customColors);
 
       setHasChanges(false);
       toast.success(t("settingsUpdated"));
@@ -298,6 +309,192 @@ const AppearanceSettingsPage: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {/* Custom Colors Section */}
+          <SettingsSection
+            title={t("customColors") || "Custom Colors"}
+            description="Customize brand colors throughout the application"
+          >
+            <div className="space-y-4">
+              {/* Primary Color */}
+              <div className="flex items-center gap-4">
+                <label className="flex-1">
+                  <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t("primaryColor") || "Primary Color"}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={appearance.customColors.primary}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            primary: e.target.value,
+                          },
+                        }))
+                      }
+                      className="h-10 w-20 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={appearance.customColors.primary}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            primary: e.target.value,
+                          },
+                        }))
+                      }
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-700 dark:text-white text-sm"
+                      placeholder="#4f46e5"
+                    />
+                  </div>
+                </label>
+              </div>
+
+              {/* Success Color */}
+              <div className="flex items-center gap-4">
+                <label className="flex-1">
+                  <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t("successColor") || "Success Color"}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={appearance.customColors.success}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            success: e.target.value,
+                          },
+                        }))
+                      }
+                      className="h-10 w-20 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={appearance.customColors.success}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            success: e.target.value,
+                          },
+                        }))
+                      }
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-700 dark:text-white text-sm"
+                      placeholder="#22c55e"
+                    />
+                  </div>
+                </label>
+              </div>
+
+              {/* Warning Color */}
+              <div className="flex items-center gap-4">
+                <label className="flex-1">
+                  <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t("warningColor") || "Warning Color"}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={appearance.customColors.warning}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            warning: e.target.value,
+                          },
+                        }))
+                      }
+                      className="h-10 w-20 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={appearance.customColors.warning}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            warning: e.target.value,
+                          },
+                        }))
+                      }
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-700 dark:text-white text-sm"
+                      placeholder="#f97316"
+                    />
+                  </div>
+                </label>
+              </div>
+
+              {/* Danger Color */}
+              <div className="flex items-center gap-4">
+                <label className="flex-1">
+                  <span className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t("dangerColor") || "Danger Color"}
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={appearance.customColors.danger}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            danger: e.target.value,
+                          },
+                        }))
+                      }
+                      className="h-10 w-20 rounded border border-gray-300 dark:border-gray-600 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={appearance.customColors.danger}
+                      onChange={(e) =>
+                        handleAppearanceChange((a) => ({
+                          ...a,
+                          customColors: {
+                            ...a.customColors,
+                            danger: e.target.value,
+                          },
+                        }))
+                      }
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-700 dark:text-white text-sm"
+                      placeholder="#ef4444"
+                    />
+                  </div>
+                </label>
+              </div>
+
+              {/* Reset to Defaults Button */}
+              <button
+                onClick={() =>
+                  handleAppearanceChange((a) => ({
+                    ...a,
+                    customColors: {
+                      primary: "#4f46e5",
+                      success: "#22c55e",
+                      warning: "#f97316",
+                      danger: "#ef4444",
+                    },
+                  }))
+                }
+                className="text-sm text-brand-primary hover:text-brand-primary/80 font-medium"
+              >
+                {t("resetToDefaults") || "Reset to Defaults"}
+              </button>
+            </div>
+          </SettingsSection>
         </div>
       </SettingsCard>
 
@@ -324,4 +521,3 @@ const AppearanceSettingsPage: React.FC = () => {
 };
 
 export default AppearanceSettingsPage;
-

@@ -6,6 +6,7 @@ import { EyeIcon, EyeSlashIcon, LogoIcon, ExclamationTriangleIcon, SpinnerIcon }
 import { useUserStore } from '../stores/useUserStore';
 import { useAppStore } from '../stores/useAppStore';
 import Globe from '../components/ui/Globe';
+import { Button, Input, ErrorMessage } from "@/components/ui";
 
 interface LoginPageProps {
   // onLogin prop is no longer needed
@@ -13,9 +14,9 @@ interface LoginPageProps {
 
 const LoginPage: React.FC<LoginPageProps> = () => {
   const { t, dir } = useTranslation();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const login = useUserStore((state) => state.login);
@@ -23,23 +24,23 @@ const LoginPage: React.FC<LoginPageProps> = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
       const user = await login(email, password);
       if (!user) {
-        setError(t('invalidCredentials'));
+        setError(t("invalidCredentials"));
       }
       // onLogin is no longer needed here; the auth listener handles the UI change.
     } finally {
       setLoading(false);
     }
   };
-  
+
   if (!appSettings) {
     return null; // Or a loading state
   }
-  
+
   const globeSettings = appSettings.globeSettings;
   const userLocation = { lat: 24.7136, long: 46.6753 }; // Riyadh, Saudi Arabia
 
@@ -49,20 +50,35 @@ const LoginPage: React.FC<LoginPageProps> = () => {
       <div className="flex flex-col justify-center items-center p-8 relative z-10">
         <div className="w-full max-w-sm">
           <div className="bg-brand-surface dark:bg-dark-brand-surface p-10 rounded-2xl shadow-2xl border border-brand-border dark:border-dark-brand-border animate-[fadeInUp_0.5s_ease-out]">
-              <div className="flex flex-col items-center text-center gap-3 mb-8 animate-[scaleIn_0.5s_ease-out]">
-                  {appSettings?.logoUrl ? (
-                    <img src={appSettings.logoUrl} alt="App Logo" className="h-12 w-12" />
-                  ) : (
-                    <LogoIcon className="h-12 w-12 text-brand-primary" />
-                  )}
-                  <h1 className="text-3xl font-bold">
-                      <span className="text-brand-text-primary dark:text-dark-brand-text-primary">Accredit</span><span className="text-brand-primary">Ex</span>
-                  </h1>
-              </div>
-            <form onSubmit={handleSubmit} className="space-y-6" dir={dir} aria-describedby={error ? 'login-error' : undefined}>
+            <div className="flex flex-col items-center text-center gap-3 mb-8 animate-[scaleIn_0.5s_ease-out]">
+              {appSettings?.logoUrl ? (
+                <img
+                  src={appSettings.logoUrl}
+                  alt="App Logo"
+                  className="h-12 w-12"
+                />
+              ) : (
+                <LogoIcon className="h-12 w-12 text-brand-primary" />
+              )}
+              <h1 className="text-3xl font-bold">
+                <span className="text-brand-text-primary dark:text-dark-brand-text-primary">
+                  Accredit
+                </span>
+                <span className="text-brand-primary">Ex</span>
+              </h1>
+            </div>
+            <form
+              onSubmit={handleSubmit}
+              className="space-y-6"
+              dir={dir}
+              aria-describedby={error ? "login-error" : undefined}
+            >
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('emailAddress')}
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  {t("emailAddress")}
                 </label>
                 <div className="mt-1">
                   <input
@@ -80,64 +96,89 @@ const LoginPage: React.FC<LoginPageProps> = () => {
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('password')}
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  {t("password")}
                 </label>
                 <div className="mt-1 relative">
-                  <input
+                  <Input
                     id="password"
                     name="password"
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     autoComplete="current-password"
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white dark:bg-gray-800 dark:text-white"
+                    rightIcon={
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="text-gray-400"
+                      >
+                        {showPassword ? (
+                          <EyeSlashIcon className="h-5 w-5" />
+                        ) : (
+                          <EyeIcon className="h-5 w-5" />
+                        )}
+                      </button>
+                    }
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400">
-                      {showPassword ? <EyeSlashIcon className="h-5 w-5"/> : <EyeIcon className="h-5 w-5"/>}
-                  </button>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <input id="remember-me" name="remember-me" type="checkbox" className="h-4 w-4 text-brand-primary focus:ring-brand-primary border-gray-300 rounded"/>
-                  <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900 dark:text-gray-200">{t('rememberMe')}</label>
+                  <input
+                    id="remember-me"
+                    name="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 text-brand-primary focus:ring-brand-primary border-gray-300 rounded"
+                  />
+                  <label
+                    htmlFor="remember-me"
+                    className="ml-2 block text-sm text-gray-900 dark:text-gray-200"
+                  >
+                    {t("rememberMe")}
+                  </label>
                 </div>
-                <div className="text-sm"><a href="#" className="font-medium text-brand-primary hover:text-indigo-500">{t('forgotPassword')}</a></div>
+                <div className="text-sm">
+                  <a
+                    href="#"
+                    className="font-medium text-brand-primary hover:text-indigo-500"
+                  >
+                    {t("forgotPassword")}
+                  </a>
+                </div>
               </div>
 
-              {error && 
-                <div id="login-error" role="alert" className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-400 p-3 flex items-center gap-3 animate-[fadeIn_0.3s_ease-out]">
-                    <ExclamationTriangleIcon className="h-5 w-5 text-red-600 dark:text-red-300"/>
-                    <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
-                </div>
-              }
+              {error && <ErrorMessage message={error} />}
 
               <div>
-                <button
+                <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-indigo-400"
+                  loading={loading}
+                  className="w-full"
                 >
-                  {loading ? <SpinnerIcon className="animate-spin h-5 w-5 text-white" /> : t('loginButton')}
-                </button>
+                  {t("loginButton")}
+                </Button>
               </div>
             </form>
           </div>
         </div>
       </div>
-      
+
       {/* Right Side: Globe */}
       <div className="hidden lg:flex relative items-center justify-center p-8 dot-grid overflow-hidden">
         <div className="w-[700px] h-[700px] max-w-full max-h-full">
-            <Globe 
-                width={700}
-                height={700}
-                {...globeSettings}
-                userLocation={userLocation}
-            />
+          <Globe
+            width={700}
+            height={700}
+            {...globeSettings}
+            userLocation={userLocation}
+          />
         </div>
       </div>
     </div>

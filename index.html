@@ -3,6 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Content Security Policy -->
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://aistudiocdn.com https://*.googleapis.com https://apis.google.com https://*.firebaseio.com https://*.cloudfunctions.net;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com data:;
+      img-src 'self' data: blob: https: https://*.cloudinary.com https://*.googleapis.com;
+      connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net wss://*.firebaseio.com https://aistudiocdn.com https://*.openai.com https://ipapi.co;
+      frame-src 'self' https://*.google.com https://accounts.google.com https://*.firebaseapp.com;
+      worker-src 'self' blob:;
+      object-src 'none';
+      base-uri 'self';
+      form-action 'self';
+      upgrade-insecure-requests;
+    ">
+    
+    <!-- Security Headers (Note: X-Frame-Options requires server-side implementation) -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    
     <title>AccreditEx</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 2L2 7V17L12 22L22 17V7L12 2Z' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 7L12 12L22 7' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 22V12' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="manifest" href="/manifest.json">
@@ -27,32 +49,6 @@
   }
 }
 </script>
-    <!-- TAILWIND CDN: For development/prototyping only. For production, use the Tailwind CLI or PostCSS plugin as recommended in the official documentation. -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            colors: {
-              'brand-primary': 'var(--brand-primary-color, #4f46e5)',
-              'brand-surface': 'var(--color-surface, #ffffff)',
-              'brand-background': 'var(--color-background, #f8fafc)',
-              'brand-border': 'var(--color-border, #e2e8f0)',
-              'brand-text-primary': 'var(--color-text-primary, #0f172a)',
-              'brand-text-secondary': 'var(--color-text-secondary, #64748b)',
-              'brand-success': '#22c55e',
-              'brand-warning': '#f97316',
-              'dark-brand-surface': 'var(--dark-color-surface, #1e293b)',
-              'dark-brand-background': 'var(--dark-color-background, #020617)',
-              'dark-brand-border': 'var(--dark-color-border, #334155)',
-              'dark-brand-text-primary': 'var(--dark-color-text-primary, #e2e8f0)',
-              'dark-brand-text-secondary': 'var(--dark-color-text-secondary, #94a3b8)',
-            }
-          }
-        }
-      }
-    </script>
     <style>
       :root {
         --brand-primary-color: #4f46e5;
@@ -108,11 +104,10 @@
       .dark-prose strong { color: #f9fafb; }
       .dark-prose blockquote { border-color: #4b5563; color: #d1d5db; }
     </style>
-<link rel="stylesheet" href="/index.css">
 </head>
 <body>
     <div id="root"></div>
-    <script type="module" src="index.tsx"></script>
+    <script type="module" src="/src/index.tsx"></script>
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -124,6 +119,5 @@
             });
         }
     </script>
-<script type="module" src="/index.tsx"></script>
 </body>
 </html>

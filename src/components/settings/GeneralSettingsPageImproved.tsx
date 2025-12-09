@@ -3,26 +3,26 @@
  * Using new enhanced components for better UX
  */
 
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/useToast';
-import ImageUpload from './ImageUpload';
-import ColorPicker from './ColorPicker';
-import { Language, UserRole } from '@/types';
+import React, { useState } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
+import ImageUpload from "./ImageUpload";
+import ColorPicker from "./ColorPicker";
+import { Language, UserRole } from "@/types";
 import {
   Cog6ToothIcon,
   CheckIcon,
   SpinnerIcon,
   ExclamationCircleIcon,
-} from '@/components/icons';
+} from "@/components/icons";
 import {
   SettingsPanel,
   FormGroup,
   EnhancedInput,
   EnhancedSelect,
   SettingsPresets,
-} from './index';
+} from "./index";
 
 const GeneralSettingsPageImproved: React.FC = () => {
   const { t } = useTranslation();
@@ -43,16 +43,16 @@ const GeneralSettingsPageImproved: React.FC = () => {
 
   const handleSave = async () => {
     if (!settings.appName.trim()) {
-      toast.error(t('appNameRequired'));
+      toast.error(t("appNameRequired"));
       return;
     }
     setLoading(true);
     try {
       await updateAppSettings(settings);
       setHasChanges(false);
-      toast.success(t('settingsUpdated'));
+      toast.success(t("settingsUpdated"));
     } catch (error) {
-      toast.error('Failed to save settings');
+      toast.error("Failed to save settings");
       console.error(error);
     } finally {
       setLoading(false);
@@ -61,7 +61,7 @@ const GeneralSettingsPageImproved: React.FC = () => {
 
   const handleColorChange = (color: string) => {
     handleSettingChange((s) => ({ ...s, primaryColor: color }));
-    document.documentElement.style.setProperty('--brand-primary-color', color);
+    document.documentElement.style.setProperty("--user-primary", color);
   };
 
   const handleSavePreset = (name: string, description: string) => {
@@ -85,12 +85,12 @@ const GeneralSettingsPageImproved: React.FC = () => {
 
   const handleDeletePreset = (presetId: string) => {
     setPresets(presets.filter((p) => p.id !== presetId));
-    toast.success('Preset deleted');
+    toast.success("Preset deleted");
   };
 
   const languageOptions = [
-    { value: 'en', label: 'English' },
-    { value: 'ar', label: 'العربية (Arabic)' },
+    { value: "en", label: "English" },
+    { value: "ar", label: "العربية (Arabic)" },
   ];
 
   const roleOptions = Object.values(UserRole).map((role) => ({
