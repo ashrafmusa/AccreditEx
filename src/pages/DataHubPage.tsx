@@ -14,6 +14,7 @@ import { exportAllFirestoreData, importAllFirestoreData } from '@/services/fires
 import { useToast } from '@/hooks/useToast';
 import SettingsCard from '@/components/settings/SettingsCard';
 import { IntegrationDashboard } from '@/components/his-integration';
+import { Button } from "@/components/ui";
 
 const CodeBlock: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-sm overflow-x-auto">

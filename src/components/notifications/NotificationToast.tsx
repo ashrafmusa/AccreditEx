@@ -1,6 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { EnhancedNotification } from '@/services/notificationService';
-import { CheckIcon, XCircleIcon, InfoIcon, AlertIcon } from '@/components/icons';
+import React, { useEffect, useState } from "react";
+import { EnhancedNotification } from "@/services/notificationService";
+import { safeNavigate } from "@/utils/urlValidation";
+import {
+  CheckIcon,
+  XCircleIcon,
+  InfoIcon,
+  AlertIcon,
+} from "@/components/icons";
 
 interface NotificationToastProps {
   notification: EnhancedNotification;
@@ -47,11 +53,11 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
 
   const getIcon = () => {
     switch (notification.type) {
-      case 'success':
+      case "success":
         return <CheckIcon className="w-5 h-5" />;
-      case 'error':
+      case "error":
         return <XCircleIcon className="w-5 h-5" />;
-      case 'warning':
+      case "warning":
         return <AlertIcon className="w-5 h-5" />;
       default:
         return <InfoIcon className="w-5 h-5" />;
@@ -60,37 +66,37 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
 
   const getColors = () => {
     switch (notification.type) {
-      case 'success':
+      case "success":
         return {
-          bg: 'bg-green-50 dark:bg-green-900/20',
-          border: 'border-green-200 dark:border-green-800',
-          icon: 'text-green-600',
-          text: 'text-green-800 dark:text-green-200',
-          progress: 'bg-green-500',
+          bg: "bg-green-50 dark:bg-green-900/20",
+          border: "border-green-200 dark:border-green-800",
+          icon: "text-green-600",
+          text: "text-green-800 dark:text-green-200",
+          progress: "bg-green-500",
         };
-      case 'error':
+      case "error":
         return {
-          bg: 'bg-red-50 dark:bg-red-900/20',
-          border: 'border-red-200 dark:border-red-800',
-          icon: 'text-red-600',
-          text: 'text-red-800 dark:text-red-200',
-          progress: 'bg-red-500',
+          bg: "bg-red-50 dark:bg-red-900/20",
+          border: "border-red-200 dark:border-red-800",
+          icon: "text-red-600",
+          text: "text-red-800 dark:text-red-200",
+          progress: "bg-red-500",
         };
-      case 'warning':
+      case "warning":
         return {
-          bg: 'bg-yellow-50 dark:bg-yellow-900/20',
-          border: 'border-yellow-200 dark:border-yellow-800',
-          icon: 'text-yellow-600',
-          text: 'text-yellow-800 dark:text-yellow-200',
-          progress: 'bg-yellow-500',
+          bg: "bg-yellow-50 dark:bg-yellow-900/20",
+          border: "border-yellow-200 dark:border-yellow-800",
+          icon: "text-yellow-600",
+          text: "text-yellow-800 dark:text-yellow-200",
+          progress: "bg-yellow-500",
         };
       default:
         return {
-          bg: 'bg-blue-50 dark:bg-blue-900/20',
-          border: 'border-blue-200 dark:border-blue-800',
-          icon: 'text-blue-600',
-          text: 'text-blue-800 dark:text-blue-200',
-          progress: 'bg-blue-500',
+          bg: "bg-blue-50 dark:bg-blue-900/20",
+          border: "border-blue-200 dark:border-blue-800",
+          icon: "text-blue-600",
+          text: "text-blue-800 dark:text-blue-200",
+          progress: "bg-blue-500",
         };
     }
   };
@@ -118,12 +124,12 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
               onClick={() => {
                 onAction?.();
                 if (notification.actionUrl) {
-                  window.location.href = notification.actionUrl;
+                  safeNavigate(notification.actionUrl);
                 }
               }}
               className={`mt-2 inline-flex items-center gap-1 text-sm font-medium ${colors.text} hover:underline`}
             >
-              {actionText || 'View'}
+              {actionText || "View"}
             </button>
           )}
         </div>

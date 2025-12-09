@@ -3,14 +3,14 @@
  * Main dashboard for managing and monitoring HIS integrations
  */
 
-import React, { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useHISIntegrationStore } from '@/stores/useHISIntegrationStore';
-import HISConfigurationManager from './HISConfigurationManager';
-import SyncStatusWidget from './SyncStatusWidget';
-import { ServerStackIcon, ChartBarIcon, ClockIcon } from '@/components/icons';
+import React, { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useHISIntegrationStore } from "@/stores/useHISIntegrationStore";
+import HISConfigurationManager from "./HISConfigurationManager";
+import SyncStatusWidget from "./SyncStatusWidget";
+import { ServerStackIcon, ChartBarIcon, ClockIcon } from "@/components/icons";
 
-type TabType = 'configurations' | 'status' | 'logs';
+type TabType = "configurations" | "status" | "logs";
 
 interface DashboardStats {
   totalConfigurations: number;
@@ -24,7 +24,7 @@ interface DashboardStats {
 export const IntegrationDashboard: React.FC = () => {
   const { t } = useTranslation();
   const store = useHISIntegrationStore();
-  const [activeTab, setActiveTab] = useState<TabType>('configurations');
+  const [activeTab, setActiveTab] = useState<TabType>("configurations");
   const [selectedConfigId, setSelectedConfigId] = useState<string | null>(null);
 
   // Calculate statistics
@@ -32,9 +32,14 @@ export const IntegrationDashboard: React.FC = () => {
     totalConfigurations: store.configurations.length,
     activeConfigurations: store.configurations.filter((c) => c.enabled).length,
     totalSyncs: store.integrationLogs.length,
-    successfulSyncs: store.integrationLogs.filter((l) => l.status === 'success').length,
-    failedSyncs: store.integrationLogs.filter((l) => l.status === 'error').length,
-    lastSyncTime: store.integrationLogs.length > 0 ? store.integrationLogs[0].timestamp : null,
+    successfulSyncs: store.integrationLogs.filter((l) => l.status === "success")
+      .length,
+    failedSyncs: store.integrationLogs.filter((l) => l.status === "error")
+      .length,
+    lastSyncTime:
+      store.integrationLogs.length > 0
+        ? store.integrationLogs[0].timestamp
+        : null,
   };
 
   return (
@@ -89,7 +94,11 @@ export const IntegrationDashboard: React.FC = () => {
             {stats.successfulSyncs}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
-            {stats.totalSyncs > 0 ? `${Math.round((stats.successfulSyncs / stats.totalSyncs) * 100)}% success rate` : 'N/A'}
+            {stats.totalSyncs > 0
+              ? `${Math.round(
+                  (stats.successfulSyncs / stats.totalSyncs) * 100
+                )}% success rate`
+              : "N/A"}
           </p>
         </div>
 
@@ -113,14 +122,16 @@ export const IntegrationDashboard: React.FC = () => {
           </p>
           <p className="text-sm font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-2">
             {stats.lastSyncTime
-              ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' }).format(
+              ? new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
                   Math.ceil((stats.lastSyncTime.getTime() - Date.now()) / 1000),
-                  'second'
+                  "second"
                 )
-              : 'Never'}
+              : "Never"}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
-            {stats.lastSyncTime ? stats.lastSyncTime.toLocaleDateString() : 'N/A'}
+            {stats.lastSyncTime
+              ? stats.lastSyncTime.toLocaleDateString()
+              : "N/A"}
           </p>
         </div>
       </div>
@@ -129,11 +140,11 @@ export const IntegrationDashboard: React.FC = () => {
       <div className="border-b border-gray-200 dark:border-dark-border">
         <div className="flex space-x-8">
           <button
-            onClick={() => setActiveTab('configurations')}
+            onClick={() => setActiveTab("configurations")}
             className={`py-3 px-1 border-b-2 font-medium transition ${
-              activeTab === 'configurations'
-                ? 'border-brand-primary text-brand-primary'
-                : 'border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary'
+              activeTab === "configurations"
+                ? "border-brand-primary text-brand-primary"
+                : "border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary"
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -143,11 +154,11 @@ export const IntegrationDashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('status')}
+            onClick={() => setActiveTab("status")}
             className={`py-3 px-1 border-b-2 font-medium transition ${
-              activeTab === 'status'
-                ? 'border-brand-primary text-brand-primary'
-                : 'border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary'
+              activeTab === "status"
+                ? "border-brand-primary text-brand-primary"
+                : "border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary"
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -157,11 +168,11 @@ export const IntegrationDashboard: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('logs')}
+            onClick={() => setActiveTab("logs")}
             className={`py-3 px-1 border-b-2 font-medium transition ${
-              activeTab === 'logs'
-                ? 'border-brand-primary text-brand-primary'
-                : 'border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary'
+              activeTab === "logs"
+                ? "border-brand-primary text-brand-primary"
+                : "border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary"
             }`}
           >
             <div className="flex items-center space-x-2">
@@ -174,17 +185,15 @@ export const IntegrationDashboard: React.FC = () => {
 
       {/* Tab Content */}
       <div>
-        {activeTab === 'configurations' && <HISConfigurationManager />}
+        {activeTab === "configurations" && <HISConfigurationManager />}
 
-        {activeTab === 'status' && (
+        {activeTab === "status" && (
           <div className="space-y-6">
             <SyncStatusWidget />
           </div>
         )}
 
-        {activeTab === 'logs' && (
-          <ActivityLog />
-        )}
+        {activeTab === "logs" && <ActivityLog />}
       </div>
     </div>
   );
@@ -195,28 +204,30 @@ export const IntegrationDashboard: React.FC = () => {
  */
 const ActivityLog: React.FC = () => {
   const store = useHISIntegrationStore();
-  const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterAction, setFilterAction] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [filterAction, setFilterAction] = useState<string>("all");
 
   const logs = store.integrationLogs.filter((log) => {
-    if (filterStatus !== 'all' && log.status !== filterStatus) return false;
-    if (filterAction !== 'all' && log.action !== filterAction) return false;
+    if (filterStatus !== "all" && log.status !== filterStatus) return false;
+    if (filterAction !== "all" && log.action !== filterAction) return false;
     return true;
   });
 
-  const actions = Array.from(new Set(store.integrationLogs.map((l) => l.action)));
-  const statuses = ['success', 'error', 'warning', 'info'];
+  const actions = Array.from(
+    new Set(store.integrationLogs.map((l) => l.action))
+  );
+  const statuses = ["success", "error", "warning", "info"];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'success':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100';
-      case 'error':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100';
-      case 'warning':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100';
+      case "success":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100";
+      case "error":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-100";
+      case "warning":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-100";
       default:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100';
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100";
     }
   };
 
@@ -245,7 +256,7 @@ const ActivityLog: React.FC = () => {
           <option value="all">All Actions</option>
           {actions.map((action) => (
             <option key={action} value={action}>
-              {action.replace(/_/g, ' ').toUpperCase()}
+              {action.replace(/_/g, " ").toUpperCase()}
             </option>
           ))}
         </select>
@@ -260,7 +271,7 @@ const ActivityLog: React.FC = () => {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <TableContainer>
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-dark-bg-tertiary border-b border-gray-200 dark:border-dark-border">
                 <tr>
@@ -283,16 +294,24 @@ const ActivityLog: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-gray-200 dark:divide-dark-border">
                 {logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-dark-bg-tertiary transition">
+                  <tr
+                    key={log.id}
+                    className="hover:bg-gray-50 dark:hover:bg-dark-bg-tertiary transition"
+                  >
                     <td className="px-6 py-3 text-sm text-brand-text-primary dark:text-dark-brand-text-primary font-medium">
                       {log.hisName}
                     </td>
                     <td className="px-6 py-3 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      {log.action.replace(/_/g, ' ').toUpperCase()}
+                      {log.action.replace(/_/g, " ").toUpperCase()}
                     </td>
                     <td className="px-6 py-3 text-sm">
-                      <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(log.status)}`}>
-                        {log.status.charAt(0).toUpperCase() + log.status.slice(1)}
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
+                          log.status
+                        )}`}
+                      >
+                        {log.status.charAt(0).toUpperCase() +
+                          log.status.slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-3 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
@@ -305,7 +324,7 @@ const ActivityLog: React.FC = () => {
                 ))}
               </tbody>
             </table>
-          </div>
+          </TableContainer>
         )}
       </div>
 

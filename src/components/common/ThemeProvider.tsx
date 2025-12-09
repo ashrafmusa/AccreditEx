@@ -6,6 +6,7 @@ import React, {
   useContext,
 } from "react";
 import { Theme } from "@/types";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface ThemeContextType {
   theme: Theme;
@@ -43,6 +44,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSystemDark, setIsSystemDark] = useState(false);
 
+  // Subscribe to appSettings changes
+  const appSettings = useAppStore((state) => state.appSettings);
+
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     try {
@@ -63,6 +67,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsInitialized(true);
     }
   }, []);
+
+  // Apply custom colors from appSettings (reactive to changes)
+  useEffect(() => {
+    if (appSettings?.appearance?.customColors) {
+      const { primary, success, warning, danger } =
+        appSettings.appearance.customColors;
+      const root = document.documentElement;
+      root.style.setProperty("--user-primary", primary);
+      root.style.setProperty("--user-success", success);
+      root.style.setProperty("--user-warning", warning);
+      root.style.setProperty("--user-danger", danger);
+    }
+  }, [appSettings]);
 
   // Apply theme to document and persist
   useEffect(() => {
@@ -100,10 +117,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
       mediaQuery.addEventListener("change", handleChange);
       return () => mediaQuery.removeEventListener("change", handleChange);
     } else {
-      // @ts-ignore - fallback for older browsers
-      mediaQuery.addListener(handleChange);
-      // @ts-ignore
-      return () => mediaQuery.removeListener(handleChange);
+      // Fallback for older browsers
+      const legacyQuery = mediaQuery as MediaQueryList & {
+        addListener: (handler: (e: MediaQueryListEvent) => void) => void;
+        removeListener: (handler: (e: MediaQueryListEvent) => void) => void;
+      };
+      legacyQuery.addListener(handleChange);
+      return () => legacyQuery.removeListener(handleChange);
     }
   }, []);
 

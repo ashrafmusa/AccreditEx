@@ -1,13 +1,10 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, Suspense } from "react";
 import { NavigationState } from "@/types";
 import Layout from "@/components/common/Layout";
 import { LanguageProvider } from "@/components/common/LanguageProvider";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { ToastProvider } from "@/components/common/Toast";
 import { useToast } from "@/hooks/useToast";
-import MainRouter from "@/components/common/MainRouter";
-import OnboardingPage from "@/pages/OnboardingPage";
-import LoginPage from "@/pages/LoginPage";
 import LoadingScreen from "@/components/common/LoadingScreen";
 // FIX: Corrected import path for useProjectStore
 import { useProjectStore } from "@/stores/useProjectStore";
@@ -16,6 +13,11 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useFirebaseAuth } from "@/firebase/firebaseHooks";
 import { getAuthInstance } from "@/firebase/firebaseConfig";
+
+// Lazy load heavy components
+const MainRouter = React.lazy(() => import("@/components/common/MainRouter"));
+const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
+const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
 
 const App: React.FC = () => {
   return (
@@ -51,7 +53,7 @@ const AppInitializer: React.FC = () => {
         // OPTIMIZATION: Only fetch critical app settings on startup
         // Users and projects load on-demand via lazy loading
         await fetchAllAppData();
-        
+
         // Optionally pre-fetch users and projects in background after settings load
         // This happens after the UI is interactive
         setTimeout(() => {
@@ -72,7 +74,7 @@ const AppInitializer: React.FC = () => {
   useEffect(() => {
     if (appSettings?.primaryColor) {
       document.documentElement.style.setProperty(
-        "--brand-primary-color",
+        "--user-primary",
         appSettings.primaryColor
       );
     }
@@ -116,17 +118,27 @@ const AppManager: React.FC = () => {
   }
 
   if (!currentUser) {
-    return <LoginPage />;
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <LoginPage />
+      </Suspense>
+    );
   }
 
   if (showOnboarding) {
-    return <OnboardingPage onComplete={handleOnboardingComplete} />;
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <OnboardingPage onComplete={handleOnboardingComplete} />
+      </Suspense>
+    );
   }
 
   return (
     <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary">
       <Layout setNavigation={setNavigation} navigation={navigation}>
-        <MainRouter navigation={navigation} setNavigation={setNavigation} />
+        <Suspense fallback={<LoadingScreen />}>
+          <MainRouter navigation={navigation} setNavigation={setNavigation} />
+        </Suspense>
       </Layout>
     </div>
   );

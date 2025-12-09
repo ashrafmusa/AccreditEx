@@ -5,6 +5,8 @@ import {
   IncidentReport, AuditPlan, Audit, CustomCalendarEvent, AppSettings, UserRole
 } from '@/types';
 import { ProjectTemplate } from '@/types/templates';
+import { logger } from '@/services/logger';
+import { handleError, AppError } from '@/services/errorHandling';
 // MIGRATION: Replaced BackendService with Firebase services
 import { getAppSettings, updateAppSettings as updateAppSettingsInFirebase } from '@/services/appSettingsService';
 import { getStandards, addStandard as addStandardToFirebase, updateStandard as updateStandardInFirebase, deleteStandard as deleteStandardFromFirebase } from '@/services/standardService';
@@ -164,7 +166,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       if (failedServices.length > 0) {
         const errorMsg = `Failed to load: ${failedServices.join(', ')}`;
-        console.warn('Partial initialization failure:', errorMsg);
+        logger.warn('Partial initialization failure', { error: errorMsg });
         if (settingsResult.status === 'rejected') {
           set({ initializationError: errorMsg });
         }
@@ -192,7 +194,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     } catch (error) {
       // Catch-all for unexpected errors
       const errorMsg = error instanceof Error ? error.message : 'Unknown error during initialization';
-      console.error('Unexpected error during data fetch:', error);
+      logger.error('Unexpected error during data fetch', error);
       set({ initializationError: errorMsg });
     }
   },
@@ -228,7 +230,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set(state => ({ documents: [...state.documents, newDoc] }));
     } catch (error) {
-      console.error('Failed to add document:', error);
+      logger.error('Failed to add document', error);
       throw error;
     }
   },
@@ -255,7 +257,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set(state => ({ documents: [...state.documents, newDoc] }));
     } catch (error) {
-      console.error('Failed to add process map:', error);
+      logger.error('Failed to add process map', error);
       throw error;
     }
   },
@@ -266,7 +268,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set(state => ({ documents: state.documents.map(d => d.id === doc.id ? doc : d) }));
     } catch (error) {
-      console.error('Failed to update document:', error);
+      logger.error('Failed to update document', error);
       throw error;
     }
   },
@@ -277,7 +279,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set(state => ({ documents: state.documents.filter(d => d.id !== docId) }));
     } catch (error) {
-      console.error('Failed to delete document:', error);
+      logger.error('Failed to delete document', error);
       throw error;
     }
   },
@@ -292,7 +294,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         set(state => ({ documents: state.documents.map(d => d.id === docId ? updatedDoc : d) }));
       }
     } catch (error) {
-      console.error('Failed to approve document:', error);
+      logger.error('Failed to approve document', error);
       throw error;
     }
   },
@@ -305,10 +307,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set({ appSettings: settings });
     } catch (error) {
-      console.error('Failed to update app settings:', error);
+      handleError(error, 'updateAppSettings');
       // Still update local state as fallback
       set({ appSettings: settings });
-      throw error;
+      throw new AppError('Failed to update app settings', 'OPERATION_FAILED');
     }
   },
 
@@ -324,8 +326,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const generatedTemplates = generateProjectTemplates(accreditationPrograms);
       set({ projectTemplates: generatedTemplates });
     } catch (error) {
-      console.error('Failed to add program:', error);
-      throw error;
+      handleError(error, 'addProgram');
+      throw new AppError('Failed to add program', 'OPERATION_FAILED');
     }
   },
   updateProgram: async (program: AccreditationProgram) => {
@@ -339,8 +341,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const generatedTemplates = generateProjectTemplates(accreditationPrograms);
       set({ projectTemplates: generatedTemplates });
     } catch (error) {
-      console.error('Failed to update program:', error);
-      throw error;
+      handleError(error, 'updateProgram');
+      throw new AppError('Failed to update program', 'OPERATION_FAILED');
     }
   },
   deleteProgram: async (programId: string) => {
@@ -354,8 +356,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const generatedTemplates = generateProjectTemplates(updatedPrograms);
       set({ projectTemplates: generatedTemplates });
     } catch (error) {
-      console.error('Failed to delete program:', error);
-      throw error;
+      handleError(error, 'deleteProgram');
+      throw new AppError('Failed to delete program', 'OPERATION_FAILED');
     }
   },
 
@@ -375,8 +377,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newStandard = await addStandardToFirebase(standardData);
       set(state => ({ standards: [...state.standards, newStandard] }));
     } catch (error) {
-      console.error('Failed to add standard:', error);
-      throw error;
+      handleError(error, 'addStandard');
+      throw new AppError('Failed to add standard', 'OPERATION_FAILED');
     }
   },
   updateStandard: async (standard: Standard) => {
@@ -384,8 +386,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateStandardInFirebase(standard);
       set(state => ({ standards: state.standards.map(s => s.standardId === standard.standardId ? standard : s) }));
     } catch (error) {
-      console.error('Failed to update standard:', error);
-      throw error;
+      handleError(error, 'updateStandard');
+      throw new AppError('Failed to update standard', 'OPERATION_FAILED');
     }
   },
   deleteStandard: async (standardId: string) => {
@@ -393,8 +395,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteStandardFromFirebase(standardId);
       set(state => ({ standards: state.standards.filter(s => s.standardId !== standardId) }));
     } catch (error) {
-      console.error('Failed to delete standard:', error);
-      throw error;
+      handleError(error, 'deleteStandard');
+      throw new AppError('Failed to delete standard', 'OPERATION_FAILED');
     }
   },
 
@@ -404,8 +406,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newDept = await addDepartmentToFirebase(deptData);
       set(state => ({ departments: [...state.departments, newDept] }));
     } catch (error) {
-      console.error('Failed to add department:', error);
-      throw error;
+      handleError(error, 'addDepartment');
+      throw new AppError('Failed to add department', 'OPERATION_FAILED');
     }
   },
   updateDepartment: async (dept: Department) => {
@@ -413,8 +415,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateDepartmentInFirebase(dept);
       set(state => ({ departments: state.departments.map(d => d.id === dept.id ? dept : d) }));
     } catch (error) {
-      console.error('Failed to update department:', error);
-      throw error;
+      handleError(error, 'updateDepartment');
+      throw new AppError('Failed to update department', 'OPERATION_FAILED');
     }
   },
   deleteDepartment: async (deptId: string) => {
@@ -422,8 +424,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteDepartmentFromFirebase(deptId);
       set(state => ({ departments: state.departments.filter(d => d.id !== deptId) }));
     } catch (error) {
-      console.error('Failed to delete department:', error);
-      throw error;
+      handleError(error, 'deleteDepartment');
+      throw new AppError('Failed to delete department', 'OPERATION_FAILED');
     }
   },  
   addCompetency: async (compData: Omit<Competency, 'id'>) => {
@@ -431,8 +433,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newComp = await addCompetencyToFirebase(compData);
       set(state => ({ competencies: [...state.competencies, newComp] }));
     } catch (error) {
-      console.error('Failed to add competency:', error);
-      throw error;
+      handleError(error, 'addCompetency');
+      throw new AppError('Failed to add competency', 'OPERATION_FAILED');
     }
   },
   updateCompetency: async (comp: Competency) => {
@@ -440,8 +442,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateCompetencyInFirebase(comp);
       set(state => ({ competencies: state.competencies.map(c => c.id === comp.id ? comp : c) }));
     } catch (error) {
-      console.error('Failed to update competency:', error);
-      throw error;
+      handleError(error, 'updateCompetency');
+      throw new AppError('Failed to update competency', 'OPERATION_FAILED');
     }
   },
   deleteCompetency: async (compId: string) => {
@@ -449,8 +451,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteCompetencyFromFirebase(compId);
       set(state => ({ competencies: state.competencies.filter(c => c.id !== compId) }));
     } catch (error) {
-      console.error('Failed to delete competency:', error);
-      throw error;
+      handleError(error, 'deleteCompetency');
+      throw new AppError('Failed to delete competency', 'OPERATION_FAILED');
     }
   },
   
@@ -459,8 +461,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newProgram = await addTrainingProgramToFirebase(programData);
       set(state => ({ trainingPrograms: [...state.trainingPrograms, newProgram] }));
     } catch (error) {
-      console.error('Failed to add training program:', error);
-      throw error;
+      handleError(error, 'addTrainingProgram');
+      throw new AppError('Failed to add training program', 'OPERATION_FAILED');
     }
   },
   updateTrainingProgram: async (program: TrainingProgram) => {
@@ -468,8 +470,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateTrainingProgramInFirebase(program);
       set(state => ({ trainingPrograms: state.trainingPrograms.map(p => p.id === program.id ? program : p) }));
     } catch (error) {
-      console.error('Failed to update training program:', error);
-      throw error;
+      handleError(error, 'updateTrainingProgram');
+      throw new AppError('Failed to update training program', 'OPERATION_FAILED');
     }
   },
   deleteTrainingProgram: async (programId: string) => {
@@ -477,8 +479,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteTrainingProgramFromFirebase(programId);
       set(state => ({ trainingPrograms: state.trainingPrograms.filter(p => p.id !== programId) }));
     } catch (error) {
-      console.error('Failed to delete training program:', error);
-      throw error;
+      handleError(error, 'deleteTrainingProgram');
+      throw new AppError('Failed to delete training program', 'OPERATION_FAILED');
     }
   },
   
@@ -551,8 +553,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newRisk = await addRiskToFirebase(riskData);
       set(state => ({ risks: [...state.risks, newRisk] }));
     } catch (error) {
-      console.error('Failed to add risk:', error);
-      throw error;
+      handleError(error, 'addRisk');
+      throw new AppError('Failed to add risk', 'OPERATION_FAILED');
     }
   },
   updateRisk: async (risk: Risk) => {
@@ -560,8 +562,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateRiskInFirebase(risk);
       set(state => ({ risks: state.risks.map(r => r.id === risk.id ? risk : r) }));
     } catch (error) {
-      console.error('Failed to update risk:', error);
-      throw error;
+      handleError(error, 'updateRisk');
+      throw new AppError('Failed to update risk', 'OPERATION_FAILED');
     }
   },
   deleteRisk: async (riskId: string) => {
@@ -569,8 +571,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteRiskFromFirebase(riskId);
       set(state => ({ risks: state.risks.filter(r => r.id !== riskId) }));
     } catch (error) {
-      console.error('Failed to delete risk:', error);
-      throw error;
+      handleError(error, 'deleteRisk');
+      throw new AppError('Failed to delete risk', 'OPERATION_FAILED');
     }
   },
   
@@ -579,8 +581,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newReport = await addIncidentReportToFirebase(reportData);
       set(state => ({ incidentReports: [...state.incidentReports, newReport] }));
     } catch (error) {
-      console.error('Failed to add incident report:', error);
-      throw error;
+      handleError(error, 'addIncidentReport');
+      throw new AppError('Failed to add incident report', 'OPERATION_FAILED');
     }
   },
   updateIncidentReport: async (report: IncidentReport) => {
@@ -588,8 +590,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateIncidentReportInFirebase(report);
       set(state => ({ incidentReports: state.incidentReports.map(r => r.id === report.id ? report : r) }));
     } catch (error) {
-      console.error('Failed to update incident report:', error);
-      throw error;
+      handleError(error, 'updateIncidentReport');
+      throw new AppError('Failed to update incident report', 'OPERATION_FAILED');
     }
   },
   deleteIncidentReport: async (reportId: string) => {
@@ -597,8 +599,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteIncidentReportFromFirebase(reportId);
       set(state => ({ incidentReports: state.incidentReports.filter(r => r.id !== reportId) }));
     } catch (error) {
-      console.error('Failed to delete incident report:', error);
-      throw error;
+      handleError(error, 'deleteIncidentReport');
+      throw new AppError('Failed to delete incident report', 'OPERATION_FAILED');
     }
   },
   
@@ -607,8 +609,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newPlan = await addAuditPlanToFirebase(planData);
       set(state => ({ auditPlans: [...state.auditPlans, newPlan] }));
     } catch (error) {
-      console.error('Failed to add audit plan:', error);
-      throw error;
+      handleError(error, 'addAuditPlan');
+      throw new AppError('Failed to add audit plan', 'OPERATION_FAILED');
     }
   },
   updateAuditPlan: async (plan: AuditPlan) => {
@@ -616,8 +618,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateAuditPlanInFirebase(plan);
       set(state => ({ auditPlans: state.auditPlans.map(p => p.id === plan.id ? plan : p) }));
     } catch (error) {
-      console.error('Failed to update audit plan:', error);
-      throw error;
+      handleError(error, 'updateAuditPlan');
+      throw new AppError('Failed to update audit plan', 'OPERATION_FAILED');
     }
   },
   deleteAuditPlan: async (planId: string) => {
@@ -625,8 +627,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteAuditPlanFromFirebase(planId);
       set(state => ({ auditPlans: state.auditPlans.filter(p => p.id !== planId) }));
     } catch (error) {
-      console.error('Failed to delete audit plan:', error);
-      throw error;
+      handleError(error, 'deleteAuditPlan');
+      throw new AppError('Failed to delete audit plan', 'OPERATION_FAILED');
     }
   },
   
@@ -641,8 +643,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newEvent = await addCustomEventToFirebase({ ...eventData, type: 'Custom' });
       set(state => ({ customEvents: [...state.customEvents, newEvent] }));
     } catch (error) {
-      console.error('Failed to add custom event:', error);
-      throw error;
+      handleError(error, 'addCustomEvent');
+      throw new AppError('Failed to add custom event', 'OPERATION_FAILED');
     }
   },
   updateCustomEvent: async (event: CustomCalendarEvent) => {
@@ -650,8 +652,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateCustomEventInFirebase(event);
       set(state => ({ customEvents: state.customEvents.map(e => e.id === event.id ? event : e) }));
     } catch (error) {
-      console.error('Failed to update custom event:', error);
-      throw error;
+      handleError(error, 'updateCustomEvent');
+      throw new AppError('Failed to update custom event', 'OPERATION_FAILED');
     }
   },
   deleteCustomEvent: async (eventId: string) => {
@@ -659,7 +661,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       await deleteCustomEventFromFirebase(eventId);
       set(state => ({ customEvents: state.customEvents.filter(e => e.id !== eventId) }));
     } catch (error) {
-      console.error('Failed to delete custom event:', error);
-      throw error;
+      handleError(error, 'deleteCustomEvent');
+      throw new AppError('Failed to delete custom event', 'OPERATION_FAILED');
     }
   },}));

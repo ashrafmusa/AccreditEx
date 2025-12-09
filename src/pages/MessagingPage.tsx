@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
-import { useMessaging } from '@/hooks/useMessaging';
-import { useUserStore } from '@/stores/useUserStore';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/useToast';
+import React, { useState } from "react";
+import { useMessaging } from "@/hooks/useMessaging";
+import { useUserStore } from "@/stores/useUserStore";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
 import {
   DocumentTextIcon,
   CheckIcon,
   TrashIcon,
   SparklesIcon,
   PhotoIcon,
-} from '@/components/icons';
-import MessagingCenter from '@/components/messaging/MessagingCenter';
-import SettingsCard from '@/components/settings/SettingsCard';
-import SettingsAlert from '@/components/settings/SettingsAlert';
+} from "@/components/icons";
+import MessagingCenter from "@/components/messaging/MessagingCenter";
+import SettingsCard from "@/components/settings/SettingsCard";
+import SettingsAlert from "@/components/settings/SettingsAlert";
+import { Button } from "@/components/ui";
 
 interface MessagingPageProps {
   setNavigation?: (state: any) => void;
@@ -32,32 +33,36 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
     isUserBlocked,
   } = useMessaging({ autoSubscribe: true });
 
-  const [view, setView] = useState<'conversations' | 'statistics' | 'privacy'>('conversations');
+  const [view, setView] = useState<"conversations" | "statistics" | "privacy">(
+    "conversations"
+  );
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Get blocked users
   const getBlockedUsersList = () => {
     if (!currentUser) return [];
     const blockListKey = `blocked_${currentUser.id}`;
-    const blocked = JSON.parse(localStorage.getItem(blockListKey) || '[]');
-    return blocked.map((id: string) => users.find(u => u.id === id)).filter(Boolean);
+    const blocked = JSON.parse(localStorage.getItem(blockListKey) || "[]");
+    return blocked
+      .map((id: string) => users.find((u) => u.id === id))
+      .filter(Boolean);
   };
 
   const handleBlockUser = (userId: string) => {
     blockUser(userId);
     setBlockedUsers([...blockedUsers, userId]);
-    toast.success('User blocked');
+    toast.success("User blocked");
   };
 
   const handleUnblockUser = (userId: string) => {
     const blockListKey = `blocked_${currentUser?.id}`;
-    const blocked = JSON.parse(localStorage.getItem(blockListKey) || '[]').filter(
-      (id: string) => id !== userId
-    );
+    const blocked = JSON.parse(
+      localStorage.getItem(blockListKey) || "[]"
+    ).filter((id: string) => id !== userId);
     localStorage.setItem(blockListKey, JSON.stringify(blocked));
     setBlockedUsers(blocked);
-    toast.success('User unblocked');
+    toast.success("User unblocked");
   };
 
   const blockedUsersList = getBlockedUsersList();
@@ -69,11 +74,11 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
         <div className="flex items-center gap-3">
           <DocumentTextIcon className="w-8 h-8 text-brand-primary" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t('messages') || 'Messages'}
+            {t("messages") || "Messages"}
           </h1>
           {unreadCount > 0 && (
             <span className="bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
-              {unreadCount} {t('unread') || 'Unread'}
+              {unreadCount} {t("unread") || "Unread"}
             </span>
           )}
         </div>
@@ -81,43 +86,34 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
 
       {/* View Tabs */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-dark-brand-border">
-        <button
-          onClick={() => setView('conversations')}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-            view === 'conversations'
-              ? 'border-brand-primary text-brand-primary'
-              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+        <Button
+          onClick={() => setView("conversations")}
+          variant={view === "conversations" ? "primary" : "ghost"}
+          className="border-b-2"
         >
-          {t('conversations') || 'Conversations'} ({conversations.length})
-        </button>
-        <button
-          onClick={() => setView('statistics')}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-            view === 'statistics'
-              ? 'border-brand-primary text-brand-primary'
-              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+          {t("conversations") || "Conversations"} ({conversations.length})
+        </Button>
+        <Button
+          onClick={() => setView("statistics")}
+          variant={view === "statistics" ? "primary" : "ghost"}
+          className="border-b-2"
         >
-          {t('statistics') || 'Statistics'}
-        </button>
-        <button
-          onClick={() => setView('privacy')}
-          className={`px-4 py-2 font-medium border-b-2 transition-colors ${
-            view === 'privacy'
-              ? 'border-brand-primary text-brand-primary'
-              : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-          }`}
+          {t("statistics") || "Statistics"}
+        </Button>
+        <Button
+          onClick={() => setView("privacy")}
+          variant={view === "privacy" ? "primary" : "ghost"}
+          className="border-b-2"
         >
-          {t('privacy') || 'Privacy'}
-        </button>
+          {t("privacy") || "Privacy"}
+        </Button>
       </div>
 
       {/* Conversations View */}
-      {view === 'conversations' && (
+      {view === "conversations" && (
         <div className="space-y-4">
           <SettingsCard
-            title={t('directMessages') || 'Direct Messages'}
+            title={t("directMessages") || "Direct Messages"}
             description="Communicate with team members"
           >
             <MessagingCenter maxHeight="700px" />
@@ -126,7 +122,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
       )}
 
       {/* Statistics View */}
-      {view === 'statistics' && stats && (
+      {view === "statistics" && stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Total Messages */}
           <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
@@ -221,7 +217,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
       )}
 
       {/* Privacy View */}
-      {view === 'privacy' && (
+      {view === "privacy" && (
         <div className="space-y-4">
           <SettingsAlert
             type="info"
@@ -230,7 +226,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
           />
 
           <SettingsCard
-            title={t('blockedUsers') || 'Blocked Users'}
+            title={t("blockedUsers") || "Blocked Users"}
             description="Manage blocked users"
           >
             {blockedUsersList.length > 0 ? (
@@ -241,48 +237,60 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                   >
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{user.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {user.name}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {user.email}
+                      </p>
                     </div>
                     <button
                       onClick={() => handleUnblockUser(user.id)}
                       className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
                     >
                       <PhotoIcon className="w-5 h-5" />
-                      {t('unblock') || 'Unblock'}
+                      {t("unblock") || "Unblock"}
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
               <p className="text-center text-gray-500 dark:text-gray-400 py-8">
-                {t('noBlockedUsers') || 'No blocked users'}
+                {t("noBlockedUsers") || "No blocked users"}
               </p>
             )}
           </SettingsCard>
 
           <SettingsCard
-            title={t('blockNewUser') || 'Block a User'}
+            title={t("blockNewUser") || "Block a User"}
             description="Select a user to block"
           >
             <div className="space-y-2">
               {users
-                .filter(u => u.id !== currentUser?.id && !blockedUsersList.find((b: any) => b.id === u.id))
-                .map(user => (
+                .filter(
+                  (u) =>
+                    u.id !== currentUser?.id &&
+                    !blockedUsersList.find((b: any) => b.id === u.id)
+                )
+                .map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                   >
                     <div>
-                      <p className="font-medium text-gray-900 dark:text-white">{user.name}</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {user.name}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {user.email}
+                      </p>
                     </div>
                     <button
                       onClick={() => handleBlockUser(user.id)}
                       className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
                     >
                       <PhotoIcon className="w-5 h-5" />
-                      {t('block') || 'Block'}
+                      {t("block") || "Block"}
                     </button>
                   </div>
                 ))}

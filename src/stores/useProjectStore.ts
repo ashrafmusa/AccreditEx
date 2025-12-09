@@ -3,6 +3,8 @@ import { Project, ChecklistItem, DesignControlItem, CAPAReport, MockSurvey, Comp
 import * as projectService from '@/services/projectService';
 import { useUserStore } from './useUserStore';
 import { useAppStore } from './useAppStore';
+import { handleError, AppError } from '@/services/errorHandling';
+import { logger } from '@/services/logger';
 
 interface ProjectState {
   projects: Project[];
@@ -67,7 +69,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       }));
       set({ projects: projectsWithProgress, loading: false });
     } catch (error) {
-      set({ error: (error as Error).message, loading: false });
+      handleError(error, 'fetchAllProjects');
+      set({ error: 'Failed to fetch projects', loading: false });
     }
   },
 

@@ -1,38 +1,56 @@
-import React, { useState } from 'react';
-import { TrainingProgram, User, Department } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
-import { PlusIcon, PencilIcon, TrashIcon, AcademicCapIcon } from '../icons';
-import TrainingProgramModal from './TrainingProgramModal';
-import AssignTrainingModal from './AssignTrainingModal';
-import EmptyState from '../common/EmptyState';
+import React, { useState } from "react";
+import { TrainingProgram, User, Department } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
+import { PlusIcon, PencilIcon, TrashIcon, AcademicCapIcon } from "../icons";
+import TrainingProgramModal from "./TrainingProgramModal";
+import AssignTrainingModal from "./AssignTrainingModal";
+import EmptyState from "../common/EmptyState";
+import { TableContainer } from "@/components/ui";
 
 interface Props {
   trainingPrograms: TrainingProgram[];
   users: User[];
   departments: Department[];
-  onAssign: (data: { trainingId: string; userIds: string[]; departmentIds: string[]; dueDate?: string }) => Promise<void>;
-  onCreate: (program: Omit<TrainingProgram, 'id'>) => Promise<void>;
+  onAssign: (data: {
+    trainingId: string;
+    userIds: string[];
+    departmentIds: string[];
+    dueDate?: string;
+  }) => Promise<void>;
+  onCreate: (program: Omit<TrainingProgram, "id">) => Promise<void>;
   onUpdate: (program: TrainingProgram) => Promise<void>;
   onDelete: (programId: string) => Promise<void>;
 }
 
-const TrainingAdminTab: React.FC<Props> = ({ trainingPrograms, users, departments, onAssign, onCreate, onUpdate, onDelete }) => {
+const TrainingAdminTab: React.FC<Props> = ({
+  trainingPrograms,
+  users,
+  departments,
+  onAssign,
+  onCreate,
+  onUpdate,
+  onDelete,
+}) => {
   const { t, lang } = useTranslation();
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [editingProgram, setEditingProgram] = useState<TrainingProgram | null>(null);
+  const [editingProgram, setEditingProgram] = useState<TrainingProgram | null>(
+    null
+  );
 
-  const handleSaveProgram = (program: TrainingProgram | Omit<TrainingProgram, 'id'>) => {
-    if ('id' in program) {
+  const handleSaveProgram = (
+    program: TrainingProgram | Omit<TrainingProgram, "id">
+  ) => {
+    if ("id" in program) {
       onUpdate(program);
     } else {
       onCreate(program);
     }
     setIsProgramModalOpen(false);
   };
-  
+
   const handleDelete = (programId: string) => {
-    if (window.confirm(t('areYouSureDeleteTraining'))) {
+    if (window.confirm(t("areYouSureDeleteTraining"))) {
       onDelete(programId);
     }
   };
@@ -59,7 +77,7 @@ const TrainingAdminTab: React.FC<Props> = ({ trainingPrograms, users, department
       </div>
 
       <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border overflow-hidden">
-        <div className="overflow-x-auto">
+        <TableContainer>
           <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
@@ -104,17 +122,17 @@ const TrainingAdminTab: React.FC<Props> = ({ trainingPrograms, users, department
               ))}
             </tbody>
           </table>
-          {trainingPrograms.length === 0 && (
-            <EmptyState
-              icon={AcademicCapIcon}
-              title={t("noTrainingPrograms") || "No Training Programs"}
-              message={
-                t("createTrainingToStart") ||
-                "Create a new training program to get started."
-              }
-            />
-          )}
-        </div>
+        </TableContainer>
+        {trainingPrograms.length === 0 && (
+          <EmptyState
+            icon={AcademicCapIcon}
+            title={t("noTrainingPrograms") || "No Training Programs"}
+            message={
+              t("createTrainingToStart") ||
+              "Create a new training program to get started."
+            }
+          />
+        )}
       </div>
 
       {isProgramModalOpen && (

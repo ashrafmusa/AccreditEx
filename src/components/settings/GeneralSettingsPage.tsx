@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
-import SettingsCard from './SettingsCard';
-import { useToast } from '@/hooks/useToast';
-import ImageUpload from './ImageUpload';
-import ColorPicker from './ColorPicker';
-import { labelClasses, inputClasses } from '@/components/ui/constants';
-import { Language, UserRole } from '@/types';
+import React, { useState } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
+import SettingsCard from "./SettingsCard";
+import { useToast } from "@/hooks/useToast";
+import ImageUpload from "./ImageUpload";
+import ColorPicker from "./ColorPicker";
+import { labelClasses, inputClasses } from "@/components/ui/constants";
+import { Language, UserRole } from "@/types";
 import { Cog6ToothIcon, CheckIcon, SpinnerIcon } from "@/components/icons";
 
 const GeneralSettingsPage: React.FC = () => {
@@ -45,7 +45,6 @@ const GeneralSettingsPage: React.FC = () => {
 
   const handleColorChange = (color: string) => {
     handleSettingChange((s) => ({ ...s, primaryColor: color }));
-    document.documentElement.style.setProperty("--brand-primary-color", color);
   };
 
   return (

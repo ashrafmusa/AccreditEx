@@ -2,7 +2,7 @@ export type Language = 'en' | 'ar';
 export type Direction = 'ltr' | 'rtl';
 export type Theme = 'light' | 'dark';
 
-export type SettingsSection = 'general' | 'profile' | 'security' | 'notifications' | 'accessibility' | 'appearance' | 'globe' | 'usageMonitor' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'about';
+export type SettingsSection = 'general' | 'profile' | 'security' | 'notifications' | 'accessibility' | 'appearance' | 'globe' | 'visual' | 'usageMonitor' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about';
 
 export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'dataHub' | 'messaging';
 
@@ -111,6 +111,12 @@ export interface AppearanceSettings {
   sidebarCollapsed: boolean;
   showAnimations: boolean;
   cardStyle: string;
+  customColors: {
+    primary: string;
+    success: string;
+    warning: string;
+    danger: string;
+  };
 }
 
 export interface NotificationSettings {
@@ -366,47 +372,47 @@ export interface Risk {
 }
 
 export interface IncidentReport {
-    id: string;
-    incidentDate: string;
-    location: string;
-    type: 'Patient Safety' | 'Staff Injury' | 'Facility Issue' | 'Medication Error' | 'Other';
-    severity: 'Minor' | 'Moderate' | 'Severe' | 'Sentinel Event';
-    description: string;
-    status: 'Open' | 'Under Investigation' | 'Closed';
-    reportedBy: string;
-    correctiveActionIds: string[];
+  id: string;
+  incidentDate: string;
+  location: string;
+  type: 'Patient Safety' | 'Staff Injury' | 'Facility Issue' | 'Medication Error' | 'Other';
+  severity: 'Minor' | 'Moderate' | 'Severe' | 'Sentinel Event';
+  description: string;
+  status: 'Open' | 'Under Investigation' | 'Closed';
+  reportedBy: string;
+  correctiveActionIds: string[];
 }
 
 export interface AuditPlan {
-    id: string;
-    name: string;
-    projectId: string;
-    standardSection: string; // e.g. 'Chapter 1' or specific standard IDs
-    frequency: 'weekly' | 'monthly';
-    itemCount: number; // number of checklist items to audit
-    assignedAuditorId: string;
+  id: string;
+  name: string;
+  projectId: string;
+  standardSection: string; // e.g. 'Chapter 1' or specific standard IDs
+  frequency: 'weekly' | 'monthly';
+  itemCount: number; // number of checklist items to audit
+  assignedAuditorId: string;
 }
 
 export interface AuditResult {
-    checklistItemId: string;
-    isCompliant: boolean;
-    auditorNotes: string;
+  checklistItemId: string;
+  isCompliant: boolean;
+  auditorNotes: string;
 }
 export interface Audit {
-    id: string;
-    planId: string;
-    dateConducted: string;
-    auditorId: string;
-    results: AuditResult[];
+  id: string;
+  planId: string;
+  dateConducted: string;
+  auditorId: string;
+  results: AuditResult[];
 }
 
 export type UserTrainingStatus = {
-    [trainingId: string]: {
-        status: 'Not Started' | 'In Progress' | 'Completed';
-        score?: number;
-        completionDate?: string;
-        certificateId?: string;
-    }
+  [trainingId: string]: {
+    status: 'Not Started' | 'In Progress' | 'Completed';
+    score?: number;
+    completionDate?: string;
+    certificateId?: string;
+  }
 };
 
 export type ProjectDetailView = 'overview' | 'checklist' | 'documents' | 'audit_log' | 'mock_surveys' | 'design_controls' | 'pdca_cycles';

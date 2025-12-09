@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { useNotifications } from '@/hooks/useNotifications';
-import { useTranslation } from '@/hooks/useTranslation';
-import { EnhancedNotification, NotificationCategory } from '@/services/notificationService';
+import React, { useState } from "react";
+import { useNotifications } from "@/hooks/useNotifications";
+import { useTranslation } from "@/hooks/useTranslation";
+import { safeNavigate } from "@/utils/urlValidation";
+import {
+  EnhancedNotification,
+  NotificationCategory,
+} from "@/services/notificationService";
 import {
   BellIcon,
   CheckIcon,
@@ -9,7 +13,7 @@ import {
   XCircleIcon,
   InfoIcon,
   AlertIcon,
-} from '@/components/icons';
+} from "@/components/icons";
 
 interface NotificationCenterProps {
   maxVisible?: number;
@@ -40,11 +44,11 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'success':
+      case "success":
         return <CheckIcon className="w-5 h-5 text-green-600" />;
-      case 'error':
+      case "error":
         return <XCircleIcon className="w-5 h-5 text-red-600" />;
-      case 'warning':
+      case "warning":
         return <AlertIcon className="w-5 h-5 text-yellow-600" />;
       default:
         return <InfoIcon className="w-5 h-5 text-blue-600" />;
@@ -53,14 +57,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'critical':
-        return 'bg-red-100 dark:bg-red-900/30 border-l-4 border-red-600';
-      case 'high':
-        return 'bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-600';
-      case 'normal':
-        return 'bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-600';
+      case "critical":
+        return "bg-red-100 dark:bg-red-900/30 border-l-4 border-red-600";
+      case "high":
+        return "bg-orange-100 dark:bg-orange-900/30 border-l-4 border-orange-600";
+      case "normal":
+        return "bg-blue-100 dark:bg-blue-900/30 border-l-4 border-blue-600";
       default:
-        return 'bg-gray-100 dark:bg-gray-900/30 border-l-4 border-gray-600';
+        return "bg-gray-100 dark:bg-gray-900/30 border-l-4 border-gray-600";
     }
   };
 
@@ -69,7 +73,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       markAsRead(notification.id);
     }
     if (notification.actionUrl) {
-      window.location.href = notification.actionUrl;
+      safeNavigate(notification.actionUrl);
     }
     setExpandedId(expandedId === notification.id ? null : notification.id);
   };
@@ -78,7 +82,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
         <BellIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">{t('noNotifications') || 'No notifications'}</p>
+        <p className="text-sm">{t("noNotifications") || "No notifications"}</p>
       </div>
     );
   }
@@ -89,10 +93,13 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
       {unreadCount > 0 && (
         <div className="flex items-center justify-between px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
-            {unreadCount} {unreadCount === 1 ? 'unread notification' : 'unread notifications'}
+            {unreadCount}{" "}
+            {unreadCount === 1 ? "unread notification" : "unread notifications"}
           </span>
           <button
-            onClick={() => notifications.forEach(n => !n.read && markAsRead(n.id))}
+            onClick={() =>
+              notifications.forEach((n) => !n.read && markAsRead(n.id))
+            }
             className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
             Mark all as read
@@ -102,11 +109,13 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
 
       {/* Notifications list */}
       <div className="space-y-2">
-        {notifications.map(notification => (
+        {notifications.map((notification) => (
           <div
             key={notification.id}
-            className={`${getPriorityColor(notification.priority)} rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
-              !notification.read ? 'font-medium' : 'opacity-75'
+            className={`${getPriorityColor(
+              notification.priority
+            )} rounded-lg p-4 cursor-pointer transition-all hover:shadow-md ${
+              !notification.read ? "font-medium" : "opacity-75"
             }`}
             onClick={() => handleNotificationClick(notification)}
           >
