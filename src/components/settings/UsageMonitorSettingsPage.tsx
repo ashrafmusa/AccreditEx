@@ -85,33 +85,50 @@ const UsageMonitorSettingsPage: React.FC = () => {
       )}
 
       <SettingsCard
-        title="Usage Monitor"
-        description="Track and analyze system usage and performance"
+        title={t("usageMonitor") || "Usage Monitor"}
+        description={
+          t("trackAndAnalyzeUsage") ||
+          "Track and analyze system usage and performance"
+        }
       >
         <div className="space-y-8">
           <SettingsSection
-            title="Data Collection"
-            description="Configure what data to collect about system usage"
+            title={t("dataCollection") || "Data Collection"}
+            description={
+              t("configureDataCollection") ||
+              "Configure what data to collect about system usage"
+            }
           >
             <ToggleSwitch
-              label="Track Page Views"
-              description="Monitor which pages are accessed and how often"
+              label={t("trackPageViews") || "Track Page Views"}
+              description={
+                t("monitorPagesAccessed") ||
+                "Monitor which pages are accessed and how often"
+              }
               enabled={usageMonitor.trackPageViews}
               setEnabled={(enabled) =>
                 handleUsageMonitorChange("trackPageViews", enabled)
               }
             />
             <ToggleSwitch
-              label="Track User Actions"
-              description="Monitor user interactions and activities"
+              label={t("trackUserActions") || "Track User Actions"}
+              description={
+                t("monitorUserInteractions") ||
+                "Monitor user interactions and activities"
+              }
               enabled={usageMonitor.trackUserActions}
               setEnabled={(enabled) =>
                 handleUsageMonitorChange("trackUserActions", enabled)
               }
             />
             <ToggleSwitch
-              label="Track Performance Metrics"
-              description="Monitor application performance, load times, and resource usage"
+              label={
+                t("trackPerformanceMetrics") || "Track Performance Metrics"
+              }
+              description={
+                t("monitorPerformanceAndResources") ||
+                "Monitor application performance, load times, and resource usage"
+              }
               enabled={usageMonitor.trackPerformanceMetrics}
               setEnabled={(enabled) =>
                 handleUsageMonitorChange("trackPerformanceMetrics", enabled)
@@ -120,12 +137,15 @@ const UsageMonitorSettingsPage: React.FC = () => {
           </SettingsSection>
 
           <SettingsSection
-            title="Data Management"
-            description="Manage how long data is retained and when it's exported"
+            title={t("dataManagement") || "Data Management"}
+            description={
+              t("manageDataRetention") ||
+              "Manage how long data is retained and when it's exported"
+            }
           >
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Data Retention Period (days)
+                {t("dataRetentionDays") || "Data Retention Period (days)"}
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -135,7 +155,10 @@ const UsageMonitorSettingsPage: React.FC = () => {
                   step="1"
                   value={usageMonitor.dataRetentionDays}
                   onChange={(e) =>
-                    handleUsageMonitorChange("dataRetentionDays", parseInt(e.target.value))
+                    handleUsageMonitorChange(
+                      "dataRetentionDays",
+                      parseInt(e.target.value)
+                    )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                 />
@@ -144,13 +167,17 @@ const UsageMonitorSettingsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Usage data older than this duration will be automatically deleted
+                Usage data older than this duration will be automatically
+                deleted
               </p>
             </div>
 
             <ToggleSwitch
-              label="Auto Export Enabled"
-              description="Automatically export usage reports at regular intervals"
+              label={t("autoExportEnabled") || "Auto Export Enabled"}
+              description={
+                t("automaticallyExportReports") ||
+                "Automatically export usage reports at regular intervals"
+              }
               enabled={usageMonitor.autoExportEnabled}
               setEnabled={(enabled) =>
                 handleUsageMonitorChange("autoExportEnabled", enabled)
@@ -159,12 +186,14 @@ const UsageMonitorSettingsPage: React.FC = () => {
           </SettingsSection>
 
           <SettingsSection
-            title="Alerts"
-            description="Set threshold for usage alerts"
+            title={t("alerts") || "Alerts"}
+            description={
+              t("setThresholdForAlerts") || "Set threshold for usage alerts"
+            }
           >
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Alert Threshold (%)
+                {t("alertThresholdPercentage") || "Alert Threshold (%)"}
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -174,7 +203,10 @@ const UsageMonitorSettingsPage: React.FC = () => {
                   step="5"
                   value={usageMonitor.alertThreshold}
                   onChange={(e) =>
-                    handleUsageMonitorChange("alertThreshold", parseInt(e.target.value))
+                    handleUsageMonitorChange(
+                      "alertThreshold",
+                      parseInt(e.target.value)
+                    )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                 />
@@ -183,15 +215,19 @@ const UsageMonitorSettingsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Get alerts when resource usage exceeds this percentage
+                {t("getAlertsWhenExceeded") ||
+                  "Get alerts when resource usage exceeds this percentage"}
               </p>
             </div>
           </SettingsSection>
 
           <SettingsAlert
             type="info"
-            message="All usage data is collected securely and used only for system monitoring and improvement. You can review or delete your data at any time."
-            title="Privacy Notice"
+            message={
+              t("allUsageDataSecure") ||
+              "All usage data is collected securely and used only for system monitoring and improvement. You can review or delete your data at any time."
+            }
+            title={t("privacyNotice") || "Privacy Notice"}
           />
         </div>
       </SettingsCard>

@@ -4,12 +4,13 @@
  */
 
 import React, { useState } from 'react';
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   CheckCircleIcon,
   SparklesIcon,
   XMarkIcon,
   PlusIcon,
-} from '@/components/icons';
+} from "@/components/icons";
 
 interface Preset {
   id: string;
@@ -37,9 +38,10 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
   onDeletePreset,
   onSetDefault,
 }) => {
+  const { t } = useTranslation();
   const [showSaveForm, setShowSaveForm] = useState(false);
-  const [presetName, setPresetName] = useState('');
-  const [presetDescription, setPresetDescription] = useState('');
+  const [presetName, setPresetName] = useState("");
+  const [presetDescription, setPresetDescription] = useState("");
   const [saving, setSaving] = useState(false);
 
   const handleSavePreset = async () => {
@@ -48,8 +50,8 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
     setSaving(true);
     try {
       onSavePreset(presetName, presetDescription);
-      setPresetName('');
-      setPresetDescription('');
+      setPresetName("");
+      setPresetDescription("");
       setShowSaveForm(false);
     } finally {
       setSaving(false);
@@ -61,18 +63,23 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
       {/* Save New Preset */}
       {showSaveForm ? (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
-          <h4 className="font-medium text-gray-900">Save Current Settings as Preset</h4>
+          <h4 className="font-medium text-gray-900">
+            Save Current Settings as Preset
+          </h4>
 
           <input
             type="text"
-            placeholder="Preset name (e.g., 'High Security')"
+            placeholder={
+              t("presetNamePlaceholder") ||
+              "Preset name (e.g., 'High Security')"
+            }
             value={presetName}
             onChange={(e) => setPresetName(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
           <textarea
-            placeholder="Description (optional)"
+            placeholder={t("descriptionOptional") || "Description (optional)"}
             value={presetDescription}
             onChange={(e) => setPresetDescription(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
@@ -85,13 +92,13 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
               disabled={!presetName.trim() || saving}
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {saving ? 'Saving...' : 'Save Preset'}
+              {saving ? "Saving..." : "Save Preset"}
             </button>
             <button
               onClick={() => {
                 setShowSaveForm(false);
-                setPresetName('');
-                setPresetDescription('');
+                setPresetName("");
+                setPresetDescription("");
               }}
               className="px-4 py-2 bg-gray-200 text-gray-900 rounded-lg text-sm font-medium hover:bg-gray-300 transition-colors"
             >
@@ -121,7 +128,9 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">{preset.name}</span>
+                    <span className="font-medium text-gray-900">
+                      {preset.name}
+                    </span>
                     {preset.isDefault && (
                       <span className="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-1 rounded">
                         Default
@@ -129,7 +138,9 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
                     )}
                   </div>
                   {preset.description && (
-                    <p className="text-xs text-gray-600 mt-0.5">{preset.description}</p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {preset.description}
+                    </p>
                   )}
                   <p className="text-xs text-gray-500 mt-1">
                     Created {preset.createdAt.toLocaleDateString()}
@@ -139,7 +150,7 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
                 <div className="flex gap-1 flex-shrink-0">
                   <button
                     onClick={() => onLoadPreset(preset)}
-                    title="Load preset"
+                    title={t("loadPreset") || "Load preset"}
                     className="p-2 text-gray-600 hover:text-gray-900 hover:bg-white rounded transition-colors"
                   >
                     <SparklesIcon className="w-4 h-4" />
@@ -148,7 +159,7 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
                   {!preset.isDefault && (
                     <button
                       onClick={() => onSetDefault(preset.id)}
-                      title="Set as default"
+                      title={t("setAsDefault") || "Set as default"}
                       className="p-2 text-gray-600 hover:text-blue-600 hover:bg-white rounded transition-colors"
                     >
                       <CheckCircleIcon className="w-4 h-4" />
@@ -157,11 +168,11 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
 
                   <button
                     onClick={() => {
-                      if (confirm('Delete this preset?')) {
+                      if (confirm("Delete this preset?")) {
                         onDeletePreset(preset.id);
                       }
                     }}
-                    title="Delete preset"
+                    title={t("deletePreset") || "Delete preset"}
                     className="p-2 text-gray-600 hover:text-red-600 hover:bg-white rounded transition-colors"
                   >
                     <XMarkIcon className="w-4 h-4" />

@@ -209,8 +209,11 @@ const NotificationSettingsPage: React.FC = () => {
               }
             />
             <ToggleSwitch
-              label="Notification Sound"
-              description="Play sound when new notifications arrive"
+              label={t("notificationSound") || "Notification Sound"}
+              description={
+                t("playSoundOnNotifications") ||
+                "Play sound when new notifications arrive"
+              }
               enabled={advancedSettings.notificationSound}
               setEnabled={(enabled) =>
                 handleAdvancedChange("notificationSound", enabled)
@@ -220,7 +223,10 @@ const NotificationSettingsPage: React.FC = () => {
 
           <SettingsSection
             title={t("notificationCategories")}
-            description="Choose which notification types to receive"
+            description={
+              t("chooseNotificationTypes") ||
+              "Choose which notification types to receive"
+            }
           >
             <ToggleSwitch
               label={t("taskReminders")}
@@ -249,20 +255,29 @@ const NotificationSettingsPage: React.FC = () => {
           </SettingsSection>
 
           <SettingsSection
-            title="Advanced Settings"
-            description="Fine-tune your notification preferences"
+            title={t("advancedSettings") || "Advanced Settings"}
+            description={
+              t("fineTuneNotificationPreferences") ||
+              "Fine-tune your notification preferences"
+            }
           >
             <ToggleSwitch
-              label="Critical Alerts Only"
-              description="Only receive high priority and critical notifications"
+              label={t("criticalAlertsOnly") || "Critical Alerts Only"}
+              description={
+                t("onlyReceiveCriticalNotifications") ||
+                "Only receive high priority and critical notifications"
+              }
               enabled={advancedSettings.criticalAlertsOnly}
               setEnabled={(enabled) =>
                 handleAdvancedChange("criticalAlertsOnly", enabled)
               }
             />
             <ToggleSwitch
-              label="Quiet Hours"
-              description="Mute notifications during specific hours"
+              label={t("quietHours") || "Quiet Hours"}
+              description={
+                t("muteNotificationsDuringHours") ||
+                "Mute notifications during specific hours"
+              }
               enabled={advancedSettings.quietHoursEnabled}
               setEnabled={(enabled) =>
                 handleAdvancedChange("quietHoursEnabled", enabled)

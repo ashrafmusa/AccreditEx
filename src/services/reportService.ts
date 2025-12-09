@@ -8,7 +8,7 @@ import { db } from '@/firebase/firebaseConfig';
 import { Project, AppDocument, ComplianceStatus } from '@/types';
 import { freeTierMonitor } from './freeTierMonitor';
 import { generatePDFReport, downloadPDF } from './pdfReportGenerator';
-import cloudinaryService from './cloudinaryService';
+import { cloudinaryService } from './cloudinaryService';
 
 const API_BASE_URL = 'https://accreditex.onrender.com';
 

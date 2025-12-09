@@ -86,25 +86,39 @@ const UsersSettingsPage: React.FC = () => {
       )}
 
       <SettingsCard
-        title="User Management"
-        description="Configure user account settings and security policies"
+        title={t("userManagement") || "User Management"}
+        description={
+          t("configureUserAccountSettings") ||
+          "Configure user account settings and security policies"
+        }
       >
         <div className="space-y-8">
           <SettingsSection
-            title="User Accounts"
-            description="Manage user account creation and verification"
+            title={t("userAccounts") || "User Accounts"}
+            description={
+              t("manageUserAccountCreation") ||
+              "Manage user account creation and verification"
+            }
           >
             <ToggleSwitch
-              label="Enable User Management"
-              description="Allow creation and management of user accounts"
+              label={t("enableUserManagement") || "Enable User Management"}
+              description={
+                t("allowCreationOfUserAccounts") ||
+                "Allow creation and management of user accounts"
+              }
               enabled={usersSettings.enableUserManagement}
               setEnabled={(enabled) =>
                 handleUsersSettingsChange("enableUserManagement", enabled)
               }
             />
             <ToggleSwitch
-              label="Require Email Verification"
-              description="Users must verify their email address before accessing the application"
+              label={
+                t("requireEmailVerification") || "Require Email Verification"
+              }
+              description={
+                t("usersMustVerifyEmail") ||
+                "Users must verify their email address before accessing the application"
+              }
               enabled={usersSettings.requireEmailVerification}
               setEnabled={(enabled) =>
                 handleUsersSettingsChange("requireEmailVerification", enabled)
@@ -113,21 +127,34 @@ const UsersSettingsPage: React.FC = () => {
           </SettingsSection>
 
           <SettingsSection
-            title="Inactivity Management"
-            description="Automatically manage inactive user accounts"
+            title={t("inactivityManagement") || "Inactivity Management"}
+            description={
+              t("automaticallyManageInactiveUsers") ||
+              "Automatically manage inactive user accounts"
+            }
           >
             <ToggleSwitch
-              label="Auto-Deactivate Inactive Users"
-              description="Automatically deactivate user accounts that haven't been used for a specified period"
+              label={
+                t("autoDeactivateInactiveUsers") ||
+                "Auto-Deactivate Inactive Users"
+              }
+              description={
+                t("automaticallyDeactivateInactiveUsers") ||
+                "Automatically deactivate user accounts that haven't been used for a specified period"
+              }
               enabled={usersSettings.autoDeactivateInactiveUsers}
               setEnabled={(enabled) =>
-                handleUsersSettingsChange("autoDeactivateInactiveUsers", enabled)
+                handleUsersSettingsChange(
+                  "autoDeactivateInactiveUsers",
+                  enabled
+                )
               }
             />
             {usersSettings.autoDeactivateInactiveUsers && (
               <div className="ml-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                  Inactivity Threshold (days)
+                  {t("inactivityThresholdDays") ||
+                    "Inactivity Threshold (days)"}
                 </label>
                 <div className="flex items-center gap-4">
                   <input
@@ -137,7 +164,10 @@ const UsersSettingsPage: React.FC = () => {
                     step="1"
                     value={usersSettings.inactivityThresholdDays}
                     onChange={(e) =>
-                      handleUsersSettingsChange("inactivityThresholdDays", parseInt(e.target.value))
+                      handleUsersSettingsChange(
+                        "inactivityThresholdDays",
+                        parseInt(e.target.value)
+                      )
                     }
                     className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                   />
@@ -146,19 +176,23 @@ const UsersSettingsPage: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Users inactive for more than this duration will be automatically deactivated
+                  Users inactive for more than this duration will be
+                  automatically deactivated
                 </p>
               </div>
             )}
           </SettingsSection>
 
           <SettingsSection
-            title="Session Security"
-            description="Configure session timeout and access security"
+            title={t("sessionSecurity") || "Session Security"}
+            description={
+              t("configureSessionTimeout") ||
+              "Configure session timeout and access security"
+            }
           >
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Session Timeout (minutes)
+                {t("sessionTimeoutMinutes") || "Session Timeout (minutes)"}
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -168,7 +202,10 @@ const UsersSettingsPage: React.FC = () => {
                   step="5"
                   value={usersSettings.sessionTimeoutMinutes}
                   onChange={(e) =>
-                    handleUsersSettingsChange("sessionTimeoutMinutes", parseInt(e.target.value))
+                    handleUsersSettingsChange(
+                      "sessionTimeoutMinutes",
+                      parseInt(e.target.value)
+                    )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                 />
@@ -177,18 +214,22 @@ const UsersSettingsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Users will be automatically logged out after this period of inactivity
+                {t("usersWillBeLoggedOut") ||
+                  "Users will be automatically logged out after this period of inactivity"}
               </p>
             </div>
           </SettingsSection>
 
           <SettingsSection
-            title="Login Security"
-            description="Set login attempt limits and lockout duration"
+            title={t("loginSecurity") || "Login Security"}
+            description={
+              t("setLoginAttemptLimits") ||
+              "Set login attempt limits and lockout duration"
+            }
           >
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Maximum Failed Login Attempts
+                {t("maxFailedLoginAttempts") || "Maximum Failed Login Attempts"}
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -198,7 +239,10 @@ const UsersSettingsPage: React.FC = () => {
                   step="1"
                   value={usersSettings.maxLoginAttempts}
                   onChange={(e) =>
-                    handleUsersSettingsChange("maxLoginAttempts", parseInt(e.target.value))
+                    handleUsersSettingsChange(
+                      "maxLoginAttempts",
+                      parseInt(e.target.value)
+                    )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                 />
@@ -207,13 +251,15 @@ const UsersSettingsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Account will be locked after this many failed login attempts
+                {t("accountWillBeLocked") ||
+                  "Account will be locked after this many failed login attempts"}
               </p>
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Account Lockout Duration (minutes)
+                {t("accountLockoutDuration") ||
+                  "Account Lockout Duration (minutes)"}
               </label>
               <div className="flex items-center gap-4">
                 <input
@@ -223,7 +269,10 @@ const UsersSettingsPage: React.FC = () => {
                   step="5"
                   value={usersSettings.lockoutDurationMinutes}
                   onChange={(e) =>
-                    handleUsersSettingsChange("lockoutDurationMinutes", parseInt(e.target.value))
+                    handleUsersSettingsChange(
+                      "lockoutDurationMinutes",
+                      parseInt(e.target.value)
+                    )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                 />
@@ -232,15 +281,19 @@ const UsersSettingsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Account will remain locked for this duration after exceeding failed login attempts
+                Account will remain locked for this duration after exceeding
+                failed login attempts
               </p>
             </div>
           </SettingsSection>
 
           <SettingsAlert
             type="warning"
-            title="Security Notice"
-            message="These settings affect user access and account security. Changes may impact existing user sessions and require users to re-authenticate."
+            title={t("securityNotice") || "Security Notice"}
+            message={
+              t("settingsAffectUserAccess") ||
+              "These settings affect user access and account security. Changes may impact existing user sessions and require users to re-authenticate."
+            }
           />
         </div>
       </SettingsCard>

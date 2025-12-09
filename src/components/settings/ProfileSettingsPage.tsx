@@ -278,18 +278,22 @@ const ProfileSettingsPage: React.FC = () => {
                     id="name"
                     value={name}
                     onChange={(e) => handleNameChange(e.target.value)}
-                    className={`${inputClasses} ${errors.name ? 'border-red-500 focus:ring-red-500' : ''}`}
-                    placeholder="Your full name"
+                    className={`${inputClasses} ${
+                      errors.name ? "border-red-500 focus:ring-red-500" : ""
+                    }`}
+                    placeholder={t("yourFullName") || "Your full name"}
                   />
                   {errors.name && (
-                    <p className="text-red-600 dark:text-red-400 text-xs md:text-sm mt-1">{errors.name}</p>
+                    <p className="text-red-600 dark:text-red-400 text-xs md:text-sm mt-1">
+                      {errors.name}
+                    </p>
                   )}
                 </div>
 
                 <div>
                   <label htmlFor="jobTitle" className={labelClasses}>
                     <IdentificationIcon className="w-4 h-4 inline mr-2" />
-                    {t('jobTitle') || 'Job Title'}
+                    {t("jobTitle") || "Job Title"}
                   </label>
                   <input
                     type="text"
@@ -297,7 +301,9 @@ const ProfileSettingsPage: React.FC = () => {
                     value={jobTitle}
                     onChange={(e) => handleJobTitleChange(e.target.value)}
                     className={inputClasses}
-                    placeholder="e.g., Quality Manager"
+                    placeholder={
+                      t("jobTitlePlaceholder") || "e.g., Quality Manager"
+                    }
                   />
                 </div>
               </div>
@@ -306,7 +312,7 @@ const ProfileSettingsPage: React.FC = () => {
                 <div>
                   <label htmlFor="hireDate" className={labelClasses}>
                     <CalendarDaysIcon className="w-4 h-4 inline mr-2" />
-                    {t('hireDate') || 'Hire Date'}
+                    {t("hireDate") || "Hire Date"}
                   </label>
                   <input
                     type="date"
@@ -340,10 +346,18 @@ const ProfileSettingsPage: React.FC = () => {
 
               <div className="pt-2 md:pt-4 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 gap-3">
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-semibold">{t('department') || 'Department'}:</span> <span className="break-words">{userDepartment ? userDepartment.name.en : t('unassigned')}</span>
+                  <span className="font-semibold">
+                    {t("department") || "Department"}:
+                  </span>{" "}
+                  <span className="break-words">
+                    {userDepartment ? userDepartment.name.en : t("unassigned")}
+                  </span>
                 </p>
                 <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-semibold">{t('userRole') || 'Role'}:</span> {currentUser.role}
+                  <span className="font-semibold">
+                    {t("userRole") || "Role"}:
+                  </span>{" "}
+                  {currentUser.role}
                 </p>
               </div>
             </div>
@@ -375,7 +389,9 @@ const ProfileSettingsPage: React.FC = () => {
               <div>
                 <label htmlFor="password" className={labelClasses}>
                   {t("newPassword") || "New Password"}
-                  <span className="text-gray-400 text-xs ml-2">{t("optional") || "(optional)"}</span>
+                  <span className="text-gray-400 text-xs ml-2">
+                    {t("optional") || "(optional)"}
+                  </span>
                 </label>
                 <div className="relative">
                   <input
@@ -383,8 +399,13 @@ const ProfileSettingsPage: React.FC = () => {
                     id="password"
                     value={password}
                     onChange={(e) => handlePasswordChange(e.target.value)}
-                    placeholder={t("passwordPlaceholder") || "Leave empty to keep current password"}
-                    className={`${inputClasses} ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
+                    placeholder={
+                      t("passwordPlaceholder") ||
+                      "Leave empty to keep current password"
+                    }
+                    className={`${inputClasses} ${
+                      errors.password ? "border-red-500 focus:ring-red-500" : ""
+                    }`}
                   />
                   {password && (
                     <button
@@ -392,12 +413,18 @@ const ProfileSettingsPage: React.FC = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                     >
-                      {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                      {showPassword ? (
+                        <EyeSlashIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeIcon className="w-5 h-5" />
+                      )}
                     </button>
                   )}
                 </div>
                 {errors.password && (
-                  <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.password}</p>
+                  <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                    {errors.password}
+                  </p>
                 )}
 
                 {/* Password Strength Indicator */}
@@ -407,29 +434,65 @@ const ProfileSettingsPage: React.FC = () => {
                       <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
                           className={`h-full transition-all duration-300 ${
-                            calculatePasswordStrength(password).color === 'text-red-600' ? 'bg-red-600 w-1/5' :
-                            calculatePasswordStrength(password).color === 'text-orange-600' ? 'bg-orange-600 w-2/5' :
-                            calculatePasswordStrength(password).color === 'text-yellow-600' ? 'bg-yellow-600 w-3/5' :
-                            calculatePasswordStrength(password).color === 'text-green-600' ? 'bg-green-600 w-4/5' :
-                            'bg-green-700 w-full'
+                            calculatePasswordStrength(password).color ===
+                            "text-red-600"
+                              ? "bg-red-600 w-1/5"
+                              : calculatePasswordStrength(password).color ===
+                                "text-orange-600"
+                              ? "bg-orange-600 w-2/5"
+                              : calculatePasswordStrength(password).color ===
+                                "text-yellow-600"
+                              ? "bg-yellow-600 w-3/5"
+                              : calculatePasswordStrength(password).color ===
+                                "text-green-600"
+                              ? "bg-green-600 w-4/5"
+                              : "bg-green-700 w-full"
                           }`}
                         />
                       </div>
-                      <span className={`text-sm font-medium ${calculatePasswordStrength(password).color}`}>
+                      <span
+                        className={`text-sm font-medium ${
+                          calculatePasswordStrength(password).color
+                        }`}
+                      >
                         {calculatePasswordStrength(password).label}
                       </span>
                     </div>
                     <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      <li className={password.length >= 8 ? 'text-green-600 dark:text-green-400' : ''}>
+                      <li
+                        className={
+                          password.length >= 8
+                            ? "text-green-600 dark:text-green-400"
+                            : ""
+                        }
+                      >
                         ✓ At least 8 characters
                       </li>
-                      <li className={/[a-z]/.test(password) && /[A-Z]/.test(password) ? 'text-green-600 dark:text-green-400' : ''}>
+                      <li
+                        className={
+                          /[a-z]/.test(password) && /[A-Z]/.test(password)
+                            ? "text-green-600 dark:text-green-400"
+                            : ""
+                        }
+                      >
                         ✓ Mix of uppercase and lowercase
                       </li>
-                      <li className={/[0-9]/.test(password) ? 'text-green-600 dark:text-green-400' : ''}>
+                      <li
+                        className={
+                          /[0-9]/.test(password)
+                            ? "text-green-600 dark:text-green-400"
+                            : ""
+                        }
+                      >
                         ✓ At least one number
                       </li>
-                      <li className={/[^a-zA-Z0-9]/.test(password) ? 'text-green-600 dark:text-green-400' : ''}>
+                      <li
+                        className={
+                          /[^a-zA-Z0-9]/.test(password)
+                            ? "text-green-600 dark:text-green-400"
+                            : ""
+                        }
+                      >
                         ✓ At least one special character
                       </li>
                     </ul>
@@ -449,22 +512,38 @@ const ProfileSettingsPage: React.FC = () => {
                       type={showConfirmPassword ? "text" : "password"}
                       id="confirmPassword"
                       value={confirmPassword}
-                      onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                      placeholder="Confirm your password"
-                      className={`${inputClasses} ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''}`}
+                      onChange={(e) =>
+                        handleConfirmPasswordChange(e.target.value)
+                      }
+                      placeholder={
+                        t("confirmYourPassword") || "Confirm your password"
+                      }
+                      className={`${inputClasses} ${
+                        errors.confirmPassword
+                          ? "border-red-500 focus:ring-red-500"
+                          : ""
+                      }`}
                     />
                     {confirmPassword && (
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                       >
-                        {showConfirmPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                        {showConfirmPassword ? (
+                          <EyeSlashIcon className="w-5 h-5" />
+                        ) : (
+                          <EyeIcon className="w-5 h-5" />
+                        )}
                       </button>
                     )}
                   </div>
                   {errors.confirmPassword && (
-                    <p className="text-red-600 dark:text-red-400 text-sm mt-1">{errors.confirmPassword}</p>
+                    <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                      {errors.confirmPassword}
+                    </p>
                   )}
                   {confirmPassword && password === confirmPassword && (
                     <p className="text-green-600 dark:text-green-400 text-sm mt-1 flex items-center gap-1">
@@ -479,7 +558,10 @@ const ProfileSettingsPage: React.FC = () => {
                 <SettingsAlert
                   type="info"
                   title={t("passwordWillUpdate") || "Password will be updated"}
-                  message="Your password will be changed when you save these changes."
+                  message={
+                    t("passwordWillBeChanged") ||
+                    "Your password will be changed when you save these changes."
+                  }
                 />
               )}
             </div>
@@ -491,7 +573,10 @@ const ProfileSettingsPage: React.FC = () => {
               <ClockIcon className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div className="text-xs md:text-sm text-blue-800 dark:text-blue-300">
                 <p className="font-medium">{t("tip") || "Tip"}</p>
-                <p>Keep your profile information up to date to help your team identify and reach out to you easily.</p>
+                <p>
+                  Keep your profile information up to date to help your team
+                  identify and reach out to you easily.
+                </p>
               </div>
             </div>
           </div>
@@ -499,9 +584,7 @@ const ProfileSettingsPage: React.FC = () => {
       </SettingsCard>
 
       {/* Active Sessions */}
-      {currentUser?.id && (
-        <ActiveSessions userId={currentUser.id} />
-      )}
+      {currentUser?.id && <ActiveSessions userId={currentUser.id} />}
 
       <div className="flex flex-col-reverse md:flex-row gap-2 md:gap-3 justify-end">
         <SettingsButton

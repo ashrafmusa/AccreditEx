@@ -62,6 +62,7 @@ class CloudinaryService {
       formData.append('upload_preset', this.uploadPreset);
       formData.append('folder', folder);
       formData.append('resource_type', 'auto'); // Auto-detect resource type
+        formData.append('access_mode', 'public'); // Make file publicly accessible
 
       // Add tags for better organization
       const tags = ['accreditex', folder];

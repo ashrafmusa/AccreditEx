@@ -139,17 +139,165 @@ export const ar = {
     reports: 'التقارير',
     library: 'المكتبة',
     types: 'الأنواع',
-    departments: 'الأقسام',
-    quality: 'الجودة',
-    clinical: 'العيادة',
-    hr: 'الموارد البشرية',
-    operations: 'العمليات',
-    
-    // Form & Upload
-    optional: 'اختياري',
     uploadFailed: 'فشل التحميل',
     
     // Rich Text Editor
     enterURL: 'أدخل رابط (URL):',
     enterImageURL: 'أدخل رابط الصورة:',
+
+    // PDF Viewer
+    previousPage: 'الصفحة السابقة',
+    nextPage: 'الصفحة التالية',
+    page: 'صفحة',
+    of: 'من',
+    zoomIn: 'تكبير',
+    zoomOut: 'تصغير',
+    resetZoom: 'إعادة ضبط التكبير',
+    fit: 'ملائمة',
+    searchInPDF: 'بحث في ملف PDF...',
+    downloadPDF: 'تحميل PDF',
+    failedToLoadPDF: 'فشل في تحميل ملف PDF. حاول مرة أخرى.',
+
+    // Process Map Templates
+    processMapTemplates: 'قوالب خرائط العمليات',
+    chooseTemplateDescription: 'اختر قالباً لبدء خريطة العمليات بسرعة. يمكنك تخصيصه بعد التحميل.',
+    simpleFlow: 'تدفق بسيط',
+    simpleFlowDescription: 'بداية ← عملية ← نهاية',
+    decisionFlow: 'تدفق القرار',
+    decisionFlowDescription: 'بداية ← قرار ← مساران',
+    reviewProcess: 'عملية المراجعة',
+    reviewProcessDescription: 'إرسال ← مراجعة ← موافقة/رفض',
+    parallelTasks: 'مهام متوازية',
+    parallelTasksDescription: 'تنفيذ مهام متعددة في وقت واحد',
+    loadTemplate: 'تحميل القالب',
+    templateWarning: 'تحميل قالب سيستبدل خريطة العمليات الحالية. تأكد من حفظ عملك أولاً!',
+    connections: 'اتصالات',
+
+    // Training Placeholders
+    questionEn: 'السؤال (بالإنجليزية)',
+    questionAr: 'السؤال (بالعربية)',
+    htmlContentSupported: 'محتوى HTML مدعوم',
+    htmlContentSupportedAr: 'محتوى HTML مدعوم',
+    exampleProcessName: 'مثال: عملية تسجيل المرضى',
+    exampleProcessNameAr: 'مثال: عملية تسجيل المرضى',
+
+    // Empty States
+    noTrainingPrograms: 'لا توجد برامج تدريب',
+    createTrainingToStart: 'أنشئ برنامج تدريب جديد للبدء.',
+    noItems: 'لا توجد عناصر للعرض',
+
+    // Settings Titles
+    userManagement: 'إدارة المستخدمين',
+    userAccounts: 'حسابات المستخدمين',
+    inactivityManagement: 'إدارة عدم النشاط',
+    sessionSecurity: 'أمان الجلسة',
+    loginSecurity: 'أمان تسجيل الدخول',
+    securityNotice: 'إشعار أمني',
+    usageMonitor: 'مراقبة الاستخدام',
+    dataCollection: 'جمع البيانات',
+    dataManagement: 'إدارة البيانات',
+    alerts: 'التنبيهات',
+    privacyNotice: 'إشعار الخصوصية',
+    usageWarnings: 'تحذيرات الاستخدام',
+    firebaseFreeTierUsage: 'استخدام Firebase المجاني',
+    todaysActivity: 'نشاط اليوم',
+    monthlyUsage: 'الاستخدام الشهري',
+    monthlyProjections: 'التوقعات الشهرية',
+    loadPreset: 'تحميل الإعداد',
+    setAsDefault: 'تعيين كافتراضي',
+    deletePreset: 'حذف الإعداد',
+    passwordRequirements: 'متطلبات كلمة المرور',
+    advancedSettings: 'الإعدادات المتقدمة',
+
+    // Settings Descriptions & Labels
+    configureUserAccountSettings: 'تكوين إعدادات حساب المستخدم وسياسات الأمان',
+    manageUserAccountCreation: 'إدارة إنشاء حساب المستخدم والتحقق',
+    enableUserManagement: 'تفعيل إدارة المستخدمين',
+    allowCreationOfUserAccounts: 'السماح بإنشاء وإدارة حسابات المستخدمين',
+    requireEmailVerification: 'يتطلب التحقق من البريد الإلكتروني',
+    usersMustVerifyEmail: 'يجب على المستخدمين التحقق من عنوان بريدهم الإلكتروني قبل الوصول إلى التطبيق',
+    autoDeactivateInactiveUsers: 'إلغاء تنشيط المستخدمين غير النشطين تلقائيًا',
+    automaticallyDeactivateInactiveUsers: 'إلغاء تنشيط حسابات المستخدمين التي لم يتم استخدامها لفترة محددة تلقائيًا',
+    automaticallyManageInactiveUsers: 'إدارة حسابات المستخدمين غير النشطة تلقائيًا',
+    inactivityThresholdDays: 'عتبة عدم النشاط (أيام)',
+    usersInactiveWillBeDeactivated: 'سيتم إلغاء تنشيط المستخدمين غير النشطين لأكثر من هذه المدة تلقائيًا',
+    configureSessionTimeout: 'تكوين مهلة الجلسة وأمان الوصول',
+    sessionTimeoutMinutes: 'مهلة الجلسة (دقائق)',
+    usersWillBeLoggedOut: 'سيتم تسجيل خروج المستخدمين تلقائيًا بعد هذه الفترة من عدم النشاط',
+    setLoginAttemptLimits: 'تعيين حدود محاولات تسجيل الدخول ومدة القفل',
+    maxFailedLoginAttempts: 'الحد الأقصى لمحاولات تسجيل الدخول الفاشلة',
+    accountWillBeLocked: 'سيتم قفل الحساب بعد هذا العدد من محاولات تسجيل الدخول الفاشلة',
+    accountLockoutDuration: 'مدة قفل الحساب (دقائق)',
+    accountWillRemainLocked: 'سيظل الحساب مقفلاً لهذه المدة بعد تجاوز محاولات تسجيل الدخول الفاشلة',
+    settingsAffectUserAccess: 'تؤثر هذه الإعدادات على وصول المستخدم وأمان الحساب. قد تؤثر التغييرات على جلسات المستخدم الحالية وتتطلب من المستخدمين إعادة المصادقة.',
+
+    // Usage Monitor Settings
+    trackAndAnalyzeUsage: 'تتبع وتحليل استخدام النظام والأداء',
+    configureDataCollection: 'تكوين البيانات المراد جمعها حول استخدام النظام',
+    trackPageViews: 'تتبع مشاهدات الصفحة',
+    monitorPagesAccessed: 'مراقبة الصفحات التي يتم الوصول إليها ومدى تكرارها',
+    trackUserActions: 'تتبع إجراءات المستخدم',
+    monitorUserInteractions: 'مراقبة تفاعلات وأنشطة المستخدم',
+    trackPerformanceMetrics: 'تتبع مقاييس الأداء',
+    monitorPerformanceAndResources: 'مراقبة أداء التطبيق وأوقات التحميل واستخدام الموارد',
+    manageDataRetention: 'إدارة مدة الاحتفاظ بالبيانات ووقت تصديرها',
+    dataRetentionDays: 'فترة الاحتفاظ بالبيانات (أيام)',
+    usageDataWillBeDeleted: 'سيتم حذف بيانات الاستخدام الأقدم من هذه المدة تلقائيًا',
+    autoExportEnabled: 'التصدير التلقائي مفعل',
+    automaticallyExportReports: 'تصدير تقارير الاستخدام تلقائيًا على فترات منتظمة',
+    setThresholdForAlerts: 'تعيين عتبة للتنبيهات',
+    alertThresholdPercentage: 'عتبة التنبيه (%)',
+    getAlertsWhenExceeded: 'احصل على تنبيهات عندما يتجاوز استخدام الموارد هذه النسبة',
+    allUsageDataSecure: 'يتم جمع جميع بيانات الاستخدام بشكل آمن وتستخدم فقط لمراقبة النظام وتحسينه. يمكنك مراجعة أو حذف بياناتك في أي وقت.',
+
+    // Usage Monitor Page
+    monitorFirestoreUsage: 'مراقبة استخدام Firestore اليومي والشهري',
+    realtimeOperationCounts: 'أعداد العمليات في الوقت الفعلي',
+    progressTowardsLimits: 'التقدم نحو الحدود الشهرية',
+    basedOnCurrentUsage: 'بناءً على أنماط الاستخدام الحالية',
+
+    // Notification Settings
+    youHaveUnseenChanges: 'لديك تغييرات غير محفوظة',
+    configureNotificationDelivery: 'تكوين طرق تسليم الإشعارات',
+    desktopNotifications: 'إشعارات سطح المكتب',
+    showNotificationsOnDesktop: 'عرض الإشعارات على سطح المكتب',
+    notificationSound: 'صوت الإشعار',
+    playSoundOnNotifications: 'تشغيل صوت عند وصول إشعارات جديدة',
+    chooseNotificationTypes: 'اختر أنواع الإشعارات المراد استلامها',
+    fineTuneNotificationPreferences: 'ضبط تفضيلات الإشعارات بدقة',
+    criticalAlertsOnly: 'التنبيهات الحرجة فقط',
+    onlyReceiveCriticalNotifications: 'استلام التنبيهات عالية الأولوية والحرجة فقط',
+    quietHours: 'ساعات الهدوء',
+    muteNotificationsDuringHours: 'كتم الإشعارات خلال ساعات محددة',
+    notificationTips: 'نصائح الإشعارات',
+    enableEmailOrPushNotifications: 'قم بتمكين إشعارات البريد الإلكتروني أو الإشعارات الفورية على الأقل للبقاء على اطلاع بالتحديثات المهمة.',
+
+    // Profile Settings
+    youHaveUnsavedProfile: 'لديك تغييرات غير محفوظة في ملفك الشخصي',
+    updateNameJobTitle: 'تحديث اسمك والمسمى الوظيفي وتاريخ التوظيف',
+    yourFullName: 'اسمك الكامل',
+    jobTitlePlaceholder: 'مثال: مدير الجودة',
+    uploadProfilePicture: 'قم بتحميل صورة ملف شخصي لتخصيص حسابك',
+    managePasswordSecurity: 'إدارة كلمة المرور وإعدادات الأمان',
+    confirmYourPassword: 'تأكيد كلمة المرور',
+    passwordWillBeChanged: 'سيتم تغيير كلمة المرور الخاصة بك عند حفظ هذه التغييرات.',
+
+    // Settings Presets
+    presetNamePlaceholder: 'اسم الإعداد (مثل \'أمان عالي\')',
+    descriptionOptional: 'الوصف (اختياري)',
+
+    // General Settings
+    applicationDetails: 'تفاصيل التطبيق',
+    configureBasicAppInfo: 'تكوين معلومات التطبيق الأساسية',
+    applicationNameDescription: 'الاسم المعروض في التطبيق',
+    enterApplicationName: 'أدخل اسم التطبيق',
+
+    // Security Settings
+    configurePasswordComplexity: 'تكوين معايير تعقيد كلمة المرور الدنيا',
+
+    // Image Upload
+    removeImage: 'إزالة الصورة',
+
+    // Common Settings
+    youHaveUnsavedChanges: 'لديك تغييرات غير محفوظة في إعداداتك',
 };

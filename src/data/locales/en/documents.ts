@@ -139,17 +139,165 @@ export const en = {
     reports: 'Reports',
     library: 'Library',
     types: 'Types',
-    departments: 'Departments',
-    quality: 'Quality',
-    clinical: 'Clinical',
-    hr: 'HR',
-    operations: 'Operations',
-    
-    // Form & Upload
-    optional: 'Optional',
     uploadFailed: 'Upload failed',
     
     // Rich Text Editor
     enterURL: 'Enter URL:',
     enterImageURL: 'Enter image URL:',
+
+    // PDF Viewer
+    previousPage: 'Previous Page',
+    nextPage: 'Next Page',
+    page: 'Page',
+    of: 'of',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Reset Zoom',
+    fit: 'Fit',
+    searchInPDF: 'Search in PDF...',
+    downloadPDF: 'Download PDF',
+    failedToLoadPDF: 'Failed to load PDF. Please try again.',
+
+    // Process Map Templates
+    processMapTemplates: 'Process Map Templates',
+    chooseTemplateDescription: 'Choose a template to quickly start your process map. You can customize it after loading.',
+    simpleFlow: 'Simple Flow',
+    simpleFlowDescription: 'Start → Process → End',
+    decisionFlow: 'Decision Flow',
+    decisionFlowDescription: 'Start → Decision → Two paths',
+    reviewProcess: 'Review Process',
+    reviewProcessDescription: 'Submit → Review → Approve/Reject',
+    parallelTasks: 'Parallel Tasks',
+    parallelTasksDescription: 'Execute multiple tasks simultaneously',
+    loadTemplate: 'Load Template',
+    templateWarning: 'Loading a template will replace your current process map. Make sure to save your work first!',
+    connections: 'connections',
+
+    // Training Placeholders
+    questionEn: 'Question (EN)',
+    questionAr: 'Question (AR)',
+    htmlContentSupported: 'HTML content is supported',
+    htmlContentSupportedAr: 'محتوى HTML مدعوم',
+    exampleProcessName: 'e.g., Patient Registration Process',
+    exampleProcessNameAr: 'مثال: عملية تسجيل المرضى',
+
+    // Empty States
+    noTrainingPrograms: 'No Training Programs',
+    createTrainingToStart: 'Create a new training program to get started.',
+    noItems: 'No items to display',
+
+    // Settings Titles
+    userManagement: 'User Management',
+    userAccounts: 'User Accounts',
+    inactivityManagement: 'Inactivity Management',
+    sessionSecurity: 'Session Security',
+    loginSecurity: 'Login Security',
+    securityNotice: 'Security Notice',
+    usageMonitor: 'Usage Monitor',
+    dataCollection: 'Data Collection',
+    dataManagement: 'Data Management',
+    alerts: 'Alerts',
+    privacyNotice: 'Privacy Notice',
+    usageWarnings: 'Usage Warnings',
+    firebaseFreeTierUsage: 'Firebase Free Tier Usage',
+    todaysActivity: 'Today\'s Activity',
+    monthlyUsage: 'Monthly Usage',
+    monthlyProjections: 'Monthly Projections',
+    loadPreset: 'Load preset',
+    setAsDefault: 'Set as default',
+    deletePreset: 'Delete preset',
+    passwordRequirements: 'Password Requirements',
+    advancedSettings: 'Advanced Settings',
+
+    // Settings Descriptions & Labels
+    configureUserAccountSettings: 'Configure user account settings and security policies',
+    manageUserAccountCreation: 'Manage user account creation and verification',
+    enableUserManagement: 'Enable User Management',
+    allowCreationOfUserAccounts: 'Allow creation and management of user accounts',
+    requireEmailVerification: 'Require Email Verification',
+    usersMustVerifyEmail: 'Users must verify their email address before accessing the application',
+    autoDeactivateInactiveUsers: 'Auto-Deactivate Inactive Users',
+    automaticallyDeactivateInactiveUsers: 'Automatically deactivate user accounts that haven\'t been used for a specified period',
+    automaticallyManageInactiveUsers: 'Automatically manage inactive user accounts',
+    inactivityThresholdDays: 'Inactivity Threshold (days)',
+    usersInactiveWillBeDeactivated: 'Users inactive for more than this duration will be automatically deactivated',
+    configureSessionTimeout: 'Configure session timeout and access security',
+    sessionTimeoutMinutes: 'Session Timeout (minutes)',
+    usersWillBeLoggedOut: 'Users will be automatically logged out after this period of inactivity',
+    setLoginAttemptLimits: 'Set login attempt limits and lockout duration',
+    maxFailedLoginAttempts: 'Maximum Failed Login Attempts',
+    accountWillBeLocked: 'Account will be locked after this many failed login attempts',
+    accountLockoutDuration: 'Account Lockout Duration (minutes)',
+    accountWillRemainLocked: 'Account will remain locked for this duration after exceeding failed login attempts',
+    settingsAffectUserAccess: 'These settings affect user access and account security. Changes may impact existing user sessions and require users to re-authenticate.',
+
+    // Usage Monitor Settings
+    trackAndAnalyzeUsage: 'Track and analyze system usage and performance',
+    configureDataCollection: 'Configure what data to collect about system usage',
+    trackPageViews: 'Track Page Views',
+    monitorPagesAccessed: 'Monitor which pages are accessed and how often',
+    trackUserActions: 'Track User Actions',
+    monitorUserInteractions: 'Monitor user interactions and activities',
+    trackPerformanceMetrics: 'Track Performance Metrics',
+    monitorPerformanceAndResources: 'Monitor application performance, load times, and resource usage',
+    manageDataRetention: 'Manage how long data is retained and when it\'s exported',
+    dataRetentionDays: 'Data Retention Period (days)',
+    usageDataWillBeDeleted: 'Usage data older than this duration will be automatically deleted',
+    autoExportEnabled: 'Auto Export Enabled',
+    automaticallyExportReports: 'Automatically export usage reports at regular intervals',
+    setThresholdForAlerts: 'Set threshold for usage alerts',
+    alertThresholdPercentage: 'Alert Threshold (%)',
+    getAlertsWhenExceeded: 'Get alerts when resource usage exceeds this percentage',
+    allUsageDataSecure: 'All usage data is collected securely and used only for system monitoring and improvement. You can review or delete your data at any time.',
+
+    // Usage Monitor Page
+    monitorFirestoreUsage: 'Monitor your daily and monthly Firestore usage',
+    realtimeOperationCounts: 'Real-time operation counts',
+    progressTowardsLimits: 'Progress towards monthly limits',
+    basedOnCurrentUsage: 'Based on current usage patterns',
+
+    // Notification Settings
+    youHaveUnseenChanges: 'You have unseen changes',
+    configureNotificationDelivery: 'Configure notification delivery methods',
+    desktopNotifications: 'Desktop Notifications',
+    showNotificationsOnDesktop: 'Show notifications on your desktop',
+    notificationSound: 'Notification Sound',
+    playSoundOnNotifications: 'Play sound when new notifications arrive',
+    chooseNotificationTypes: 'Choose which notification types to receive',
+    fineTuneNotificationPreferences: 'Fine-tune your notification preferences',
+    criticalAlertsOnly: 'Critical Alerts Only',
+    onlyReceiveCriticalNotifications: 'Only receive high priority and critical notifications',
+    quietHours: 'Quiet Hours',
+    muteNotificationsDuringHours: 'Mute notifications during specific hours',
+    notificationTips: 'Notification Tips',
+    enableEmailOrPushNotifications: 'Enable at least email or push notifications to stay informed about important updates.',
+
+    // Profile Settings
+    youHaveUnsavedProfile: 'You have unsaved changes to your profile',
+    updateNameJobTitle: 'Update your name, job title, and hire date',
+    yourFullName: 'Your full name',
+    jobTitlePlaceholder: 'e.g., Quality Manager',
+    uploadProfilePicture: 'Upload a profile picture to personalize your account',
+    managePasswordSecurity: 'Manage your password and security settings',
+    confirmYourPassword: 'Confirm your password',
+    passwordWillBeChanged: 'Your password will be changed when you save these changes.',
+
+    // Settings Presets
+    presetNamePlaceholder: 'Preset name (e.g., \'High Security\')',
+    descriptionOptional: 'Description (optional)',
+
+    // General Settings
+    applicationDetails: 'Application Details',
+    configureBasicAppInfo: 'Configure basic application information',
+    applicationNameDescription: 'The name displayed in the application',
+    enterApplicationName: 'Enter application name',
+
+    // Security Settings
+    configurePasswordComplexity: 'Configure minimum password complexity standards',
+
+    // Image Upload
+    removeImage: 'Remove image',
+
+    // Common Settings
+    youHaveUnsavedChanges: 'You have unsaved changes to your settings',
 };
