@@ -1,14 +1,33 @@
+import React, { useState } from "react";
+import { Document, Page, pdfjs } from "react-pdf";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import { useTranslation } from "../../hooks/useTranslation";
+import "react-pdf/dist/Page/AnnotationLayer.css";
+import "react-pdf/dist/Page/TextLayer.css";
+
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
 interface PDFViewerProps {
   fileUrl: string;
   fileName?: string;
 }
 
-const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf' }) => {
+const PDFViewer: React.FC<PDFViewerProps> = ({
+  fileUrl,
+  fileName = "document.pdf",
+}) => {
+  const { t } = useTranslation();
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
-  const [searchText, setSearchText] = useState<string>('');
+  const [searchText, setSearchText] = useState<string>("");
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -16,18 +35,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf
   };
 
   const changePage = (offset: number) => {
-    setPageNumber(prevPageNumber => Math.min(Math.max(1, prevPageNumber + offset), numPages));
+    setPageNumber((prevPageNumber) =>
+      Math.min(Math.max(1, prevPageNumber + offset), numPages)
+    );
   };
 
   const previousPage = () => changePage(-1);
   const nextPage = () => changePage(1);
 
-  const zoomIn = () => setScale(prev => Math.min(prev + 0.2, 3.0));
-  const zoomOut = () => setScale(prev => Math.max(prev - 0.2, 0.5));
+  const zoomIn = () => setScale((prev) => Math.min(prev + 0.2, 3.0));
+  const zoomOut = () => setScale((prev) => Math.max(prev - 0.2, 0.5));
   const resetZoom = () => setScale(1.0);
 
   const downloadPDF = () => {
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     link.href = fileUrl;
     link.download = fileName;
     link.click();
@@ -43,18 +64,20 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf
             onClick={previousPage}
             disabled={pageNumber <= 1}
             className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Previous Page"
+            title={t("previousPage") || "Previous Page"}
+            aria-label={t("previousPage") || "Previous Page"}
           >
             <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <span className="text-sm font-medium min-w-[100px] text-center">
-            Page {pageNumber} of {numPages}
+            {t("page")} {pageNumber} {t("of")} {numPages}
           </span>
           <button
             onClick={nextPage}
             disabled={pageNumber >= numPages}
             className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Next Page"
+            title={t("nextPage") || "Next Page"}
+            aria-label={t("nextPage") || "Next Page"}
           >
             <ChevronRightIcon className="w-5 h-5" />
           </button>
@@ -82,9 +105,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf
           <button
             onClick={resetZoom}
             className="px-3 py-1.5 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            title="Reset Zoom"
+            title={t("resetZoom") || "Reset Zoom"}
+            aria-label={t("resetZoom") || "Reset Zoom"}
           >
-            Fit
+            {t("fit") || "Fit"}
           </button>
         </div>
 
@@ -93,10 +117,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf
           <div className="relative">
             <input
               type="text"
-              placeholder="Search in PDF..."
+              placeholder={t("searchInPDF") || "Search in PDF..."}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               className="pl-8 pr-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:ring-brand-primary focus:border-brand-primary bg-white dark:bg-gray-700"
+              aria-label={t("searchInPDF") || "Search in PDF"}
             />
             <MagnifyingGlassIcon className="w-4 h-4 absolute left-2.5 top-2.5 text-gray-400" />
           </div>
@@ -104,10 +129,11 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf
           {/* Download */}
           <button
             onClick={downloadPDF}
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-            title="Download PDF"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            title={t("downloadPDF") || "Download PDF"}
+            aria-label={t("downloadPDF") || "Download PDF"}
           >
-            <DownloadIcon className="w-5 h-5" />
+            <ArrowDownTrayIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -125,7 +151,10 @@ const PDFViewer: React.FC<PDFViewerProps> = ({ fileUrl, fileName = 'document.pdf
             }
             error={
               <div className="flex items-center justify-center h-96 text-red-500">
-                <p>Failed to load PDF. Please try again.</p>
+                <p>
+                  {t("failedToLoadPDF") ||
+                    "Failed to load PDF. Please try again."}
+                </p>
               </div>
             }
           >

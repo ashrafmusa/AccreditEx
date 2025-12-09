@@ -9,12 +9,7 @@ import SettingsSection from "./SettingsSection";
 import { useToast } from "@/hooks/useToast";
 import ToggleSwitch from "./ToggleSwitch";
 import { labelClasses } from "@/components/ui/constants";
-import {
-  CheckIcon,
-  SunIcon,
-  MoonIcon,
-  ExclamationTriangleIcon,
-} from "@/components/icons";
+import { CheckIcon, SunIcon, MoonIcon, ExclamationTriangleIcon } from "@/components/icons";
 import {
   SettingsPanel,
   FormGroup,
@@ -36,12 +31,6 @@ const AppearanceSettingsPage: React.FC = () => {
       | "elevated"
       | "outlined"
       | "filled",
-    customColors: appSettings?.appearance?.customColors ?? {
-      primary: "#4f46e5",
-      success: "#22c55e",
-      warning: "#f97316",
-      danger: "#ef4444",
-    },
   });
 
   const [loading, setLoading] = useState(false);
@@ -96,12 +85,6 @@ const AppearanceSettingsPage: React.FC = () => {
         | "elevated"
         | "outlined"
         | "filled",
-      customColors: appSettings?.appearance?.customColors ?? {
-        primary: "#4f46e5",
-        success: "#22c55e",
-        warning: "#f97316",
-        danger: "#ef4444",
-      },
     });
     setHasChanges(false);
   };
@@ -113,10 +96,7 @@ const AppearanceSettingsPage: React.FC = () => {
           type="warning"
           icon={ExclamationTriangleIcon}
           title={t("unsavedChanges")}
-          message={
-            t("youHaveUnsavedChanges") ||
-            "You have unsaved changes to your settings"
-          }
+          message={t("youHaveUnsavedChanges") || "You have unsaved changes to your settings"}
           onDismiss={() => {}}
         />
       )}
@@ -324,4 +304,3 @@ const AppearanceSettingsPage: React.FC = () => {
 };
 
 export default AppearanceSettingsPage;
-

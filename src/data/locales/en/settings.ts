@@ -98,6 +98,13 @@ export const en = {
     // Appearance Settings
     appearance: 'Appearance',
     appearanceDescription: 'Customize the visual appearance and layout of the application',
+    themeMode: 'Theme Mode',
+    themeModeDescription: 'Choose between light and dark mode for the application',
+    lightMode: 'Light Mode',
+    lightModeDesc: 'Bright theme for daytime use',
+    darkMode: 'Dark Mode',
+    darkModeDesc: 'Dark theme for low light environments',
+    displayOptions: 'Display Options',
     compactMode: 'Compact Mode',
     compactModeDescription: 'Reduce spacing and padding for a more condensed interface',
     collapseSidebar: 'Collapse Sidebar by Default',

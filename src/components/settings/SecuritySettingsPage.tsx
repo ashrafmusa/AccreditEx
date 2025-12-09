@@ -64,8 +64,11 @@ const SecuritySettingsPage: React.FC = () => {
       >
         <div className="space-y-8">
           <SettingsSection
-            title="Password Requirements"
-            description="Configure minimum password complexity standards"
+            title={t("passwordRequirements") || "Password Requirements"}
+            description={
+              t("configurePasswordComplexity") ||
+              "Configure minimum password complexity standards"
+            }
           >
             <div>
               <label htmlFor="minLength" className={labelClasses}>

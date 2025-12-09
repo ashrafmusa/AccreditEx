@@ -184,3 +184,115 @@
 .compact-mode .p-6 {
     padding: calc(1.5rem * var(--spacing-scale, 1));
 }
+
+/* Process Map Editor Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.animate-slideIn {
+    animation: slideIn 0.4s ease-out;
+}
+
+/* Smooth hover transitions for interactive elements */
+button, a, .interactive {
+    transition: all 0.2s ease-in-out;
+}
+
+/* React Flow custom styles */
+.react-flow__node {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.react-flow__node:hover {
+    z-index: 1000;
+}
+
+.react-flow__edge-path {
+    transition: stroke 0.3s ease;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+    stroke: #6366f1;
+    stroke-width: 3;
+}
+
+/* Enhanced Process Map Node Styling */
+.react-flow__node.selected {
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+}
+
+/* MUCH LARGER & MORE VISIBLE HANDLES - Easy to Click and Connect! */
+.react-flow__handle {
+    width: 16px !important;
+    height: 16px !important;
+    background: white !important;
+    border: 3px solid currentColor !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.react-flow__handle:hover {
+    width: 22px !important;
+    height: 22px !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.3), 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+    transform: scale(1.1) !important;
+    z-index: 100 !important;
+}
+
+/* Pulse animation for handles when node is selected */
+.react-flow__node.selected .react-flow__handle {
+    animation: handlePulse 2s ease-in-out infinite;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+@keyframes handlePulse {
+    0%, 100% {
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2), 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    50% {
+        box-shadow: 0 0 0 6px rgba(99, 102, 241, 0.4), 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+}
+
+/* Connection line styling - make it more visible */
+.react-flow__edge-path {
+    stroke-width: 3px !important;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+    stroke-width: 4px !important;
+}
+
+/* kbd styling for keyboard shortcuts */
+kbd {
+    font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, Monaco, 'Courier New', monospace;
+    font-size: 0.875em;
+}
+
+/* Border width utilities */
+.border-3 {
+    border-width: 3px;
+}

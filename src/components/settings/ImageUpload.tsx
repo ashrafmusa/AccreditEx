@@ -115,14 +115,16 @@ const ImageUpload: FC<ImageUploadProps> = ({ currentImage, onImageChange }) => {
               <img
                 src={preview}
                 alt="Avatar preview"
-                className={`w-full h-full object-cover transition-opacity ${loading ? 'opacity-50' : 'opacity-100'}`}
+                className={`w-full h-full object-cover transition-opacity ${
+                  loading ? "opacity-50" : "opacity-100"
+                }`}
               />
               {hovering && !loading && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center gap-2">
                   <button
                     onClick={removeImage}
                     className="p-2 bg-red-500 rounded-full text-white hover:bg-red-600 transition-all"
-                    title="Remove image"
+                    title={t("removeImage") || "Remove image"}
                   >
                     <XCircleIcon className="w-5 h-5" />
                   </button>
@@ -143,7 +145,7 @@ const ImageUpload: FC<ImageUploadProps> = ({ currentImage, onImageChange }) => {
           className="cursor-pointer inline-flex items-center gap-2 bg-brand-primary hover:bg-indigo-700 text-white py-2.5 px-4 border border-transparent rounded-lg shadow-md hover:shadow-lg transition-all font-medium text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <PhotoIcon className="w-4 h-4" />
-          <span>{t("change") || 'Upload'}</span>
+          <span>{t("change") || "Upload"}</span>
           <input
             id="avatar-upload"
             name="avatar-upload"
@@ -155,7 +157,9 @@ const ImageUpload: FC<ImageUploadProps> = ({ currentImage, onImageChange }) => {
           />
         </label>
         <p className="text-xs text-gray-500 dark:text-gray-400">
-          {t('fileTooLarge') ? `${t('fileTooLarge')} • PNG, JPEG, SVG • Min 100x100px` : 'Max 5MB • PNG, JPEG, SVG • Min 100x100px'}
+          {t("fileTooLarge")
+            ? `${t("fileTooLarge")} • PNG, JPEG, SVG • Min 100x100px`
+            : "Max 5MB • PNG, JPEG, SVG • Min 100x100px"}
         </p>
       </div>
     );

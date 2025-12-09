@@ -102,10 +102,8 @@ const GeneralSettingsPageImproved: React.FC = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{t('general')}</h1>
-        <p className="text-gray-600 mt-2">
-          {t('generalSettingsDescription')}
-        </p>
+        <h1 className="text-3xl font-bold text-gray-900">{t("general")}</h1>
+        <p className="text-gray-600 mt-2">{t("generalSettingsDescription")}</p>
       </div>
 
       {/* Unsaved Changes Alert */}
@@ -113,7 +111,9 @@ const GeneralSettingsPageImproved: React.FC = () => {
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
           <ExclamationCircleIcon className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div className="flex-1">
-            <p className="font-medium text-amber-900">You have unsaved changes</p>
+            <p className="font-medium text-amber-900">
+              You have unsaved changes
+            </p>
             <p className="text-sm text-amber-700 mt-1">
               Save your changes to update the application settings.
             </p>
@@ -123,14 +123,20 @@ const GeneralSettingsPageImproved: React.FC = () => {
 
       {/* Application Info */}
       <SettingsPanel
-        title="Application Details"
-        description="Configure basic application information"
+        title={t("applicationDetails") || "Application Details"}
+        description={
+          t("configureBasicAppInfo") ||
+          "Configure basic application information"
+        }
         icon={Cog6ToothIcon}
       >
         <FormGroup
-          label={t('appName')}
+          label={t("appName")}
           required
-          description="The name displayed in the application"
+          description={
+            t("applicationNameDescription") ||
+            "The name displayed in the application"
+          }
         >
           <EnhancedInput
             type="text"
@@ -138,13 +144,16 @@ const GeneralSettingsPageImproved: React.FC = () => {
             onChange={(e) =>
               handleSettingChange((s) => ({ ...s, appName: e.target.value }))
             }
-            placeholder="Enter application name"
+            placeholder={t("enterApplicationName") || "Enter application name"}
             valid={settings.appName.trim().length > 0}
           />
         </FormGroup>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormGroup label={t('appLogo')} description="Upload your company logo">
+          <FormGroup
+            label={t("appLogo")}
+            description="Upload your company logo"
+          >
             <ImageUpload
               currentImage={settings.logoUrl}
               onImageChange={(url) =>
@@ -154,7 +163,7 @@ const GeneralSettingsPageImproved: React.FC = () => {
           </FormGroup>
 
           <FormGroup
-            label={t('primaryColor')}
+            label={t("primaryColor")}
             description="Choose the primary brand color"
           >
             <ColorPicker
@@ -172,7 +181,7 @@ const GeneralSettingsPageImproved: React.FC = () => {
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormGroup
-            label={t('defaultLanguage')}
+            label={t("defaultLanguage")}
             description="Default language for new users"
           >
             <EnhancedSelect
@@ -188,7 +197,7 @@ const GeneralSettingsPageImproved: React.FC = () => {
           </FormGroup>
 
           <FormGroup
-            label={t('defaultUserRole')}
+            label={t("defaultUserRole")}
             description="Default role for newly registered users"
           >
             <EnhancedSelect
@@ -266,10 +275,22 @@ const GeneralSettingsPageImproved: React.FC = () => {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
         <h4 className="font-medium text-blue-900">Need Help?</h4>
         <ul className="text-sm text-blue-700 space-y-2">
-          <li>• <strong>App Name:</strong> The primary identifier for your application</li>
-          <li>• <strong>Logo:</strong> Used in headers and branding elements (recommended: PNG, max 2MB)</li>
-          <li>• <strong>Primary Color:</strong> Used across UI for buttons and highlights</li>
-          <li>• <strong>Presets:</strong> Save settings for quick restoration later</li>
+          <li>
+            • <strong>App Name:</strong> The primary identifier for your
+            application
+          </li>
+          <li>
+            • <strong>Logo:</strong> Used in headers and branding elements
+            (recommended: PNG, max 2MB)
+          </li>
+          <li>
+            • <strong>Primary Color:</strong> Used across UI for buttons and
+            highlights
+          </li>
+          <li>
+            • <strong>Presets:</strong> Save settings for quick restoration
+            later
+          </li>
         </ul>
       </div>
     </div>
