@@ -1,7 +1,23 @@
 # Render.com Service Setup Script for AI Agent
 # Creates a new web service using Render API
 
-$RENDER_API_KEY = "rnd_UnLaL6IXTPEQggOHcoPsEAei0i00"
+# Load configuration from .deploy-config
+if (Test-Path ".deploy-config") {
+    Get-Content ".deploy-config" | ForEach-Object {
+        if ($_ -match '^([^=]+)=(.+)$') {
+            Set-Variable -Name $matches[1] -Value $matches[2]
+        }
+    }
+    Write-Host "✓ Loaded configuration from .deploy-config" -ForegroundColor Green
+}
+else {
+    Write-Host "❌ .deploy-config file not found!" -ForegroundColor Red
+    Write-Host "   Create .deploy-config with your API keys:" -ForegroundColor Yellow
+    Write-Host "   RENDER_API_KEY=your_render_key" -ForegroundColor Gray
+    Write-Host "   GROQ_API_KEY=your_groq_key" -ForegroundColor Gray
+    exit 1
+}
+
 $RENDER_API_URL = "https://api.render.com/v1"
 
 Write-Host "🚀 AccreditEx AI Agent - Render Service Setup" -ForegroundColor Cyan
@@ -16,10 +32,18 @@ if ([string]::IsNullOrWhiteSpace($serviceName)) {
 }
 
 Write-Host "`n🔑 Environment Variables Setup" -ForegroundColor Yellow
-$groqApiKey = Read-Host "Enter your Groq API key (from console.groq.com)"
-if ([string]::IsNullOrWhiteSpace($groqApiKey)) {
-    Write-Host "❌ Groq API key is required!" -ForegroundColor Red
-    exit 1
+
+# Use Groq key from config if available
+if ($GROQ_API_KEY) {
+    Write-Host "   Using Groq API key from .deploy-config" -ForegroundColor Green
+    $groqApiKey = $GROQ_API_KEY
+}
+else {
+    $groqApiKey = Read-Host "Enter your Groq API key (from console.groq.com)"
+    if ([string]::IsNullOrWhiteSpace($groqApiKey)) {
+        Write-Host "❌ Groq API key is required!" -ForegroundColor Red
+        exit 1
+    }
 }
 
 Write-Host "`n🔐 Generate a secure API key for authentication" -ForegroundColor Yellow

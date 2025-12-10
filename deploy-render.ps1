@@ -1,7 +1,21 @@
 # Render.com Deployment Script for AI Agent
 # Uses Render API to automate deployment
 
-$RENDER_API_KEY = "rnd_UnLaL6IXTPEQggOHcoPsEAei0i00"
+# Load configuration from .deploy-config
+if (Test-Path ".deploy-config") {
+    Get-Content ".deploy-config" | ForEach-Object {
+        if ($_ -match '^([^=]+)=(.+)$') {
+            Set-Variable -Name $matches[1] -Value $matches[2]
+        }
+    }
+}
+else {
+    Write-Host "❌ .deploy-config file not found!" -ForegroundColor Red
+    Write-Host "   Create .deploy-config with your API keys:" -ForegroundColor Yellow
+    Write-Host "   RENDER_API_KEY=your_render_key" -ForegroundColor Gray
+    exit 1
+}
+
 $RENDER_API_URL = "https://api.render.com/v1"
 
 Write-Host "🚀 AccreditEx AI Agent - Render Deployment" -ForegroundColor Cyan
