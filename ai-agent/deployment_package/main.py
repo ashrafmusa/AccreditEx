@@ -3,9 +3,10 @@ AccreditEx AI Agent API - Render.com Deployment
 FastAPI application for the unified AccreditEx AI agent with context awareness
 """
 
-from fastapi import FastAPI, HTTPException, Request, File, UploadFile
+from fastapi import FastAPI, HTTPException, Request, File, UploadFile, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, AsyncGenerator
 import uvicorn
@@ -38,20 +39,32 @@ app = FastAPI(
     version="2.0.0"
 )
 
-# Configure CORS
+# Configure CORS - Production Ready
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://accreditex-79c08.web.app",
         "https://accreditex-79c08.firebaseapp.com",
         "http://localhost:5173",
-        "http://localhost:3000",
-        "*"  # Allow all origins for testing - remove in production
+        "http://localhost:3000"
     ],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["Content-Type", "Authorization", "X-API-Key"],
 )
+
+# API Key Security
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+async def verify_api_key(api_key: str = Depends(api_key_header)):
+    """Verify API key from request header"""
+    expected_key = os.getenv("API_KEY", "dev-key-change-in-production")
+    if not api_key or api_key != expected_key:
+        raise HTTPException(
+            status_code=403,
+            detail="Invalid or missing API key"
+        )
+    return api_key
 
 # Initialize agent
 agent = None
@@ -100,11 +113,12 @@ async def health_check():
     )
 
 # Chat endpoint
-@app.post("/chat")
+@app.post("/chat", dependencies=[Depends(verify_api_key)])
 async def chat(request: ChatRequest):
     """
     Chat with the AI agent (streaming response)
     Accepts optional context for context-aware responses
+    Requires X-API-Key header for authentication
     """
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
@@ -135,7 +149,7 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Document compliance endpoint
-@app.post("/check-compliance")
+@app.post("/check-compliance", dependencies=[Depends(verify_api_key)])
 async def check_compliance(
     document_type: str,
     standard: str,
@@ -159,7 +173,7 @@ async def check_compliance(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Risk assessment endpoint
-@app.post("/assess-risk")
+@app.post("/assess-risk", dependencies=[Depends(verify_api_key)])
 async def assess_risk(
     area: str,
     current_status: str,
@@ -183,7 +197,7 @@ async def assess_risk(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Training recommendations endpoint
-@app.post("/training-recommendations")
+@app.post("/training-recommendations", dependencies=[Depends(verify_api_key)])
 async def get_training_recommendations(
     role: str,
     competency_gaps: list,
@@ -207,7 +221,7 @@ async def get_training_recommendations(
         raise HTTPException(status_code=500, detail=str(e))
 
 # Upload report to Firebase Storage (bypasses browser CORS)
-@app.post("/upload-report")
+@app.post("/upload-report", dependencies=[Depends(verify_api_key)])
 async def upload_report(
     project_id: str = File(...),
     file_data: str = File(...),
