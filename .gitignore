@@ -34,3 +34,12 @@ ai-agent/enhanced_deployment_package/*.json
 .env.production
 .env.*.local
 !.env.example
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.db
+*.log
+
+# Firebase Credentials
+**/*firebase*adminsdk*.json
