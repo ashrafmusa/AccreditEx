@@ -19,6 +19,9 @@ const MainRouter = React.lazy(() => import("@/components/common/MainRouter"));
 const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
 const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
 
+// AI Assistant Component
+import { AIAssistant } from "@/components/ai/AIAssistant";
+
 const App: React.FC = () => {
   return (
     <ThemeProvider>
@@ -140,6 +143,8 @@ const AppManager: React.FC = () => {
           <MainRouter navigation={navigation} setNavigation={setNavigation} />
         </Suspense>
       </Layout>
+      {/* AI Assistant - Always available when logged in */}
+      <AIAssistant />
     </div>
   );
 };
