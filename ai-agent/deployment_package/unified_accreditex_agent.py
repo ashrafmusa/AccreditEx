@@ -44,8 +44,9 @@ class UnifiedAccreditexAgent:
             base_url=base_url
         )
         
-        # Model selection - prefer Llama 3 on Groq, fallback to GPT-3.5/4 if using OpenAI key
-        self.model = "llama3-70b-8192" if os.getenv("GROQ_API_KEY") else "gpt-3.5-turbo"
+        # Model selection - use Llama 3.1 70B (replacement for deprecated llama3-70b-8192)
+        # See: https://console.groq.com/docs/deprecations
+        self.model = "llama-3.1-70b-versatile" if os.getenv("GROQ_API_KEY") else "gpt-3.5-turbo"
         
         # In-memory conversation history storage (for demo/stateless deployment)
         # In production, this should be in Redis or Firestore
