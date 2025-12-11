@@ -44,9 +44,10 @@ class UnifiedAccreditexAgent:
             base_url=base_url
         )
         
-        # Model selection - use Llama 3.1 70B (replacement for deprecated llama3-70b-8192)
-        # See: https://console.groq.com/docs/deprecations
-        self.model = "llama-3.1-70b-versatile" if os.getenv("GROQ_API_KEY") else "gpt-3.5-turbo"
+        # Model selection - use Llama 3.3 70B (current stable model as of Dec 2024)
+        # Alternative models: llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768
+        # See: https://console.groq.com/docs/models
+        self.model = "llama-3.3-70b-versatile" if os.getenv("GROQ_API_KEY") else "gpt-3.5-turbo"
         
         # In-memory conversation history storage (for demo/stateless deployment)
         # In production, this should be in Redis or Firestore
