@@ -75,6 +75,75 @@ class UnifiedAccreditexAgent:
         """Initialize the agent - mostly a placeholder now as client is init in __init__"""
         logger.info(f"✅ Agent initialized using model: {self.model}")
 
+    async def _get_organization_context(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+        """Fetch relevant organizational data from Firebase"""
+        context = {
+            "users_count": 0,
+            "projects_count": 0,
+            "active_projects": [],
+            "high_risks": [],
+            "recent_documents": [],
+            "departments": [],
+            "user_role": "Unknown"
+        }
+        
+        if not self.db:
+            logger.warning("Firebase not initialized, returning empty context")
+            return context
+        
+        try:
+            # Get user role if user_id provided
+            if user_id:
+                user_doc = self.db.collection('users').document(user_id).get()
+                if user_doc.exists:
+                    user_data = user_doc.to_dict()
+                    context["user_role"] = user_data.get("role", "Unknown")
+                    context["user_name"] = user_data.get("name", "User")
+            
+            # Get projects summary (limit to 5 most recent)
+            projects_ref = self.db.collection('projects').order_by('updatedAt', direction=firestore.Query.DESCENDING).limit(5)
+            projects = projects_ref.stream()
+            for project in projects:
+                proj_data = project.to_dict()
+                context["active_projects"].append({
+                    "id": project.id,
+                    "name": proj_data.get("name", "Unnamed"),
+                    "progress": proj_data.get("progress", 0),
+                    "status": proj_data.get("status", "Unknown")
+                })
+            context["projects_count"] = len(context["active_projects"])
+            
+            # Get high-priority risks (limit to 5)
+            risks_ref = self.db.collection('risks').where('severity', 'in', ['high', 'critical']).limit(5)
+            risks = risks_ref.stream()
+            for risk in risks:
+                risk_data = risk.to_dict()
+                context["high_risks"].append({
+                    "id": risk.id,
+                    "title": risk_data.get("title", "Unnamed Risk"),
+                    "severity": risk_data.get("severity", "Unknown"),
+                    "status": risk_data.get("status", "open")
+                })
+            
+            # Get total users count
+            users_ref = self.db.collection('users').limit(1)
+            users_snapshot = users_ref.stream()
+            context["users_count"] = len(list(users_snapshot))
+            
+            # Get departments
+            depts_ref = self.db.collection('departments').limit(10)
+            depts = depts_ref.stream()
+            for dept in depts:
+                dept_data = dept.to_dict()
+                context["departments"].append(dept_data.get("name", "Unknown"))
+            
+            logger.info(f"✅ Retrieved organization context: {context['projects_count']} projects, {len(context['high_risks'])} high risks")
+            
+        except Exception as e:
+            logger.error(f"Error fetching organization context: {e}")
+        
+        return context
+
     def _get_system_prompt(self, context: Optional[Dict[str, Any]] = None) -> str:
         """Get the system prompt with dynamic context"""
         
@@ -96,15 +165,30 @@ TONE AND STYLE:
 
         # Add dynamic context if provided
         if context:
+            org_context = context.get('organization', {})
+            
             base_prompt += f"""
-\nCURRENT CONTEXT:
-The user is currently navigating the AccreditEx application.
-- **Current Page**: {context.get('page_title', 'Unknown')}
-- **Route**: {context.get('route', 'Unknown')}
-- **User Role**: {context.get('user_role', 'Unknown')}
-- **Timestamp**: {context.get('timestamp', datetime.now().isoformat())}
-
-Please tailor your responses to this context.
+\nCURRENT ORGANIZATION CONTEXT:
+- **User Role**: {context.get('user_role', org_context.get('user_role', 'Unknown'))}
+- **Active Projects**: {org_context.get('projects_count', 0)} projects tracked
+- **High-Priority Risks**: {len(org_context.get('high_risks', []))} risks requiring attention
+- **Team Size**: {org_context.get('users_count', 0)} staff members
+- **Departments**: {', '.join(org_context.get('departments', [])[:3])}
+"""
+            
+            if org_context.get('active_projects'):
+                base_prompt += "\n**Current Projects:**\n"
+                for proj in org_context.get('active_projects', [])[:3]:
+                    base_prompt += f"- {proj.get('name', 'Unnamed')}: {proj.get('progress', 0)}% complete ({proj.get('status', 'Unknown')})\n"
+            
+            if org_context.get('high_risks'):
+                base_prompt += "\n**Active High-Priority Risks:**\n"
+                for risk in org_context.get('high_risks', [])[:3]:
+                    base_prompt += f"- {risk.get('title', 'Unnamed')}: {risk.get('severity', 'Unknown').upper()} severity ({risk.get('status', 'open')})\n"
+            
+            base_prompt += f"""
+\nUSE THIS CONTEXT to provide specific, actionable advice relevant to the organization's current state.
+When discussing compliance, reference actual projects and risks where relevant.
 """
         return base_prompt
 
@@ -117,15 +201,28 @@ Please tailor your responses to this context.
             if not thread_id:
                 thread_id = f"thread_{datetime.now().timestamp()}"
             
+            # Fetch organization context from Firebase
+            user_id = context.get('user_id') if context else None
+            org_context = await self._get_organization_context(user_id)
+            
+            # Merge organization context with provided context
+            enhanced_context = {
+                **(context or {}),
+                'organization': org_context,
+                'user_role': org_context.get('user_role', context.get('user_role', 'Unknown') if context else 'Unknown')
+            }
+            
             # Initialize conversation history if new thread
             if thread_id not in self.conversations:
                 self.conversations[thread_id] = [
-                    {"role": "system", "content": self._get_system_prompt(context)}
+                    {"role": "system", "content": self._get_system_prompt(enhanced_context)}
                 ]
             else:
-                # Update system prompt with new context if needed (optional, usually keeps initial context)
-                # For this implementation, we'll just append the user message
-                pass
+                # Update system prompt with fresh context for existing threads
+                self.conversations[thread_id][0] = {
+                    "role": "system", 
+                    "content": self._get_system_prompt(enhanced_context)
+                }
 
             # Append user message
             self.conversations[thread_id].append({"role": "user", "content": message})
