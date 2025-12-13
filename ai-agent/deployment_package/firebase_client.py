@@ -9,25 +9,46 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 from typing import Dict, List, Any, Optional
 import os
+import json
 from datetime import datetime, timedelta
 
 class FirebaseClient:
     def __init__(self):
-        """Initialize Firebase Admin SDK"""
+        """Initialize Firebase Admin SDK with support for environment variables"""
         # Use service account from environment or file
         if not firebase_admin._apps:
-            cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH', 'serviceAccountKey.json')
-            
             try:
-                cred = credentials.Certificate(cred_path)
-                firebase_admin.initialize_app(cred)
-                print("✅ Firebase Admin SDK initialized")
+                # Try environment variable first (for Render deployment)
+                cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
+                
+                if cred_json:
+                    # Parse JSON from environment variable
+                    cred_dict = json.loads(cred_json)
+                    cred = credentials.Certificate(cred_dict)
+                    firebase_admin.initialize_app(cred)
+                    print("✅ Firebase Admin SDK initialized from environment variable")
+                else:
+                    # Try file path (for local development)
+                    cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH', 'serviceAccountKey.json')
+                    if os.path.exists(cred_path):
+                        cred = credentials.Certificate(cred_path)
+                        firebase_admin.initialize_app(cred)
+                        print(f"✅ Firebase Admin SDK initialized from {cred_path}")
+                    else:
+                        print("⚠️ No Firebase credentials found - Firebase features disabled")
+                        self.db = None
+                        return
+                        
             except Exception as e:
-                print(f"⚠️ Firebase initialization warning: {e}")
-                print("   Using default credentials or application credentials")
-                firebase_admin.initialize_app()
+                print(f"❌ Firebase initialization failed: {e}")
+                self.db = None
+                return
         
-        self.db = firestore.client()
+        try:
+            self.db = firestore.client()
+        except Exception as e:
+            print(f"❌ Firestore client initialization failed: {e}")
+            self.db = None
 
     def get_user_context(self, user_id: str) -> Dict[str, Any]:
         """
@@ -39,6 +60,12 @@ class FirebaseClient:
         Returns:
             Dictionary with user data, projects, permissions, etc.
         """
+        if not self.db:
+            return {
+                'error': 'Firebase not initialized',
+                'user_data': None
+            }
+            
         try:
             # Get user document
             user_ref = self.db.collection('users').document(user_id)
@@ -125,6 +152,9 @@ class FirebaseClient:
         Returns:
             Project data with checklist, CAPAs, surveys, etc.
         """
+        if not self.db:
+            return None
+            
         try:
             project_ref = self.db.collection('projects').document(project_id)
             project_doc = project_ref.get()
@@ -173,6 +203,9 @@ class FirebaseClient:
         Returns:
             Aggregate statistics across all projects, users, departments
         """
+        if not self.db:
+            return {}
+            
         try:
             # Get all projects
             projects = list(self.db.collection('projects').stream())
@@ -223,6 +256,9 @@ class FirebaseClient:
         Returns:
             List of matching documents
         """
+        if not self.db:
+            return []
+            
         try:
             docs_ref = self.db.collection('documents')
             
@@ -265,6 +301,9 @@ class FirebaseClient:
         Returns:
             Training completion statistics and gaps
         """
+        if not self.db:
+            return {}
+            
         try:
             # Get user document
             user_doc = self.db.collection('users').document(user_id).get()
