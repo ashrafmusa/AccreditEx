@@ -34,7 +34,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       const auth = getAuthInstance();
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
-      
+
       if (firebaseUser.email) {
         // The onAuthStateChanged listener in firebaseHooks will handle fetching 
         // from Firestore and setting the current user.
@@ -46,12 +46,12 @@ export const useUserStore = create<UserState>((set, get) => ({
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const user = { ...userDoc.data(), id: userDoc.id } as User;
-          
+
           // Track device session (non-blocking)
-          deviceSessionService.createOrUpdateSession(user.id).catch(err => 
+          deviceSessionService.createOrUpdateSession(user.id).catch(err =>
             logger.warn('Failed to track session', err)
           );
-          
+
           return user;
         }
       }
@@ -62,7 +62,7 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   logout: async () => {
     const currentUser = get().currentUser;
-    
+
     // Sign out current device session
     if (currentUser) {
       const currentDeviceId = deviceSessionService.getCurrentDeviceId();
@@ -70,7 +70,7 @@ export const useUserStore = create<UserState>((set, get) => ({
         logger.warn('Failed to remove session', err)
       );
     }
-    
+
     const auth = getAuthInstance();
     await signOut(auth);
     set({ currentUser: null });
@@ -89,6 +89,26 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   updateUser: async (updatedUser) => {
     try {
+      const state = get();
+      const currentUser = state.currentUser;
+
+      // Authorization check: User can only update their own profile OR must be admin
+      if (!currentUser) {
+        throw new AppError('Not authenticated', 'UNAUTHORIZED');
+      }
+
+      const isOwnProfile = currentUser.id === updatedUser.id;
+      const isAdmin = currentUser.role === 'Admin';
+
+      if (!isOwnProfile && !isAdmin) {
+        throw new AppError('You can only update your own profile', 'UNAUTHORIZED');
+      }
+
+      // Prevent role escalation: Non-admins cannot change roles
+      if (!isAdmin && updatedUser.role !== currentUser.role && currentUser.id === updatedUser.id) {
+        throw new AppError('You cannot change your own role', 'UNAUTHORIZED');
+      }
+
       const userRef = doc(db, 'users', updatedUser.id);
       await setDoc(userRef, updatedUser, { merge: true });
       set(state => ({

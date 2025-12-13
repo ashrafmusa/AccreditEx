@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
-import SettingsCard from './SettingsCard';
+import React, { useState, useEffect } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
+import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
 import SettingsSection from "./SettingsSection";
@@ -9,7 +9,13 @@ import { useToast } from "@/hooks/useToast";
 import ToggleSwitch from "./ToggleSwitch";
 import { labelClasses } from "@/components/ui/constants";
 import { CheckIcon } from "@/components/icons";
-import { SettingsPanel, FormGroup, AdvancedToggle, EnhancedSelect, SliderInput } from './index';
+import {
+  SettingsPanel,
+  FormGroup,
+  AdvancedToggle,
+  EnhancedSelect,
+  SliderInput,
+} from "./index";
 
 const AccessibilitySettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -50,10 +56,15 @@ const AccessibilitySettingsPage: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateAppSettings({
-        ...appSettings!,
+      if (!appSettings) {
+        toast.error("Settings not loaded");
+        return;
+      }
+      const updatedSettings = {
+        ...appSettings,
         accessibility,
-      });
+      };
+      await updateAppSettings(updatedSettings);
 
       const root = document.documentElement;
       root.setAttribute("data-font-size", accessibility.fontSize);
@@ -80,6 +91,7 @@ const AccessibilitySettingsPage: React.FC = () => {
       toast.success(t("settingsUpdated"));
     } catch (error) {
       toast.error(t("settingsUpdateFailed"));
+      console.error("Failed to save accessibility settings:", error);
     } finally {
       setLoading(false);
     }
@@ -146,15 +158,33 @@ const AccessibilitySettingsPage: React.FC = () => {
             <h5 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">
               Preview
             </h5>
-            <p 
+            <p
               className="text-gray-700 dark:text-gray-300 mb-2"
-              style={{ fontSize: accessibility.fontSize === "small" ? "12px" : accessibility.fontSize === "medium" ? "14px" : accessibility.fontSize === "large" ? "16px" : "18px" }}
+              style={{
+                fontSize:
+                  accessibility.fontSize === "small"
+                    ? "12px"
+                    : accessibility.fontSize === "medium"
+                    ? "14px"
+                    : accessibility.fontSize === "large"
+                    ? "16px"
+                    : "18px",
+              }}
             >
               {t("previewText")}
             </p>
-            <p 
+            <p
               className="text-gray-600 dark:text-gray-400"
-              style={{ fontSize: accessibility.fontSize === "small" ? "11px" : accessibility.fontSize === "medium" ? "13px" : accessibility.fontSize === "large" ? "15px" : "17px" }}
+              style={{
+                fontSize:
+                  accessibility.fontSize === "small"
+                    ? "11px"
+                    : accessibility.fontSize === "medium"
+                    ? "13px"
+                    : accessibility.fontSize === "large"
+                    ? "15px"
+                    : "17px",
+              }}
             >
               {t("previewSecondaryText")}
             </p>
@@ -190,7 +220,8 @@ const AccessibilitySettingsPage: React.FC = () => {
         {accessibility.highContrast && (
           <div className="mt-4 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
             <p className="text-sm text-purple-700 dark:text-purple-300">
-              ✓ High contrast mode is active. UI elements will display with stronger color differences for better visibility.
+              ✓ High contrast mode is active. UI elements will display with
+              stronger color differences for better visibility.
             </p>
           </div>
         )}
@@ -224,7 +255,8 @@ const AccessibilitySettingsPage: React.FC = () => {
         {accessibility.reduceMotion && (
           <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              ✓ Reduced motion is enabled. Animations and transitions will be minimized throughout the application.
+              ✓ Reduced motion is enabled. Animations and transitions will be
+              minimized throughout the application.
             </p>
           </div>
         )}
@@ -258,7 +290,8 @@ const AccessibilitySettingsPage: React.FC = () => {
         {accessibility.screenReaderOptimized && (
           <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <p className="text-sm text-green-700 dark:text-green-300">
-              ✓ Screen reader optimization is active. Content navigation will be optimized for assistive technologies.
+              ✓ Screen reader optimization is active. Content navigation will be
+              optimized for assistive technologies.
             </p>
           </div>
         )}

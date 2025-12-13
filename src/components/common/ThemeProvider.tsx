@@ -86,12 +86,19 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!isInitialized) return;
 
     try {
+      console.log(
+        "📱 Applying theme:",
+        theme,
+        "| Dark class:",
+        theme === "dark" ? "added" : "removed"
+      );
       if (theme === "dark") {
         document.documentElement.classList.add("dark");
       } else {
         document.documentElement.classList.remove("dark");
       }
       localStorage.setItem("accreditex-theme", theme);
+      console.log("✅ Theme applied successfully");
     } catch (error) {
       console.error("Failed to apply theme:", error);
     }
@@ -128,10 +135,15 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
+    setTheme((prevTheme) => {
+      const newTheme = prevTheme === "light" ? "dark" : "light";
+      console.log("🌓 Theme toggled:", prevTheme, "→", newTheme);
+      return newTheme;
+    });
   }, []);
 
   const handleSetTheme = useCallback((newTheme: Theme) => {
+    console.log("🎨 Theme set to:", newTheme);
     setTheme(newTheme);
   }, []);
 

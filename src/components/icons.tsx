@@ -1,19 +1,37 @@
-import React from 'react';
-import { LogoIconComponent } from './icons/LogoIconComponent';
+import React from "react";
+import { LogoIconComponent } from "./icons/LogoIconComponent";
+import { I } from "../../dist/assets/Globe-BTNIcnIg";
 
-export const LogoIcon: React.FC<React.SVGProps<SVGSVGElement>> = LogoIconComponent;
+export const LogoIcon: React.FC<React.SVGProps<SVGSVGElement>> =
+  LogoIconComponent;
 
-const createIcon = (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
-    {path}
-  </svg>
-);
-
-const createOutlineIcon = (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+const createIcon =
+  (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) =>
+    (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        {...props}
+      >
         {path}
-    </svg>
-);
+      </svg>
+    );
+
+const createOutlineIcon =
+  (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) =>
+    (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth={1.5}
+        stroke="currentColor"
+        {...props}
+      >
+        {path}
+      </svg>
+    );
 
 // Centralized dictionary for all icon SVG path data
 const iconPaths = {
@@ -747,8 +765,49 @@ const iconPaths = {
       d="M18 18.72a9.094 9.094 0 00-12 0m12 0a9.094 9.094 0 01-12 0m12 0v-2.25a6 6 0 00-12 0v2.25m12 0a9.094 9.094 0 01-12 0M12 12.75a4.5 4.5 0 110-9 4.5 4.5 0 010 9z"
     />
   ),
+  DocumentDuplicateIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 011.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 00-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 01-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 00-3.375-3.375h-1.5a1.125 1.125 0 01-1.125-1.125v-1.5a3.375 3.375 0 00-3.375-3.375H9.75"
+    />
+  ),
+  ArrowUpTrayIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+    />
+  ),
+  StarIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.324l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 20.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.324L11.48 3.5z"
+    />
+  ),
+  ArrowDownTrayIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 6.75v-2.25A2.25 2.25 0 015.25 2.25h13.5A2.25 2.25 0 0121 4.5v2.25m-13.5 9L12 20.25m0 0l4.5-4.5M12 20.25V6.75"
+    />
+  ),
+  TagIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 005.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 009.568 3z"
+    />
+  ),
+  BoltIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+    />
+  ),
 };
-
 // --- Outline Icons ---
 export const Bars3Icon = createOutlineIcon(iconPaths.Bars3Icon);
 export const FolderIcon = createOutlineIcon(iconPaths.FolderIcon);
@@ -768,7 +827,6 @@ export const ChartPieIcon = createOutlineIcon(iconPaths.ChartPieIcon);
 export const ClipboardDocumentCheckIcon = createOutlineIcon(
   iconPaths.ClipboardDocumentCheckIcon
 );
-export const DocumentTextIcon = createOutlineIcon(iconPaths.DocumentTextIcon);
 export const ClipboardDocumentListIcon = createOutlineIcon(
   iconPaths.ClipboardDocumentListIcon
 );
@@ -776,7 +834,6 @@ export const ClipboardDocumentSearchIcon = createOutlineIcon(
   iconPaths.ClipboardDocumentSearchIcon
 );
 export const BeakerIcon = createOutlineIcon(iconPaths.BeakerIcon);
-export const ShieldCheckIcon = createOutlineIcon(iconPaths.ShieldCheckIcon);
 export const LockClosedIcon = createOutlineIcon(iconPaths.LockClosedIcon);
 export const ExclamationTriangleIcon = createOutlineIcon(
   iconPaths.ExclamationTriangleIcon
@@ -884,6 +941,15 @@ export const MagnifyingGlassMinusIcon = createOutlineIcon(
   iconPaths.MagnifyingGlassMinusIcon
 );
 export const UserGroupIcon = createOutlineIcon(iconPaths.UserGroupIcon);
-
+export const DocumentDuplicateIcon = createOutlineIcon(
+  iconPaths.DocumentDuplicateIcon
+);
+export const ArrowUpTrayIcon = createOutlineIcon(iconPaths.ArrowUpTrayIcon);
+export const StarIcon = createOutlineIcon(iconPaths.StarIcon);
+export const TagIcon = createOutlineIcon(iconPaths.TagIcon);
+export const DocumentTextIcon = createOutlineIcon(iconPaths.DocumentTextIcon);
+export const BoltIcon = createOutlineIcon(iconPaths.BoltIcon);
+export const ShieldCheckIcon = createOutlineIcon(iconPaths.ShieldCheckIcon);
+export const ArrowDownTrayIcon = createOutlineIcon(iconPaths.ArrowDownTrayIcon);
 // --- Solid Icons (if any needed) ---
 // Example: export const SolidPlusIcon = createIcon(iconPaths.PlusIcon);

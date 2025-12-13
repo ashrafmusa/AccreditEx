@@ -2,7 +2,7 @@ export type Language = 'en' | 'ar';
 export type Direction = 'ltr' | 'rtl';
 export type Theme = 'light' | 'dark';
 
-export type SettingsSection = 'general' | 'profile' | 'security' | 'notifications' | 'accessibility' | 'appearance' | 'globe' | 'visual' | 'usageMonitor' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about';
+export type SettingsSection = 'general' | 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport';
 
 export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'dataHub' | 'messaging';
 
@@ -283,6 +283,7 @@ export interface AppDocument {
   category?: string;  // Document category (e.g., "Quality Management", "Safety", "Operations")
   departmentIds?: string[];  // Associated department IDs
   uploadedBy?: string;  // User who uploaded the document
+  projectId?: string;  // Associated project ID for evidence documents
 }
 
 export interface TrainingProgram {
@@ -500,13 +501,27 @@ export interface PDCACycle {
   title: string;
   description?: string;
   projectId?: string;
-  stage?: 'Plan' | 'Do' | 'Check' | 'Act';
-  status: ProjectStatus;
-  stages?: Array<PDCAStage | { stage: 'Plan' | 'Do' | 'Check' | 'Act'; enteredAt: string; completedAt?: string; completedBy?: string; notes?: string; attachments?: string[] }>;
+  category?: 'Process' | 'Quality' | 'Safety' | 'Efficiency' | 'Other';
+  priority?: 'High' | 'Medium' | 'Low';
+  owner?: string;
+  team?: string[];
+  currentStage: 'Plan' | 'Do' | 'Check' | 'Act' | 'Completed';
+  targetCompletionDate?: string;
+  improvementMetrics?: {
+    baseline: any[];
+    target: any[];
+    actual: any[];
+  };
+  stageHistory: Array<{
+    stage: 'Plan' | 'Do' | 'Check' | 'Act' | 'Completed';
+    enteredAt: string;
+    completedAt?: string;
+    completedBy?: string;
+    notes?: string;
+    attachments?: string[];
+  }>;
   createdAt: string;
-  updatedAt: string;
-  startDate?: string;
-  endDate?: string;
+  updatedAt?: string;
 }
 
 export interface CAPAReport {
@@ -514,6 +529,9 @@ export interface CAPAReport {
   title?: string;
   description?: string;
   checklistItemId: string;
+  sourceProjectId?: string;
+  assignedTo?: string;
+  dueDate?: string;
   rootCause: string;
   correctiveAction: string;
   preventiveAction?: string;
@@ -541,4 +559,121 @@ export interface ProjectCard {
   complianceStatus?: ComplianceStatus;
   createdAt: string;
   updatedAt: string;
+}
+
+// ========================================
+// Settings Enhancement Types
+// ========================================
+
+export interface SettingsAuditLog {
+  id: string;
+  userId: string;
+  userName: string;
+  action: 'create' | 'update' | 'delete' | 'export' | 'import';
+  category: string;
+  field: string;
+  oldValue: any;
+  newValue: any;
+  timestamp: string;
+  ipAddress?: string;
+  userAgent?: string;
+}
+
+export interface SettingsVersion {
+  id: string;
+  version: number;
+  settings: Partial<AppSettings>;
+  createdBy: string;
+  createdAt: string;
+  comment?: string;
+  tags?: string[];
+}
+
+export interface SettingsPreset {
+  id: string;
+  name: string;
+  description: string;
+  category: 'personal' | 'theme' | 'security' | 'notifications' | 'full';
+  settings: Partial<AppSettings>;
+  isPublic: boolean;
+  createdBy: string;
+  createdAt: string;
+  usageCount: number;
+  icon?: string;
+}
+
+export interface CustomPermission {
+  id: string;
+  resource: string;
+  action: 'create' | 'read' | 'update' | 'delete' | 'export' | 'manage';
+  granted: boolean;
+}
+
+export interface CustomRole {
+  id: string;
+  name: string;
+  description: string;
+  baseRole: UserRole;
+  permissions: CustomPermission[];
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  userCount: number;
+}
+
+export interface UserActivityLog {
+  id: string;
+  userId: string;
+  action: string;
+  resource: string;
+  resourceId?: string;
+  details?: any;
+  timestamp: string;
+  duration?: number;
+  success: boolean;
+  errorMessage?: string;
+}
+
+export interface BulkUserOperation {
+  id: string;
+  type: 'import' | 'export' | 'update' | 'delete' | 'activate' | 'deactivate';
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  totalUsers: number;
+  processedUsers: number;
+  failedUsers: number;
+  errors: { userId: string; error: string }[];
+  createdBy: string;
+  createdAt: string;
+  completedAt?: string;
+  resultFile?: string;
+}
+
+export interface SettingsTooltip {
+  id: string;
+  settingKey: string;
+  title: string;
+  description: string;
+  learnMoreUrl?: string;
+  videoUrl?: string;
+  relatedSettings?: string[];
+}
+
+export interface OnboardingStep {
+  id: string;
+  title: string;
+  description: string;
+  target: string;
+  position: 'top' | 'bottom' | 'left' | 'right';
+  order: number;
+  isOptional: boolean;
+  videoUrl?: string;
+}
+
+export interface SettingsComparison {
+  field: string;
+  category: string;
+  currentValue: any;
+  comparedValue: any;
+  isDifferent: boolean;
 }

@@ -6,6 +6,7 @@ import { XMarkIcon } from "../icons";
 import DocumentEditorSidebar from "./DocumentEditorSidebar";
 import RichTextEditor from "./RichTextEditor";
 import DocumentVersionComparisonModal from "./DocumentVersionComparisonModal";
+import { exportToDocx } from "../../services/docxExportService";
 
 interface DocumentEditorModalProps {
   isOpen: boolean;
@@ -80,6 +81,16 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
     v2: number | "current"
   ) => {
     setComparisonModal({ isOpen: true, version1: v1, version2: v2 });
+  };
+
+  const handleExportToDocx = async () => {
+    try {
+      const fileName = `${document.name[lang]}_v${document.currentVersion}.docx`;
+      await exportToDocx(currentContent[lang] || "", { fileName });
+    } catch (error) {
+      console.error("Failed to export document:", error);
+      alert("Failed to export document to DOCX format");
+    }
   };
 
   return (
@@ -157,7 +168,14 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
           />
         </main>
 
-        <footer className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 flex justify-end items-center space-x-3 rtl:space-x-reverse border-t dark:border-dark-brand-border flex-shrink-0">
+        <footer className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 flex justify-end items-center space-x-3 rtl:space-x-reverse border-t dark:border-dark-brand-border shrink-0">
+          <button
+            type="button"
+            onClick={handleExportToDocx}
+            className="inline-flex justify-center py-2 px-4 rounded-md text-sm font-medium text-brand-primary hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-brand-primary"
+          >
+            {t("exportToDocx") || "Export to DOCX"}
+          </button>
           {document.status === "Draft" && (
             <button type="button" className="text-sm font-medium">
               {t("requestApproval")}

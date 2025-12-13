@@ -13,6 +13,7 @@ import {
   XMarkIcon,
   UploadIcon,
 } from "@/components/icons";
+import { TableContainer } from "@/components/ui";
 import DocumentPicker from "@/components/common/DocumentPicker";
 import DocumentListItem from "@/components/documents/DocumentListItem";
 import FileUploader from "@/components/documents/FileUploader";
@@ -21,6 +22,9 @@ import DocumentEditorModal from "@/components/documents/DocumentEditorModal";
 import { useAppStore } from "@/stores/useAppStore";
 import { storageService } from "@/services/storageService";
 import { getDocumentViewAction } from "@/utils/documentViewingHelper";
+import { aiAgentService } from "@/services/aiAgentService";
+import { useToast } from "@/hooks/useToast";
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
 
 interface DesignControlsComponentProps {
   project: Project;
@@ -37,6 +41,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
 }) => {
   const { t, lang } = useTranslation();
   const { addDocument } = useAppStore();
+  const toast = useToast();
   const [controls, setControls] = useState<DesignControlItem[]>([]);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [currentRowIndex, setCurrentRowIndex] = useState<number | null>(null);
@@ -45,6 +50,9 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [viewingPDF, setViewingPDF] = useState<AppDocument | null>(null);
   const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
+  const [aiChecking, setAiChecking] = useState(false);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiModalContent, setAiModalContent] = useState("");
 
   useEffect(() => {
     setControls(JSON.parse(JSON.stringify(project.designControls || [])));
@@ -81,6 +89,34 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   const handleSave = () => {
     onSave(controls);
     alert("Changes saved!");
+  };
+
+  const handleAIComplianceCheck = async () => {
+    if (aiChecking || controls.length === 0) return;
+
+    setAiChecking(true);
+    try {
+      const requirements = controls
+        .filter((c) => c.requirement)
+        .map((c) => c.requirement);
+
+      const complianceCheck = await aiAgentService.checkDesignCompliance({
+        designTitle: project.name,
+        standard: project.standard,
+        phase: "Design Controls",
+        description: `${controls.length} design control items`,
+        requirements,
+      });
+
+      setAiModalContent(complianceCheck);
+      setAiModalOpen(true);
+      toast.success("AI compliance check complete!");
+    } catch (error) {
+      toast.error("Failed to perform AI compliance check");
+      console.error("AI compliance check error:", error);
+    } finally {
+      setAiChecking(false);
+    }
   };
 
   const handleLinkDocument = (rowIndex: number) => {
@@ -198,12 +234,43 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
             </p>
           </div>
           {!isFinalized && (
-            <button
-              onClick={handleSave}
-              className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 font-semibold shadow-sm w-full sm:w-auto"
-            >
-              {t("saveChanges")}
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAIComplianceCheck}
+                disabled={aiChecking || controls.length === 0}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg hover:from-purple-700 hover:to-indigo-700 font-semibold shadow-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {aiChecking ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>
+                    Checking...
+                  </>
+                ) : (
+                  <>🤖 AI Compliance Check</>
+                )}
+              </button>
+              <button
+                onClick={handleSave}
+                className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 font-semibold shadow-sm w-full sm:w-auto"
+              >
+                {t("saveChanges")}
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -481,6 +548,15 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
           standards={[]}
         />
       )}
+
+      {/* AI Suggestion Modal */}
+      <AISuggestionModal
+        isOpen={aiModalOpen}
+        onClose={() => setAiModalOpen(false)}
+        title="AI Compliance Check"
+        content={aiModalContent}
+        type="compliance-check"
+      />
     </div>
   );
 };

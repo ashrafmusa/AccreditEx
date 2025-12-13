@@ -48,7 +48,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
   const docRef = doc(db, 'projects', projectId);
   const docSnap = await getDoc(docRef);
   freeTierMonitor.recordRead(1);
-  
+
   if (docSnap.exists()) {
     return { id: docSnap.id, ...docSnap.data() } as Project;
   }
@@ -88,22 +88,29 @@ export const createProject = async (projectData: Omit<Project, 'id'>): Promise<P
     designControls: projectData.designControls || [],
     activityLog: projectData.activityLog || []
   };
-  
+
   const docRef = await addDoc(projectsCollection, newProject);
   freeTierMonitor.recordWrite(1);
   return { id: docRef.id, ...newProject } as Project;
 };
 
 export const updateProject = async (projectId: string, updates: Partial<Project>): Promise<void> => {
-  const docRef = doc(db, 'projects', projectId);
-  await updateDoc(docRef, {
-    ...updates,
-    updatedAt: Timestamp.now().toDate().toISOString()
-  });
-  freeTierMonitor.recordWrite(1);
-};
+  try {
+    // Remove id field - Firestore doesn't allow updating document ID
+    const { id, ...cleanUpdates } = updates;
 
-export const deleteProject = async (projectId: string): Promise<void> => {
+    const docRef = doc(db, 'projects', projectId);
+    await updateDoc(docRef, {
+      ...cleanUpdates,
+      updatedAt: Timestamp.now().toDate().toISOString()
+    });
+
+    freeTierMonitor.recordWrite(1);
+  } catch (error) {
+    console.error('Error updating project:', error);
+    throw error;
+  }
+}; export const deleteProject = async (projectId: string): Promise<void> => {
   const docRef = doc(db, 'projects', projectId);
   await deleteDoc(docRef);
   freeTierMonitor.recordDelete(1);
@@ -115,7 +122,7 @@ export const deleteProject = async (projectId: string): Promise<void> => {
 
 export const subscribeToProjects = (callback: (projects: Project[]) => void): (() => void) => {
   const q = query(projectsCollection, orderBy('createdAt', 'desc'));
-  
+
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const projects = snapshot.docs.map(doc => ({
       id: doc.id,
@@ -123,7 +130,7 @@ export const subscribeToProjects = (callback: (projects: Project[]) => void): ((
     } as Project));
     callback(projects);
   });
-  
+
   return unsubscribe;
 };
 
@@ -132,7 +139,7 @@ export const subscribeToProject = (
   callback: (project: Project | null) => void
 ): (() => void) => {
   const docRef = doc(db, 'projects', projectId);
-  
+
   const unsubscribe = onSnapshot(docRef, (doc) => {
     if (doc.exists()) {
       callback({ id: doc.id, ...doc.data() } as Project);
@@ -140,7 +147,7 @@ export const subscribeToProject = (
       callback(null);
     }
   });
-  
+
   return unsubscribe;
 };
 
@@ -155,11 +162,11 @@ export const updateChecklistItem = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const updatedChecklist = project.checklist.map(item =>
     item.id === itemId ? { ...item, ...updates } : item
   );
-  
+
   await updateProject(projectId, { checklist: updatedChecklist });
 };
 
@@ -170,7 +177,7 @@ export const addComment = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const updatedChecklist = project.checklist.map(item => {
     if (item.id === itemId) {
       return {
@@ -183,7 +190,7 @@ export const addComment = async (
     }
     return item;
   });
-  
+
   await updateProject(projectId, { checklist: updatedChecklist });
 };
 
@@ -194,7 +201,7 @@ export const uploadEvidence = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const updatedChecklist = project.checklist.map(item => {
     if (item.id === itemId) {
       return {
@@ -204,7 +211,7 @@ export const uploadEvidence = async (
     }
     return item;
   });
-  
+
   await updateProject(projectId, { checklist: updatedChecklist });
 };
 
@@ -218,14 +225,17 @@ export const addCapaReport = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const newCapa: CAPAReport = {
     ...capaData,
     id: `capa-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    sourceProjectId: projectId,
     pdcaStage: capaData.pdcaStage || 'Plan',
-    pdcaHistory: capaData.pdcaHistory || []
+    pdcaHistory: capaData.pdcaHistory || [],
+    createdAt: capaData.createdAt || new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   };
-  
+
   await updateProject(projectId, {
     capaReports: [...(project.capaReports || []), newCapa]
   });
@@ -238,11 +248,23 @@ export const updateCapa = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const updatedCapas = (project.capaReports || []).map(capa =>
     capa.id === capaId ? { ...capa, ...updates } : capa
   );
-  
+
+  await updateProject(projectId, { capaReports: updatedCapas });
+};
+
+export const deleteCapa = async (
+  projectId: string,
+  capaId: string
+): Promise<void> => {
+  const project = await getProjectById(projectId);
+  if (!project) throw new Error('Project not found');
+
+  const updatedCapas = (project.capaReports || []).filter(capa => capa.id !== capaId);
+
   await updateProject(projectId, { capaReports: updatedCapas });
 };
 
@@ -256,27 +278,27 @@ export const updateCapaPDCAStage = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const capa = project?.capaReports?.find(c => c.id === capaId);
   if (!capa) throw new Error('CAPA not found');
-  
+
   const historyEntry: PDCAStage = {
     id: `stage-${Date.now()}`,
     name: newStage,
     completedAt: new Date().toISOString(),
     notes
   };
-  
+
   const updatedCapas = (project.capaReports || []).map(c =>
     c.id === capaId
       ? {
-          ...c,
-          pdcaStage: newStage,
-          pdcaHistory: [...(c.pdcaHistory || []), historyEntry]
-        }
+        ...c,
+        pdcaStage: newStage,
+        pdcaHistory: [...(c.pdcaHistory || []), historyEntry]
+      }
       : c
   );
-  
+
   await updateProject(projectId, { capaReports: updatedCapas });
 };
 
@@ -286,26 +308,26 @@ export const updateCapaPDCAStage = async (
 
 export const createPDCACycle = async (
   projectId: string,
-  cycleData: Omit<PDCACycle, 'id' | 'createdAt' | 'stages'>,
+  cycleData: Omit<PDCACycle, 'id' | 'createdAt' | 'stageHistory'>,
   userId: string
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const newCycle: PDCACycle = {
     ...cycleData,
     id: `pdca-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     createdAt: new Date().toISOString(),
-    stages: [{
+    stageHistory: [{
       stage: 'Plan',
       enteredAt: new Date().toISOString(),
-      completedAt: '',
+      completedAt: undefined,
       completedBy: userId,
       notes: 'PDCA cycle created',
       attachments: []
     }]
   };
-  
+
   await updateProject(projectId, {
     pdcaCycles: [...(project.pdcaCycles || []), newCycle]
   });
@@ -318,11 +340,11 @@ export const updatePDCACycle = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const updatedCycles = (project.pdcaCycles || []).map(cycle =>
     cycle.id === cycleId ? { ...cycle, ...updates } : cycle
   );
-  
+
   await updateProject(projectId, { pdcaCycles: updatedCycles });
 };
 
@@ -332,7 +354,7 @@ export const getPDCACyclesByStage = async (
 ): Promise<PDCACycle[]> => {
   const project = await getProjectById(projectId);
   if (!project || !project.pdcaCycles) return [];
-  
+
   return project.pdcaCycles.filter(cycle => cycle.status === stage);
 };
 
@@ -371,9 +393,9 @@ export const duplicateProject = async (
 ): Promise<Project> => {
   const originalProject = await getProjectById(projectId);
   if (!originalProject) throw new Error('Project not found');
-  
+
   const { id, createdAt, updatedAt, activityLog, ...projectData } = originalProject;
-  
+
   const duplicatedProject: Omit<Project, 'id'> = {
     ...projectData,
     name: newName,
@@ -388,7 +410,7 @@ export const duplicateProject = async (
       action: { en: 'Project Duplicated', ar: 'تم تكرار المشروع' }
     }]
   };
-  
+
   return await createProject(duplicatedProject);
 };
 
@@ -400,7 +422,7 @@ export const bulkUpdateProjects = async (
   updates: { id: string; data: Partial<Project> }[]
 ): Promise<void> => {
   const batch = writeBatch(db);
-  
+
   updates.forEach(({ id, data }) => {
     const docRef = doc(db, 'projects', id);
     batch.update(docRef, {
@@ -408,14 +430,14 @@ export const bulkUpdateProjects = async (
       updatedAt: Timestamp.now().toDate().toISOString()
     });
   });
-  
+
   await batch.commit();
 };
 
 export const bulkArchiveProjects = async (projectIds: string[]): Promise<void> => {
   const batch = writeBatch(db);
   const timestamp = Timestamp.now().toDate().toISOString();
-  
+
   projectIds.forEach(id => {
     const docRef = doc(db, 'projects', id);
     batch.update(docRef, {
@@ -424,14 +446,14 @@ export const bulkArchiveProjects = async (projectIds: string[]): Promise<void> =
       updatedAt: timestamp
     });
   });
-  
+
   await batch.commit();
 };
 
 export const bulkRestoreProjects = async (projectIds: string[]): Promise<void> => {
   const batch = writeBatch(db);
   const timestamp = Timestamp.now().toDate().toISOString();
-  
+
   projectIds.forEach(id => {
     const docRef = doc(db, 'projects', id);
     batch.update(docRef, {
@@ -440,18 +462,18 @@ export const bulkRestoreProjects = async (projectIds: string[]): Promise<void> =
       updatedAt: timestamp
     });
   });
-  
+
   await batch.commit();
 };
 
 export const bulkDeleteProjects = async (projectIds: string[]): Promise<void> => {
   const batch = writeBatch(db);
-  
+
   projectIds.forEach(id => {
     const docRef = doc(db, 'projects', id);
     batch.delete(docRef);
   });
-  
+
   await batch.commit();
 };
 
@@ -461,7 +483,7 @@ export const bulkUpdateStatus = async (
 ): Promise<void> => {
   const batch = writeBatch(db);
   const timestamp = Timestamp.now().toDate().toISOString();
-  
+
   projectIds.forEach(id => {
     const docRef = doc(db, 'projects', id);
     batch.update(docRef, {
@@ -469,7 +491,7 @@ export const bulkUpdateStatus = async (
       updatedAt: timestamp
     });
   });
-  
+
   await batch.commit();
 };
 
@@ -483,7 +505,7 @@ export const startMockSurvey = async (
 ): Promise<MockSurvey> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const newSurvey: MockSurvey = {
     id: `survey-${Date.now()}`,
     date: new Date().toISOString(),
@@ -493,11 +515,11 @@ export const startMockSurvey = async (
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
-  
+
   await updateProject(projectId, {
     mockSurveys: [...(project.mockSurveys || []), newSurvey]
   });
-  
+
   return newSurvey;
 };
 
@@ -508,11 +530,11 @@ export const updateMockSurvey = async (
 ): Promise<void> => {
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
-  
+
   const updatedSurveys = (project.mockSurveys || []).map(survey =>
     survey.id === surveyId ? { ...survey, ...updates } : survey
   );
-  
+
   await updateProject(projectId, { mockSurveys: updatedSurveys });
 };
 

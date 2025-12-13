@@ -25,7 +25,7 @@ import {
 const AppearanceSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, setTheme } = useTheme();
   const { appSettings, updateAppSettings } = useAppStore();
 
   const [appearance, setAppearance] = useState({
@@ -69,10 +69,15 @@ const AppearanceSettingsPage: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateAppSettings({
-        ...appSettings!,
+      if (!appSettings) {
+        toast.error("Settings not loaded");
+        return;
+      }
+      const updatedSettings = {
+        ...appSettings,
         appearance,
-      });
+      };
+      await updateAppSettings(updatedSettings);
 
       if (appearance.compactMode) {
         document.documentElement.classList.add("compact-mode");
@@ -93,6 +98,7 @@ const AppearanceSettingsPage: React.FC = () => {
       toast.success(t("settingsUpdated"));
     } catch (error) {
       toast.error(t("settingsUpdateFailed"));
+      console.error("Failed to save appearance settings:", error);
     } finally {
       setLoading(false);
     }
@@ -147,7 +153,7 @@ const AppearanceSettingsPage: React.FC = () => {
           >
             <div className="flex items-center gap-4">
               <button
-                onClick={() => theme === "dark" && toggleTheme()}
+                onClick={() => setTheme("light")}
                 className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${
                   theme === "light"
                     ? "border-brand-primary bg-brand-primary/5 dark:bg-brand-primary/10"
@@ -182,7 +188,7 @@ const AppearanceSettingsPage: React.FC = () => {
               </button>
 
               <button
-                onClick={() => theme === "light" && toggleTheme()}
+                onClick={() => setTheme("dark")}
                 className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${
                   theme === "dark"
                     ? "border-brand-primary bg-brand-primary/5 dark:bg-brand-primary/10"

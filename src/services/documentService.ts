@@ -1,5 +1,5 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseConfig';
+import { db, auth } from '@/firebase/firebaseConfig';
 import { freeTierMonitor } from '@/services/freeTierMonitor';
 import { AppDocument } from '@/types';
 import { storageService } from '@/services/storageService';
@@ -13,9 +13,59 @@ export const getDocuments = async (): Promise<AppDocument[]> => {
 };
 
 export const addDocument = async (document: Omit<AppDocument, 'id'>): Promise<AppDocument> => {
-    const docRef = await addDoc(documentsCollection, document);
-    freeTierMonitor.recordWrite(1);
-    return { id: docRef.id, ...document } as AppDocument;
+    try {
+        // Check authentication
+        const currentUser = auth.currentUser;
+        console.log('👤 Current user:', currentUser ? currentUser.uid : 'NOT LOGGED IN');
+
+        if (!currentUser) {
+            throw new Error('User not authenticated. Please log in to upload documents.');
+        }
+
+        console.log('📝 Attempting to save document to Firebase:', {
+            collection: 'documents',
+            documentType: document.type,
+            hasFileUrl: !!document.fileUrl,
+            isControlled: document.isControlled,
+            userEmail: currentUser.email
+        });
+
+        // Remove undefined fields (Firebase doesn't allow them)
+        const cleanDocument = Object.fromEntries(
+            Object.entries(document).filter(([_, value]) => value !== undefined)
+        );
+
+        // Log document size and data for debugging
+        const documentSize = JSON.stringify(cleanDocument).length;
+        console.log('📦 Document size:', documentSize, 'bytes');
+        console.log('📄 Clean document data:', cleanDocument);
+
+        console.log('⏳ Calling addDoc...');
+
+        // Add timeout to catch hanging requests
+        const timeoutPromise = new Promise<never>((_, reject) => {
+            setTimeout(() => reject(new Error('Firebase addDoc timeout after 10 seconds')), 10000);
+        });
+
+        const docRef = await Promise.race([
+            addDoc(documentsCollection, cleanDocument),
+            timeoutPromise
+        ]);
+
+        console.log('⏳ addDoc completed, docRef:', docRef.id);
+
+        freeTierMonitor.recordWrite(1);
+
+        console.log('✅ Document saved to Firebase successfully! ID:', docRef.id);
+
+        return { id: docRef.id, ...document } as AppDocument;
+    } catch (error) {
+        console.error('❌ Firebase addDocument error:', error);
+        console.error('Error name:', (error as Error).name);
+        console.error('Error message:', (error as Error).message);
+        console.error('Document data:', document);
+        throw error;
+    }
 };
 
 export const updateDocument = async (document: AppDocument): Promise<void> => {

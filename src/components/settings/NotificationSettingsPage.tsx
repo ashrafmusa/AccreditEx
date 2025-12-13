@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useNotifications } from "@/hooks/useNotifications";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
@@ -15,7 +15,12 @@ import {
   ExclamationTriangleIcon,
   ChartBarIcon,
 } from "@/components/icons";
-import { SettingsPanel, FormGroup, AdvancedToggle, EnhancedSelect } from './index';
+import {
+  SettingsPanel,
+  FormGroup,
+  AdvancedToggle,
+  EnhancedSelect,
+} from "./index";
 
 const NotificationSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -70,14 +75,20 @@ const NotificationSettingsPage: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateAppSettings({
-        ...appSettings!,
+      if (!appSettings) {
+        toast.error("Settings not loaded");
+        return;
+      }
+      const updatedSettings = {
+        ...appSettings,
         notifications,
-      });
+      };
+      await updateAppSettings(updatedSettings);
       setHasChanges(false);
       toast.success(t("settingsUpdated"));
     } catch (error) {
       toast.error(t("settingsUpdateFailed"));
+      console.error("Failed to save notification settings:", error);
     } finally {
       setLoading(false);
     }

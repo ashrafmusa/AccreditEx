@@ -4,6 +4,10 @@ export const ar = {
     areYouSureDeleteProject: 'هل أنت متأكد أنك تريد حذف هذا المشروع؟ لا يمكن التراجع عن هذا الإجراء.',
     noProjectsFound: 'لم يتم العثور على مشاريع.',
     createProjectToStart: 'أنشئ مشروعًا جديدًا للبدء.',
+    showMyProjects: 'مشاريعي',
+    showAllProjects: 'جميع المشاريع',
+    showMyDocuments: 'مستنداتي',
+    showAllDocuments: 'جميع المستندات',
     // Project Form
     projectName: 'اسم المشروع',
     projectDescription: 'وصف المشروع (اختياري)',
@@ -62,7 +66,7 @@ export const ar = {
     validation: 'المصادقة',
     linkDocument: 'ربط مستند',
     addNewRequirement: 'إضافة متطلب جديد',
-    
+
     // PDCA Cycle Management
     pdcaCycle: 'دورة PDCA',
     pdcaCycleManager: 'مدير دورة PDCA',
@@ -82,35 +86,35 @@ export const ar = {
     cycleEndDate: 'تاريخ الانتهاء',
     noCycles: 'لم يتم العثور على دورات PDCA لهذا المشروع.',
     createFirstCycle: 'أنشئ دورة PDCA الأولى لتتبع التحسينات.',
-    
+
     // PDCA Stages - Tab labels
     planStage: 'التخطيط',
     doStage: 'التنفيذ',
     checkStage: 'التحقق',
     actStage: 'الإجراء',
     historyStage: 'السجل',
-    
+
     // PDCA Stage Descriptions
     planDescription: 'تحديد المشاكل والتخطيط للتحسينات',
     doDescription: 'تنفيذ التغييرات المخطط لها',
     checkDescription: 'مراقبة وتقييم النتائج',
     actDescription: 'اتخاذ إجراء لتحسين العملية',
-    
+
     // PDCA Metrics
     pdcaMetrics: 'مقاييس PDCA',
     cycleProgress: 'تقدم الدورة',
     completionRate: 'معدل الإكمال',
     metricsOverTime: 'المقاييس على مدار الوقت',
-    
+
     // PDCA Transitions
     transitionToNextStage: 'الانتقال إلى المرحلة التالية',
     confirmTransition: 'هل أنت متأكد من رغبتك في الانتقال إلى المرحلة التالية؟',
     transitionReason: 'سبب الانتقال',
     transitionSuccessful: 'تم إكمال انتقال المرحلة بنجاح',
-    
+
     // PDCA History
     history: 'السجل',
-    
+
     // PDCA Stage Transition Form
     advanceToNextStage: 'الانتقال إلى المرحلة التالية',
     confirmAdvance: 'تأكيد الانتقال',
@@ -121,7 +125,7 @@ export const ar = {
     attachEvidenceDocuments: 'إرفاق مستندات الدليل',
     cycleAlreadyCompleted: 'هذه الدورة مكتملة بالفعل.',
     notesRequired: 'الملاحظات مطلوبة',
-    
+
     // PDCA Stage Completion Checklists
     rootCauseAnalysisCompleted: 'تم إكمال تحليل السبب الجذري',
     actionPlanDefined: 'تم تحديد خطة العمل',
@@ -136,7 +140,7 @@ export const ar = {
     standardizationStepsDocumented: 'تم توثيق خطوات التوحيد',
     lessonsLearnedCaptured: 'تم التقاط الدروس المستفادة',
     finalApprovalObtained: 'تم الحصول على الموافقة النهائية',
-    
+
     // PDCA Cycle Form Labels and Validation
     title: 'العنوان',
     description: 'الوصف',

@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
+import { useUserStore } from "@/stores/useUserStore";
+import { AppSettings, UserRole } from "@/types";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsSection from "./SettingsSection";
@@ -11,6 +13,8 @@ import ImageUpload from "./ImageUpload";
 import ColorPicker from "./ColorPicker";
 import Globe from "@/components/ui/Globe";
 import { labelClasses, inputClasses } from "@/components/ui/constants";
+import { logSettingsChange } from "@/services/settingsAuditService";
+import { createSettingsVersion } from "@/services/settingsVersionService";
 import {
   CheckIcon,
   SunIcon,
@@ -23,8 +27,9 @@ import {
 
 const VisualSettingsPage: React.FC = () => {
   const { t } = useTranslation();
+  const { currentUser } = useUserStore();
   const toast = useToast();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, setTheme } = useTheme();
   const { appSettings, updateAppSettings } = useAppStore();
 
   // Combined state for all visual settings
@@ -32,7 +37,6 @@ const VisualSettingsPage: React.FC = () => {
     // General UI Settings
     appName: appSettings?.appName ?? "AccreditEx",
     logoUrl: appSettings?.logoUrl ?? "",
-    primaryColor: appSettings?.primaryColor ?? "#4f46e5",
 
     // Appearance Settings
     appearance: {
@@ -71,6 +75,15 @@ const VisualSettingsPage: React.FC = () => {
     setSettings(newSettings);
     setHasChanges(true);
   };
+
+  // Live preview: Apply visual changes immediately as user makes changes
+  useEffect(() => {
+    applyVisualChanges();
+  }, [
+    settings.appearance.customColors,
+    settings.appearance.compactMode,
+    settings.appearance.showAnimations,
+  ]);
 
   const applyVisualChanges = () => {
     const root = document.documentElement;
@@ -113,16 +126,105 @@ const VisualSettingsPage: React.FC = () => {
       return;
     }
 
+    if (!currentUser) {
+      toast.error("User not authenticated");
+      return;
+    }
+
     setLoading(true);
     try {
-      await updateAppSettings({
-        ...appSettings!,
+      // Create a clean settings object with only the required fields
+      const newSettings: AppSettings = {
         appName: settings.appName,
         logoUrl: settings.logoUrl,
-        primaryColor: settings.primaryColor,
-        appearance: settings.appearance,
+        primaryColor: settings.appearance.customColors.primary,
+        defaultLanguage: appSettings?.defaultLanguage ?? "en",
+        defaultUserRole: appSettings?.defaultUserRole ?? UserRole.TeamMember,
+        passwordPolicy: appSettings?.passwordPolicy ?? {
+          minLength: 8,
+          requireUppercase: false,
+          requireNumber: false,
+          requireSymbol: false,
+        },
         globeSettings: settings.globeSettings,
-      });
+        appearance: settings.appearance,
+        notifications: appSettings?.notifications ?? {
+          emailNotifications: true,
+          pushNotifications: false,
+          taskReminders: true,
+          projectUpdates: true,
+          trainingDueDates: true,
+          auditSchedules: true,
+        },
+        accessibility: appSettings?.accessibility ?? {
+          fontSize: "medium",
+          highContrast: false,
+          reduceMotion: false,
+          screenReaderOptimized: false,
+        },
+        ...(appSettings?.usageMonitor && {
+          usageMonitor: appSettings.usageMonitor,
+        }),
+        ...(appSettings?.users && { users: appSettings.users }),
+      };
+
+      console.log("Saving settings:", newSettings);
+
+      // Save to Firebase
+      try {
+        await updateAppSettings(newSettings);
+        console.log("Settings saved to Firebase successfully");
+      } catch (saveError) {
+        console.error("Failed to save to Firebase:", saveError);
+        throw new Error(
+          `Database update failed: ${
+            saveError instanceof Error ? saveError.message : "Unknown error"
+          }`
+        );
+      }
+
+      // Log changes to audit trail
+      try {
+        if (appSettings?.appName !== settings.appName) {
+          await logSettingsChange(
+            currentUser.id,
+            "update",
+            "visual",
+            "appName",
+            appSettings.appName,
+            settings.appName
+          );
+        }
+        if (
+          appSettings?.appearance?.customColors?.primary !==
+          settings.appearance.customColors.primary
+        ) {
+          await logSettingsChange(
+            currentUser.id,
+            "update",
+            "visual",
+            "primaryColor",
+            appSettings.appearance.customColors.primary,
+            settings.appearance.customColors.primary
+          );
+        }
+      } catch (logError) {
+        // Log errors shouldn't prevent save success
+        console.warn("Failed to log changes:", logError);
+      }
+
+      // Auto-create version snapshot
+      try {
+        await createSettingsVersion(
+          currentUser.id,
+          newSettings,
+          "Auto-saved version",
+          ["auto", "visual"]
+        );
+      } catch (versionError) {
+        // Version snapshot errors shouldn't prevent save success
+        console.warn("Failed to create version snapshot:", versionError);
+      }
 
       // Apply visual changes immediately
       applyVisualChanges();
@@ -130,8 +232,10 @@ const VisualSettingsPage: React.FC = () => {
       setHasChanges(false);
       toast.success(t("settingsUpdated"));
     } catch (error) {
-      toast.error("Failed to save settings");
-      console.error(error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to save settings: ${errorMessage}`);
+      console.error("Save settings error:", error);
     } finally {
       setLoading(false);
     }
@@ -141,7 +245,6 @@ const VisualSettingsPage: React.FC = () => {
     setSettings({
       appName: appSettings?.appName ?? "AccreditEx",
       logoUrl: appSettings?.logoUrl ?? "",
-      primaryColor: appSettings?.primaryColor ?? "#4f46e5",
       appearance: {
         compactMode: appSettings?.appearance?.compactMode ?? false,
         sidebarCollapsed: appSettings?.appearance?.sidebarCollapsed ?? false,
@@ -172,6 +275,25 @@ const VisualSettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Live Preview Info Banner */}
+      {hasChanges && (
+        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <SparklesIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-1">
+                Live Preview Active
+              </h4>
+              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+                Your changes are being previewed in real-time! Colors and
+                display options update instantly. Click{" "}
+                <strong>Save Changes</strong> below to make them permanent.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Branding Section */}
       <SettingsCard
         title="Branding & Identity"
@@ -205,7 +327,7 @@ const VisualSettingsPage: React.FC = () => {
         <SettingsSection
           title="Visual Assets"
           description="Logo and primary brand color"
-          gridCols={2}
+          gridCols={1}
           noBorder
         >
           <div>
@@ -214,15 +336,6 @@ const VisualSettingsPage: React.FC = () => {
               currentImage={settings.logoUrl}
               onImageChange={(url) =>
                 handleChange((s) => ({ ...s, logoUrl: url }))
-              }
-            />
-          </div>
-          <div>
-            <label className={labelClasses}>{t("primaryColor")}</label>
-            <ColorPicker
-              color={settings.primaryColor}
-              onChange={(color) =>
-                handleChange((s) => ({ ...s, primaryColor: color }))
               }
             />
           </div>
@@ -244,7 +357,7 @@ const VisualSettingsPage: React.FC = () => {
         >
           <div className="flex items-center gap-4">
             <button
-              onClick={() => theme === "dark" && toggleTheme()}
+              onClick={() => setTheme("light")}
               className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${
                 theme === "light"
                   ? "border-brand-primary bg-brand-primary/5 dark:bg-brand-primary/10"
@@ -273,7 +386,7 @@ const VisualSettingsPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => theme === "light" && toggleTheme()}
+              onClick={() => setTheme("dark")}
               className={`flex-1 flex items-center justify-center gap-3 p-4 rounded-lg border-2 transition-all ${
                 theme === "dark"
                   ? "border-brand-primary bg-brand-primary/5 dark:bg-brand-primary/10"
@@ -324,6 +437,21 @@ const VisualSettingsPage: React.FC = () => {
           />
 
           <ToggleSwitch
+            label="Collapse Sidebar"
+            description="Keep sidebar minimized by default"
+            enabled={settings.appearance.sidebarCollapsed}
+            setEnabled={() =>
+              handleChange((s) => ({
+                ...s,
+                appearance: {
+                  ...s.appearance,
+                  sidebarCollapsed: !s.appearance.sidebarCollapsed,
+                },
+              }))
+            }
+          />
+
+          <ToggleSwitch
             label="Show Animations"
             description="Enable smooth transitions and animations"
             enabled={settings.appearance.showAnimations}
@@ -337,6 +465,36 @@ const VisualSettingsPage: React.FC = () => {
               }))
             }
           />
+
+          <div>
+            <label htmlFor="cardStyle" className={labelClasses}>
+              Card Style
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Choose how cards and panels are displayed
+            </p>
+            <select
+              id="cardStyle"
+              value={settings.appearance.cardStyle}
+              onChange={(e) =>
+                handleChange((s) => ({
+                  ...s,
+                  appearance: {
+                    ...s.appearance,
+                    cardStyle: e.target.value as
+                      | "elevated"
+                      | "outlined"
+                      | "filled",
+                  },
+                }))
+              }
+              className={inputClasses}
+            >
+              <option value="elevated">Elevated (with shadow)</option>
+              <option value="outlined">Outlined (with border)</option>
+              <option value="filled">Filled (solid background)</option>
+            </select>
+          </div>
         </SettingsSection>
 
         <SettingsSection
@@ -503,6 +661,78 @@ const VisualSettingsPage: React.FC = () => {
                 }
                 className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm"
               />
+            </div>
+          </div>
+        </SettingsSection>
+
+        {/* Live Preview - Color Swatches */}
+        <SettingsSection
+          title="Live Preview"
+          description="See your color changes in real-time"
+          badge="Preview"
+          noBorder
+        >
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+              <div
+                className="w-full h-20 rounded-md mb-2 flex items-center justify-center text-white font-semibold"
+                style={{
+                  backgroundColor: settings.appearance.customColors.primary,
+                }}
+              >
+                Primary
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                {settings.appearance.customColors.primary}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+              <div
+                className="w-full h-20 rounded-md mb-2 flex items-center justify-center text-white font-semibold"
+                style={{
+                  backgroundColor: settings.appearance.customColors.success,
+                }}
+              >
+                Success
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                {settings.appearance.customColors.success}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+              <div
+                className="w-full h-20 rounded-md mb-2 flex items-center justify-center text-white font-semibold"
+                style={{
+                  backgroundColor: settings.appearance.customColors.warning,
+                }}
+              >
+                Warning
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                {settings.appearance.customColors.warning}
+              </p>
+            </div>
+            <div className="p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700">
+              <div
+                className="w-full h-20 rounded-md mb-2 flex items-center justify-center text-white font-semibold"
+                style={{
+                  backgroundColor: settings.appearance.customColors.danger,
+                }}
+              >
+                Danger
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+                {settings.appearance.customColors.danger}
+              </p>
+            </div>
+          </div>
+          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <div className="flex items-center gap-2">
+              <SparklesIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <p className="text-sm text-blue-900 dark:text-blue-200">
+                Changes are applied instantly! Try adjusting colors to see
+                immediate results.
+              </p>
             </div>
           </div>
         </SettingsSection>

@@ -9,14 +9,17 @@ import AccreditationHubPage from "@/pages/AccreditationHubPage";
 import CompetencyLibraryPage from "../competencies/CompetencyLibraryPage";
 import DataSettingsPage from "./DataSettingsPage";
 import AboutSettingsPage from "./AboutSettingsPage";
-import AppearanceSettingsPage from "./AppearanceSettingsPage";
 import NotificationSettingsPage from "./NotificationSettingsPage";
 import AccessibilitySettingsPage from "./AccessibilitySettingsPage";
-import GlobeSettingsPage from "./GlobeSettingsPage";
 import UsageMonitorSettingsPage from "./UsageMonitorSettingsPage";
+import UsageMonitorPage from "./UsageMonitorPage";
 import UsersPage from "@/pages/UsersPage";
 import FirebaseSetupPage from "./firebase/FirebaseSetupPage";
 import VisualSettingsPage from "./VisualSettingsPage";
+import SettingsAuditLogViewer from "./SettingsAuditLogViewer";
+import SettingsVersionHistory from "./SettingsVersionHistory";
+import SettingsPresetsPanel from "./SettingsPresetsPanel";
+import BulkUserImport from "./BulkUserImport";
 import {
   Cog6ToothIcon,
   UserCircleIcon,
@@ -34,6 +37,10 @@ import {
   Bars3Icon,
   XMarkIcon,
   MagnifyingGlassIcon,
+  ClockIcon,
+  DocumentDuplicateIcon,
+  StarIcon,
+  ArrowUpTrayIcon,
 } from "@/components/icons";
 
 interface SettingsLayoutProps {
@@ -42,7 +49,7 @@ interface SettingsLayoutProps {
 }
 
 const SettingsLayout: React.FC<SettingsLayoutProps> = ({
-  section = "general",
+  section = "visual", // Default to Visual Settings as the first page
   setNavigation,
 }) => {
   const { t } = useTranslation();
@@ -90,8 +97,29 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       category: "Personal",
     },
     {
-      id: "usageMonitor",
-      label: "Usage Monitor",
+      id: "settingsPresets",
+      label: "Settings Presets",
+      icon: StarIcon,
+      adminOnly: false,
+      category: "Personal",
+    },
+    {
+      id: "versionHistory",
+      label: "Version History",
+      icon: DocumentDuplicateIcon,
+      adminOnly: false,
+      category: "Personal",
+    },
+    {
+      id: "usageTracking",
+      label: t("usageTracking") || "Usage Tracking Settings",
+      icon: Cog6ToothIcon,
+      adminOnly: false,
+      category: "System",
+    },
+    {
+      id: "firebaseUsage",
+      label: t("firebaseUsageDashboard") || "Firebase Usage Dashboard",
       icon: ChartBarIcon,
       adminOnly: false,
       category: "System",
@@ -121,6 +149,20 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       id: "data",
       label: t("data"),
       icon: CircleStackIcon,
+      adminOnly: true,
+      category: "Admin",
+    },
+    {
+      id: "auditLog",
+      label: "Audit Log",
+      icon: ClockIcon,
+      adminOnly: true,
+      category: "Admin",
+    },
+    {
+      id: "bulkUserImport",
+      label: "Bulk User Import",
+      icon: ArrowUpTrayIcon,
       adminOnly: true,
       category: "Admin",
     },
@@ -165,10 +207,6 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         return <VisualSettingsPage />;
       case "general":
         return <GeneralSettingsPage />;
-      case "appearance":
-        return <AppearanceSettingsPage />;
-      case "globe":
-        return <GlobeSettingsPage />;
       case "profile":
         return <ProfileSettingsPage />;
       case "security":
@@ -177,8 +215,14 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         return <NotificationSettingsPage />;
       case "accessibility":
         return <AccessibilitySettingsPage />;
-      case "usageMonitor":
+      case "settingsPresets":
+        return <SettingsPresetsPanel />;
+      case "versionHistory":
+        return <SettingsVersionHistory />;
+      case "usageTracking":
         return <UsageMonitorSettingsPage />;
+      case "firebaseUsage":
+        return <UsageMonitorPage />;
       case "users":
         return <UsersPage setNavigation={setNavigation} />;
       case "accreditationHub":
@@ -187,6 +231,10 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         return <CompetencyLibraryPage />;
       case "data":
         return <DataSettingsPage />;
+      case "auditLog":
+        return isAdmin ? <SettingsAuditLogViewer /> : <GeneralSettingsPage />;
+      case "bulkUserImport":
+        return isAdmin ? <BulkUserImport /> : <GeneralSettingsPage />;
       case "firebaseSetup":
         return isAdmin ? <FirebaseSetupPage /> : <GeneralSettingsPage />;
       case "about":
