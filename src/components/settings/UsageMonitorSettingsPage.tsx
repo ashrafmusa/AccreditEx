@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
@@ -12,7 +12,7 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon,
 } from "@/components/icons";
-import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from './index';
+import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from "./index";
 
 const UsageMonitorSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -22,7 +22,8 @@ const UsageMonitorSettingsPage: React.FC = () => {
   const [usageMonitor, setUsageMonitor] = useState({
     trackPageViews: appSettings?.usageMonitor?.trackPageViews ?? true,
     trackUserActions: appSettings?.usageMonitor?.trackUserActions ?? true,
-    trackPerformanceMetrics: appSettings?.usageMonitor?.trackPerformanceMetrics ?? true,
+    trackPerformanceMetrics:
+      appSettings?.usageMonitor?.trackPerformanceMetrics ?? true,
     dataRetentionDays: appSettings?.usageMonitor?.dataRetentionDays ?? 90,
     autoExportEnabled: appSettings?.usageMonitor?.autoExportEnabled ?? false,
     alertThreshold: appSettings?.usageMonitor?.alertThreshold ?? 80,
@@ -32,7 +33,10 @@ const UsageMonitorSettingsPage: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const [dismissedAlert, setDismissedAlert] = useState(false);
 
-  const handleUsageMonitorChange = (field: keyof typeof usageMonitor, value: any) => {
+  const handleUsageMonitorChange = (
+    field: keyof typeof usageMonitor,
+    value: any
+  ) => {
     const newUsageMonitor = {
       ...usageMonitor,
       [field]: value,
@@ -47,14 +51,20 @@ const UsageMonitorSettingsPage: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateAppSettings({
-        ...appSettings!,
+      if (!appSettings) {
+        toast.error("Settings not loaded");
+        return;
+      }
+      const updatedSettings = {
+        ...appSettings,
         usageMonitor,
-      });
+      };
+      await updateAppSettings(updatedSettings);
       setHasChanges(false);
       toast.success(t("settingsUpdated"));
     } catch (error) {
       toast.error(t("settingsUpdateFailed"));
+      console.error("Failed to save usage monitor settings:", error);
     } finally {
       setLoading(false);
     }
@@ -64,7 +74,8 @@ const UsageMonitorSettingsPage: React.FC = () => {
     setUsageMonitor({
       trackPageViews: appSettings?.usageMonitor?.trackPageViews ?? true,
       trackUserActions: appSettings?.usageMonitor?.trackUserActions ?? true,
-      trackPerformanceMetrics: appSettings?.usageMonitor?.trackPerformanceMetrics ?? true,
+      trackPerformanceMetrics:
+        appSettings?.usageMonitor?.trackPerformanceMetrics ?? true,
       dataRetentionDays: appSettings?.usageMonitor?.dataRetentionDays ?? 90,
       autoExportEnabled: appSettings?.usageMonitor?.autoExportEnabled ?? false,
       alertThreshold: appSettings?.usageMonitor?.alertThreshold ?? 80,

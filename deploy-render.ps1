@@ -26,7 +26,7 @@ Write-Host "`n📋 Checking for existing service..." -ForegroundColor Yellow
 
 $headers = @{
     "Authorization" = "Bearer $RENDER_API_KEY"
-    "Accept" = "application/json"
+    "Accept"        = "application/json"
 }
 
 try {
@@ -53,13 +53,15 @@ try {
         Write-Host "`n⏳ Deployment in progress. Check status at:" -ForegroundColor Yellow
         Write-Host "   https://dashboard.render.com/web/$serviceId" -ForegroundColor Gray
         
-    } else {
+    }
+    else {
         Write-Host "❌ Service 'accreditex-ai-agent' not found" -ForegroundColor Red
         Write-Host "`n📝 To create the service, run the setup script instead:" -ForegroundColor Yellow
         Write-Host "   .\setup-render-service.ps1" -ForegroundColor Gray
     }
     
-} catch {
+}
+catch {
     Write-Host "❌ Error: $($_.Exception.Message)" -ForegroundColor Red
     Write-Host "`nTroubleshooting:" -ForegroundColor Yellow
     Write-Host "  1. Verify API key is correct" -ForegroundColor Gray

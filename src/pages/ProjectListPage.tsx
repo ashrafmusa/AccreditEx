@@ -57,6 +57,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const [showArchived, setShowArchived] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showOnlyMyProjects, setShowOnlyMyProjects] = useState(
+    !currentUser || currentUser.role !== "Admin"
+  );
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -76,6 +79,13 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
+      // Role-based access: Filter by team assignment
+      if (showOnlyMyProjects && currentUser) {
+        const isProjectLead = p.projectLead?.id === currentUser.id;
+        const isTeamMember = p.teamMembers?.includes(currentUser.id);
+        if (!isProjectLead && !isTeamMember) return false;
+      }
+
       // Archive filter
       const matchesArchived = showArchived
         ? p.archived === true
@@ -118,6 +128,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     assigneeFilter,
     dateFilter,
     showArchived,
+    showOnlyMyProjects,
+    currentUser,
   ]);
 
   const handleSelectProject = (projectId: string) => {
@@ -273,11 +285,21 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             </h1>
           </div>
         </div>
-        <div className="flex gap-3 w-full md:w-auto">
+        <div className="flex gap-3 w-full md:w-auto flex-wrap">
+          {currentUser?.role === "Admin" && (
+            <Button
+              onClick={() => setShowOnlyMyProjects(!showOnlyMyProjects)}
+              variant={showOnlyMyProjects ? "secondary" : "primary"}
+              className="w-full sm:w-auto"
+            >
+              <CheckIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+              {showOnlyMyProjects ? t("showAllProjects") : t("showMyProjects")}
+            </Button>
+          )}
           <Button
             onClick={() => setShowAnalytics(!showAnalytics)}
             variant={showAnalytics ? "primary" : "secondary"}
-            className="w-full md:w-auto"
+            className="w-full sm:w-auto"
           >
             <ChartBarSquareIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
             {showAnalytics ? t("hideAnalytics") : t("showAnalytics")}
@@ -285,14 +307,14 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
           <Button
             onClick={() => setShowArchived(!showArchived)}
             variant={showArchived ? "primary" : "secondary"}
-            className="w-full md:w-auto"
+            className="w-full sm:w-auto"
           >
             <ArchiveBoxIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
             {showArchived ? t("hideArchived") : t("showArchived")}
           </Button>
           <Button
             onClick={() => setNavigation({ view: "createProject" })}
-            className="w-full md:w-auto"
+            className="w-full sm:w-auto"
           >
             <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
             {t("createNewProject")}

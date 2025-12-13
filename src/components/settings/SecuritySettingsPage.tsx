@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
-import SettingsCard from './SettingsCard';
+import React, { useState } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
+import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
 import SettingsSection from "./SettingsSection";
@@ -9,7 +9,13 @@ import { useToast } from "@/hooks/useToast";
 import ToggleSwitch from "./ToggleSwitch";
 import { labelClasses, inputClasses } from "@/components/ui/constants";
 import { CheckIcon } from "@/components/icons";
-import { SettingsPanel, FormGroup, AdvancedToggle, EnhancedInput, SliderInput } from './index';
+import {
+  SettingsPanel,
+  FormGroup,
+  AdvancedToggle,
+  EnhancedInput,
+  SliderInput,
+} from "./index";
 
 const SecuritySettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -32,11 +38,20 @@ const SecuritySettingsPage: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateAppSettings({ ...appSettings!, passwordPolicy: policy });
+      if (!appSettings) {
+        toast.error("Settings not loaded");
+        return;
+      }
+      const updatedSettings = {
+        ...appSettings,
+        passwordPolicy: policy,
+      };
+      await updateAppSettings(updatedSettings);
       setHasChanges(false);
       toast.success(t("settingsUpdated"));
     } catch (error) {
       toast.error(t("settingsUpdateFailed"));
+      console.error("Failed to save security settings:", error);
     } finally {
       setLoading(false);
     }

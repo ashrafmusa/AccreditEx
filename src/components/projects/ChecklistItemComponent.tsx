@@ -6,10 +6,14 @@ import {
   ChevronUpIcon,
   TrashIcon,
   PencilIcon,
+  PlusIcon,
 } from "@/components/icons";
 import ChecklistComments from "./ChecklistComments";
 import ChecklistEvidence from "./ChecklistEvidence";
 import { useUserStore } from "@/stores/useUserStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useToast } from "@/hooks/useToast";
+import { aiAgentService } from "@/services/aiAgentService";
 
 interface ChecklistItemComponentProps {
   item: ChecklistItem;
@@ -28,9 +32,12 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
 }) => {
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
+  const { createPDCACycle, createCAPA } = useProjectStore();
+  const toast = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState<Partial<ChecklistItem>>(item);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   const statusColors = {
     [ComplianceStatus.Compliant]:
@@ -73,6 +80,93 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
   const handleEvidenceUpdate = (updates: Partial<ChecklistItem>) => {
     if (onUpdate) {
       onUpdate(updates);
+    }
+  };
+
+  const handleCreatePDCA = async () => {
+    if (!currentUser) return;
+
+    // Use editedItem if in edit mode (unsaved changes), otherwise use item
+    const currentData = isEditing ? editedItem : item;
+
+    try {
+      await createPDCACycle(project.id, {
+        projectId: project.id,
+        title: `${currentData.standardId}: ${currentData.item}`,
+        description: `Auto-created from non-compliant checklist item.\n\nStandard: ${
+          currentData.standardId
+        }\nIssue: ${currentData.item}\n\nAction Plan: ${
+          currentData.actionPlan || "Not specified"
+        }`,
+        category: "Process",
+        priority: "High",
+        owner: currentUser.id,
+        team: currentData.assignedTo ? [currentData.assignedTo] : [],
+        currentStage: "Plan",
+        targetCompletionDate:
+          currentData.dueDate ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        improvementMetrics: {
+          baseline: [],
+          target: [],
+          actual: [],
+        },
+      });
+      toast.success(
+        "PDCA Cycle created successfully! View in PDCA Cycles tab."
+      );
+    } catch (error) {
+      toast.error("Failed to create PDCA cycle");
+    }
+  };
+
+  const handleCreateCAPA = async () => {
+    if (!currentUser) return;
+
+    // Use editedItem if in edit mode (unsaved changes), otherwise use item
+    const currentData = isEditing ? editedItem : item;
+
+    try {
+      await createCAPA(project.id, {
+        checklistItemId: currentData.id,
+        description: `${currentData.standardId}: ${currentData.item}`,
+        rootCause: "To be analyzed",
+        correctiveAction: currentData.actionPlan || "To be defined",
+        preventiveAction: "To be defined",
+        status: "Open",
+        assignedTo: currentData.assignedTo || currentUser.id,
+        dueDate:
+          currentData.dueDate ||
+          new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        pdcaStage: "Plan",
+        pdcaHistory: [],
+      });
+      toast.success("CAPA Report created successfully!");
+    } catch (error) {
+      toast.error("Failed to create CAPA report");
+    }
+  };
+
+  const handleAskAI = async () => {
+    if (!currentUser || isGeneratingAI) return;
+
+    setIsGeneratingAI(true);
+    try {
+      const actionPlan = await aiAgentService.generateActionPlan({
+        standardId: item.standardId,
+        item: item.item,
+        status: item.status,
+        findings: item.notes,
+      });
+
+      setEditedItem({ ...item, actionPlan });
+      setIsEditing(true);
+      toast.success("AI-generated action plan ready! Review and save.");
+    } catch (error) {
+      toast.error("Failed to generate AI action plan");
+      console.error("AI action plan error:", error);
+    } finally {
+      setIsGeneratingAI(false);
     }
   };
 
@@ -288,6 +382,78 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
               />
             </div>
           )}
+
+          {/* Smart Actions - Auto-create from Non-Compliant Items */}
+          {!isEditing &&
+            (item.status === ComplianceStatus.NonCompliant ||
+              item.status === ComplianceStatus.PartiallyCompliant) && (
+              <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                <h4 className="text-sm font-semibold mb-3 text-gray-900 dark:text-white">
+                  🔗 Smart Actions
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAskAI();
+                    }}
+                    disabled={isGeneratingAI}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingAI ? (
+                      <>
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
+                        </svg>
+                        Generating...
+                      </>
+                    ) : (
+                      <>🤖 Ask AI for Action Plan</>
+                    )}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCreatePDCA();
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Create PDCA Cycle
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCreateCAPA();
+                    }}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                  >
+                    <PlusIcon className="w-4 h-4" />
+                    Create CAPA Report
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  ℹ️ Use AI to generate action plans or create improvement
+                  actions from this non-compliant item
+                </p>
+              </div>
+            )}
         </div>
       )}
     </div>

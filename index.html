@@ -7,13 +7,13 @@
     <!-- Content Security Policy -->
     <meta http-equiv="Content-Security-Policy" content="
       default-src 'self';
-      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://aistudiocdn.com https://*.googleapis.com https://apis.google.com https://*.firebaseio.com https://*.cloudfunctions.net;
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://aistudiocdn.com https://*.googleapis.com https://apis.google.com https://*.firebaseio.com https://*.cloudfunctions.net https://unpkg.com;
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
-      img-src 'self' data: blob: https: https://*.cloudinary.com https://*.googleapis.com;
-      connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net wss://*.firebaseio.com https://aistudiocdn.com https://*.openai.com https://ipapi.co;
+      img-src 'self' data: blob: https: https://*.cloudinary.com https://res.cloudinary.com https://*.googleapis.com;
+      connect-src 'self' http://localhost:8000 https://api.cloudinary.com https://res.cloudinary.com https://*.cloudinary.com https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net wss://*.firebaseio.com https://aistudiocdn.com https://*.openai.com https://ipapi.co https://accreditex.onrender.com;
       frame-src 'self' https://*.google.com https://accounts.google.com https://*.firebaseapp.com;
-      worker-src 'self' blob:;
+      worker-src 'self' blob: https://unpkg.com;
       object-src 'none';
       base-uri 'self';
       form-action 'self';
@@ -109,12 +109,23 @@
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
     <script>
+        // Register smart service worker
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
+            window.addEventListener('load', async () => {
+                // Clean up old caches first
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    if (cacheName !== 'accreditex-cache-v3') {
+                        await caches.delete(cacheName);
+                        console.log('Deleted old cache:', cacheName);
+                    }
+                }
+                
+                // Register new service worker
                 navigator.serviceWorker.register('/service-worker.js').then(registration => {
-                    console.log('SW registered: ', registration);
-                }).catch(registrationError => {
-                    console.log('SW registration failed: ', registrationError);
+                    console.log('Service Worker registered:', registration);
+                }).catch(error => {
+                    console.log('Service Worker registration failed:', error);
                 });
             });
         }

@@ -30,7 +30,7 @@ export const getFileTypeIcon = (doc: AppDocument): string => {
         return '📎';
     }
   }
-  
+
   // No file URL, use document type
   switch (doc.type) {
     case 'Policy':
@@ -61,6 +61,15 @@ export const getFileExtension = (url: string): string => {
  */
 export const isPDF = (doc: AppDocument): boolean => {
   return !!(doc.fileUrl && doc.fileUrl.toLowerCase().endsWith('.pdf'));
+};
+
+/**
+ * Check if a document is a DOCX file
+ */
+export const isDOCX = (doc: AppDocument): boolean => {
+  if (!doc.fileUrl) return false;
+  const url = doc.fileUrl.toLowerCase();
+  return url.endsWith('.docx') || url.endsWith('.doc');
 };
 
 /**

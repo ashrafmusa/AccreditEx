@@ -4,6 +4,10 @@ export const en = {
     areYouSureDeleteProject: 'Are you sure you want to delete this project? This action cannot be undone.',
     noProjectsFound: 'No projects found.',
     createProjectToStart: 'Create a new project to get started.',
+    showMyProjects: 'My Projects',
+    showAllProjects: 'All Projects',
+    showMyDocuments: 'My Documents',
+    showAllDocuments: 'All Documents',
     // Project Form
     projectName: 'Project Name',
     projectDescription: 'Project Description (Optional)',
@@ -62,7 +66,7 @@ export const en = {
     validation: 'Validation',
     linkDocument: 'Link Document',
     addNewRequirement: 'Add New Requirement',
-    
+
     // PDCA Cycle Management
     pdcaCycle: 'PDCA Cycle',
     pdcaCycleManager: 'PDCA Cycle Manager',
@@ -82,35 +86,35 @@ export const en = {
     cycleEndDate: 'End Date',
     noCycles: 'No PDCA cycles found for this project.',
     createFirstCycle: 'Create your first PDCA cycle to track improvements.',
-    
+
     // PDCA Stages - Tab labels
     planStage: 'Plan',
     doStage: 'Do',
     checkStage: 'Check',
     actStage: 'Act',
     historyStage: 'History',
-    
+
     // PDCA Stage Descriptions
     planDescription: 'Identify issues and plan improvements',
     doDescription: 'Implement the planned changes',
     checkDescription: 'Monitor and evaluate results',
     actDescription: 'Take action to improve the process',
-    
+
     // PDCA Metrics
     pdcaMetrics: 'PDCA Metrics',
     cycleProgress: 'Cycle Progress',
     completionRate: 'Completion Rate',
     metricsOverTime: 'Metrics Over Time',
-    
+
     // PDCA Transitions
     transitionToNextStage: 'Move to Next Stage',
     confirmTransition: 'Are you sure you want to move to the next stage?',
     transitionReason: 'Reason for Transition',
     transitionSuccessful: 'Stage transition completed successfully',
-    
+
     // PDCA History
     history: 'History',
-    
+
     // PDCA Stage Transition Form
     advanceToNextStage: 'Advance to Next Stage',
     confirmAdvance: 'Confirm Advance',
@@ -121,7 +125,7 @@ export const en = {
     attachEvidenceDocuments: 'Attach evidence documents',
     cycleAlreadyCompleted: 'This cycle is already completed.',
     notesRequired: 'Notes are required',
-    
+
     // PDCA Stage Completion Checklists
     rootCauseAnalysisCompleted: 'Root cause analysis completed',
     actionPlanDefined: 'Action plan defined',
@@ -136,7 +140,7 @@ export const en = {
     standardizationStepsDocumented: 'Standardization steps documented',
     lessonsLearnedCaptured: 'Lessons learned captured',
     finalApprovalObtained: 'Final approval obtained',
-    
+
     // PDCA Cycle Form Labels and Validation
     title: 'Title',
     description: 'Description',

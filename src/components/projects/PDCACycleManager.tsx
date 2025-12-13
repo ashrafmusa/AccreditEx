@@ -1,14 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { Project, CAPAReport, PDCACycle, PDCAStage } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useProjectStore } from '@/stores/useProjectStore';
-import { useUserStore } from '@/stores/useUserStore';
-import { useAppStore } from '@/stores/useAppStore';
-import { useToast } from '@/hooks/useToast';
-import { PlusIcon, FunnelIcon } from '../icons';
-import PDCACycleCard from './PDCACycleCard';
-import PDCAStageTransitionForm from './PDCAStageTransitionForm';
-import PDCACycleDetailModal from './PDCACycleDetailModal';
+import React, { useState, useMemo } from "react";
+import { Project, CAPAReport, PDCACycle, PDCAStage } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { useAppStore } from "@/stores/useAppStore";
+import { useToast } from "@/hooks/useToast";
+import { PlusIcon, FunnelIcon } from "../icons";
+import PDCACycleCard from "./PDCACycleCard";
+import PDCAStageTransitionForm from "./PDCAStageTransitionForm";
+import PDCACycleDetailModal from "./PDCACycleDetailModal";
 
 interface PDCACycleManagerProps {
   project: Project;
@@ -20,14 +20,21 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   const toast = useToast();
   const { currentUser } = useUserStore();
   const { users } = useAppStore();
-  const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle } = useProjectStore();
-  const [selectedItem, setSelectedItem] = useState<{ item: CAPAReport | PDCACycle; type: 'capa' | 'cycle' } | null>(null);
+  const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle } =
+    useProjectStore();
+  const [selectedItem, setSelectedItem] = useState<{
+    item: CAPAReport | PDCACycle;
+    type: "capa" | "cycle";
+  } | null>(null);
   const [showTransitionForm, setShowTransitionForm] = useState(false);
-  const [transitioningItem,setTransitioningItem] = useState<{ item: CAPAReport | PDCACycle; type: 'capa' | 'cycle' } | null>(null);
+  const [transitioningItem, setTransitioningItem] = useState<{
+    item: CAPAReport | PDCACycle;
+    type: "capa" | "cycle";
+  } | null>(null);
   const [showNewCycleModal, setShowNewCycleModal] = useState(false);
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState<string>("all");
+  const [filterPriority, setFilterPriority] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [formErrors, setFormErrors] = useState<{
     title?: string;
     description?: string;
@@ -36,11 +43,19 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   }>({});
 
   // Combine Cycles and CAPAs
-  type PDCAItem = { item: CAPAReport; type: 'capa' } | { item: PDCACycle; type: 'cycle' };
-  
+  type PDCAItem =
+    | { item: CAPAReport; type: "capa" }
+    | { item: PDCACycle; type: "cycle" };
+
   const allItems: PDCAItem[] = useMemo(() => {
-    const capaItems: PDCAItem[] = project.capaReports.map(capa => ({ item: capa, type: 'capa' as const }));
-    const cycleItems: PDCAItem[] = (project.pdcaCycles || []).map(cycle => ({ item: cycle, type: 'cycle' as const }));
+    const capaItems: PDCAItem[] = (project.capaReports || []).map((capa) => ({
+      item: capa,
+      type: "capa" as const,
+    }));
+    const cycleItems: PDCAItem[] = (project.pdcaCycles || []).map((cycle) => ({
+      item: cycle,
+      type: "cycle" as const,
+    }));
     return [...capaItems, ...cycleItems];
   }, [project.capaReports, project.pdcaCycles]);
 
@@ -49,26 +64,29 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
     return allItems.filter(({ item, type }) => {
       // Search filter
       if (searchQuery) {
-        const title = type === 'capa' ? (item as CAPAReport).description : (item as PDCACycle).title;
+        const title =
+          type === "capa"
+            ? (item as CAPAReport).description
+            : (item as PDCACycle).title;
         if (!title.toLowerCase().includes(searchQuery.toLowerCase())) {
           return false;
         }
       }
 
       // Category filter
-      if (filterCategory !== 'all') {
-        if (type === 'cycle') {
+      if (filterCategory !== "all") {
+        if (type === "cycle") {
           if ((item as PDCACycle).category !== filterCategory) {
             return false;
           }
-        } else if (filterCategory !== 'CAPA') {
+        } else if (filterCategory !== "CAPA") {
           return false;
         }
       }
 
       // Priority filter
-      if (filterPriority !== 'all') {
-        if (type === 'cycle') {
+      if (filterPriority !== "all") {
+        if (type === "cycle") {
           if ((item as PDCACycle).priority !== filterPriority) {
             return false;
           }
@@ -81,19 +99,20 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
 
   // Group by stage
   const itemsByStage = useMemo(() => {
-    const stages: PDCAStage[] = ['Plan', 'Do', 'Check', 'Act', 'Completed'];
+    const stages: PDCAStage[] = ["Plan", "Do", "Check", "Act", "Completed"];
     const grouped: Record<PDCAStage, typeof filteredItems> = {
       Plan: [],
       Do: [],
       Check: [],
       Act: [],
-      Completed: []
+      Completed: [],
     };
 
     filteredItems.forEach((pdcaItem) => {
-      const stage = pdcaItem.type === 'capa' 
-        ? (pdcaItem.item as CAPAReport).pdcaStage || 'Plan'
-        : (pdcaItem.item as PDCACycle).currentStage;
+      const stage =
+        pdcaItem.type === "capa"
+          ? (pdcaItem.item as CAPAReport).pdcaStage || "Plan"
+          : (pdcaItem.item as PDCACycle).currentStage;
       grouped[stage].push(pdcaItem);
     });
 
@@ -101,7 +120,10 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   }, [filteredItems]);
 
   // Handle stage advancement
-  const handleAdvanceStage = (item: CAPAReport | PDCACycle, type: 'capa' | 'cycle') => {
+  const handleAdvanceStage = (
+    item: CAPAReport | PDCACycle,
+    type: "capa" | "cycle"
+  ) => {
     setTransitioningItem({ item, type });
     setShowTransitionForm(true);
   };
@@ -303,6 +325,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                       key={item.id}
                       item={item}
                       type={type}
+                      projectId={project.id}
                       onView={() => setSelectedItem({ item, type })}
                       onAdvanceStage={() => handleAdvanceStage(item, type)}
                     />
@@ -531,7 +554,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                       <option value="" disabled>
                         Select owner...
                       </option>
-                      {users.map((user) => (
+                      {(users || []).map((user) => (
                         <option key={user.id} value={user.id}>
                           {user.name}
                         </option>

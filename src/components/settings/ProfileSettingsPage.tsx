@@ -1,16 +1,16 @@
-import React, { useState, FormEvent } from 'react';
-import { User, Department } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
-import { useAppStore } from '../../stores/useAppStore';
-import SettingsCard from './SettingsCard';
+import React, { useState, FormEvent } from "react";
+import { User, Department } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
+import { useAppStore } from "../../stores/useAppStore";
+import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
 import SettingsSection from "./SettingsSection";
-import ImageUpload from './ImageUpload';
-import ActiveSessions from './ActiveSessions';
+import ImageUpload from "./ImageUpload";
+import ActiveSessions from "./ActiveSessions";
 import { useToast } from "../../hooks/useToast";
 import { useUserStore } from "../../stores/useUserStore";
-import { StorageService } from '../../services/storageService';
+import { cloudinaryService } from "../../services/cloudinaryService";
 import {
   CheckIcon,
   UserCircleIcon,
@@ -24,28 +24,35 @@ import {
   PhotoIcon,
   CalendarDaysIcon,
 } from "@/components/icons";
-import { SettingsPanel, FormGroup, AdvancedToggle, EnhancedInput } from './index';
+import {
+  SettingsPanel,
+  FormGroup,
+  AdvancedToggle,
+  EnhancedInput,
+} from "./index";
 
 // Password strength calculator
-const calculatePasswordStrength = (password: string): { score: number; label: string; color: string } => {
-  if (!password) return { score: 0, label: '', color: '' };
-  
+const calculatePasswordStrength = (
+  password: string
+): { score: number; label: string; color: string } => {
+  if (!password) return { score: 0, label: "", color: "" };
+
   let score = 0;
   if (password.length >= 8) score++;
   if (password.length >= 12) score++;
   if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
   if (/[0-9]/.test(password)) score++;
   if (/[^a-zA-Z0-9]/.test(password)) score++;
-  
+
   const strengths = [
-    { score: 0, label: '', color: '' },
-    { score: 1, label: 'Weak', color: 'text-red-600' },
-    { score: 2, label: 'Fair', color: 'text-orange-600' },
-    { score: 3, label: 'Good', color: 'text-yellow-600' },
-    { score: 4, label: 'Strong', color: 'text-green-600' },
-    { score: 5, label: 'Very Strong', color: 'text-green-700' },
+    { score: 0, label: "", color: "" },
+    { score: 1, label: "Weak", color: "text-red-600" },
+    { score: 2, label: "Fair", color: "text-orange-600" },
+    { score: 3, label: "Good", color: "text-yellow-600" },
+    { score: 4, label: "Strong", color: "text-green-600" },
+    { score: 5, label: "Very Strong", color: "text-green-700" },
   ];
-  
+
   return strengths[Math.min(score, 5)];
 };
 
@@ -68,7 +75,9 @@ const ProfileSettingsPage: React.FC = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const userDepartment = departments.find(d => d.id === currentUser!.departmentId);
+  const userDepartment = departments.find(
+    (d) => d.id === currentUser!.departmentId
+  );
 
   const labelClasses =
     "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2";
@@ -77,115 +86,126 @@ const ProfileSettingsPage: React.FC = () => {
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-    
+
     if (!name.trim()) {
-      newErrors.name = t('nameRequired') || 'Name is required';
+      newErrors.name = t("nameRequired") || "Name is required";
     }
-    
+
     if (password) {
       if (password.length < 8) {
-        newErrors.password = 'Password must be at least 8 characters long';
+        newErrors.password = "Password must be at least 8 characters long";
       }
       if (password !== confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
+        newErrors.confirmPassword = "Passwords do not match";
       }
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleNameChange = (newName: string) => {
     setName(newName);
-    if (errors.name) setErrors({ ...errors, name: '' });
+    if (errors.name) setErrors({ ...errors, name: "" });
     setHasChanges(
-      newName !== currentUser!.name || 
-      jobTitle !== (currentUser!.jobTitle || "") ||
-      hireDate !== (currentUser!.hireDate || "") ||
-      password !== "" || 
-      avatarUrl !== (currentUser!.avatarUrl || "")
+      newName !== currentUser!.name ||
+        jobTitle !== (currentUser!.jobTitle || "") ||
+        hireDate !== (currentUser!.hireDate || "") ||
+        password !== "" ||
+        avatarUrl !== (currentUser!.avatarUrl || "")
     );
   };
 
   const handleJobTitleChange = (newJobTitle: string) => {
     setJobTitle(newJobTitle);
     setHasChanges(
-      name !== currentUser!.name || 
-      newJobTitle !== (currentUser!.jobTitle || "") ||
-      hireDate !== (currentUser!.hireDate || "") ||
-      password !== "" || 
-      avatarUrl !== (currentUser!.avatarUrl || "")
+      name !== currentUser!.name ||
+        newJobTitle !== (currentUser!.jobTitle || "") ||
+        hireDate !== (currentUser!.hireDate || "") ||
+        password !== "" ||
+        avatarUrl !== (currentUser!.avatarUrl || "")
     );
   };
 
   const handleHireDateChange = (newHireDate: string) => {
     setHireDate(newHireDate);
     setHasChanges(
-      name !== currentUser!.name || 
-      jobTitle !== (currentUser!.jobTitle || "") ||
-      newHireDate !== (currentUser!.hireDate || "") ||
-      password !== "" || 
-      avatarUrl !== (currentUser!.avatarUrl || "")
+      name !== currentUser!.name ||
+        jobTitle !== (currentUser!.jobTitle || "") ||
+        newHireDate !== (currentUser!.hireDate || "") ||
+        password !== "" ||
+        avatarUrl !== (currentUser!.avatarUrl || "")
     );
   };
 
   const handlePasswordChange = (newPassword: string) => {
     setPassword(newPassword);
-    if (errors.password) setErrors({ ...errors, password: '' });
+    if (errors.password) setErrors({ ...errors, password: "" });
     setHasChanges(
-      name !== currentUser!.name || 
-      jobTitle !== (currentUser!.jobTitle || "") ||
-      hireDate !== (currentUser!.hireDate || "") ||
-      newPassword !== "" || 
-      avatarUrl !== (currentUser!.avatarUrl || "")
+      name !== currentUser!.name ||
+        jobTitle !== (currentUser!.jobTitle || "") ||
+        hireDate !== (currentUser!.hireDate || "") ||
+        newPassword !== "" ||
+        avatarUrl !== (currentUser!.avatarUrl || "")
     );
   };
 
   const handleConfirmPasswordChange = (newConfirmPassword: string) => {
     setConfirmPassword(newConfirmPassword);
-    if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: '' });
+    if (errors.confirmPassword) setErrors({ ...errors, confirmPassword: "" });
   };
 
   const handleProfileUpdate = async (e: FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      toast.error('Please fix the errors before saving');
+      toast.error("Please fix the errors before saving");
       return;
     }
 
     setLoading(true);
     try {
       let finalAvatarUrl = avatarUrl;
-      
-      // If there's a new avatar file, upload it to Firebase Storage
+
+      // If there's a new avatar file, upload it to Cloudinary
       if (avatarFile) {
         try {
-          const storageService = new StorageService();
-          finalAvatarUrl = await storageService.uploadDocument(
+          finalAvatarUrl = await cloudinaryService.uploadImage(
             avatarFile,
-            `profile-photos/${currentUser!.id}`,
+            "avatars",
             (progress) => {
               console.log(`Upload progress: ${progress.progress}%`);
-            }
+            },
+            { forceUpload: true }
           );
         } catch (uploadError) {
-          console.error('Avatar upload error:', uploadError);
-          toast.error('Failed to upload profile photo. Please try again.');
+          console.error("Avatar upload error:", uploadError);
+          toast.error("Failed to upload profile photo. Please try again.");
           setLoading(false);
           return;
         }
       }
-      
-      const updatedUser = { 
-        ...currentUser!, 
-        name, 
-        jobTitle: jobTitle || undefined,
-        hireDate: hireDate || undefined,
-        avatarUrl: finalAvatarUrl 
+
+      // Prepare user update (filter out undefined values and password)
+      const updatedUser: Partial<User> & { id: string } = {
+        ...currentUser!,
+        name,
+        avatarUrl: finalAvatarUrl,
       };
-      if (password) updatedUser.password = password;
-      onUpdateUser(updatedUser);
+
+      // Only include jobTitle and hireDate if they have values
+      if (jobTitle) updatedUser.jobTitle = jobTitle;
+      if (hireDate) updatedUser.hireDate = hireDate;
+
+      // Note: Password is handled separately via Firebase Auth, not stored in Firestore
+      if (password) {
+        // TODO: Implement password change via Firebase Auth updatePassword()
+        console.warn(
+          "Password update not yet implemented - requires Firebase Auth integration"
+        );
+      }
+
+      await onUpdateUser(updatedUser as User);
       setAvatarFile(undefined);
       setPassword("");
       setConfirmPassword("");
@@ -194,6 +214,7 @@ const ProfileSettingsPage: React.FC = () => {
       setShowConfirmPassword(false);
       toast.success(t("profileUpdated"));
     } catch (error) {
+      console.error("Profile update error:", error);
       toast.error(t("settingsUpdateFailed"));
     } finally {
       setLoading(false);

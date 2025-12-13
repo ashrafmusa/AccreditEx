@@ -40,14 +40,14 @@ interface AppState {
   auditPlans: AuditPlan[];
   audits: Audit[];
   customEvents: CustomCalendarEvent[];
-  
+
   fetchAllData: () => Promise<void>;
   setAppSettings: (settings: AppSettings) => void;
   clearInitializationError: () => void;
 
   // Documents
   addDocument: (doc: AppDocument) => void;
-  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<void>;
+  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<AppDocument>;
   addProcessMap: (docData: { name: { en: string; ar: string }, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<void>;
   updateDocument: (doc: AppDocument) => Promise<void>;
   deleteDocument: (docId: string) => Promise<void>;
@@ -55,54 +55,54 @@ interface AppState {
 
   // App Settings
   updateAppSettings: (settings: AppSettings) => Promise<void>;
-  
+
   // Programs
   addProgram: (programData: Omit<AccreditationProgram, 'id'>) => Promise<void>;
   updateProgram: (program: AccreditationProgram) => Promise<void>;
   deleteProgram: (programId: string) => Promise<void>;
-  
+
   // Project Templates (generated dynamically, not persisted)
   getTemplatesByProgram: (programId: string) => ProjectTemplate[];
   refreshTemplates: () => void;
-  
+
   // Standards
-  addStandard: (standardData: Omit<Standard, 'programId'> & {programId: string}) => Promise<void>;
+  addStandard: (standardData: Omit<Standard, 'programId'> & { programId: string }) => Promise<void>;
   updateStandard: (standard: Standard) => Promise<void>;
   deleteStandard: (standardId: string) => Promise<void>;
-  
+
   // Departments
   addDepartment: (deptData: Omit<Department, 'id'>) => Promise<void>;
   updateDepartment: (dept: Department) => Promise<void>;
   deleteDepartment: (deptId: string) => Promise<void>;
-  
+
   // Competencies
   addCompetency: (compData: Omit<Competency, 'id'>) => Promise<void>;
   updateCompetency: (comp: Competency) => Promise<void>;
   deleteCompetency: (compId: string) => Promise<void>;
-  
+
   // Training
   addTrainingProgram: (programData: Omit<TrainingProgram, 'id'>) => Promise<void>;
   updateTrainingProgram: (program: TrainingProgram) => Promise<void>;
   deleteTrainingProgram: (programId: string) => Promise<void>;
   assignTraining: (data: { trainingId: string; userIds: string[]; departmentIds: string[]; dueDate?: string }) => Promise<void>;
-  submitQuiz: (trainingId: string, answers: {[key: string]: number}) => Promise<{ score: number, passed: boolean, certificateId?: string }>;
-  
+  submitQuiz: (trainingId: string, answers: { [key: string]: number }) => Promise<{ score: number, passed: boolean, certificateId?: string }>;
+
   // Risk
   addRisk: (riskData: Omit<Risk, 'id'>) => Promise<void>;
   updateRisk: (risk: Risk) => Promise<void>;
   deleteRisk: (riskId: string) => Promise<void>;
-  
+
   // Incidents
   addIncidentReport: (reportData: Omit<IncidentReport, 'id'>) => Promise<void>;
   updateIncidentReport: (report: IncidentReport) => Promise<void>;
   deleteIncidentReport: (reportId: string) => Promise<void>;
-  
+
   // Audits
   addAuditPlan: (planData: Omit<AuditPlan, 'id'>) => Promise<void>;
   updateAuditPlan: (plan: AuditPlan) => Promise<void>;
   deleteAuditPlan: (planId: string) => Promise<void>;
   runAudit: (planId: string) => Promise<void>;
-  
+
   // Calendar
   addCustomEvent: (eventData: Omit<CustomCalendarEvent, 'id' | 'type'>) => Promise<void>;
   updateCustomEvent: (event: CustomCalendarEvent) => Promise<void>;
@@ -126,7 +126,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   auditPlans: [],
   audits: [],
   customEvents: [],
-  
+
   fetchAllData: async () => {
     try {
       // Fetch all data concurrently using Promise.allSettled to allow partial success
@@ -143,7 +143,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       // Extract values from PromiseSettledResult objects
       const [settingsResult, stdsResult, compsResult, deptsResult, programsResult, trainingsResult, rksResult, docsResult] = results;
-      
+
       const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null;
       const stds = stdsResult.status === 'fulfilled' ? stdsResult.value : null;
       const comps = compsResult.status === 'fulfilled' ? compsResult.value : null;
@@ -198,19 +198,19 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ initializationError: errorMsg });
     }
   },
-  
+
   // Internal setter for app settings (used when Firebase fails)
   setAppSettings: (settings: AppSettings) => set({ appSettings: settings }),
-  
+
   // Clear initialization error
   clearInitializationError: () => set({ initializationError: null }),
-  
+
   // Documents
   addDocument: (doc: AppDocument) => set(state => ({ documents: [...state.documents, doc] })),
-  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[] }) => {
+  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], projectId?: string }): Promise<AppDocument> => {
     try {
-      const newDoc: AppDocument = {
-        id: `doc-${Date.now()}`,
+      // Create document without ID (Firebase will generate it)
+      const docWithoutId: Omit<AppDocument, 'id'> = {
         name: docData.name,
         type: docData.type,
         isControlled: true,
@@ -223,12 +223,16 @@ export const useAppStore = create<AppState>((set, get) => ({
         tags: docData.tags,
         category: docData.category,
         departmentIds: docData.departmentIds,
+        projectId: docData.projectId,
       };
-      
-      // Save to Firebase first
-      await addDocumentToFirebase(newDoc);
-      // Then update local state
+
+      // Save to Firebase first (this returns the document with Firebase-generated ID)
+      const newDoc = await addDocumentToFirebase(docWithoutId);
+
+      // Then update local state with the same ID from Firebase
       set(state => ({ documents: [...state.documents, newDoc] }));
+
+      return newDoc;
     } catch (error) {
       logger.error('Failed to add document', error);
       throw error;
@@ -251,7 +255,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         category: docData.category,
         departmentIds: docData.departmentIds,
       };
-      
+
       // Save to Firebase first
       await addDocumentToFirebase(newDoc);
       // Then update local state
@@ -371,7 +375,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     const generatedTemplates = generateProjectTemplates(accreditationPrograms);
     set({ projectTemplates: generatedTemplates });
   },
-  
+
   addStandard: async (standardData: Omit<Standard, 'id'>) => {
     try {
       const newStandard = await addStandardToFirebase(standardData);
@@ -400,7 +404,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
   },
 
-  
+
   addDepartment: async (deptData: Omit<Department, 'id'>) => {
     try {
       const newDept = await addDepartmentToFirebase(deptData);
@@ -427,7 +431,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       handleError(error, 'deleteDepartment');
       throw new AppError('Failed to delete department', 'OPERATION_FAILED');
     }
-  },  
+  },
   addCompetency: async (compData: Omit<Competency, 'id'>) => {
     try {
       const newComp = await addCompetencyToFirebase(compData);
@@ -455,7 +459,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw new AppError('Failed to delete competency', 'OPERATION_FAILED');
     }
   },
-  
+
   addTrainingProgram: async (programData: Omit<TrainingProgram, 'id'>) => {
     try {
       const newProgram = await addTrainingProgramToFirebase(programData);
@@ -483,71 +487,71 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw new AppError('Failed to delete training program', 'OPERATION_FAILED');
     }
   },
-  
+
   assignTraining: async ({ trainingId, userIds, departmentIds, dueDate }: { trainingId: string; userIds: string[]; departmentIds: string[]; dueDate?: string }) => {
     const userStore = useUserStore.getState();
     const allUsersToUpdate = new Set<string>(userIds);
-    if(departmentIds.length > 0) {
-        userStore.users.forEach(u => {
-            if(u.departmentId && departmentIds.includes(u.departmentId)) {
-                allUsersToUpdate.add(u.id);
-            }
-        });
-    }
-    
-    allUsersToUpdate.forEach(uid => {
-        const user = userStore.users.find(u => u.id === uid);
-        if(user) {
-            const newAssignments = [...(user.trainingAssignments || [])];
-            if(!newAssignments.find(a => a.trainingId === trainingId)) {
-                newAssignments.push({ trainingId, assignedDate: new Date().toISOString(), dueDate });
-            }
-            userStore.updateUser({...user, trainingAssignments: newAssignments });
+    if (departmentIds.length > 0) {
+      userStore.users.forEach(u => {
+        if (u.departmentId && departmentIds.includes(u.departmentId)) {
+          allUsersToUpdate.add(u.id);
         }
+      });
+    }
+
+    allUsersToUpdate.forEach(uid => {
+      const user = userStore.users.find(u => u.id === uid);
+      if (user) {
+        const newAssignments = [...(user.trainingAssignments || [])];
+        if (!newAssignments.find(a => a.trainingId === trainingId)) {
+          newAssignments.push({ trainingId, assignedDate: new Date().toISOString(), dueDate });
+        }
+        userStore.updateUser({ ...user, trainingAssignments: newAssignments });
+      }
     });
   },
 
   submitQuiz: async (trainingId: string, answers: { [key: string]: number }) => {
-      const user = useUserStore.getState().currentUser;
-      const program = get().trainingPrograms.find(p => p.id === trainingId);
-      if(!user || !program) throw new Error("User or training not found");
+    const user = useUserStore.getState().currentUser;
+    const program = get().trainingPrograms.find(p => p.id === trainingId);
+    if (!user || !program) throw new Error("User or training not found");
 
-      let correctAnswers = 0;
-      program.quiz.forEach(q => {
-          if(answers[q.id] === q.correctOptionIndex) {
-              correctAnswers++;
-          }
-      });
-      const score = Math.round((correctAnswers / program.quiz.length) * 100);
-      const passed = score >= program.passingScore;
-
-      let certificateId: string | undefined;
-      if (passed) {
-          const newCert: CertificateData = {
-              id: `cert-${user.id}-${trainingId}`,
-              userId: user.id,
-              userName: user.name,
-              trainingId,
-              trainingTitle: typeof program.title === 'string' ? program.title : program.title.en,
-              completionDate: new Date().toISOString(),
-              score
-          };
-          set(state => ({ certificates: [...state.certificates.filter(c => c.id !== newCert.id), newCert]}));
-          certificateId = newCert.id;
+    let correctAnswers = 0;
+    program.quiz.forEach(q => {
+      if (answers[q.id] === q.correctOptionIndex) {
+        correctAnswers++;
       }
-      
-      set(state => ({
-          userTrainingStatuses: {
-              ...state.userTrainingStatuses,
-              [user.id]: {
-                  ...state.userTrainingStatuses[user.id],
-                  [trainingId]: { status: passed ? 'Completed' : 'In Progress', score, completionDate: passed ? new Date().toISOString() : undefined, certificateId }
-              }
-          }
-      }));
-      return { score, passed, certificateId };
+    });
+    const score = Math.round((correctAnswers / program.quiz.length) * 100);
+    const passed = score >= program.passingScore;
+
+    let certificateId: string | undefined;
+    if (passed) {
+      const newCert: CertificateData = {
+        id: `cert-${user.id}-${trainingId}`,
+        userId: user.id,
+        userName: user.name,
+        trainingId,
+        trainingTitle: typeof program.title === 'string' ? program.title : program.title.en,
+        completionDate: new Date().toISOString(),
+        score
+      };
+      set(state => ({ certificates: [...state.certificates.filter(c => c.id !== newCert.id), newCert] }));
+      certificateId = newCert.id;
+    }
+
+    set(state => ({
+      userTrainingStatuses: {
+        ...state.userTrainingStatuses,
+        [user.id]: {
+          ...state.userTrainingStatuses[user.id],
+          [trainingId]: { status: passed ? 'Completed' : 'In Progress', score, completionDate: passed ? new Date().toISOString() : undefined, certificateId }
+        }
+      }
+    }));
+    return { score, passed, certificateId };
   },
-  
+
   addRisk: async (riskData: Omit<Risk, 'id'>) => {
     try {
       const newRisk = await addRiskToFirebase(riskData);
@@ -575,7 +579,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw new AppError('Failed to delete risk', 'OPERATION_FAILED');
     }
   },
-  
+
   addIncidentReport: async (reportData: Omit<IncidentReport, 'id'>) => {
     try {
       const newReport = await addIncidentReportToFirebase(reportData);
@@ -603,7 +607,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw new AppError('Failed to delete incident report', 'OPERATION_FAILED');
     }
   },
-  
+
   addAuditPlan: async (planData: Omit<AuditPlan, 'id'>) => {
     try {
       const newPlan = await addAuditPlanToFirebase(planData);
@@ -631,13 +635,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw new AppError('Failed to delete audit plan', 'OPERATION_FAILED');
     }
   },
-  
+
   runAudit: async (planId: string) => {
-      // Mock audit run
-      // Audit run executed
+    // Mock audit run
+    // Audit run executed
   },
 
-  
+
   addCustomEvent: async (eventData: Omit<CustomCalendarEvent, 'id' | 'type'>) => {
     try {
       const newEvent = await addCustomEventToFirebase({ ...eventData, type: 'Custom' });
@@ -664,4 +668,5 @@ export const useAppStore = create<AppState>((set, get) => ({
       handleError(error, 'deleteCustomEvent');
       throw new AppError('Failed to delete custom event', 'OPERATION_FAILED');
     }
-  },}));
+  },
+}));

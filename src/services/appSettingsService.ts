@@ -21,17 +21,25 @@ export const getAppSettings = async (): Promise<AppSettings | null> => {
 
 export const updateAppSettings = async (settings: AppSettings): Promise<void> => {
     try {
+        // Validate required fields before saving
+        if (!settings.appName || !settings.defaultLanguage || !settings.defaultUserRole) {
+            throw new Error('Missing required fields in AppSettings');
+        }
+
         const settingsSnapshot = await getDocs(settingsCollection);
+
+        // Convert settings to plain object to avoid any Firestore serialization issues
+        const settingsData = JSON.parse(JSON.stringify(settings));
 
         if (settingsSnapshot.empty) {
             // If no settings exist, create a new document
-            await setDoc(doc(settingsCollection, 'default'), settings);
+            await setDoc(doc(settingsCollection, 'default'), settingsData);
             console.log('App settings created in Firestore');
         } else {
-            // Update existing document
+            // Update existing document using setDoc with merge to handle schema changes
             const settingsDocId = settingsSnapshot.docs[0].id;
             const settingsDocRef = doc(db, 'appSettings', settingsDocId);
-            await updateDoc(settingsDocRef, settings as Record<string, any>);
+            await setDoc(settingsDocRef, settingsData, { merge: true });
             console.log('App settings updated in Firestore');
         }
     } catch (error) {

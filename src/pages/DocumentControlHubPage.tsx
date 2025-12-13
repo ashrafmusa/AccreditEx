@@ -1,18 +1,21 @@
-import React, { useState, useMemo } from 'react';
-import { useTranslation } from '../hooks/useTranslation';
-import { useToast } from '../hooks/useToast';
-import { AppDocument, User, UserRole, Standard, Department } from '../types';
-import DocumentEditorModal from '../components/documents/DocumentEditorModal';
-import ProcessMapEditor from '../components/documents/ProcessMapEditor';
-import ProcessMapMetadataModal from '../components/documents/ProcessMapMetadataModal';
-import StatCard from '../components/common/StatCard';
-import DocumentSidebar from '../components/documents/DocumentSidebar';
-import DocumentSearch, { DocumentFilters } from '../components/documents/DocumentSearch';
-import DocumentMetadataModal from '../components/documents/DocumentMetadataModal';
-import SignatureModal from '../components/common/SignatureModal';
-import ControlledDocumentsTable from '../components/documents/ControlledDocumentsTable';
-import PDFViewerModal from '../components/documents/PDFViewerModal';
-import RestrictedFeatureIndicator from '../components/common/RestrictedFeatureIndicator';
+import React, { useState, useMemo } from "react";
+import { useTranslation } from "../hooks/useTranslation";
+import { useToast } from "../hooks/useToast";
+import { AppDocument, User, UserRole, Standard, Department } from "../types";
+import { useProjectStore } from "@/stores/useProjectStore";
+import DocumentEditorModal from "../components/documents/DocumentEditorModal";
+import ProcessMapEditor from "../components/documents/ProcessMapEditor";
+import ProcessMapMetadataModal from "../components/documents/ProcessMapMetadataModal";
+import StatCard from "../components/common/StatCard";
+import DocumentSidebar from "../components/documents/DocumentSidebar";
+import DocumentSearch, {
+  DocumentFilters,
+} from "../components/documents/DocumentSearch";
+import DocumentMetadataModal from "../components/documents/DocumentMetadataModal";
+import SignatureModal from "../components/common/SignatureModal";
+import ControlledDocumentsTable from "../components/documents/ControlledDocumentsTable";
+import PDFViewerModal from "../components/documents/PDFViewerModal";
+import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
 import { Button } from "@/components/ui";
 import {
   DocumentTextIcon,
@@ -60,6 +63,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 }) => {
   const { t, lang } = useTranslation();
   const toast = useToast();
+  const { projects } = useProjectStore();
   const [isMetaModalOpen, setIsMetaModalOpen] = useState(false);
   const [isProcessMapModalOpen, setIsProcessMapModalOpen] = useState(false);
   const [signingDoc, setSigningDoc] = useState<AppDocument | null>(null);
@@ -71,6 +75,9 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [activeFilters, setActiveFilters] = useState<DocumentFilters>({});
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showOnlyMyDocs, setShowOnlyMyDocs] = useState(
+    !currentUser || currentUser.role !== UserRole.Admin
+  );
   const canModify = currentUser.role === UserRole.Admin;
 
   const handleConfirmSignature = async () => {
@@ -211,6 +218,22 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const controlledDocuments = useMemo(() => {
     let filtered = documents.filter((doc) => doc.isControlled);
 
+    // Role-based access: Filter by project assignment for evidence documents
+    if (showOnlyMyDocs && currentUser.role !== UserRole.Admin) {
+      filtered = filtered.filter((doc) => {
+        // If document has projectId, check if user has access to that project
+        if (doc.projectId) {
+          const project = projects.find((p) => p.id === doc.projectId);
+          if (!project) return false;
+          const isProjectLead = project.projectLead?.id === currentUser.id;
+          const isTeamMember = project.teamMembers?.includes(currentUser.id);
+          return isProjectLead || isTeamMember;
+        }
+        // Non-project documents (policies, procedures) visible to all
+        return true;
+      });
+    }
+
     // 1. Filter by Category
     if (activeCategory === "my_documents") {
       filtered = filtered.filter((doc) => doc.uploadedBy === currentUser.name);
@@ -327,40 +350,52 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             </p>
           </div>
         </div>
-        {canModify && (
-          <div className="relative">
+        <div className="flex gap-3 flex-wrap">
+          {currentUser.role === UserRole.Admin && (
             <Button
-              onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-              className="w-full md:w-auto"
+              onClick={() => setShowOnlyMyDocs(!showOnlyMyDocs)}
+              variant={showOnlyMyDocs ? "secondary" : "primary"}
+              className="w-full sm:w-auto"
             >
-              <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-              {t("addNew")}
-              <ChevronDownIcon className="w-4 h-4 ltr:ml-2 rtl:mr-2" />
+              <CheckCircleIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+              {showOnlyMyDocs ? t("showAllDocuments") : t("showMyDocuments")}
             </Button>
-            {isAddMenuOpen && (
-              <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-dark-brand-surface rounded-md shadow-lg border dark:border-dark-brand-border z-10">
-                <button
-                  onClick={() => {
-                    setIsMetaModalOpen(true);
-                    setIsAddMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  {t("policy")}/{t("procedure")}
-                </button>
-                <button
-                  onClick={() => {
-                    setIsProcessMapModalOpen(true);
-                    setIsAddMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
-                >
-                  {t("processMap")}
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+          {canModify && (
+            <div className="relative">
+              <Button
+                onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
+                className="w-full sm:w-auto"
+              >
+                <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                {t("addNew")}
+                <ChevronDownIcon className="w-4 h-4 ltr:ml-2 rtl:mr-2" />
+              </Button>
+              {isAddMenuOpen && (
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-dark-brand-surface rounded-md shadow-lg border dark:border-dark-brand-border z-10">
+                  <button
+                    onClick={() => {
+                      setIsMetaModalOpen(true);
+                      setIsAddMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {t("policy")}/{t("procedure")}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsProcessMapModalOpen(true);
+                      setIsAddMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {t("processMap")}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {!canModify && (

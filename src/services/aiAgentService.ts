@@ -320,6 +320,156 @@ export class AIAgentService {
     }
 
     /**
+     * Generate AI-powered action plan for checklist item
+     */
+    async generateActionPlan(context: {
+        standardId: string;
+        item: string;
+        status: string;
+        findings?: string;
+    }): Promise<string> {
+        try {
+            const prompt = `Generate a detailed action plan for the following non-compliant checklist item:
+
+Standard: ${context.standardId}
+Item: ${context.item}
+Current Status: ${context.status}
+${context.findings ? `Findings: ${context.findings}` : ''}
+
+Provide a clear, actionable plan with specific steps to achieve compliance.`;
+
+            const response = await this.chat(prompt, true);
+            return response.response;
+        } catch (error) {
+            console.error('Action plan generation error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * AI-powered root cause analysis for CAPA
+     */
+    async analyzeRootCause(context: {
+        title: string;
+        description: string;
+        category?: string;
+        findings?: string;
+    }): Promise<string> {
+        try {
+            const prompt = `Perform a root cause analysis for the following issue:
+
+Title: ${context.title}
+Description: ${context.description}
+${context.category ? `Category: ${context.category}` : ''}
+${context.findings ? `Findings: ${context.findings}` : ''}
+
+Use the 5 Whys technique or Fishbone analysis to identify the root cause. Provide a comprehensive analysis.`;
+
+            const response = await this.chat(prompt, true);
+            return response.response;
+        } catch (error) {
+            console.error('Root cause analysis error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * AI suggestions for PDCA cycle improvements
+     */
+    async suggestPDCAImprovements(context: {
+        title: string;
+        currentStage: string;
+        description: string;
+        actions?: string[];
+    }): Promise<string> {
+        try {
+            const prompt = `Provide improvement suggestions for this PDCA cycle:
+
+Title: ${context.title}
+Current Stage: ${context.currentStage}
+Description: ${context.description}
+${context.actions ? `Current Actions: ${context.actions.join(', ')}` : ''}
+
+Suggest specific improvements for the Plan-Do-Check-Act cycle to enhance effectiveness and ensure continuous improvement.`;
+
+            const response = await this.chat(prompt, true);
+            return response.response;
+        } catch (error) {
+            console.error('PDCA improvement suggestions error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * AI risk assessment for survey findings
+     */
+    async assessSurveyRisk(context: {
+        surveyTitle: string;
+        failedItems: Array<{
+            question: string;
+            response: string;
+            category?: string;
+        }>;
+    }): Promise<string> {
+        try {
+            const itemsList = context.failedItems
+                .map((item, idx) => `${idx + 1}. ${item.question} - Response: ${item.response}`)
+                .join('\n');
+
+            const prompt = `Assess the risk level and provide recommendations for these survey findings:
+
+Survey: ${context.surveyTitle}
+Failed Items:
+${itemsList}
+
+Provide:
+1. Overall risk assessment (Low/Medium/High/Critical)
+2. Key concerns and their potential impact
+3. Recommended mitigation strategies
+4. Priority actions`;
+
+            const response = await this.chat(prompt, true);
+            return response.response;
+        } catch (error) {
+            console.error('Survey risk assessment error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * AI compliance check for design controls
+     */
+    async checkDesignCompliance(context: {
+        designTitle: string;
+        standard: string;
+        phase: string;
+        description?: string;
+        requirements?: string[];
+    }): Promise<string> {
+        try {
+            const prompt = `Perform a compliance check for this design control:
+
+Design: ${context.designTitle}
+Standard: ${context.standard}
+Current Phase: ${context.phase}
+${context.description ? `Description: ${context.description}` : ''}
+${context.requirements ? `Requirements: ${context.requirements.join(', ')}` : ''}
+
+Analyze compliance with the specified standard and provide:
+1. Compliance status assessment
+2. Gaps or missing elements
+3. Recommendations for improvement
+4. Risk areas to address`;
+
+            const response = await this.chat(prompt, true);
+            return response.response;
+        } catch (error) {
+            console.error('Design compliance check error:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Reset conversation thread
      */
     resetThread(): void {

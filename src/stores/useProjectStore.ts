@@ -32,6 +32,8 @@ interface ProjectState {
   bulkDeleteProjects: (projectIds: string[]) => Promise<boolean>;
   bulkUpdateStatus: (projectIds: string[], status: ProjectStatus) => Promise<boolean>;
   updateCapa: (projectId: string, capa: CAPAReport) => Promise<void>;
+  deleteCapa: (projectId: string, capaId: string) => Promise<void>;
+  createCAPA: (projectId: string, capaData: Omit<CAPAReport, 'id'>) => Promise<void>;
   createPDCACycle: (projectId: string, cycleData: Omit<PDCACycle, 'id'>) => Promise<void>;
   updatePDCACycle: (projectId: string, cycle: PDCACycle) => Promise<void>;
   getPDCACyclesByStage: (projectId: string, stage: 'Plan' | 'Do' | 'Check' | 'Act') => PDCACycle[];
@@ -125,18 +127,18 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   generateReport: async (projectId, reportType) => {
     const project = get().projects.find(p => p.id === projectId);
     const user = useUserStore.getState().currentUser;
-    
+
     if (!project) {
       throw new Error('Project not found');
     }
-    
+
     if (!user) {
       throw new Error('User not authenticated');
     }
 
     // Import report service dynamically to avoid circular dependencies
     const { generateAIComplianceReport } = await import('@/services/reportService');
-    
+
     // Generate AI-powered compliance report
     const reportDocument = await generateAIComplianceReport({
       projectId: project.id,
@@ -252,6 +254,23 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     };
 
     await get().updateCapa(projectId, updatedCapa);
+  },
+
+  deleteCapa: async (projectId: string, capaId: string) => {
+    const user = useUserStore.getState().currentUser;
+    if (!user) throw new Error('User not authenticated');
+    if (user.role !== 'Admin') throw new Error('Only admins can delete CAPA reports');
+
+    await projectService.deleteCapa(projectId, capaId);
+    await get().fetchAllProjects();
+  },
+
+  createCAPA: async (projectId: string, capaData: Omit<CAPAReport, 'id'>) => {
+    const user = useUserStore.getState().currentUser;
+    if (!user) throw new Error('User not authenticated');
+
+    await projectService.addCapaReport(projectId, capaData);
+    await get().fetchAllProjects();
   },
 
   createPDCACycle: async (projectId: string, cycleData: Omit<PDCACycle, 'id'>) => {

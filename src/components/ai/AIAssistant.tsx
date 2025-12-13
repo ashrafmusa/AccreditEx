@@ -42,17 +42,47 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
 
+  // Simple markdown-like formatting
+  const formatMessage = (text: string) => {
+    return (
+      text
+        // Bold: **text** or __text__
+        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>')
+        .replace(/__(.+?)__/g, '<strong class="font-bold">$1</strong>')
+        // Headers: ## text or === underline
+        .replace(
+          /^##\s+(.+)$/gm,
+          '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>'
+        )
+        .replace(
+          /^(.+)\n=+$/gm,
+          '<h2 class="text-xl font-bold mt-4 mb-3">$1</h2>'
+        )
+        .replace(
+          /^(.+)\n-+$/gm,
+          '<h3 class="text-lg font-semibold mt-3 mb-2">$1</h3>'
+        )
+        // Lists: - item or * item
+        .replace(/^\s*[-*]\s+(.+)$/gm, '<li class="ml-4 mb-1">• $1</li>')
+        // Code blocks: `code`
+        .replace(
+          /`(.+?)`/g,
+          '<code class="bg-gray-100 dark:bg-slate-600 px-1 py-0.5 rounded text-sm">$1</code>'
+        )
+        // Line breaks
+        .replace(/\n\n/g, "<br/><br/>")
+    );
+  };
+
   // Check AI agent health on mount
   useEffect(() => {
     const checkHealth = async () => {
       const healthy = await aiAgentService.healthCheck();
       setIsHealthy(healthy);
-      if (!healthy) {
-        toast.error("AI Assistant is currently unavailable");
-      }
+      // Don't show toast on mount, only when user tries to interact
     };
     checkHealth();
-  }, [toast]);
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -60,7 +90,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading || !isHealthy) return;
+    if (!input.trim() || isLoading) return;
+
+    if (!isHealthy) {
+      toast.error("AI Assistant is currently offline. Please try again later.");
+      return;
+    }
 
     const userMessage: ChatMessage = {
       role: "user",
@@ -73,7 +108,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     setIsLoading(true);
 
     try {
+      console.log("🤖 Sending message to AI:", input);
       const response: ChatResponse = await aiAgentService.chat(input);
+      console.log("✅ AI response received:", response);
 
       const assistantMessage: ChatMessage = {
         role: "assistant",
@@ -83,12 +120,14 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("AI chat error:", error);
-      toast.error("Failed to get response from AI assistant");
+      console.error("❌ AI chat error:", error);
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`AI error: ${errorMsg}`);
 
       const errorMessage: ChatMessage = {
         role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
+        content:
+          "I'm currently unable to respond. The AI service may be temporarily unavailable. Please try again in a few moments.",
         timestamp: new Date().toISOString(),
       };
 
@@ -118,34 +157,59 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-50 bg-primary-600 hover:bg-primary-700 text-white rounded-full p-4 shadow-lg transition-all duration-200 hover:scale-110`}
+        className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-[9999] bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-indigo-500/50 group relative cursor-pointer`}
+        style={{ touchAction: "manipulation" }}
         aria-label="Open AI Assistant"
+        title="Chat with AI Assistant"
       >
-        <ChatBubbleBottomCenterTextIcon className="w-6 h-6" />
+        <ChatBubbleBottomCenterTextIcon className="w-6 h-6 drop-shadow-lg" />
+        {/* Pulse animation ring - only when healthy */}
+        {isHealthy && (
+          <span className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-20 pointer-events-none"></span>
+        )}
+        {/* Badge indicator */}
+        <span
+          className={`absolute -top-1 -right-1 w-3 h-3 border-2 border-white rounded-full pointer-events-none ${
+            isHealthy ? "bg-green-400" : "bg-yellow-400"
+          }`}
+        ></span>
       </button>
     );
   }
 
   return (
     <div
-      className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-50 w-96 max-w-[calc(100vw-2rem)] ${
+      className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-[9999] w-96 max-w-[calc(100vw-2rem)] ${
         isMinimized ? "h-14" : "h-[600px] max-h-[calc(100vh-2rem)]"
-      } bg-white rounded-lg shadow-2xl flex flex-col transition-all duration-200`}
+      } bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 flex flex-col transition-all duration-300 backdrop-blur-sm`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-primary-600 text-white rounded-t-lg">
-        <div className="flex items-center space-x-2">
-          <ChatBubbleBottomCenterTextIcon className="w-5 h-5" />
-          <h3 className="font-semibold">AI Assistant</h3>
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-2xl cursor-move">
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+              <ChatBubbleBottomCenterTextIcon className="w-5 h-5" />
+            </div>
+            {isHealthy && (
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 border-2 border-white rounded-full"></span>
+            )}
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">AI Assistant</h3>
+            <p className="text-xs text-white/80">
+              {isHealthy ? "Online" : "Offline"}
+            </p>
+          </div>
           {!isHealthy && (
-            <ExclamationCircleIcon className="w-4 h-4 text-yellow-300" />
+            <ExclamationCircleIcon className="w-5 h-5 text-yellow-300" />
           )}
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <button
             onClick={() => setIsMinimized(!isMinimized)}
-            className="hover:bg-primary-700 p-1 rounded transition-colors"
+            className="hover:bg-white/20 p-1.5 rounded-lg transition-all duration-200"
             aria-label={isMinimized ? "Maximize" : "Minimize"}
+            title={isMinimized ? "Maximize" : "Minimize"}
           >
             {isMinimized ? (
               <ArrowsPointingOutIcon className="w-4 h-4" />
@@ -155,8 +219,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           </button>
           <button
             onClick={() => setIsOpen(false)}
-            className="hover:bg-primary-700 p-1 rounded transition-colors"
+            className="hover:bg-white/20 p-1.5 rounded-lg transition-all duration-200"
             aria-label="Close"
+            title="Close"
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
@@ -166,15 +231,50 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800">
             {messages.length === 0 && (
-              <div className="text-center text-gray-500 mt-8">
-                <ChatBubbleBottomCenterTextIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">How can I help you today?</p>
-                <p className="text-xs mt-2">
-                  I can assist with compliance, risk assessment, and training
-                  recommendations.
+              <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center">
+                  {isHealthy ? (
+                    <ChatBubbleBottomCenterTextIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                  ) : (
+                    <ExclamationCircleIcon className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  )}
+                </div>
+                <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
+                  {isHealthy
+                    ? "How can I help you today?"
+                    : "AI Assistant Temporarily Unavailable"}
                 </p>
+                <p className="text-sm mt-3 text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+                  {isHealthy
+                    ? "I can assist with compliance questions, risk assessment, training recommendations, and OHAS standards."
+                    : "The AI service is currently offline. Please check back later or contact support if this persists."}
+                </p>
+                {isHealthy && (
+                  <div className="mt-6 flex flex-wrap gap-2 justify-center">
+                    <button
+                      onClick={() =>
+                        setInput("What are the key OHAS standards?")
+                      }
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors text-gray-700 dark:text-gray-300"
+                    >
+                      OHAS Standards
+                    </button>
+                    <button
+                      onClick={() => setInput("Help me with risk assessment")}
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors text-gray-700 dark:text-gray-300"
+                    >
+                      Risk Assessment
+                    </button>
+                    <button
+                      onClick={() => setInput("Show compliance checklist")}
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors text-gray-700 dark:text-gray-300"
+                    >
+                      Compliance Checklist
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -186,16 +286,22 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 }`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg p-3 ${
+                  className={`max-w-[85%] rounded-2xl p-3 shadow-sm ${
                     message.role === "user"
-                      ? "bg-primary-600 text-white"
-                      : "bg-gray-100 text-gray-900"
+                      ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white"
+                      : "bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600"
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">
-                    {message.content}
-                  </p>
-                  <span className="text-xs opacity-70 mt-1 block">
+                  <div
+                    className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        message.role === "assistant"
+                          ? formatMessage(message.content)
+                          : message.content,
+                    }}
+                  />
+                  <span className="text-xs opacity-70 mt-1.5 block">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </span>
                 </div>
@@ -204,8 +310,21 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg p-3">
-                  <div className="w-5 h-5 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+                <div className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl p-4 shadow-sm">
+                  <div className="flex space-x-2">
+                    <div
+                      className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                      style={{ animationDelay: "0ms" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"
+                      style={{ animationDelay: "150ms" }}
+                    ></div>
+                    <div
+                      className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                      style={{ animationDelay: "300ms" }}
+                    ></div>
+                  </div>
                 </div>
               </div>
             )}
@@ -214,41 +333,72 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           </div>
 
           {/* Input */}
-          <div className="border-t border-gray-200 p-4">
+          <div className="border-t border-gray-200 dark:border-slate-700 p-4 bg-white dark:bg-slate-800">
             {messages.length > 0 && (
               <button
                 onClick={resetConversation}
-                className="text-xs text-gray-500 hover:text-gray-700 mb-2"
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-3 flex items-center gap-1 transition-colors"
               >
+                <svg
+                  className="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
                 Reset conversation
               </button>
             )}
             <div className="flex space-x-2">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder={
-                  isHealthy
-                    ? "Type your message..."
-                    : "AI Assistant unavailable"
-                }
-                disabled={isLoading || !isHealthy}
-                className="flex-1 resize-none border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-                rows={2}
-              />
+              <div className="flex-1 relative">
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder={
+                    isHealthy
+                      ? "Ask me anything..."
+                      : "AI Assistant unavailable"
+                  }
+                  disabled={isLoading || !isHealthy}
+                  className="w-full resize-none border border-gray-300 dark:border-slate-600 rounded-xl p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
+                  rows={2}
+                />
+              </div>
               <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim() || !isHealthy}
-                className="bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded-lg p-2 transition-colors"
+                className="bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-xl px-4 transition-all duration-200 shadow-lg hover:shadow-indigo-500/50 disabled:shadow-none flex items-center justify-center"
                 aria-label="Send message"
+                title="Send message"
               >
                 <PaperAirplaneIcon className="w-5 h-5" />
               </button>
             </div>
-            <p className="text-xs text-gray-400 mt-2">
-              Press Enter to send • Shift+Enter for new line
-            </p>
+            <div className="flex items-center justify-between mt-2">
+              <p className="text-xs text-gray-400 dark:text-gray-500">
+                <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded">
+                  Enter
+                </kbd>{" "}
+                to send •{" "}
+                <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 dark:bg-slate-700 border border-gray-300 dark:border-slate-600 rounded">
+                  Shift+Enter
+                </kbd>{" "}
+                for new line
+              </p>
+              {isHealthy && (
+                <span className="text-xs text-green-500 dark:text-green-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+                  Connected
+                </span>
+              )}
+            </div>
           </div>
         </>
       )}

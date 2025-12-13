@@ -1,7 +1,8 @@
-import React from 'react';
-import { CAPAReport, Project, User } from '../../types';
-import { useTranslation } from '../../hooks/useTranslation';
-import { ExclamationTriangleIcon } from '../icons';
+import React, { useState } from "react";
+import { CAPAReport, Project, User } from "../../types";
+import { useTranslation } from "../../hooks/useTranslation";
+import { ExclamationTriangleIcon } from "../icons";
+import CAPADetailsModal from "../risk/CAPADetailsModal";
 
 interface CapaListItemProps {
   capa: CAPAReport;
@@ -9,37 +10,69 @@ interface CapaListItemProps {
   assignee?: User;
 }
 
-const CapaListItem: React.FC<CapaListItemProps> = ({ capa, project, assignee }) => {
+const CapaListItem: React.FC<CapaListItemProps> = ({
+  capa,
+  project,
+  assignee,
+}) => {
   const { t } = useTranslation();
+  const [showModal, setShowModal] = useState(false);
   const isOverdue = capa.dueDate && new Date(capa.dueDate) < new Date();
-  
+
   return (
-    <div className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-brand-border dark:border-dark-brand-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div className="flex items-start gap-3">
-        <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-        <div className="flex-grow">
-          <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">{capa.description}</p>
-          <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-            {t('inProject')} <span className="font-medium">{project?.name || 'N/A'}</span>
-          </p>
+    <>
+      <div
+        onClick={() => setShowModal(true)}
+        className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-brand-border dark:border-dark-brand-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+      >
+        <div className="flex items-start gap-3">
+          <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
+          <div className="flex-grow">
+            <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {capa.description}
+            </p>
+            <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+              {t("inProject")}{" "}
+              <span className="font-medium">{project?.name || "N/A"}</span>
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-4 text-xs sm:text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary ltr:sm:pl-8 rtl:sm:pr-8 flex-shrink-0">
+          <span className="font-medium">
+            {assignee?.name || t("unassigned")}
+          </span>
+          {capa.pdcaStage && (
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
+                capa.pdcaStage === "Plan"
+                  ? "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800"
+                  : capa.pdcaStage === "Do"
+                  ? "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800"
+                  : capa.pdcaStage === "Check"
+                  ? "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800"
+                  : capa.pdcaStage === "Act"
+                  ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800"
+                  : "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700"
+              }`}
+            >
+              {t(capa.pdcaStage.toLowerCase() + "Stage") || capa.pdcaStage}
+            </span>
+          )}
+          {capa.dueDate && (
+            <span className={isOverdue ? "font-bold text-red-500" : ""}>
+              {t("dueDate")}: {new Date(capa.dueDate).toLocaleDateString()}
+            </span>
+          )}
         </div>
       </div>
-      <div className="flex items-center gap-4 text-xs sm:text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary ltr:sm:pl-8 rtl:sm:pr-8 flex-shrink-0">
-        <span className="font-medium">{assignee?.name || t('unassigned')}</span>
-        {capa.pdcaStage && (
-          <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
-            capa.pdcaStage === 'Plan' ? 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' :
-            capa.pdcaStage === 'Do' ? 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800' :
-            capa.pdcaStage === 'Check' ? 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' :
-            capa.pdcaStage === 'Act' ? 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' :
-            'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700'
-          }`}>
-            {t(capa.pdcaStage.toLowerCase() + 'Stage') || capa.pdcaStage}
-          </span>
-        )}
-        {capa.dueDate && <span className={isOverdue ? 'font-bold text-red-500' : ''}>{t('dueDate')}: {new Date(capa.dueDate).toLocaleDateString()}</span>}
-      </div>
-    </div>
+
+      <CAPADetailsModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        capa={capa}
+        project={project}
+      />
+    </>
   );
 };
 

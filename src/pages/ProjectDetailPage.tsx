@@ -43,7 +43,24 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [localLoading, setLocalLoading] = useState(true);
 
-  const project = projects.find((p) => p.id === navigation.projectId);
+  // Shared data cache - prevents duplicate fetches when switching tabs
+  const [cachedData, setCachedData] = useState({
+    project: null as Project | null,
+    lastFetch: 0,
+  });
+
+  const project =
+    projects.find((p) => p.id === navigation.projectId) || cachedData.project;
+
+  // Update cache when project changes
+  React.useEffect(() => {
+    if (project) {
+      setCachedData({
+        project,
+        lastFetch: Date.now(),
+      });
+    }
+  }, [project]);
 
   // Real-time subscription for this specific project
   useEffect(() => {

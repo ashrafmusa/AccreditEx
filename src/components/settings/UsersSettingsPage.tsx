@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useAppStore } from '@/stores/useAppStore';
-import { useTranslation } from '@/hooks/useTranslation';
+import React, { useState } from "react";
+import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
@@ -12,7 +12,7 @@ import {
   InformationCircleIcon,
   ExclamationTriangleIcon,
 } from "@/components/icons";
-import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from './index';
+import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from "./index";
 
 const UsersSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -21,8 +21,10 @@ const UsersSettingsPage: React.FC = () => {
 
   const [usersSettings, setUsersSettings] = useState({
     enableUserManagement: appSettings?.users?.enableUserManagement ?? true,
-    requireEmailVerification: appSettings?.users?.requireEmailVerification ?? true,
-    autoDeactivateInactiveUsers: appSettings?.users?.autoDeactivateInactiveUsers ?? false,
+    requireEmailVerification:
+      appSettings?.users?.requireEmailVerification ?? true,
+    autoDeactivateInactiveUsers:
+      appSettings?.users?.autoDeactivateInactiveUsers ?? false,
     inactivityThresholdDays: appSettings?.users?.inactivityThresholdDays ?? 90,
     sessionTimeoutMinutes: appSettings?.users?.sessionTimeoutMinutes ?? 30,
     maxLoginAttempts: appSettings?.users?.maxLoginAttempts ?? 5,
@@ -32,7 +34,10 @@ const UsersSettingsPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
-  const handleUsersSettingsChange = (field: keyof typeof usersSettings, value: any) => {
+  const handleUsersSettingsChange = (
+    field: keyof typeof usersSettings,
+    value: any
+  ) => {
     const newUsersSettings = {
       ...usersSettings,
       [field]: value,
@@ -47,14 +52,20 @@ const UsersSettingsPage: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await updateAppSettings({
-        ...appSettings!,
+      if (!appSettings) {
+        toast.error("Settings not loaded");
+        return;
+      }
+      const updatedSettings = {
+        ...appSettings,
         users: usersSettings,
-      });
+      };
+      await updateAppSettings(updatedSettings);
       setHasChanges(false);
       toast.success(t("settingsUpdated"));
     } catch (error) {
       toast.error(t("settingsUpdateFailed"));
+      console.error("Failed to save users settings:", error);
     } finally {
       setLoading(false);
     }
@@ -63,9 +74,12 @@ const UsersSettingsPage: React.FC = () => {
   const handleCancel = () => {
     setUsersSettings({
       enableUserManagement: appSettings?.users?.enableUserManagement ?? true,
-      requireEmailVerification: appSettings?.users?.requireEmailVerification ?? true,
-      autoDeactivateInactiveUsers: appSettings?.users?.autoDeactivateInactiveUsers ?? false,
-      inactivityThresholdDays: appSettings?.users?.inactivityThresholdDays ?? 90,
+      requireEmailVerification:
+        appSettings?.users?.requireEmailVerification ?? true,
+      autoDeactivateInactiveUsers:
+        appSettings?.users?.autoDeactivateInactiveUsers ?? false,
+      inactivityThresholdDays:
+        appSettings?.users?.inactivityThresholdDays ?? 90,
       sessionTimeoutMinutes: appSettings?.users?.sessionTimeoutMinutes ?? 30,
       maxLoginAttempts: appSettings?.users?.maxLoginAttempts ?? 5,
       lockoutDurationMinutes: appSettings?.users?.lockoutDurationMinutes ?? 15,

@@ -1,7 +1,7 @@
 import { AppDocument } from '../types';
-import { isPDF, isProcessMap, hasRichTextContent } from './fileTypeHelper';
+import { isPDF, isProcessMap, hasRichTextContent, isDOCX } from './fileTypeHelper';
 
-export type DocumentViewAction = 'pdf' | 'processMap' | 'richText' | 'none';
+export type DocumentViewAction = 'pdf' | 'docx' | 'processMap' | 'richText' | 'none';
 
 /**
  * Determine the appropriate view action for a document
@@ -10,15 +10,19 @@ export const getDocumentViewAction = (doc: AppDocument): DocumentViewAction => {
   if (isPDF(doc)) {
     return 'pdf';
   }
-  
+
+  if (isDOCX(doc)) {
+    return 'docx';
+  }
+
   if (isProcessMap(doc)) {
     return 'processMap';
   }
-  
+
   if (hasRichTextContent(doc)) {
     return 'richText';
   }
-  
+
   return 'none';
 };
 

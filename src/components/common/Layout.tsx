@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import Header from '@/components/common/Header';
-import { NavigationState, Notification } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
-import MobileSidebar from '@/components/common/MobileSidebar';
-import NavigationRail from '@/components/common/NavigationRail';
-import CommandPalette from '@/components/common/CommandPalette';
+import React, { useState, useEffect } from "react";
+import Header from "@/components/common/Header";
+import { NavigationState, Notification } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import MobileSidebar from "@/components/common/MobileSidebar";
+import NavigationRail from "@/components/common/NavigationRail";
+import CommandPalette from "@/components/common/CommandPalette";
 // FIX: Corrected import path for notification service
-import { getNotificationsForUser } from '@/services/notificationServiceFirebase';
-import { useUserStore } from '@/stores/useUserStore';
-import { useProjectStore } from '@/stores/useProjectStore';
-import { useAppStore } from '@/stores/useAppStore';
+import { getNotificationsForUser } from "@/services/notificationServiceFirebase";
+import { useUserStore } from "@/stores/useUserStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface LayoutProps {
   navigation: NavigationState;
@@ -124,7 +124,10 @@ const Layout: React.FC<LayoutProps> = ({
             onLogout={logout}
             onMarkAsRead={handleMarkAsRead}
           />
-          <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-brand-background dark:bg-dark-brand-background page-enter-active">
+          <main
+            className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-brand-background dark:bg-dark-brand-background page-enter-active scroll-smooth overscroll-contain touch-pan-y"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
             <div className="max-w-7xl mx-auto">{children}</div>
           </main>
         </div>
