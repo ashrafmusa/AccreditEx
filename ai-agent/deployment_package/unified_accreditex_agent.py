@@ -16,6 +16,9 @@ from firebase_admin import credentials, firestore
 # Utils
 from dotenv import load_dotenv
 
+# Import Firebase client
+from firebase_client import firebase_client
+
 # Load environment variables
 load_dotenv()
 
@@ -76,15 +79,21 @@ class UnifiedAccreditexAgent:
         logger.info(f"✅ Agent initialized using model: {self.model}")
 
     async def _get_organization_context(self, user_id: Optional[str] = None) -> Dict[str, Any]:
-        """Fetch relevant organizational data from Firebase"""
+        """Fetch comprehensive organizational data using enhanced Firebase client"""
         context = {
             "users_count": 0,
             "projects_count": 0,
             "active_projects": [],
+            "assigned_projects": [],
             "high_risks": [],
             "recent_documents": [],
             "departments": [],
-            "user_role": "Unknown"
+            "department_info": None,
+            "user_role": "Unknown",
+            "user_name": "User",
+            "user_department": None,
+            "user_permissions": [],
+            "workspace_analytics": {}
         }
         
         if not self.db:
@@ -92,55 +101,62 @@ class UnifiedAccreditexAgent:
             return context
         
         try:
-            # Get user role if user_id provided
+            # Get comprehensive user context from Firebase client
             if user_id:
-                user_doc = self.db.collection('users').document(user_id).get()
-                if user_doc.exists:
-                    user_data = user_doc.to_dict()
+                user_context = firebase_client.get_user_context(user_id)
+                
+                if not user_context.get('error'):
+                    # Extract user data
+                    user_data = user_context.get('user_data', {})
                     context["user_role"] = user_data.get("role", "Unknown")
                     context["user_name"] = user_data.get("name", "User")
+                    context["user_department"] = user_data.get("department")
+                    context["user_permissions"] = user_data.get("permissions", [])
+                    
+                    # Extract assigned projects
+                    context["assigned_projects"] = user_context.get('assigned_projects', [])
+                    context["projects_count"] = len(context["assigned_projects"])
+                    
+                    # Extract department info
+                    dept_info = user_context.get('department_info')
+                    if dept_info:
+                        context["department_info"] = {
+                            "name": dept_info.get("name"),
+                            "head": dept_info.get("head"),
+                            "member_count": dept_info.get("memberCount", 0)
+                        }
+                    
+                    # Extract recent documents
+                    context["recent_documents"] = user_context.get('recent_documents', [])
+                    
+                    logger.info(f"✅ Retrieved user context: {context['user_name']} ({context['user_role']}) with {len(context['assigned_projects'])} projects")
             
-            # Get projects summary (limit to 5 most recent)
-            projects_ref = self.db.collection('projects').order_by('updatedAt', direction=firestore.Query.DESCENDING).limit(5)
-            projects = projects_ref.stream()
-            for project in projects:
-                proj_data = project.to_dict()
-                context["active_projects"].append({
-                    "id": project.id,
-                    "name": proj_data.get("name", "Unnamed"),
-                    "progress": proj_data.get("progress", 0),
-                    "status": proj_data.get("status", "Unknown")
-                })
-            context["projects_count"] = len(context["active_projects"])
-            
-            # Get high-priority risks (limit to 5)
-            risks_ref = self.db.collection('risks').where('severity', 'in', ['high', 'critical']).limit(5)
-            risks = risks_ref.stream()
-            for risk in risks:
-                risk_data = risk.to_dict()
-                context["high_risks"].append({
-                    "id": risk.id,
-                    "title": risk_data.get("title", "Unnamed Risk"),
-                    "severity": risk_data.get("severity", "Unknown"),
-                    "status": risk_data.get("status", "open")
-                })
-            
-            # Get total users count
-            users_ref = self.db.collection('users').limit(1)
-            users_snapshot = users_ref.stream()
-            context["users_count"] = len(list(users_snapshot))
-            
-            # Get departments
-            depts_ref = self.db.collection('departments').limit(10)
-            depts = depts_ref.stream()
-            for dept in depts:
-                dept_data = dept.to_dict()
-                context["departments"].append(dept_data.get("name", "Unknown"))
-            
-            logger.info(f"✅ Retrieved organization context: {context['projects_count']} projects, {len(context['high_risks'])} high risks")
+            # Get workspace analytics
+            analytics = firebase_client.get_workspace_analytics()
+            if analytics:
+                context["workspace_analytics"] = analytics
+                context["active_projects"] = [{
+                    "total": analytics.get('projects', {}).get('total', 0),
+                    "active": analytics.get('projects', {}).get('active', 0),
+                    "completed": analytics.get('projects', {}).get('completed', 0)
+                }]
+                
+                # Get high/critical risks from analytics
+                context["high_risks"] = [{
+                    "total": analytics.get('risks', {}).get('total', 0),
+                    "high": analytics.get('risks', {}).get('high', 0),
+                    "critical": analytics.get('risks', {}).get('critical', 0)
+                }]
+                
+                context["users_count"] = analytics.get('users', {}).get('total', 0)
+                context["departments"] = [f"{analytics.get('departments', {}).get('total', 0)} departments"]
+                
+                logger.info(f"✅ Retrieved workspace analytics: {analytics.get('projects', {}).get('total', 0)} total projects")
             
         except Exception as e:
             logger.error(f"Error fetching organization context: {e}")
+            import traceback
+            traceback.print_exc()
         
         return context
 
@@ -194,26 +210,54 @@ TONE AND STYLE:
             
             base_prompt += f"""
 \nCURRENT ORGANIZATION CONTEXT:
-- **User Role**: {context.get('user_role', org_context.get('user_role', 'Unknown'))}
-- **Active Projects**: {org_context.get('projects_count', 0)} projects tracked
-- **High-Priority Risks**: {len(org_context.get('high_risks', []))} risks requiring attention
-- **Team Size**: {org_context.get('users_count', 0)} staff members
-- **Departments**: {', '.join(org_context.get('departments', [])[:3])}
+- **User**: {context.get('user_name', org_context.get('user_name', 'Unknown'))}
+- **Role**: {context.get('user_role', org_context.get('user_role', 'Unknown'))}
+- **Department**: {context.get('user_department', org_context.get('user_department', 'Not specified'))}
 """
             
-            if org_context.get('active_projects'):
-                base_prompt += "\n**Current Projects:**\n"
-                for proj in org_context.get('active_projects', [])[:3]:
-                    base_prompt += f"- {proj.get('name', 'Unnamed')}: {proj.get('progress', 0)}% complete ({proj.get('status', 'Unknown')})\n"
+            # Add assigned projects
+            assigned_projects = org_context.get('assigned_projects', [])
+            if assigned_projects:
+                base_prompt += f"\n**Your Assigned Projects** ({len(assigned_projects)} total):\n"
+                for proj in assigned_projects[:5]:  # Show first 5
+                    base_prompt += f"- **{proj.get('name', 'Unnamed')}**: {proj.get('progress', 0)}% complete ({proj.get('status', 'Unknown')})\n"
             
-            if org_context.get('high_risks'):
-                base_prompt += "\n**Active High-Priority Risks:**\n"
-                for risk in org_context.get('high_risks', [])[:3]:
-                    base_prompt += f"- {risk.get('title', 'Unnamed')}: {risk.get('severity', 'Unknown').upper()} severity ({risk.get('status', 'open')})\n"
+            # Add department info
+            dept_info = org_context.get('department_info')
+            if dept_info:
+                base_prompt += f"\n**Department Information**:\n"
+                base_prompt += f"- Department: {dept_info.get('name', 'Unknown')}\n"
+                base_prompt += f"- Department Head: {dept_info.get('head', 'Unknown')}\n"
+                base_prompt += f"- Team Size: {dept_info.get('member_count', 0)} members\n"
+            
+            # Add recent documents
+            recent_docs = org_context.get('recent_documents', [])
+            if recent_docs:
+                base_prompt += f"\n**Recent Documents** (Last {len(recent_docs)}):\n"
+                for doc in recent_docs[:3]:  # Show first 3
+                    base_prompt += f"- {doc.get('name', 'Unnamed')} ({doc.get('type', 'Unknown')}, {doc.get('status', 'Unknown')})\n"
+            
+            # Add workspace analytics
+            analytics = org_context.get('workspace_analytics', {})
+            if analytics:
+                projects = analytics.get('projects', {})
+                risks = analytics.get('risks', {})
+                base_prompt += f"""
+\n**Workspace Overview**:
+- Total Projects: {projects.get('total', 0)} ({projects.get('active', 0)} active, {projects.get('completed', 0)} completed)
+- High/Critical Risks: {risks.get('high', 0)}/{risks.get('critical', 0)}
+- Departments: {analytics.get('departments', {}).get('total', 0)}
+"""
             
             base_prompt += f"""
-\nUSE THIS CONTEXT to provide specific, actionable advice relevant to the organization's current state.
-When discussing compliance, reference actual projects and risks where relevant.
+\n**IMPORTANT**: Use this context to provide personalized, data-driven advice:
+- Reference the user's actual projects by name when relevant
+- Consider their role and permissions when making recommendations
+- Highlight risks or issues in their specific projects
+- Provide department-specific compliance guidance
+- Reference recent documents they've worked on
+
+Always be specific and actionable, using real data from their workspace.
 """
         return base_prompt
 
@@ -359,3 +403,163 @@ When discussing compliance, reference actual projects and risks where relevant.
             "recommendations": response.choices[0].message.content,
             "timestamp": datetime.now().isoformat()
         }
+
+    async def get_project_insights(self, project_id: str, user_id: str) -> Dict[str, Any]:
+        """
+        Get AI-generated insights for a specific project using Firebase data
+        """
+        try:
+            project = firebase_client.get_project_details(project_id)
+            
+            if not project:
+                return {'error': 'Project not found'}
+            
+            # Build comprehensive insight prompt
+            prompt = f"""Analyze this accreditation project and provide strategic insights:
+
+**Project**: {project['name']}
+**Status**: {project['status']}
+**Progress**: {project['progress']}%
+
+**Compliance Statistics**:
+- Total Standards: {project['statistics']['total_standards']}
+- Compliant: {project['statistics']['compliant']}
+- Non-Compliant: {project['statistics']['non_compliant']}
+- Partially Compliant: {project['statistics']['partially_compliant']}
+- Compliance Rate: {project['statistics']['compliance_rate']:.1f}%
+
+**CAPAs**:
+- Total: {project['capas']}
+- Open: {project['open_capas']}
+
+**Critical Findings**: {project['critical_findings']}
+**Mock Surveys**: {project['mock_surveys']}
+
+Provide a comprehensive analysis with:
+1. **Top 3 Priorities** to improve compliance (be specific)
+2. **Risk Assessment**: What could prevent successful accreditation?
+3. **Recommended Next Actions**: Concrete steps to take now
+4. **Timeline Concerns**: Any deadlines or scheduling issues to address
+
+Format your response in clear Markdown with headings and bullet points."""
+
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are an expert healthcare accreditation consultant providing strategic project insights."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=2048
+            )
+            
+            return {
+                'project_id': project_id,
+                'project_name': project['name'],
+                'insights': response.choices[0].message.content,
+                'statistics': project['statistics'],
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error generating project insights: {e}")
+            return {'error': str(e)}
+
+    async def search_documents_ai(self, query: str, user_id: str, document_type: Optional[str] = None) -> Dict[str, Any]:
+        """
+        AI-powered document search with relevance ranking
+        """
+        try:
+            # Search Firebase
+            results = firebase_client.search_documents(query, document_type)
+            
+            if not results:
+                return {
+                    'query': query,
+                    'results': [],
+                    'message': 'No documents found matching your search'
+                }
+            
+            # Get AI to rank and explain results
+            results_text = "\n".join([
+                f"{i+1}. {doc['name']} ({doc['type']}, v{doc['version']})"
+                for i, doc in enumerate(results)
+            ])
+            
+            prompt = f"""User searched for: "{query}"
+
+Found documents:
+{results_text}
+
+Rank these documents by relevance to the search query and explain why each is relevant.
+Format with clear headings and bullet points."""
+
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a document management expert helping users find relevant compliance documents."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.5,
+                max_tokens=1024
+            )
+            
+            return {
+                'query': query,
+                'results': results,
+                'ai_analysis': response.choices[0].message.content,
+                'count': len(results),
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error in AI document search: {e}")
+            return {'error': str(e)}
+
+    async def get_user_training_status_ai(self, user_id: str) -> Dict[str, Any]:
+        """
+        Get user's training status with AI recommendations
+        """
+        try:
+            training_status = firebase_client.get_user_training_status(user_id)
+            
+            if training_status.get('error'):
+                return training_status
+            
+            # Generate AI recommendations
+            prompt = f"""Analyze this training status and provide recommendations:
+
+**Training Completion**:
+- Total Modules: {training_status['total_modules']}
+- Completed: {training_status['completed']}
+- Completion Rate: {training_status['completion_rate']:.1f}%
+- Pending: {training_status['pending_modules']}
+
+Provide:
+1. **Assessment**: Brief evaluation of training progress
+2. **Priority Modules**: Which pending training should be completed first
+3. **Timeline**: Suggested completion schedule
+4. **Impact**: How this training affects compliance readiness
+
+Format with clear Markdown headings."""
+
+            response = await self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are a healthcare training coordinator providing personalized training recommendations."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1024
+            )
+            
+            return {
+                **training_status,
+                'ai_recommendations': response.choices[0].message.content,
+                'timestamp': datetime.now().isoformat()
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting training status: {e}")
+            return {'error': str(e)}
+

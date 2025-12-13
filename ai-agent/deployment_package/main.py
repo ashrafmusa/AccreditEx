@@ -220,6 +220,103 @@ async def get_training_recommendations(
         logger.error(f"Training recommendations error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# NEW: Project Insights endpoint
+@app.post("/api/ai/insights", dependencies=[Depends(verify_api_key)])
+async def get_project_insights(project_id: str, user_id: str):
+    """Get AI-generated insights for a specific project"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.get_project_insights(
+            project_id=project_id,
+            user_id=user_id
+        )
+        
+        if result.get('error'):
+            raise HTTPException(status_code=404, detail=result['error'])
+        
+        return JSONResponse(content=result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Project insights error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# NEW: AI-powered document search endpoint
+@app.get("/api/ai/search", dependencies=[Depends(verify_api_key)])
+async def search_documents_ai(query: str, user_id: str, document_type: Optional[str] = None):
+    """AI-powered document search with relevance ranking"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.search_documents_ai(
+            query=query,
+            user_id=user_id,
+            document_type=document_type
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"Document search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# NEW: User context endpoint (for debugging)
+@app.get("/api/ai/context/{user_id}", dependencies=[Depends(verify_api_key)])
+async def get_user_context_endpoint(user_id: str):
+    """Get comprehensive user context from Firebase"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        from firebase_client import firebase_client
+        context = firebase_client.get_user_context(user_id)
+        
+        if context.get('error'):
+            raise HTTPException(status_code=404, detail=context['error'])
+        
+        return JSONResponse(content=context)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Context retrieval error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# NEW: Workspace analytics endpoint
+@app.get("/api/ai/analytics", dependencies=[Depends(verify_api_key)])
+async def get_workspace_analytics_endpoint():
+    """Get workspace-wide analytics"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        from firebase_client import firebase_client
+        analytics = firebase_client.get_workspace_analytics()
+        return JSONResponse(content=analytics)
+    except Exception as e:
+        logger.error(f"Analytics retrieval error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# NEW: Training status with AI recommendations
+@app.get("/api/ai/training/{user_id}", dependencies=[Depends(verify_api_key)])
+async def get_training_status_ai(user_id: str):
+    """Get user training status with AI recommendations"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.get_user_training_status_ai(user_id)
+        
+        if result.get('error'):
+            raise HTTPException(status_code=404, detail=result['error'])
+        
+        return JSONResponse(content=result)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Training status error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # Upload report to Firebase Storage (bypasses browser CORS)
 @app.post("/upload-report", dependencies=[Depends(verify_api_key)])
 async def upload_report(
@@ -290,14 +387,24 @@ async def root():
     """Root endpoint"""
     return {
         "service": "AccreditEx AI Agent API",
-        "version": "2.0.0",
+        "version": "2.1.0",  # Updated version
         "status": "running",
         "features": [
-            "Context-aware chat",
+            "Context-aware chat with Firebase integration",
             "Document compliance checking",
             "Risk assessment",
-            "Training recommendations",
+            "Training recommendations with AI",
+            "Project insights and analytics",
+            "AI-powered document search",
+            "User context and workspace analytics",
             "Report upload (CORS bypass)"
+        ],
+        "new_endpoints": [
+            "POST /api/ai/insights - Get project insights",
+            "GET /api/ai/search - AI document search",
+            "GET /api/ai/context/{user_id} - User context",
+            "GET /api/ai/analytics - Workspace analytics",
+            "GET /api/ai/training/{user_id} - Training status with AI"
         ]
     }
 

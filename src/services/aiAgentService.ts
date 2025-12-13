@@ -80,10 +80,31 @@ export class AIAgentService {
         });
     }    /**
      * Get current application context for AI agent
+     * Enhanced with comprehensive user and workspace data
      */
     private getContext(): ChatRequest['context'] {
         const { currentUser } = useUserStore.getState();
-        const { appSettings } = useAppStore.getState();
+        const { appSettings, projects, departments, documents, users } = useAppStore.getState();
+
+        // Get user's assigned projects
+        const userProjects = projects.filter(p =>
+            p.projectLeadId === currentUser?.id ||
+            p.teamMembers?.includes(currentUser?.id)
+        );
+
+        // Get user's department info
+        const userDepartment = departments.find(d =>
+            d.id === currentUser?.department ||
+            d.members?.some(m => m.userId === currentUser?.id)
+        );
+
+        // Get recent documents user has access to
+        const userDocuments = documents
+            .filter(doc =>
+                doc.uploadedBy === currentUser?.name ||
+                doc.departmentIds?.includes(currentUser?.department || '')
+            )
+            .slice(0, 10); // Limit to recent 10
 
         return {
             user_id: currentUser?.id,
@@ -91,10 +112,44 @@ export class AIAgentService {
             route: window.location.pathname,
             user_role: currentUser?.role || 'Guest',
             current_data: {
+                // App context
                 app_name: appSettings?.appName,
+
+                // User info
                 user_name: currentUser?.name,
                 user_email: currentUser?.email,
-                // Add more context as needed
+                user_department: userDepartment?.name?.en || currentUser?.department,
+                user_permissions: currentUser?.permissions || [],
+
+                // User's projects summary
+                assigned_projects: userProjects.map(p => ({
+                    id: p.id,
+                    name: p.name,
+                    status: p.status,
+                    progress: p.progress,
+                    programId: p.programId
+                })),
+                active_projects_count: userProjects.filter(p => p.status === 'In Progress').length,
+
+                // Workspace overview
+                total_projects: projects.length,
+                total_departments: departments.length,
+                total_documents: documents.length,
+                total_users: users.length,
+
+                // Recent activity
+                recent_documents: userDocuments.map(d => ({
+                    name: d.name.en,
+                    type: d.type,
+                    status: d.status
+                })),
+
+                // Department context
+                department_info: userDepartment ? {
+                    name: userDepartment.name.en,
+                    head: userDepartment.head,
+                    member_count: userDepartment.members?.length || 0
+                } : null
             }
         };
     }
