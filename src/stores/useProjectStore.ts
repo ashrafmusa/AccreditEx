@@ -19,7 +19,7 @@ interface ProjectState {
   deleteProject: (projectId: string) => Promise<void>;
   finalizeProject: (projectId: string) => Promise<void>;
   updateDesignControls: (projectId: string, designControls: DesignControlItem[]) => Promise<void>;
-  generateReport: (projectId: string, reportType: string) => Promise<void>;
+  generateReport: (projectId: string, reportType: string) => Promise<any>;
   updateChecklistItem: (projectId: string, checklistItemId: string, updates: Partial<ChecklistItem>) => Promise<void>;
   addComment: (projectId: string, checklistItemId: string, commentText: string) => Promise<void>;
   addCapaReport: (projectId: string, checklistItemId: string) => Promise<void>;

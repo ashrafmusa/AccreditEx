@@ -131,6 +131,13 @@ const VisualSettingsPage: React.FC = () => {
       return;
     }
 
+    console.log("Current user role:", currentUser.role);
+    console.log("Current user:", {
+      id: currentUser.id,
+      role: currentUser.role,
+      email: currentUser.email,
+    });
+
     setLoading(true);
     try {
       // Create a clean settings object with only the required fields
@@ -174,13 +181,14 @@ const VisualSettingsPage: React.FC = () => {
       try {
         await updateAppSettings(newSettings);
         console.log("Settings saved to Firebase successfully");
-      } catch (saveError) {
+      } catch (saveError: any) {
         console.error("Failed to save to Firebase:", saveError);
-        throw new Error(
-          `Database update failed: ${
-            saveError instanceof Error ? saveError.message : "Unknown error"
-          }`
-        );
+        console.error("Error code:", saveError?.code);
+        console.error("Error message:", saveError?.message);
+        console.error("Full error object:", saveError);
+
+        // Pass through the actual Firebase error
+        throw saveError;
       }
 
       // Log changes to audit trail
