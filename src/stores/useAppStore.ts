@@ -311,10 +311,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set({ appSettings: settings });
     } catch (error) {
+      console.error('Store: Failed to update app settings:', error);
       handleError(error, 'updateAppSettings');
-      // Still update local state as fallback
-      set({ appSettings: settings });
-      throw new AppError('Failed to update app settings', 'OPERATION_FAILED');
+      // Don't update local state on error
+      throw error; // Throw the original error, not a generic one
     }
   },
 

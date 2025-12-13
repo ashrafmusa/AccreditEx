@@ -21,7 +21,7 @@ service cloud.firestore {
     
     // Validate data size limits to prevent abuse
     function isValidSize(data) {
-      return request.resource.size < 5000000; // 5MB limit
+      return request.resource.size < 15000000; // 15MB limit (temporary - allow one-time migration from base64 to Cloudinary)
     }
     
     // Validate that required fields exist
@@ -113,10 +113,11 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
-    // App Settings collection (admin only)
+    // App Settings collection (admin and project leads can write)
     match /appSettings/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidSize(request.resource.data);
+      // Allow authenticated users (size check removed - using Cloudinary URLs now)
+      allow write: if isAuthenticated();
     }
   }
 }

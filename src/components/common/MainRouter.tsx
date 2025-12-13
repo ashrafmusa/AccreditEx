@@ -1,34 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { NavigationState, UserRole } from '@/types';
-import DashboardPage from '@/pages/DashboardPage';
-import AnalyticsPage from '@/pages/AnalyticsPage';
-import QualityInsightsPage from '@/pages/QualityInsightsPage';
+import React, { useEffect, useState } from "react";
+import { NavigationState, UserRole } from "@/types";
+import DashboardPage from "@/pages/DashboardPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import QualityInsightsPage from "@/pages/QualityInsightsPage";
 // FIX: Corrected import path for CalendarPage
-import CalendarPage from '@/pages/CalendarPage';
-import RiskHubPage from '@/pages/RiskHubPage';
-import AuditHubPage from '@/pages/AuditHubPage';
-import DocumentControlHubPage from '@/pages/DocumentControlHubPage';
-import ProjectListPage from '@/pages/ProjectListPage';
-import ProjectDetailPage from '@/pages/ProjectDetailPage';
-import CreateProjectPage from '@/pages/CreateProjectPage';
-import StandardsPage from '@/pages/StandardsPage';
-import MyTasksPage from '@/pages/MyTasksPage';
-import DepartmentsPage from '@/pages/DepartmentsPage';
-import DepartmentDetailPage from '@/pages/DepartmentDetailPage';
-import SettingsLayout from '@/components/settings/SettingsLayout';
-import UserProfilePage from '@/pages/UserProfilePage';
-import TrainingHubPage from '@/pages/TrainingHubPage';
-import TrainingDetailPage from '@/pages/TrainingDetailPage';
-import CertificatePage from '@/pages/CertificatePage';
-import SurveyComponent from '@/components/projects/SurveyComponent';
-import SurveyReportPage from '@/pages/SurveyReportPage';
-import DataHubPage from '@/pages/DataHubPage';
+import CalendarPage from "@/pages/CalendarPage";
+import RiskHubPage from "@/pages/RiskHubPage";
+import AuditHubPage from "@/pages/AuditHubPage";
+import DocumentControlHubPage from "@/pages/DocumentControlHubPage";
+import ProjectListPage from "@/pages/ProjectListPage";
+import ProjectDetailPage from "@/pages/ProjectDetailPage";
+import CreateProjectPage from "@/pages/CreateProjectPage";
+import StandardsPage from "@/pages/StandardsPage";
+import MyTasksPage from "@/pages/MyTasksPage";
+import DepartmentsPage from "@/pages/DepartmentsPage";
+import DepartmentDetailPage from "@/pages/DepartmentDetailPage";
+import SettingsLayout from "@/components/settings/SettingsLayout";
+import UserProfilePage from "@/pages/UserProfilePage";
+import TrainingHubPage from "@/pages/TrainingHubPage";
+import TrainingDetailPage from "@/pages/TrainingDetailPage";
+import CertificatePage from "@/pages/CertificatePage";
+import SurveyComponent from "@/components/projects/SurveyComponent";
+import SurveyReportPage from "@/pages/SurveyReportPage";
+import DataHubPage from "@/pages/DataHubPage";
 import MessagingPage from "@/pages/MessagingPage";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
-import EmptyState from '@/components/common/EmptyState';
-import { LockClosedIcon } from '@/components/icons';
+import EmptyState from "@/components/common/EmptyState";
+import { LockClosedIcon } from "@/components/icons";
 
 interface MainRouterProps {
   navigation: NavigationState;
@@ -78,17 +78,26 @@ const MainRouter: React.FC<MainRouterProps> = ({
         "auditHub",
         "dataHub",
       ];
-      
+
       let isUnauthorized = false;
       let message = "";
-      
+
       // Allow settings for profile section for all users
       if (navigation.view === "settings") {
-        const userAllowedSections = ["profile", "security", "appearance", "globe", "general", "notifications", "accessibility"];
+        const userAllowedSections = [
+          "profile",
+          "security",
+          "appearance",
+          "globe",
+          "general",
+          "notifications",
+          "accessibility",
+        ];
         const currentSection = navigation.section || "general";
         if (!userAllowedSections.includes(currentSection)) {
           isUnauthorized = true;
-          message = "This settings section is restricted to administrators. Please access only the available settings for your role.";
+          message =
+            "This settings section is restricted to administrators. Please access only the available settings for your role.";
         }
       } else if (adminOnlyViews.includes(navigation.view)) {
         isUnauthorized = true;
@@ -96,12 +105,13 @@ const MainRouter: React.FC<MainRouterProps> = ({
           departments: "Department Management",
           departmentDetail: "Department Details",
           auditHub: "Audit Management",
-          dataHub: "Data Management"
+          dataHub: "Data Management",
         };
-        const viewName = viewNames[navigation.view as keyof typeof viewNames] || "this area";
+        const viewName =
+          viewNames[navigation.view as keyof typeof viewNames] || "this area";
         message = `${viewName} is restricted to administrators only. You don't have permission to access this feature.`;
       }
-      
+
       if (isUnauthorized) {
         setUnauthorizedAttempt(true);
         setUnauthorizedMessage(message);
@@ -169,13 +179,24 @@ const MainRouter: React.FC<MainRouterProps> = ({
               <LockClosedIcon className="h-8 w-8 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-2">Your role does not have permission to access this area.</p>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 italic">{unauthorizedMessage}</p>
-          
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Access Denied
+          </h2>
+          <p className="text-gray-600 dark:text-gray-300 mb-2">
+            Your role does not have permission to access this area.
+          </p>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 italic">
+            {unauthorizedMessage}
+          </p>
+
           <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 text-left">
-            <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase mb-1">ℹ️ Need Help?</p>
-            <p className="text-sm text-blue-800 dark:text-blue-200">If you believe you should have access to this feature, please contact your administrator.</p>
+            <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase mb-1">
+              ℹ️ Need Help?
+            </p>
+            <p className="text-sm text-blue-800 dark:text-blue-200">
+              If you believe you should have access to this feature, please
+              contact your administrator.
+            </p>
           </div>
 
           <div className="flex gap-3">
