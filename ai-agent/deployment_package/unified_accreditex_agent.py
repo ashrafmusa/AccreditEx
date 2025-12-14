@@ -206,47 +206,67 @@ TONE AND STYLE:
 
         # Add dynamic context if provided
         if context:
+            # Check if frontend context (preferred)
+            current_data = context.get('current_data', {})
             org_context = context.get('organization', {})
+            
+            # Use frontend data if available, fallback to organization context
+            user_name = current_data.get('user_name', org_context.get('user_name', 'Unknown'))
+            user_role = context.get('user_role', org_context.get('user_role', 'Unknown'))
+            user_department = current_data.get('user_department', org_context.get('user_department', 'Not specified'))
             
             base_prompt += f"""
 \nCURRENT ORGANIZATION CONTEXT:
-- **User**: {context.get('user_name', org_context.get('user_name', 'Unknown'))}
-- **Role**: {context.get('user_role', org_context.get('user_role', 'Unknown'))}
-- **Department**: {context.get('user_department', org_context.get('user_department', 'Not specified'))}
+- **User**: {user_name}
+- **Role**: {user_role}
+- **Department**: {user_department}
 """
             
-            # Add assigned projects
-            assigned_projects = org_context.get('assigned_projects', [])
+            # Add assigned projects (frontend format first, fallback to org_context)
+            assigned_projects = current_data.get('assigned_projects', org_context.get('assigned_projects', []))
             if assigned_projects:
                 base_prompt += f"\n**Your Assigned Projects** ({len(assigned_projects)} total):\n"
                 for proj in assigned_projects[:5]:  # Show first 5
                     base_prompt += f"- **{proj.get('name', 'Unnamed')}**: {proj.get('progress', 0)}% complete ({proj.get('status', 'Unknown')})\n"
             
-            # Add department info
-            dept_info = org_context.get('department_info')
+            # Add department info (frontend format first)
+            dept_info = current_data.get('department_info', org_context.get('department_info'))
             if dept_info:
                 base_prompt += f"\n**Department Information**:\n"
                 base_prompt += f"- Department: {dept_info.get('name', 'Unknown')}\n"
-                base_prompt += f"- Department Head: {dept_info.get('head', 'Unknown')}\n"
-                base_prompt += f"- Team Size: {dept_info.get('member_count', 0)} members\n"
+                if dept_info.get('head'):
+                    base_prompt += f"- Department Head: {dept_info.get('head')}\n"
+                if dept_info.get('member_count'):
+                    base_prompt += f"- Team Size: {dept_info.get('member_count', 0)} members\n"
             
-            # Add recent documents
-            recent_docs = org_context.get('recent_documents', [])
+            # Add recent documents (frontend format first)
+            recent_docs = current_data.get('recent_documents', org_context.get('recent_documents', []))
             if recent_docs:
                 base_prompt += f"\n**Recent Documents** (Last {len(recent_docs)}):\n"
                 for doc in recent_docs[:3]:  # Show first 3
                     base_prompt += f"- {doc.get('name', 'Unnamed')} ({doc.get('type', 'Unknown')}, {doc.get('status', 'Unknown')})\n"
             
-            # Add workspace analytics
-            analytics = org_context.get('workspace_analytics', {})
-            if analytics:
+            # Add workspace analytics (frontend provides total counts directly)
+            total_projects = current_data.get('total_projects', 0)
+            total_users = current_data.get('total_users', 0)
+            total_departments = current_data.get('total_departments', 0)
+            active_projects = current_data.get('active_projects_count', 0)
+            
+            # Fallback to organization analytics if frontend data not available
+            if not total_projects:
+                analytics = org_context.get('workspace_analytics', {})
                 projects = analytics.get('projects', {})
                 risks = analytics.get('risks', {})
+                total_projects = projects.get('total', 0)
+                active_projects = projects.get('active', 0)
+                total_departments = analytics.get('departments', {}).get('total', 0)
+            
+            if total_projects > 0 or total_users > 0:
                 base_prompt += f"""
 \n**Workspace Overview**:
-- Total Projects: {projects.get('total', 0)} ({projects.get('active', 0)} active, {projects.get('completed', 0)} completed)
-- High/Critical Risks: {risks.get('high', 0)}/{risks.get('critical', 0)}
-- Departments: {analytics.get('departments', {}).get('total', 0)}
+- Total Projects: {total_projects} ({active_projects} active)
+- Total Users: {total_users}
+- Total Departments: {total_departments}
 """
             
             base_prompt += f"""
@@ -270,16 +290,22 @@ Always be specific and actionable, using real data from their workspace.
             if not thread_id:
                 thread_id = f"thread_{datetime.now().timestamp()}"
             
-            # Fetch organization context from Firebase
-            user_id = context.get('user_id') if context else None
-            org_context = await self._get_organization_context(user_id)
-            
-            # Merge organization context with provided context
-            enhanced_context = {
-                **(context or {}),
-                'organization': org_context,
-                'user_role': org_context.get('user_role', context.get('user_role', 'Unknown') if context else 'Unknown')
-            }
+            # PRIORITY: Use frontend context if provided (it already has all the data!)
+            if context and context.get('current_data'):
+                logger.info(f"✅ Using frontend context: {context.get('current_data', {}).get('total_projects', 0)} projects")
+                enhanced_context = context
+            else:
+                # Fallback: Fetch organization context from Firebase (legacy path)
+                logger.info("⚠️ No frontend context, fetching from Firebase...")
+                user_id = context.get('user_id') if context else None
+                org_context = await self._get_organization_context(user_id)
+                
+                # Merge organization context with provided context
+                enhanced_context = {
+                    **(context or {}),
+                    'organization': org_context,
+                    'user_role': org_context.get('user_role', context.get('user_role', 'Unknown') if context else 'Unknown')
+                }
             
             # Initialize conversation history if new thread
             if thread_id not in self.conversations:
