@@ -16,8 +16,33 @@ from firebase_admin import credentials, firestore
 # Utils
 from dotenv import load_dotenv
 
+# AccreditEx Unified AI Agent
+# Week 1: Quick Wins + Week 2: Agent Specialization
+
 # Import Firebase client
 from firebase_client import firebase_client
+from monitoring import performance_monitor
+from document_analyzer import document_analyzer
+
+# Import specialist prompts (Quick Win 1)
+from specialist_prompts import (
+    TASK_ROUTING_MAP,
+    get_compliance_specialist_prompt,
+    get_risk_assessment_specialist_prompt,
+    get_training_specialist_prompt,
+    get_general_agent_prompt,
+    detect_task_type
+)
+
+# Import context manager (Quick Win 3)
+from context_manager import ContextManager
+
+# Week 2 imports - Specialist Agents
+from agents import (
+    ComplianceAgent,
+    RiskAssessmentAgent,
+    TrainingCoordinator
+)
 
 # Load environment variables
 load_dotenv()
@@ -47,12 +72,29 @@ class UnifiedAccreditexAgent:
             base_url=base_url
         )
         
-        # Model selection - use Llama 3.3 70B (current stable model as of Dec 2024)
-        # Alternative models: llama-3.3-70b-versatile, llama-3.1-8b-instant, mixtral-8x7b-32768
-        # See: https://console.groq.com/docs/models
-        self.model = "llama-3.3-70b-versatile" if os.getenv("GROQ_API_KEY") else "gpt-3.5-turbo"
+        # Initialize Firebase
+        self.db = firebase_client.db
+        if self.db:
+            logger.info("✅ Firebase database connected")
+        else:
+            logger.warning("⚠️ Firebase database not initialized!")
         
-        # In-memory conversation history storage (for demo/stateless deployment)
+        # Model configuration
+        self.model = "llama-3.3-70b-versatile"
+        self.temperature = 0.7
+        self.max_tokens = 4096
+        
+        # Initialize context manager (Week 1 - Quick Win 3)
+        self.context_manager = ContextManager(firebase_client)
+        
+        # Initialize specialist agents (Week 2 - Agent Specialization)
+        logger.info("🤖 Initializing specialist agents...")
+        self.compliance_agent = ComplianceAgent(self.client, firebase_client)
+        self.risk_agent = RiskAssessmentAgent(self.client, firebase_client)
+        self.training_agent = TrainingCoordinator(self.client, firebase_client)
+        logger.info("✅ All specialist agents initialized")
+        
+        # Conversation history (managed manually since not using Assistants API)
         # In production, this should be in Redis or Firestore
         self.conversations: Dict[str, List[Dict[str, str]]] = {}
         
@@ -160,113 +202,247 @@ class UnifiedAccreditexAgent:
         
         return context
 
-    def _get_system_prompt(self, context: Optional[Dict[str, Any]] = None) -> str:
-        """Get the system prompt with dynamic context"""
+    def detect_task_type(self, message: str) -> str:
+        """
+        Detect task type from message keywords
+        Returns: 'compliance', 'risk', 'training', or 'general'
+        """
+        message_lower = message.lower()
         
-        base_prompt = """
-You are the AccreditEx AI Agent, an expert healthcare accreditation consultant.
-Your goal is to assist healthcare organizations in preparing for and maintaining accreditation (CBAHI, JCI, etc.).
+        # Count keyword matches for each type
+        type_scores = {}
+        for task_type, keywords in TASK_ROUTING_MAP.items():
+            score = sum(1 for keyword in keywords if keyword in message_lower)
+            if score > 0:
+                type_scores[task_type] = score
+        
+        # Return type with highest score, or 'general' if no matches
+        if type_scores:
+            detected_type = max(type_scores, key=type_scores.get)
+            logger.info(f"🎯 Task type detected: {detected_type} (confidence: {type_scores[detected_type]} keywords)")
+        # Check for compliance keywords
+        compliance_keywords = TASK_ROUTING_MAP.get('compliance', [])
+        if any(keyword in message_lower for keyword in compliance_keywords):
+            logger.info(f"🎯 Task type detected: compliance")
+            return 'compliance'
+        
+        # Check for risk keywords
+        risk_keywords = TASK_ROUTING_MAP.get('risk', [])
+        if any(keyword in message_lower for keyword in risk_keywords):
+            logger.info(f"🎯 Task type detected: risk")
+            return 'risk'
+        
+        # Check for training keywords
+        training_keywords = TASK_ROUTING_MAP.get('training', [])
+        if any(keyword in message_lower for keyword in training_keywords):
+            logger.info(f"🎯 Task type detected: training")
+            return 'training'
+        
+        logger.info(f"🎯 Task type detected: general")
+        return 'general'
+    
+    async def route_to_specialist(
+        self,
+        task_type: str,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        stream: bool = True
+    ) -> AsyncGenerator[str, None]:
+        """
+        Route request to appropriate specialist agent (Week 2)
+        
+        Args:
+            task_type: Type of task (compliance/risk/training/general)
+            message: User message
+            context: Optional context dictionary
+            stream: Whether to stream response
+            
+        Yields:
+            Response chunks from specialist
+        """
+        logger.info(f"📋 Routing to specialist: {task_type}")
+        
+        # Route to appropriate specialist
+        if task_type == 'compliance':
+            async for chunk in self.compliance_agent.chat(message, context, stream):
+                yield chunk
+                
+        elif task_type == 'risk':
+            async for chunk in self.risk_agent.chat(message, context, stream):
+                yield chunk
+                
+        elif task_type == 'training':
+            async for chunk in self.training_agent.chat(message, context, stream):
+                yield chunk
+                
+        else:
+            # Fallback to unified agent for general queries
+            logger.info("📝 Using unified agent for general query")
+            async for chunk in self._general_chat(message, context, stream):
+                yield chunk
+    
+    async def _general_chat(
+        self,
+        message: str,
+        context: Optional[Dict[str, Any]] = None,
+        stream: bool = True
+    ) -> AsyncGenerator[str, None]:
+        """
+        Handle general (non-specialist) chat queries
+        
+        Args:
+            message: User message
+            context: Optional context
+            stream: Whether to stream
+            
+        Yields:
+            Response chunks
+        """
+        # Get general agent prompt
+        system_prompt = get_general_agent_prompt()
+        
+        # Add context if available
+        if context:
+            org_context = context.get('organization', {})
+            if org_context:
+                system_prompt += self._format_context_for_prompt(org_context)
+        
+        # Create messages
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": message}
+        ]
+        
+        # Stream response
+        stream_response = await self.client.chat.completions.create(
+            model=self.model,
+            messages=messages,
+            temperature=self.temperature,
+            max_tokens=self.max_tokens,
+            stream=stream
+        )
+        
+        if stream:
+            async for chunk in stream_response:
+                if chunk.choices[0].delta.content:
+                    yield chunk.choices[0].delta.content
+        else:
+            response = stream_response.choices[0].message.content
+            yield response
+    
+    def _format_context_for_prompt(self, org_context: Dict[str, Any]) -> str:
+        """Format organization context for system prompt"""
+        context_text = "\n\n**Organization Context**:\n"
+        
+        if org_context.get('user_name'):
+            context_text += f"- User: {org_context['user_name']} ({org_context.get('user_role', 'Unknown')})\n"
+        
+        if org_context.get('projects_count'):
+            context_text += f"- Projects: {org_context['projects_count']}\n"
+        
+        if org_context.get('high_risks'):
+            context_text += f"- High Risks: {len(org_context['high_risks'])}\n"
+        
+        return context_text
 
-CORE RESPONSIBILITIES:
-1. **Compliance Checking**: Analyze documents against accreditation standards.
-2. **Risk Assessment**: Identify potential compliance risks and suggest mitigation.
-3. **Training Support**: Recommend training plans based on staff roles and gaps.
-4. **General Guidance**: Answer questions about accreditation processes and standards.
-
-RESPONSE FORMAT:
-**ALWAYS format your responses in Markdown** for better readability:
-- Use **## Headings** for main sections
-- Use **### Sub-headings** for subsections
-- Use **bold** for emphasis on key terms
-- Use bullet points (- ) or numbered lists (1. ) for structured information
-- Use `code formatting` for technical terms or standards references
-- Use > blockquotes for important warnings or key takeaways
-- Add line breaks between sections for clarity
-
-Example structure:
-## Analysis Summary
-Brief overview of the issue...
-
-### Key Findings
-1. **First finding**: Explanation...
-2. **Second finding**: Explanation...
-
-### Recommendations
-- **Immediate Actions**: What to do now
-- **Follow-up Steps**: Next steps
-
-> **Important**: Critical note or warning
-
-TONE AND STYLE:
-- Professional, encouraging, and authoritative but accessible.
-- Use clear, structured formatting with proper Markdown.
-- Be proactive: suggest next steps or related checks.
-- Always provide actionable, specific advice.
-"""
-
+    def _get_base_system_prompt(self, org_context: Optional[Dict[str, Any]] = None, ai_instructions: Optional[Dict[str, Any]] = None, task_type: str = 'general') -> str:
+        """
+        Get the system prompt with dynamic context and specialist routing
+        
+        Args:
+            context: Application context (user, page, data)
+            task_type: Type of task (compliance, risk, training, general)
+        """
+        
+        # Select specialist prompt based on task type
+        if task_type == 'compliance':
+            base_prompt = get_compliance_specialist_prompt()
+            logger.info("📋 Using Compliance Specialist prompt")
+        elif task_type == 'risk':
+            base_prompt = get_risk_assessment_specialist_prompt()
+            logger.info("⚠️ Using Risk Assessment Specialist prompt")
+        elif task_type == 'training':
+            base_prompt = get_training_specialist_prompt()
+            logger.info("🎓 Using Training Coordinator prompt")
+        else:
+            base_prompt = get_general_agent_prompt()
+            logger.info("💬 Using General Agent prompt")
+        
         # Add dynamic context if provided
         if context:
-            # Check if frontend context (preferred)
-            current_data = context.get('current_data', {})
             org_context = context.get('organization', {})
-            
-            # Use frontend data if available, fallback to organization context
-            user_name = current_data.get('user_name', org_context.get('user_name', 'Unknown'))
-            user_role = context.get('user_role', org_context.get('user_role', 'Unknown'))
-            user_department = current_data.get('user_department', org_context.get('user_department', 'Not specified'))
+            current_data = context.get('current_data', {})
             
             base_prompt += f"""
 \nCURRENT ORGANIZATION CONTEXT:
-- **User**: {user_name}
-- **Role**: {user_role}
-- **Department**: {user_department}
+- **User**: {context.get('user_name', org_context.get('user_name', 'Unknown'))}
+- **Role**: {context.get('user_role', org_context.get('user_role', 'Unknown'))}
+- **Department**: {context.get('user_department', org_context.get('user_department', 'Not specified'))}
 """
             
-            # Add assigned projects (frontend format first, fallback to org_context)
-            assigned_projects = current_data.get('assigned_projects', org_context.get('assigned_projects', []))
+            # Add forms and templates information if available
+            available_templates = current_data.get('available_templates', [])
+            available_forms = current_data.get('available_forms', [])
+            ai_instructions = current_data.get('ai_instructions', {})
+            
+            if available_templates or available_forms:
+                base_prompt += f"""
+\n**📋 AVAILABLE CONTENT & CAPABILITIES**:
+- **Templates Available**: {len(available_templates)} (SOPs, Policies, Procedures, Manuals, Checklists)
+- **Forms Available**: {len(available_forms)} (Incident Reports, Safety Checklists, Risk Assessments, Training Records, Audit Findings)
+- **Context Awareness**: {ai_instructions.get('context_awareness', 'Full app access')}
+- **Can Provide Forms**: {ai_instructions.get('can_provide_forms', True)}
+- **Can Generate Documents**: {ai_instructions.get('can_generate_documents', True)}
+
+**CRITICAL INSTRUCTIONS FOR FORM/TEMPLATE REQUESTS**:
+1. When user asks for ANY form or template (incident report, safety checklist, policy, SOP, etc.):
+   - IMMEDIATELY acknowledge you can provide it
+   - List the specific form/template that matches their request
+   - Offer to provide the complete content with all fields and structure
+   - DO NOT say you don't have access - YOU DO HAVE ACCESS!
+
+2. Available Form Categories: {', '.join(ai_instructions.get('available_form_categories', []))}
+3. Available Template Categories: {', '.join(ai_instructions.get('available_template_categories', []))}
+
+4. Example responses to form requests:
+   - User: "I need an incident report" → "I can provide the Incident Report Form immediately! It includes fields for incident details, witnesses, corrective actions, and follows OHAS compliance requirements. Would you like me to show you the complete form?"
+   - User: "Show me safety forms" → "I have several safety-related forms available: Safety Inspection Checklist, Incident Report Form, and Risk Assessment Form. Which one would you like to see?"
+
+**Remember**: You have FULL ACCESS to all {len(available_templates)} templates and {len(available_forms)} forms. Provide them confidently when requested!
+"""
+            
+            # Add assigned projects
+            assigned_projects = org_context.get('assigned_projects', [])
             if assigned_projects:
                 base_prompt += f"\n**Your Assigned Projects** ({len(assigned_projects)} total):\n"
                 for proj in assigned_projects[:5]:  # Show first 5
                     base_prompt += f"- **{proj.get('name', 'Unnamed')}**: {proj.get('progress', 0)}% complete ({proj.get('status', 'Unknown')})\n"
             
-            # Add department info (frontend format first)
-            dept_info = current_data.get('department_info', org_context.get('department_info'))
+            # Add department info
+            dept_info = org_context.get('department_info')
             if dept_info:
                 base_prompt += f"\n**Department Information**:\n"
                 base_prompt += f"- Department: {dept_info.get('name', 'Unknown')}\n"
-                if dept_info.get('head'):
-                    base_prompt += f"- Department Head: {dept_info.get('head')}\n"
-                if dept_info.get('member_count'):
-                    base_prompt += f"- Team Size: {dept_info.get('member_count', 0)} members\n"
+                base_prompt += f"- Department Head: {dept_info.get('head', 'Unknown')}\n"
+                base_prompt += f"- Team Size: {dept_info.get('member_count', 0)} members\n"
             
-            # Add recent documents (frontend format first)
-            recent_docs = current_data.get('recent_documents', org_context.get('recent_documents', []))
+            # Add recent documents
+            recent_docs = org_context.get('recent_documents', [])
             if recent_docs:
                 base_prompt += f"\n**Recent Documents** (Last {len(recent_docs)}):\n"
                 for doc in recent_docs[:3]:  # Show first 3
                     base_prompt += f"- {doc.get('name', 'Unnamed')} ({doc.get('type', 'Unknown')}, {doc.get('status', 'Unknown')})\n"
             
-            # Add workspace analytics (frontend provides total counts directly)
-            total_projects = current_data.get('total_projects', 0)
-            total_users = current_data.get('total_users', 0)
-            total_departments = current_data.get('total_departments', 0)
-            active_projects = current_data.get('active_projects_count', 0)
-            
-            # Fallback to organization analytics if frontend data not available
-            if not total_projects:
-                analytics = org_context.get('workspace_analytics', {})
+            # Add workspace analytics
+            analytics = org_context.get('workspace_analytics', {})
+            if analytics:
                 projects = analytics.get('projects', {})
                 risks = analytics.get('risks', {})
-                total_projects = projects.get('total', 0)
-                active_projects = projects.get('active', 0)
-                total_departments = analytics.get('departments', {}).get('total', 0)
-            
-            if total_projects > 0 or total_users > 0:
                 base_prompt += f"""
 \n**Workspace Overview**:
-- Total Projects: {total_projects} ({active_projects} active)
-- Total Users: {total_users}
-- Total Departments: {total_departments}
+- Total Projects: {projects.get('total', 0)} ({projects.get('active', 0)} active, {projects.get('completed', 0)} completed)
+- High/Critical Risks: {risks.get('high', 0)}/{risks.get('critical', 0)}
+- Departments: {analytics.get('departments', {}).get('total', 0)}
 """
             
             base_prompt += f"""
@@ -284,43 +460,58 @@ Always be specific and actionable, using real data from their workspace.
     async def chat(self, message: str, thread_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
         Chat with the agent using streaming responses (Standard Chat Completions)
+        Now with specialist routing and tiered context management
         """
         try:
             # Generate thread_id if not provided
             if not thread_id:
                 thread_id = f"thread_{datetime.now().timestamp()}"
             
-            # PRIORITY: Use frontend context if provided (it already has all the data!)
-            if context and context.get('current_data'):
-                logger.info(f"✅ Using frontend context: {context.get('current_data', {}).get('total_projects', 0)} projects")
-                enhanced_context = context
+            # Detect task type from message (Quick Win 1)
+            task_type = self.detect_task_type(message)
+            
+            # Auto-detect context tier from message (Quick Win 3)
+            user_id = context.get('user_id') if context else None
+            context_tier = context.get('context_tier') if context else None
+            
+            if not context_tier:
+                context_tier = context_manager.detect_context_tier(message)
+            
+            # Get tiered context (Quick Win 3)
+            if user_id:
+                tiered_context = context_manager.get_context(user_id, context_tier)
+                logger.info(f"📦 Using {context_tier} context tier ({len(str(tiered_context))} chars)")
             else:
-                # Fallback: Fetch organization context from Firebase (legacy path)
-                logger.info("⚠️ No frontend context, fetching from Firebase...")
-                user_id = context.get('user_id') if context else None
-                org_context = await self._get_organization_context(user_id)
-                
-                # Merge organization context with provided context
-                enhanced_context = {
-                    **(context or {}),
-                    'organization': org_context,
-                    'user_role': org_context.get('user_role', context.get('user_role', 'Unknown') if context else 'Unknown')
-                }
+                tiered_context = {}
+                logger.warning("⚠️ No user_id provided, using empty context")
+            
+            # Fetch organization context from Firebase (legacy - now handled by context_manager)
+            org_context = await self._get_organization_context(user_id)
+            
+            # Merge tiered context with organization context
+            enhanced_context = {
+                **(context or {}),
+                **tiered_context,
+                'organization': org_context,
+                'user_role': tiered_context.get('user_role', org_context.get('user_role', 'Unknown'))
+            }
             
             # Initialize conversation history if new thread
             if thread_id not in self.conversations:
+                # Use specialist prompt based on detected task type
                 self.conversations[thread_id] = [
-                    {"role": "system", "content": self._get_system_prompt(enhanced_context)}
+                    {"role": "system", "content": self._get_system_prompt(enhanced_context, task_type=task_type)}
                 ]
             else:
-                # Update system prompt with fresh context for existing threads
+                # Update system prompt with fresh context + specialist routing
                 self.conversations[thread_id][0] = {
                     "role": "system", 
-                    "content": self._get_system_prompt(enhanced_context)
+                    "content": self._get_system_prompt(enhanced_context, task_type=task_type)
                 }
 
             # Append user message
             self.conversations[thread_id].append({"role": "user", "content": message})
+
             
             # Keep history manageable (last 10 messages + system prompt)
             if len(self.conversations[thread_id]) > 11:

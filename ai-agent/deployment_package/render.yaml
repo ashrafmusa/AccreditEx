@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: accreditex-ai-agent
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python main.py
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: FIREBASE_CREDENTIALS_PATH
+        value: serviceAccountKey.json
+      - key: PORT
+        value: 10000
+      - key: PYTHON_VERSION
+        value: 3.11
+    healthCheckPath: /health

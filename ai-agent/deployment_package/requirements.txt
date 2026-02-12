@@ -1,31 +1,9 @@
-# AccreditEx AI Agent - Production Dependencies
-# Enhanced with Firebase integration for data-aware AI
-
-# 🤖 Microsoft Agent Framework (Latest Beta)
-agent-framework-azure-ai==1.0.0b251114
-
-# 🚀 FastAPI Web Framework  
-fastapi>=0.104.0
-uvicorn[standard]>=0.24.0
-pydantic>=2.5.0
-
-# 🔑 OpenAI Integration
-openai>=1.3.0
-
-# 🔥 Firebase Admin SDK (Enhanced)
-firebase-admin>=6.5.0
-
-# ⚙️ Configuration & Environment
-python-dotenv>=1.0.0
-
-# 📊 Logging & Monitoring
-structlog>=23.2.0
-
-# 📁 File Operations
-aiofiles>=23.2.0
-
-# 🛡️ Security & Validation
-pydantic[email]>=2.5.0
-
-# 🌐 HTTP Client (for health checks)
-httpx>=0.25.0
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+openai==1.57.0
+firebase-admin==6.5.0
+python-dotenv==1.0.1
+pydantic==2.10.3
+structlog==24.4.0
+aiofiles==24.1.0
+httpx==0.28.1
