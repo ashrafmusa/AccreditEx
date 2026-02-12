@@ -1,6 +1,7 @@
 """
 Firebase Client for AI Agent Backend
 Provides direct Firebase database access for context-aware AI responses
+Enhanced with caching and performance monitoring
 
 Install: pip install firebase-admin
 """
@@ -12,47 +13,53 @@ import os
 import json
 from datetime import datetime, timedelta
 
+# Import caching and monitoring
+try:
+    from cache import cache
+    from monitoring import performance_monitor
+except ImportError:
+    # Fallback if modules not available
+    cache = None
+    performance_monitor = None
+
 class FirebaseClient:
-    def __init__(self):
-        """Initialize Firebase Admin SDK with support for environment variables"""
+    def __init__(self, use_cache: bool = True):
+        """
+        Initialize Firebase Admin SDK
+        
+        Args:
+            use_cache: Enable caching for Firebase queries (default: True)
+        """
+        self.use_cache = use_cache and cache is not None
+        
         # Use service account from environment or file
         if not firebase_admin._apps:
+            # Try JSON credentials first (for Render deployment)
+            cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
+            cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH', 'serviceAccountKey.json')
+            
             try:
-                # Try environment variable first (for Render deployment)
-                cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
-                
                 if cred_json:
-                    # Parse JSON from environment variable
+                    # Parse JSON credentials from environment variable
                     cred_dict = json.loads(cred_json)
                     cred = credentials.Certificate(cred_dict)
-                    firebase_admin.initialize_app(cred)
-                    print("✅ Firebase Admin SDK initialized from environment variable")
+                    print("✅ Firebase initialized with JSON credentials")
                 else:
-                    # Try file path (for local development)
-                    cred_path = os.getenv('FIREBASE_SERVICE_ACCOUNT_PATH', 'serviceAccountKey.json')
-                    if os.path.exists(cred_path):
-                        cred = credentials.Certificate(cred_path)
-                        firebase_admin.initialize_app(cred)
-                        print(f"✅ Firebase Admin SDK initialized from {cred_path}")
-                    else:
-                        print("⚠️ No Firebase credentials found - Firebase features disabled")
-                        self.db = None
-                        return
-                        
+                    # Use credentials file path
+                    cred = credentials.Certificate(cred_path)
+                    print("✅ Firebase initialized with credentials file")
+                
+                firebase_admin.initialize_app(cred)
             except Exception as e:
-                print(f"❌ Firebase initialization failed: {e}")
-                self.db = None
-                return
+                print(f"⚠️ Firebase initialization warning: {e}")
+                print("   Using default credentials or application credentials")
+                firebase_admin.initialize_app()
         
-        try:
-            self.db = firestore.client()
-        except Exception as e:
-            print(f"❌ Firestore client initialization failed: {e}")
-            self.db = None
+        self.db = firestore.client()
 
     def get_user_context(self, user_id: str) -> Dict[str, Any]:
         """
-        Get comprehensive user context from Firebase
+        Get comprehensive user context from Firebase with caching
         
         Args:
             user_id: User's Firebase document ID
@@ -60,13 +67,21 @@ class FirebaseClient:
         Returns:
             Dictionary with user data, projects, permissions, etc.
         """
-        if not self.db:
-            return {
-                'error': 'Firebase not initialized',
-                'user_data': None
-            }
-            
+        # Check cache first
+        if self.use_cache:
+            cache_key = f"user_context:{user_id}"
+            cached_data = cache.get(cache_key)
+            if cached_data:
+                if performance_monitor:
+                    performance_monitor.track_cache_hit(cache_key)
+                return cached_data
+            if performance_monitor:
+                performance_monitor.track_cache_miss(cache_key)
+        
         try:
+            if performance_monitor:
+                performance_monitor.track_firebase_query('users', 'get_document')
+            
             # Get user document
             user_ref = self.db.collection('users').document(user_id)
             user_doc = user_ref.get()
@@ -105,7 +120,7 @@ class FirebaseClient:
             
             documents = [doc.to_dict() for doc in recent_docs]
             
-            return {
+            result = {
                 'user_data': {
                     'id': user_id,
                     'name': user_data.get('name'),
@@ -135,7 +150,15 @@ class FirebaseClient:
                 ]
             }
             
+            # Cache the result
+            if self.use_cache:
+                cache.set(f"user_context:{user_id}", result, ttl=180)  # 3 minutes
+            
+            return result
+            
         except Exception as e:
+            if performance_monitor:
+                performance_monitor.track_error("FirebaseError", str(e), {"user_id": user_id})
             print(f"❌ Error fetching user context: {e}")
             return {
                 'error': str(e),
@@ -152,9 +175,6 @@ class FirebaseClient:
         Returns:
             Project data with checklist, CAPAs, surveys, etc.
         """
-        if not self.db:
-            return None
-            
         try:
             project_ref = self.db.collection('projects').document(project_id)
             project_doc = project_ref.get()
@@ -203,9 +223,6 @@ class FirebaseClient:
         Returns:
             Aggregate statistics across all projects, users, departments
         """
-        if not self.db:
-            return {}
-            
         try:
             # Get all projects
             projects = list(self.db.collection('projects').stream())
@@ -256,9 +273,6 @@ class FirebaseClient:
         Returns:
             List of matching documents
         """
-        if not self.db:
-            return []
-            
         try:
             docs_ref = self.db.collection('documents')
             
@@ -301,9 +315,6 @@ class FirebaseClient:
         Returns:
             Training completion statistics and gaps
         """
-        if not self.db:
-            return {}
-            
         try:
             # Get user document
             user_doc = self.db.collection('users').document(user_id).get()
