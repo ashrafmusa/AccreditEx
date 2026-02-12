@@ -480,11 +480,11 @@ Always be specific and actionable, using real data from their workspace.
             context_tier = context.get('context_tier') if context else None
             
             if not context_tier:
-                context_tier = context_manager.detect_context_tier(message)
+                context_tier = self.context_manager.detect_context_tier(message)
             
             # Get tiered context (Quick Win 3)
             if user_id:
-                tiered_context = context_manager.get_context(user_id, context_tier)
+                tiered_context = self.context_manager.get_context(user_id, context_tier)
                 logger.info(f"📦 Using {context_tier} context tier ({len(str(tiered_context))} chars)")
             else:
                 tiered_context = {}
