@@ -30,8 +30,7 @@ from specialist_prompts import (
     get_compliance_specialist_prompt,
     get_risk_assessment_specialist_prompt,
     get_training_specialist_prompt,
-    get_general_agent_prompt,
-    detect_task_type
+    get_general_agent_prompt
 )
 
 # Import context manager (Quick Win 3)
