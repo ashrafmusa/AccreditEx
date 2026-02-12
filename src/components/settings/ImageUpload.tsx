@@ -167,7 +167,7 @@ const ImageUpload: FC<ImageUploadProps> = ({ currentImage, onImageChange }) => {
       </div>
       <label
         htmlFor="avatar-upload"
-        className="cursor-pointer inline-flex items-center gap-2 bg-brand-primary hover:bg-indigo-700 text-white py-2.5 px-4 border border-transparent rounded-lg shadow-md hover:shadow-lg transition-all font-medium text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="cursor-pointer inline-flex items-center gap-2 bg-brand-primary hover:bg-sky-700 text-white py-2.5 px-4 border border-transparent rounded-lg shadow-md hover:shadow-lg transition-all font-medium text-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <PhotoIcon className="w-4 h-4" />
         <span>{t("change") || "Upload"}</span>

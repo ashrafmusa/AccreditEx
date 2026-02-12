@@ -30,9 +30,9 @@ const BulkUserImport: React.FC = () => {
 
   const isAdmin = currentUser?.role === "Admin";
 
-  const handleExportUsers = () => {
+  const handleExportUsers = async () => {
     try {
-      const blob = exportUsersToExcel(users);
+      const blob = await exportUsersToExcel(users);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -50,10 +50,10 @@ const BulkUserImport: React.FC = () => {
     }
   };
 
-  const handleDownloadTemplate = () => {
+  const handleDownloadTemplate = async () => {
     try {
       const templateData = getUserImportTemplate();
-      const blob = exportUsersToExcel(templateData);
+      const blob = await exportUsersToExcel(templateData);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -70,7 +70,7 @@ const BulkUserImport: React.FC = () => {
   };
 
   const handleImportUsers = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     if (!isAdmin) {
       toast.error("Only administrators can import users");
@@ -165,8 +165,8 @@ const BulkUserImport: React.FC = () => {
 
         {/* Import Users */}
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-center w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg mb-4">
-            <ArrowUpTrayIcon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <div className="flex items-center justify-center w-12 h-12 bg-rose-100 dark:bg-pink-900/30 rounded-lg mb-4">
+            <ArrowUpTrayIcon className="w-6 h-6 text-rose-600 dark:text-rose-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
             Import Users
@@ -177,7 +177,7 @@ const BulkUserImport: React.FC = () => {
           <label
             className={`w-full px-4 py-2 ${
               isAdmin
-                ? "bg-purple-500 hover:bg-purple-600 cursor-pointer"
+                ? "bg-rose-500 hover:bg-rose-600 cursor-pointer"
                 : "bg-gray-400 cursor-not-allowed"
             } text-white rounded-lg transition-colors flex items-center justify-center gap-2`}
           >

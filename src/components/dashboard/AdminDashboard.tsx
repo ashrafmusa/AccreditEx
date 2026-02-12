@@ -320,7 +320,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) => {
           title={t('overallCompliance')} 
           value={dashboardData.overallCompliance} 
           icon={CheckCircleIcon} 
-          color="from-indigo-500 to-indigo-700 bg-gradient-to-br" 
+          color="from-sky-500 to-sky-700 bg-gradient-to-br" 
           isLiveLinkable 
         />
         <StatCard 
@@ -346,7 +346,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) => {
           title={t('auditScheduleCompliance')} 
           value={dashboardData.auditComplianceRate} 
           icon={CheckCircleIcon} 
-          color="from-purple-500 to-purple-700 bg-gradient-to-br"
+          color="from-rose-500 to-pink-600 bg-gradient-to-br"
           onClick={() => setNavigation({ view: 'auditHub' })}
         />
         <StatCard 

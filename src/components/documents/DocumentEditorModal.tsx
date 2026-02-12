@@ -116,6 +116,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
               )}
             </p>
           </div>
+<<<<<<< HEAD
           <button
             onClick={onClose}
             className="p-2 text-gray-500 rounded-full dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -123,6 +124,38 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
+=======
+          <div className="flex items-center gap-2">
+            {isEditMode && viewingVersion === "current" && (
+              <button
+                onClick={() => setTemplateGalleryOpen(true)}
+                className="px-4 py-2 bg-rose-600 hover:bg-pink-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center gap-2"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Templates
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-500 rounded-full dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label="Close"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+          </div>
+>>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
         </header>
 
         <main className="flex-grow flex overflow-hidden">
@@ -172,7 +205,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
           <button
             type="button"
             onClick={handleExportToDocx}
-            className="inline-flex justify-center py-2 px-4 rounded-md text-sm font-medium text-brand-primary hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-brand-primary"
+            className="inline-flex justify-center py-2 px-4 rounded-md text-sm font-medium text-brand-primary hover:bg-sky-50 dark:hover:bg-sky-900/20 border border-brand-primary"
           >
             {t("exportToDocx") || "Export to DOCX"}
           </button>
@@ -185,7 +218,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
             <button
               type="button"
               onClick={handleSave}
-              className="inline-flex justify-center py-2 px-4 rounded-md text-sm font-medium text-white bg-brand-primary hover:bg-indigo-700"
+              className="inline-flex justify-center py-2 px-4 rounded-md text-sm font-medium text-white bg-brand-primary hover:bg-sky-700"
             >
               {t("saveChanges")}
             </button>

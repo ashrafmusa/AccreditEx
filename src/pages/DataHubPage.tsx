@@ -18,7 +18,7 @@ import { Button } from "@/components/ui";
 
 const CodeBlock: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-sm overflow-x-auto">
-        <code className="font-mono text-indigo-600 dark:text-indigo-300">{children}</code>
+        <code className="font-mono text-sky-600 dark:text-sky-300">{children}</code>
     </pre>
 );
 

@@ -174,7 +174,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) =
                       title={t('teamCompliance')} 
                       value={leadStats.overallCompliance} 
                       icon={CheckCircleIcon} 
-                      color="from-indigo-500 to-indigo-700 bg-gradient-to-br"
+                      color="from-sky-500 to-sky-700 bg-gradient-to-br"
                     />
                     <StatCard 
                       title={t('openCapaReports')} 

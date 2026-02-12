@@ -42,7 +42,7 @@ const LiveDataFeed: React.FC = () => {
         switch(type) {
             case 'Observation': return 'border-blue-500 text-blue-700 dark:text-blue-300';
             case 'Patient': return 'border-green-500 text-green-700 dark:text-green-300';
-            case 'MeasureReport': return 'border-purple-500 text-purple-700 dark:text-purple-300';
+            case 'MeasureReport': return 'border-rose-500 text-pink-600 dark:text-rose-300';
         }
     }
 

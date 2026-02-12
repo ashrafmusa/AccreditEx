@@ -1,14 +1,12 @@
-
-
-
-import React from 'react';
-import { NavigationState, Notification } from '@/types';
-import { Bars3Icon } from '@/components/icons';
-import HeaderTitle from '@/components/common/HeaderTitle';
-import HeaderActions from '@/components/common/HeaderActions';
-import NotificationButton from '@/components/common/NotificationButton';
+import React from "react";
+import { NavigationState, Notification } from "@/types";
+import { Bars3Icon } from "@/components/icons";
+import HeaderTitle from "@/components/common/HeaderTitle";
+import HeaderActions from "@/components/common/HeaderActions";
+import NotificationButton from "@/components/common/NotificationButton";
 import MessagingBell from "@/components/messaging/MessagingBell";
 import UserMenu from "@/components/common/UserMenu";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface HeaderProps {
   navigation: NavigationState;
@@ -29,6 +27,7 @@ const Header: React.FC<HeaderProps> = ({
   onMarkAsRead,
   onLogout,
 }) => {
+  const { t } = useTranslation();
   const [isOnline, setIsOnline] = React.useState(navigator.onLine);
 
   React.useEffect(() => {
@@ -67,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({
         <button
           onClick={() => setNavigation({ view: "messaging" })}
           className="p-2 text-brand-text-secondary dark:text-dark-brand-text-secondary hover:text-brand-text-primary dark:hover:text-dark-brand-text-primary transition-colors"
-          title="Messages"
+          title={t("messages")}
         >
           <MessagingBell position="left" showCount={true} />
         </button>

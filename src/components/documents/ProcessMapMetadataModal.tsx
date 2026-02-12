@@ -248,7 +248,7 @@ const ProcessMapMetadataModal: React.FC<ProcessMapMetadataModalProps> = ({ isOpe
               </button>
               <button
                 type="submit"
-                className="py-2 px-4 border rounded-md text-sm text-white bg-brand-primary hover:bg-indigo-700 transition-colors"
+                className="py-2 px-4 border rounded-md text-sm text-white bg-brand-primary hover:bg-sky-700 transition-colors"
               >
                 {t("create") || "Create"}
               </button>

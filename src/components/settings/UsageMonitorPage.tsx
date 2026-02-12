@@ -110,14 +110,14 @@ const UsageMonitorPage: React.FC = () => {
                   Daily limit: 50,000
                 </p>
               </div>
-              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
-                <h4 className="text-xs font-semibold text-purple-900 dark:text-purple-300 uppercase mb-2">
+              <div className="bg-rose-50 dark:bg-pink-900/20 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
+                <h4 className="text-xs font-semibold text-pink-900 dark:text-rose-300 uppercase mb-2">
                   Writes
                 </h4>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-200">
+                <p className="text-2xl font-bold text-pink-900 dark:text-rose-200">
                   {stats.daily.writes}
                 </p>
-                <p className="text-xs text-purple-700 dark:text-purple-400 mt-1">
+                <p className="text-xs text-pink-600 dark:text-rose-400 mt-1">
                   Daily limit: 20,000
                 </p>
               </div>

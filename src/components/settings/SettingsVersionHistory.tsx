@@ -150,7 +150,7 @@ const SettingsVersionHistory: React.FC = () => {
           </button>
           <button
             onClick={() => setSaveModalOpen(true)}
-            className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg flex items-center gap-2 transition-colors"
+            className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg flex items-center gap-2 transition-colors"
           >
             <DocumentDuplicateIcon className="w-4 h-4" />
             Save Current Version
@@ -170,7 +170,7 @@ const SettingsVersionHistory: React.FC = () => {
             <p className="text-gray-500">No saved versions yet</p>
             <button
               onClick={() => setSaveModalOpen(true)}
-              className="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+              className="mt-4 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors"
             >
               Save Your First Version
             </button>
@@ -184,7 +184,7 @@ const SettingsVersionHistory: React.FC = () => {
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-3">
-                    <span className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 rounded-full text-sm font-semibold">
+                    <span className="px-3 py-1 bg-rose-100 dark:bg-pink-900/30 text-pink-700 dark:text-rose-400 rounded-full text-sm font-semibold">
                       v{version.version}
                     </span>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
@@ -349,7 +349,7 @@ const SettingsVersionHistory: React.FC = () => {
                   value={versionComment}
                   onChange={(e) => setVersionComment(e.target.value)}
                   placeholder="e.g., Before navigation redesign"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
                   rows={3}
                 />
               </div>
@@ -367,7 +367,7 @@ const SettingsVersionHistory: React.FC = () => {
                       e.key === "Enter" && (e.preventDefault(), addTag())
                     }
                     placeholder="Add a tag..."
-                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
                   />
                   <button
                     onClick={addTag}
@@ -404,7 +404,7 @@ const SettingsVersionHistory: React.FC = () => {
               </button>
               <button
                 onClick={handleSaveVersion}
-                className="flex-1 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg flex items-center justify-center gap-2"
               >
                 <CheckCircleIcon className="w-5 h-5" />
                 Save Version

@@ -69,7 +69,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
         {/* Modal panel */}
         <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-4 flex items-center justify-between">
+          <div className="bg-gradient-to-r from-rose-600 to-cyan-600 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <span className="text-3xl">{getIcon()}</span>
               <h3 className="text-lg font-semibold text-white">{title}</h3>
@@ -137,7 +137,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
                   ),
                   code: ({ node, ...props }) => (
                     <code
-                      className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-purple-600 dark:text-purple-400"
+                      className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-rose-600 dark:text-rose-400"
                       {...props}
                     />
                   ),
@@ -149,7 +149,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
                   ),
                   blockquote: ({ node, ...props }) => (
                     <blockquote
-                      className="border-l-4 border-purple-500 pl-4 italic text-gray-700 dark:text-gray-300 my-3"
+                      className="border-l-4 border-rose-500 pl-4 italic text-gray-700 dark:text-gray-300 my-3"
                       {...props}
                     />
                   ),
@@ -171,7 +171,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="px-6 py-2 text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors font-semibold"
+              className="px-6 py-2 text-sm bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-pink-600 hover:to-cyan-700 transition-colors font-semibold"
             >
               Close
             </button>

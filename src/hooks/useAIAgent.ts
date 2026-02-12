@@ -13,7 +13,10 @@ export interface AIAgentContext {
   timestamp?: string;
 }
 
-const API_BASE_URL = 'https://accreditex.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_AI_AGENT_URL ||
+  import.meta.env.VITE_AI_AGENT_BASE_URL ||
+  'https://accreditex.onrender.com';
+const API_KEY = import.meta.env.VITE_AI_AGENT_API_KEY || '';
 
 export function useAIAgent() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -43,6 +46,7 @@ export function useAIAgent() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'X-API-Key': API_KEY,
         },
         body: JSON.stringify({
           message,
@@ -64,15 +68,15 @@ export function useAIAgent() {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          
+
           const chunk = decoder.decode(value);
           assistantMessage += chunk;
-          
+
           // Update the assistant message in real-time
           setChatHistory(prev => {
             const newHistory = [...prev];
             const lastMessage = newHistory[newHistory.length - 1];
-            
+
             if (lastMessage?.role === 'assistant') {
               // Update existing assistant message
               newHistory[newHistory.length - 1] = {
@@ -87,7 +91,7 @@ export function useAIAgent() {
                 timestamp: new Date()
               });
             }
-            
+
             return newHistory;
           });
         }

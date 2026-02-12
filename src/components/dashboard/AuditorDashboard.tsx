@@ -215,7 +215,7 @@ const AuditorDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) => {
                       title={t('departmentsAudited')} 
                       value={auditStats.departmentsAudited} 
                       icon={UsersIcon} 
-                      color="from-purple-500 to-purple-700 bg-gradient-to-br"
+                      color="from-rose-500 to-pink-600 bg-gradient-to-br"
                       onClick={() => setNavigation({ view: 'departments' })}
                     />
                     <StatCard 

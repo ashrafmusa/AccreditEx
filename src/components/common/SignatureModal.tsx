@@ -59,7 +59,7 @@ const SignatureModal: FC<SignatureModalProps> = ({ isOpen, onClose, onConfirm, a
               <button
               type="submit"
               disabled={!password}
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-sky-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
               {confirmActionText}
               </button>

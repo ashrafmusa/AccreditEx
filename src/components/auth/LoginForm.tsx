@@ -103,7 +103,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading, error }) => {
         <div className="text-sm">
           <a
             href="#"
-            className="font-medium text-brand-primary hover:text-indigo-500"
+            className="font-medium text-brand-primary hover:text-sky-500"
           >
             {t("forgotPassword")}
           </a>
@@ -125,7 +125,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading, error }) => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-indigo-400"
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:bg-sky-400"
         >
           {loading ? (
             <SpinnerIcon className="animate-spin h-5 w-5 text-white" />

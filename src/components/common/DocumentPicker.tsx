@@ -113,7 +113,7 @@ const DocumentPicker: React.FC<DocumentPickerProps> = ({
           {allowUpload && onUpload && (
             <button
               onClick={handleUploadClick}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 transition-colors"
             >
               <PlusIcon className="w-5 h-5" />
               {t('uploadNewDocument') || 'Upload New Document'}
@@ -136,7 +136,7 @@ const DocumentPicker: React.FC<DocumentPickerProps> = ({
                   onClick={() => handleToggle(doc.id)}
                   className={`relative cursor-pointer rounded-lg border-2 transition-all ${
                     selected.includes(doc.id)
-                      ? 'border-brand-primary bg-indigo-50 dark:bg-indigo-900/20'
+                      ? 'border-brand-primary bg-sky-50 dark:bg-sky-900/20'
                       : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
                   }`}
                 >
@@ -177,7 +177,7 @@ const DocumentPicker: React.FC<DocumentPickerProps> = ({
             <button
               onClick={handleConfirm}
               disabled={selected.length === 0}
-              className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {t('confirm') || 'Confirm'} {selected.length > 0 && `(${selected.length})`}
             </button>

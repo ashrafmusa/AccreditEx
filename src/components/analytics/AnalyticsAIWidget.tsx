@@ -43,15 +43,15 @@ const AnalyticsAIWidget: React.FC<AnalyticsAIWidgetProps> = ({ data }) => {
   const lastMessage = chatHistory.length > 0 ? chatHistory[chatHistory.length - 1] : null;
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-xl shadow-lg border border-indigo-100 dark:border-slate-700 relative overflow-hidden">
+    <div className="bg-gradient-to-br from-sky-50 to-pink-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-xl shadow-lg border border-sky-100 dark:border-slate-700 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-4 opacity-10">
-        <SparklesIcon className="w-24 h-24 text-indigo-600 dark:text-indigo-400" />
+        <SparklesIcon className="w-24 h-24 text-sky-600 dark:text-sky-400" />
       </div>
       
       <div className="relative z-10">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-2">
-            <SparklesIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+            <SparklesIcon className="w-6 h-6 text-sky-600 dark:text-sky-400" />
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               {t('aiInsights') || 'AI Insights'}
             </h3>
@@ -59,7 +59,7 @@ const AnalyticsAIWidget: React.FC<AnalyticsAIWidgetProps> = ({ data }) => {
           <button
             onClick={generateInsights}
             disabled={isLoading}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-white bg-sky-600 hover:bg-sky-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <ArrowPathIcon className="w-4 h-4 animate-spin" />

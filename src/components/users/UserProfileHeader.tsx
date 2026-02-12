@@ -56,7 +56,7 @@ const UserProfileHeader: React.FC<Props> = ({
   };
 
   const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file || !onUpdateUser) return;
@@ -81,13 +81,13 @@ const UserProfileHeader: React.FC<Props> = ({
         (progress) => {
           // Optional: show upload progress
         },
-        { forceUpload: true }
+        { forceUpload: true },
       );
 
       // Update user with new avatar URL
       await onUpdateUser({ ...user, avatarUrl });
       toast.success(
-        t("profilePictureUpdated") || "Profile picture updated successfully"
+        t("profilePictureUpdated") || "Profile picture updated successfully",
       );
     } catch (error) {
       console.error("Avatar upload error:", error);
@@ -102,7 +102,7 @@ const UserProfileHeader: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-900 dark:to-indigo-900 rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-900 dark:to-cyan-900 rounded-lg shadow-lg overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-grid-pattern" />
@@ -116,7 +116,7 @@ const UserProfileHeader: React.FC<Props> = ({
               user={user}
               size="xl"
               showStatus
-              ariaLabel={`${user.name} profile picture`}
+              ariaLabel={`${user.name} ${t("profilePicture")}`}
               className={isOwnProfile ? "cursor-pointer" : ""}
               onClick={isOwnProfile ? handleAvatarClick : undefined}
             />
@@ -128,7 +128,7 @@ const UserProfileHeader: React.FC<Props> = ({
                   accept="image/*"
                   onChange={handleFileChange}
                   className="hidden"
-                  aria-label="Upload profile picture"
+                  aria-label={t("uploadProfilePicture")}
                 />
                 {/* Upload overlay */}
                 <div

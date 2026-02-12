@@ -52,7 +52,7 @@ const EmptyStatePlaceholder: FC<EmptyStatePlaceholderProps> = ({
       {actionLabel && onAction && (
         <button
           onClick={onAction}
-          className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
+          className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 transition-colors text-sm font-semibold shadow-md hover:shadow-lg"
         >
           {actionLabel}
         </button>

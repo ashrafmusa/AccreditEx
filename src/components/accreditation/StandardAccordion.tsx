@@ -24,7 +24,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({ standard, canModi
         className="w-full text-left p-5 focus:outline-none flex justify-between items-start gap-4"
       >
         <div className='flex-grow'>
-          <p className="font-bold text-brand-primary dark:text-indigo-400">{standard.standardId}</p>
+          <p className="font-bold text-brand-primary dark:text-sky-400">{standard.standardId}</p>
           <p className="mt-2 text-brand-text-primary dark:text-dark-brand-text-primary text-left">{standard.description}</p>
           
           <div className="mt-3 flex flex-wrap items-center gap-2">

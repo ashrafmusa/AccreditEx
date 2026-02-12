@@ -49,7 +49,7 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={handleDownload}
-              className="px-4 py-2 text-sm font-medium text-brand-primary hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-brand-primary rounded-md transition-colors"
+              className="px-4 py-2 text-sm font-medium text-brand-primary hover:bg-sky-50 dark:hover:bg-sky-900/20 border border-brand-primary rounded-md transition-colors"
             >
               Download
             </button>
@@ -76,7 +76,7 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
           </p>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-white bg-brand-primary hover:bg-indigo-700 rounded-md transition-colors"
+            className="px-4 py-2 text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 rounded-md transition-colors"
           >
             Close
           </button>

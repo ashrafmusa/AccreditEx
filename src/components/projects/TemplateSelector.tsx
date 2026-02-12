@@ -46,7 +46,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
         onClick={() => onSelectTemplate(null)}
         className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
           selectedTemplateId === null
-            ? 'border-brand-primary bg-indigo-50 dark:bg-indigo-900/20'
+            ? 'border-brand-primary bg-sky-50 dark:bg-sky-900/20'
             : 'border-gray-300 dark:border-gray-600 hover:border-brand-primary'
         }`}
       >
@@ -78,13 +78,13 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
             onClick={() => onSelectTemplate(template.id)}
             className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
               selectedTemplateId === template.id
-                ? 'border-brand-primary bg-indigo-50 dark:bg-indigo-900/20'
+                ? 'border-brand-primary bg-sky-50 dark:bg-sky-900/20'
                 : 'border-gray-300 dark:border-gray-600 hover:border-brand-primary'
             }`}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl flex-shrink-0">
+                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-sky-500 to-rose-600 flex items-center justify-center text-2xl flex-shrink-0">
                   {template.icon || '📋'}
                 </div>
                 <div className="flex-1 min-w-0">

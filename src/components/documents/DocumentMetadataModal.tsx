@@ -315,7 +315,7 @@ const DocumentMetadataModal: React.FC<DocumentMetadataModalProps> = ({ isOpen, o
               </button>
               <button 
                 type="submit" 
-                className="py-2 px-4 border rounded-md text-sm text-white bg-brand-primary hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="py-2 px-4 border rounded-md text-sm text-white bg-brand-primary hover:bg-sky-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isUploading}
               >
                 {isUploading ? (t('uploading') || 'Uploading') + '...' : t('save')}

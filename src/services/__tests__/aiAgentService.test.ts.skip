@@ -1,0 +1,284 @@
+/**
+ * Test Suite for AI Agent Service
+ * 
+ * Tests for the comprehensive AI agent service that handles
+ * communication with the Python FastAPI backend.
+ */
+
+import { AIAgentService } from '../aiAgentService';
+import { useUserStore } from '@/stores/useUserStore';
+import { useAppStore } from '@/stores/useAppStore';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+// Mock stores
+jest.mock('@/stores/useUserStore');
+jest.mock('@/stores/useAppStore');
+
+describe('AIAgentService', () => {
+    let service: AIAgentService;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        (global.fetch as jest.Mock).mockClear();
+        service = new AIAgentService();
+    });
+
+    describe('Initialization', () => {
+        it('should initialize with correct base URL in development', () => {
+            const service = new AIAgentService();
+            expect(service).toBeDefined();
+        });
+
+        it('should initialize with API key from environment', () => {
+            const service = new AIAgentService();
+            expect(service).toBeDefined();
+        });
+    });
+
+    describe('Health Check', () => {
+        it('should return true when service is healthy', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    status: 'healthy',
+                    agent_initialized: true
+                })
+            });
+
+            const result = await service.healthCheck();
+            expect(result).toBe(true);
+        });
+
+        it('should return false when service is unhealthy', async () => {
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+            const result = await service.healthCheck();
+            expect(result).toBe(false);
+        });
+
+        it('should handle timeout gracefully', async () => {
+            (global.fetch as jest.Mock).mockImplementationOnce(
+                () => new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error('Timeout')), 100)
+                )
+            );
+
+            const result = await service.healthCheck();
+            expect(result).toBe(false);
+        });
+    });
+
+    describe('Send Message', () => {
+        const mockResponse = {
+            response: 'This is a test response from AI',
+            thread_id: 'thread-123',
+            timestamp: '2026-02-11T10:00:00Z',
+            tools_used: []
+        };
+
+        it('should send message and return response', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => mockResponse
+            });
+
+            const result = await service.sendMessage('What is JCI?');
+
+            expect(result).toEqual(mockResponse);
+            expect(global.fetch).toHaveBeenCalled();
+        });
+
+        it('should include context when provided', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => mockResponse
+            });
+
+            await service.sendMessage('Help', undefined, {
+                user_role: 'Admin',
+                page_title: 'Dashboard'
+            });
+
+            const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+            const requestBody = JSON.parse(fetchCall[1].body);
+
+            expect(requestBody.context).toBeDefined();
+            expect(requestBody.context.user_role).toBe('Admin');
+        });
+
+        it('should handle error responses', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                statusText: 'Internal Server Error'
+            });
+
+            await expect(service.sendMessage('Test')).rejects.toThrow();
+        });
+
+        it('should preserve thread_id across messages', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ ...mockResponse, thread_id: 'thread-456' })
+            });
+
+            await service.sendMessage('First message');
+
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => mockResponse
+            });
+
+            await service.sendMessage('Second message', 'thread-456');
+
+            const secondCall = (global.fetch as jest.Mock).mock.calls[1];
+            const requestBody = JSON.parse(secondCall[1].body);
+
+            expect(requestBody.thread_id).toBe('thread-456');
+        });
+    });
+
+    describe('Document Analysis', () => {
+        it('should analyze document content', async () => {
+            const mockAnalysis = {
+                analysis: 'This document covers patient safety protocols',
+                compliance_score: 85,
+                recommendations: ['Add incident reporting section']
+            };
+
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => mockAnalysis
+            });
+
+            const file = new File(['test content'], 'policy.pdf', { type: 'application/pdf' });
+            const result = await service.analyzeDocument(file);
+
+            expect(result).toEqual(mockAnalysis);
+        });
+
+        it('should handle large files', async () => {
+            const largeContent = 'x'.repeat(10 * 1024 * 1024); // 10MB
+            const file = new File([largeContent], 'large.pdf', { type: 'application/pdf' });
+
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ analysis: 'Processed' })
+            });
+
+            const result = await service.analyzeDocument(file);
+            expect(result).toBeDefined();
+        });
+    });
+
+    describe('Context Injection', () => {
+        it('should include comprehensive app context', async () => {
+            // Mock user store
+            (useAppStore.getState as jest.Mock).mockReturnValue({
+                currentUser: {
+                    id: 'user-1',
+                    name: 'Test User',
+                    role: 'Admin', email: 'test@example.com'
+                }
+            });
+
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({ response: 'OK', thread_id: '123', timestamp: 'now' })
+            });
+
+            await service.sendMessage('Test');
+
+            const fetchCall = (global.fetch as jest.Mock).mock.calls[0];
+            const requestBody = JSON.parse(fetchCall[1].body);
+
+            expect(requestBody.context).toBeDefined();
+            expect(requestBody.context.user_role).toBeDefined();
+        });
+    });
+
+    describe('Error Handling', () => {
+        it('should throw meaningful error for authentication failure', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                status: 401,
+                statusText: 'Unauthorized'
+            });
+
+            await expect(service.sendMessage('Test')).rejects.toThrow(/authentication/i);
+        });
+
+        it('should throw meaningful error for network failure', async () => {
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network request failed'));
+
+            await expect(service.sendMessage('Test')).rejects.toThrow();
+        });
+
+        it('should handle malformed JSON responses', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => {
+                    throw new Error('Invalid JSON');
+                }
+            });
+
+            await expect(service.sendMessage('Test')).rejects.toThrow();
+        });
+    });
+
+    describe('Rate Limiting', () => {
+        it('should handle rate limit errors (429)', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                status: 429,
+                statusText: 'Too Many Requests',
+                headers: new Headers({
+                    'Retry-After': '60'
+                })
+            });
+
+            await expect(service.sendMessage('Test')).rejects.toThrow(/rate limit/i);
+        });
+    });
+
+    describe('Specialized Features', () => {
+        it('should check compliance for documents', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    compliant: true,
+                    gaps: [],
+                    score: 95
+                })
+            });
+
+            const result = await service.checkCompliance({
+                document_type: 'policy',
+                standard: 'JCI',
+                content_summary: 'Patient safety policy'
+            });
+
+            expect(result.compliant).toBe(true);
+        });
+
+        it('should get training recommendations', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    recommendations: [
+                        { title: 'Patient Safety Training', priority: 'high' }
+                    ]
+                })
+            });
+
+            const result = await service.getTrainingRecommendations({
+                role: 'Nurse',
+                department: 'ICU'
+            });
+
+            expect(result.recommendations).toHaveLength(1);
+        });
+    });
+});

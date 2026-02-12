@@ -66,7 +66,7 @@ const CompetencyLibraryPage: React.FC = () => {
         </div>
         <button
           onClick={handleOpenCreateModal}
-          className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto"
+          className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-sky-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto"
         >
           <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
           {t("addCompetency")}

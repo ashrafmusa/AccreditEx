@@ -167,7 +167,7 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) =>
                       title={t('myComplianceRate')} 
                       value={taskStats.complianceRate} 
                       icon={ClockIcon} 
-                      color="from-indigo-500 to-indigo-700 bg-gradient-to-br"
+                      color="from-sky-500 to-sky-700 bg-gradient-to-br"
                     />
                     <StatCard 
                       title={t('upcomingTasks')} 

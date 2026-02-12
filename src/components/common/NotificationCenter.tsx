@@ -40,7 +40,7 @@ const NotificationCenter: FC<NotificationCenterProps> = ({ isOpen, onClose, noti
             <div
               key={notification.id}
               onClick={() => handleNotificationClick(notification)}
-              className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer border-b border-brand-border dark:border-dark-brand-border last:border-b-0 ${!notification.read ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}`}
+              className={`p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer border-b border-brand-border dark:border-dark-brand-border last:border-b-0 ${!notification.read ? 'bg-sky-50 dark:bg-sky-900/20' : ''}`}
             >
               <p className={`text-sm ${!notification.read ? 'font-semibold' : ''}`}>{notification.message[lang]}</p>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">

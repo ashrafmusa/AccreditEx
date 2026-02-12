@@ -121,7 +121,7 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
                 'In Progress': 'bg-blue-500',
                 'On Hold': 'bg-yellow-500',
                 'Completed': 'bg-green-500',
-                'Finalized': 'bg-purple-500'
+                'Finalized': 'bg-rose-500'
               };
               const color = statusColors[status] || 'bg-gray-500';
 
@@ -160,7 +160,7 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
-                      className="bg-indigo-500 h-2 rounded-full transition-all duration-300"
+                      className="bg-sky-500 h-2 rounded-full transition-all duration-300"
                       style={{ width: `${percentage}%` }}
                     />
                   </div>

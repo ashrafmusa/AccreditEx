@@ -90,7 +90,7 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
               title={t('qualityScore') || 'Quality Score'} 
               value={`${kpis.qualityScore}%`} 
               icon={CheckBadgeIcon} 
-              color="from-indigo-500 to-indigo-700 bg-gradient-to-br"
+              color="from-sky-500 to-sky-700 bg-gradient-to-br"
               trend={{ direction: 'up', value: 3.2, label: t('vsLastMonth') }}
               sparklineData={qualitySparkline}
             />

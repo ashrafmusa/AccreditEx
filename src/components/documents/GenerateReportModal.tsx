@@ -73,7 +73,7 @@ const GenerateReportModal: FC<GenerateReportModalProps> = ({ isOpen, onClose, on
               </button>
               <button 
                 type="submit" 
-                className="py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-brand-primary hover:bg-indigo-700 transition-colors flex items-center gap-2"
+                className="py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 transition-colors flex items-center gap-2"
               >
                 <SparklesIcon className="w-4 h-4" />
                 {t('generate')}

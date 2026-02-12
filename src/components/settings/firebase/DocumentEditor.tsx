@@ -129,7 +129,7 @@ const DocumentEditor: React.FC<DocumentEditorProps> = ({
         <button
           onClick={handleSave}
           disabled={isSaving || !isModified || validationErrors.length > 0}
-          className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isSaving ? (
             <>

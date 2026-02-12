@@ -12,7 +12,7 @@ interface DepartmentCardProps {
 }
 
 const Avatar: React.FC<{ name: string }> = ({ name }) => (
-    <div className="w-8 h-8 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-xs border-2 border-white dark:border-dark-brand-surface" title={name}>
+    <div className="w-8 h-8 rounded-full bg-sky-500 text-white flex items-center justify-center font-bold text-xs border-2 border-white dark:border-dark-brand-surface" title={name}>
         {name.split(' ').map(n => n[0]).join('')}
     </div>
 );

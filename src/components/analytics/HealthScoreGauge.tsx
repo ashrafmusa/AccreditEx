@@ -143,7 +143,7 @@ export const HealthScoreGauge: React.FC<HealthScoreGaugeProps> = ({ configId, sh
             </div>
             <div className="w-full bg-gray-300 rounded-full h-2">
               <div
-                className="bg-purple-600 h-2 rounded-full transition-all duration-500"
+                className="bg-rose-600 h-2 rounded-full transition-all duration-500"
                 style={{ width: `${health.systemStability}%` }}
               ></div>
             </div>

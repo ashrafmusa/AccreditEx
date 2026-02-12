@@ -132,7 +132,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
       case "Do":
         return "bg-yellow-100 dark:bg-yellow-900/20 border-yellow-500";
       case "Check":
-        return "bg-purple-100 dark:bg-purple-900/20 border-purple-500";
+        return "bg-rose-100 dark:bg-pink-900/20 border-rose-500";
       case "Act":
         return "bg-green-100 dark:bg-green-900/20 border-green-500";
       case "Completed":
@@ -284,7 +284,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           <button
             onClick={handleAIRootCause}
             disabled={isGeneratingAI}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded hover:from-purple-700 hover:to-pink-700 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded hover:from-rose-700 hover:to-pink-700 transition-colors disabled:opacity-50"
           >
             {isGeneratingAI ? (
               <>
@@ -312,7 +312,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           </button>
           <button
             onClick={handleConvertToPDCA}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded hover:from-indigo-700 hover:to-purple-700 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-sky-600 to-rose-600 text-white rounded hover:from-sky-700 hover:to-pink-700 transition-colors"
           >
             <PlusIcon className="w-3 h-3" />
             Convert to PDCA Cycle
@@ -326,7 +326,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           <button
             onClick={handleAISuggestions}
             disabled={isGeneratingAI}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded hover:from-purple-700 hover:to-indigo-700 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50"
           >
             {isGeneratingAI ? (
               <>

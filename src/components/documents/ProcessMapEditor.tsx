@@ -664,7 +664,7 @@ const ProcessMapEditorContent: React.FC<
 
   return (
     <>
-      <header className="p-4 border-b dark:border-dark-brand-border flex justify-between items-center flex-shrink-0 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
+      <header className="p-4 border-b dark:border-dark-brand-border flex justify-between items-center flex-shrink-0 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
         <div>
           <h3 className="text-xl font-semibold dark:text-dark-brand-text-primary flex items-center gap-2">
             <span className="text-2xl">🗺️</span>
@@ -701,6 +701,109 @@ const ProcessMapEditorContent: React.FC<
         </div>
       </header>
 
+<<<<<<< HEAD
+=======
+      {/* AI-Powered Toolbar */}
+      <div className="border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-2 bg-rose-50 dark:bg-pink-900/20">
+        <div className="flex items-center gap-2 text-sm font-semibold text-pink-600 dark:text-rose-300">
+          <span className="text-lg">✨</span>
+          AI Tools:
+        </div>
+        <button
+          onClick={() => setShowAIGenerator(true)}
+          disabled={isAIProcessing}
+          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+        >
+          🤖 Generate from Text
+        </button>
+        <button
+          onClick={handleGetSuggestions}
+          disabled={isAIProcessing || nodes.length === 0}
+          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+        >
+          💡 Suggest Next Steps
+        </button>
+        <button
+          onClick={handleOptimizeProcess}
+          disabled={isAIProcessing || nodes.length === 0}
+          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+        >
+          ⚡ Optimize Process
+        </button>
+        <button
+          onClick={handleGenerateDocumentation}
+          disabled={isAIProcessing || nodes.length === 0}
+          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+        >
+          📄 Export to Document
+        </button>
+        <button
+          onClick={() => setShowComplianceCheck(true)}
+          disabled={isAIProcessing || nodes.length === 0}
+          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+        >
+          ✅ Check Compliance
+        </button>
+
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            onClick={() => setShowNodeSearch(true)}
+            className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+          >
+            🔍 Search Nodes
+          </button>
+          <button
+            onClick={() => setQuickAddMode(!quickAddMode)}
+            className={`px-3 py-1.5 text-sm rounded transition-colors flex items-center gap-1.5 ${
+              quickAddMode
+                ? "bg-green-600 text-white hover:bg-green-700"
+                : "bg-gray-600 text-white hover:bg-gray-700"
+            }`}
+          >
+            ⚡ Quick Add {quickAddMode && "(Active)"}
+          </button>
+          <button
+            onClick={() => setShowSwimlanes(!showSwimlanes)}
+            className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 transition-colors flex items-center gap-1.5"
+          >
+            🏊 Swimlanes
+          </button>
+          <button
+            onClick={() => setShowMetrics(!showMetrics)}
+            className="px-3 py-1.5 text-sm rounded bg-orange-600 text-white hover:bg-orange-700 transition-colors flex items-center gap-1.5"
+          >
+            📊 Metrics
+          </button>
+        </div>
+
+        {isAIProcessing && (
+          <div className="w-full flex items-center gap-2 text-sm text-pink-600 dark:text-rose-300 mt-2">
+            <svg
+              className="animate-spin h-4 w-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            AI is processing...
+          </div>
+        )}
+      </div>
+
+>>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
       <main className="flex-grow overflow-hidden relative">
         <ReactFlow
           nodes={nodes}
@@ -808,7 +911,7 @@ const ProcessMapEditorContent: React.FC<
                 onChange={(e) =>
                   setExportFormat(e.target.value as "png" | "svg")
                 }
-                className="px-2 py-1 text-xs rounded bg-gray-100 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-500"
+                className="px-2 py-1 text-xs rounded bg-gray-100 dark:bg-gray-700 border-none focus:ring-2 focus:ring-sky-500"
                 title="Export format"
               >
                 <option value="png">PNG</option>
@@ -819,7 +922,7 @@ const ProcessMapEditorContent: React.FC<
                 onClick={() => setSnapToGrid(!snapToGrid)}
                 className={`p-2 rounded-lg transition-all ${
                   snapToGrid
-                    ? "bg-indigo-100 dark:bg-indigo-900 text-indigo-600 dark:text-indigo-300"
+                    ? "bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300"
                     : "hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
                 title={snapToGrid ? "Snap to Grid: ON" : "Snap to Grid: OFF"}
@@ -843,7 +946,7 @@ const ProcessMapEditorContent: React.FC<
           >
             <button
               onClick={() => setShowAddNodePanel(!showAddNodePanel)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
             >
               <PlusIcon className="w-5 h-5" />
               <span className="font-semibold">
@@ -860,7 +963,7 @@ const ProcessMapEditorContent: React.FC<
                   <select
                     value={selectedNodeType}
                     onChange={(e) => setSelectedNodeType(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 transition-all"
                   >
                     <option value="start">
                       ▶️ {t("startNode") || "Start"}
@@ -885,7 +988,7 @@ const ProcessMapEditorContent: React.FC<
                     onChange={(e) => setNodeLabel(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleAddNode()}
                     placeholder={t("enterNodeLabel") || "Enter label..."}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 transition-all"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 transition-all"
                     autoFocus
                   />
                 </div>
@@ -905,8 +1008,8 @@ const ProcessMapEditorContent: React.FC<
 
             {/* Multi-select operations */}
             {nodes.some((n) => n.selected) && (
-              <div className="space-y-2 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
-                <p className="text-xs font-bold text-indigo-700 dark:text-indigo-300 mb-2">
+              <div className="space-y-2 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-800">
+                <p className="text-xs font-bold text-sky-700 dark:text-sky-300 mb-2">
                   ✨ Multi-Select Tools
                 </p>
                 <button
@@ -947,7 +1050,7 @@ const ProcessMapEditorContent: React.FC<
 
             <button
               onClick={handleAutoLayout}
-              className="w-full px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all text-sm font-medium shadow-md"
+              className="w-full px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-lg hover:from-pink-600 hover:to-pink-700 transition-all text-sm font-medium shadow-md"
             >
               {t("autoLayout") || "✨ Auto Layout"}
             </button>
@@ -1010,11 +1113,11 @@ const ProcessMapEditorContent: React.FC<
           </Panel>
 
           <Panel position="bottom-center" className="hidden sm:block">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-xl shadow-2xl px-6 py-3 border-2 border-blue-200 dark:border-blue-700 backdrop-blur-sm">
+            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/40 dark:to-cyan-900/40 rounded-xl shadow-2xl px-6 py-3 border-2 border-blue-200 dark:border-blue-700 backdrop-blur-sm">
               <div className="flex items-center gap-4 max-w-5xl">
                 <span className="text-2xl flex-shrink-0">💡</span>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <span className="font-bold text-indigo-700 dark:text-indigo-300 text-sm whitespace-nowrap">
+                  <span className="font-bold text-sky-700 dark:text-sky-300 text-sm whitespace-nowrap">
                     {t("quickTips") || "Quick Tips:"}
                   </span>
                   <div className="flex items-center gap-3 text-sm">
@@ -1036,7 +1139,7 @@ const ProcessMapEditorContent: React.FC<
                     <span className="text-gray-400">•</span>
                     <span className="text-gray-700 dark:text-gray-300">
                       Press{" "}
-                      <span className="px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded font-mono text-xs">
+                      <span className="px-1.5 py-0.5 bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 rounded font-mono text-xs">
                         ?
                       </span>{" "}
                       for help
@@ -1052,7 +1155,7 @@ const ProcessMapEditorContent: React.FC<
       <footer className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 px-6 py-4 flex justify-between items-center border-t dark:border-dark-brand-border flex-shrink-0">
         <div className="flex items-center gap-4">
           <div className="text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">
+            <span className="text-sky-600 dark:text-sky-400 font-bold">
               {nodes.length}
             </span>{" "}
             {t("nodes") || "nodes"}
@@ -1064,7 +1167,7 @@ const ProcessMapEditorContent: React.FC<
             {t("connections") || "connections"}
           </div>
           {isExporting && (
-            <div className="text-sm text-indigo-600 dark:text-indigo-400 animate-pulse">
+            <div className="text-sm text-sky-600 dark:text-sky-400 animate-pulse">
               {t("exporting") || "Exporting..."}
             </div>
           )}
@@ -1081,7 +1184,7 @@ const ProcessMapEditorContent: React.FC<
             type="button"
             onClick={handleSave}
             disabled={isSaving || !hasChanges}
-            className="inline-flex items-center justify-center gap-2 py-2 px-6 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+            className="inline-flex items-center justify-center gap-2 py-2 px-6 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
           >
             {isSaving ? (
               <>
@@ -1145,7 +1248,7 @@ const ProcessMapEditorContent: React.FC<
               {templates.map((template) => (
                 <div
                   key={template.id}
-                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-indigo-500 dark:hover:border-indigo-400 transition-all cursor-pointer hover:shadow-lg group"
+                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-sky-500 dark:hover:border-sky-400 transition-all cursor-pointer hover:shadow-lg group"
                   onClick={() => handleLoadTemplate(template)}
                 >
                   <div className="flex items-start gap-4">
@@ -1162,7 +1265,7 @@ const ProcessMapEditorContent: React.FC<
                       </p>
                       <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-500">
                         <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
+                          <span className="w-2 h-2 rounded-full bg-sky-500"></span>
                           {template.nodes.length} {t("nodes")}
                         </span>
                         <span className="flex items-center gap-1">
@@ -1173,7 +1276,7 @@ const ProcessMapEditorContent: React.FC<
                     </div>
                   </div>
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button className="w-full px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg hover:from-indigo-700 hover:to-blue-700 transition-all font-medium text-sm">
+                    <button className="w-full px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all font-medium text-sm">
                       {t("loadTemplate") || "Load Template"}
                     </button>
                   </div>
@@ -1357,7 +1460,7 @@ const ProcessMapEditorContent: React.FC<
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setShowHelp(false)}
-                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+                className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium"
               >
                 {t("gotIt") || "Got it!"}
               </button>
@@ -1365,6 +1468,430 @@ const ProcessMapEditorContent: React.FC<
           </div>
         </div>
       )}
+<<<<<<< HEAD
+=======
+
+      {/* AI Generator Modal */}
+      {showAIGenerator && (
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setShowAIGenerator(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-2xl">🤖</span>
+              Generate Process Map from Description
+            </h3>
+            <textarea
+              value={aiDescription}
+              onChange={(e) => setAiDescription(e.target.value)}
+              placeholder="Describe your process in detail. For example: 'Create a document review process where documents are submitted, reviewed by a manager, approved or rejected, and then either published or sent back for revision.'"
+              className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white resize-none"
+            />
+            <div className="mt-4 flex gap-2 justify-end">
+              <button
+                onClick={() => setShowAIGenerator(false)}
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleGenerateFromAI}
+                disabled={isAIProcessing || !aiDescription.trim()}
+                className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50"
+              >
+                {isAIProcessing ? "Generating..." : "Generate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* AI Suggestions Panel */}
+      {aiSuggestions.length > 0 && (
+        <div className="absolute top-20 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 max-w-sm z-40 border-2 border-rose-500">
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-bold text-pink-600 dark:text-rose-300 flex items-center gap-2">
+              <span>💡</span>
+              Suggested Next Steps
+            </h4>
+            <button
+              onClick={() => setAiSuggestions([])}
+              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            >
+              <XMarkIcon className="w-4 h-4" />
+            </button>
+          </div>
+          <div className="space-y-2">
+            {aiSuggestions.map((suggestion, idx) => (
+              <div
+                key={idx}
+                className="p-3 bg-rose-50 dark:bg-pink-900/20 rounded-lg border border-rose-200 dark:border-pink-700"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">
+                    {suggestion.type === "process" && "⚙️"}
+                    {suggestion.type === "decision" && "◆"}
+                    {suggestion.type === "end" && "⏹️"}
+                  </span>
+                  <strong className="text-sm">{suggestion.label}</strong>
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+                  {suggestion.rationale}
+                </p>
+                <button
+                  onClick={() => handleAddSuggestedNode(suggestion)}
+                  className="w-full px-3 py-1 text-xs bg-rose-600 text-white rounded hover:bg-pink-600"
+                >
+                  Add This Step
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Optimizations Modal */}
+      {showOptimizations && (
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setShowOptimizations(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full m-4 p-6 max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-2xl">⚡</span>
+              Process Optimization Suggestions
+            </h3>
+            {optimizations.length === 0 ? (
+              <p className="text-gray-600 dark:text-gray-400">
+                No optimizations suggested. Your process looks good!
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {optimizations.map((opt, idx) => (
+                  <div
+                    key={idx}
+                    className={`p-4 rounded-lg border-2 ${
+                      opt.priority === "high"
+                        ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800"
+                        : opt.priority === "medium"
+                        ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
+                        : "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">
+                        {opt.category === "efficiency" && "⚡"}
+                        {opt.category === "clarity" && "🔍"}
+                        {opt.category === "compliance" && "✅"}
+                        {opt.category === "structure" && "🏗️"}
+                      </span>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`px-2 py-0.5 text-xs font-bold rounded ${
+                              opt.priority === "high"
+                                ? "bg-red-200 dark:bg-red-900 text-red-900 dark:text-red-100"
+                                : opt.priority === "medium"
+                                ? "bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100"
+                                : "bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
+                            }`}
+                          >
+                            {opt.priority.toUpperCase()}
+                          </span>
+                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                            {opt.category}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-800 dark:text-gray-200">
+                          {opt.suggestion}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowOptimizations(false)}
+                className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-pink-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Compliance Check Modal */}
+      {showComplianceCheck && (
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setShowComplianceCheck(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-2xl">✅</span>
+              Compliance Check
+            </h3>
+            {!complianceResult ? (
+              <div>
+                <p className="mb-4 text-gray-700 dark:text-gray-300">
+                  Select a standard to check against:
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => handleCheckCompliance("ISO 9001")}
+                    className="p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30"
+                  >
+                    <div className="font-bold text-blue-900 dark:text-blue-100">
+                      ISO 9001
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Quality Management
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleCheckCompliance("ISO 27001")}
+                    className="p-4 bg-rose-50 dark:bg-pink-900/20 border-2 border-rose-300 dark:border-pink-700 rounded-lg hover:bg-rose-100 dark:hover:bg-pink-900/30"
+                  >
+                    <div className="font-bold text-pink-900 dark:text-rose-100">
+                      ISO 27001
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Information Security
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleCheckCompliance("SOX")}
+                    className="p-4 bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30"
+                  >
+                    <div className="font-bold text-green-900 dark:text-green-100">
+                      SOX
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Financial Controls
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleCheckCompliance("OHAS")}
+                    className="p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-300 dark:border-orange-800 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30"
+                  >
+                    <div className="font-bold text-orange-900 dark:text-orange-100">
+                      OHAS
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Health & Safety
+                    </div>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div
+                  className={`p-4 rounded-lg mb-4 ${
+                    complianceResult.compliant
+                      ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-300"
+                      : "bg-red-50 dark:bg-red-900/20 border-2 border-red-300"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-lg font-bold mb-2">
+                    <span>{complianceResult.compliant ? "✅" : "❌"}</span>
+                    <span>
+                      {complianceResult.compliant
+                        ? "Compliant"
+                        : "Non-Compliant"}
+                    </span>
+                  </div>
+                </div>
+
+                {complianceResult.issues?.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="font-bold text-red-700 dark:text-red-300 mb-2">
+                      Issues Found:
+                    </h4>
+                    <ul className="space-y-1">
+                      {complianceResult.issues.map(
+                        (issue: string, idx: number) => (
+                          <li
+                            key={idx}
+                            className="text-sm text-gray-700 dark:text-gray-300"
+                          >
+                            • {issue}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                {complianceResult.recommendations?.length > 0 && (
+                  <div>
+                    <h4 className="font-bold text-blue-700 dark:text-blue-300 mb-2">
+                      Recommendations:
+                    </h4>
+                    <ul className="space-y-1">
+                      {complianceResult.recommendations.map(
+                        (rec: string, idx: number) => (
+                          <li
+                            key={idx}
+                            className="text-sm text-gray-700 dark:text-gray-300"
+                          >
+                            • {rec}
+                          </li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+            <div className="mt-4 flex gap-2 justify-end">
+              {complianceResult && (
+                <button
+                  onClick={() => setComplianceResult(null)}
+                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                >
+                  Check Another
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setShowComplianceCheck(false);
+                  setComplianceResult(null);
+                }}
+                className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-pink-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Node Search Modal */}
+      {showNodeSearch && (
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setShowNodeSearch(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full m-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-2xl">🔍</span>
+              Search Nodes
+            </h3>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleNodeSearch(e.target.value)}
+              placeholder="Type to search node labels..."
+              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              autoFocus
+            />
+            <div className="mt-4 max-h-64 overflow-y-auto">
+              {nodes
+                .filter((n) =>
+                  n.data.label.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((node) => (
+                  <div
+                    key={node.id}
+                    className="p-3 mb-2 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border border-gray-200 dark:border-gray-700"
+                    onClick={() => {
+                      setNodes((nds) =>
+                        nds.map((n) => ({ ...n, selected: n.id === node.id }))
+                      );
+                      setViewport({
+                        x: -node.position.x + 300,
+                        y: -node.position.y + 200,
+                        zoom: 1.5,
+                      });
+                      setShowNodeSearch(false);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">
+                        {node.type === "start" && "▶️"}
+                        {node.type === "end" && "⏹️"}
+                        {node.type === "process" && "⚙️"}
+                        {node.type === "decision" && "◆"}
+                      </span>
+                      <span className="font-medium">{node.data.label}</span>
+                    </div>
+                  </div>
+                ))}
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => {
+                  setShowNodeSearch(false);
+                  setSearchTerm("");
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Export Documentation Modal */}
+      {showExportDoc && (
+        <div
+          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          onClick={() => setShowExportDoc(false)}
+        >
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full m-4 p-6 max-h-[80vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+              <span className="text-2xl">📄</span>
+              Process Documentation
+            </h3>
+            <div
+              className="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
+              dangerouslySetInnerHTML={{ __html: exportedDoc }}
+            />
+            <div className="mt-4 flex gap-2 justify-end">
+              <button
+                onClick={() => {
+                  const blob = new Blob([exportedDoc], { type: "text/html" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${documentData.name.en}_documentation.html`;
+                  a.click();
+                }}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Download HTML
+              </button>
+              <button
+                onClick={() => setShowExportDoc(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+>>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
     </>
   );
 };

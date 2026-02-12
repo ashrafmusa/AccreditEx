@@ -200,7 +200,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
       case "Do":
         return "border-yellow-500 bg-yellow-50 dark:bg-yellow-900/10";
       case "Check":
-        return "border-purple-500 bg-purple-50 dark:bg-purple-900/10";
+        return "border-rose-500 bg-rose-50 dark:bg-pink-900/10";
       case "Act":
         return "border-green-500 bg-green-50 dark:bg-green-900/10";
       case "Completed":

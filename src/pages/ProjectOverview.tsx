@@ -41,7 +41,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project }) => {
           <div className="space-y-3">
             {teamMembers.map(user => (
               <div key={user.id} className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-sky-500 text-white flex items-center justify-center font-bold text-sm">
                   {user.name.split(' ').map(n => n[0]).join('')}
                 </div>
                 <div>

@@ -63,108 +63,108 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   const allNavItems = [
     {
       id: "visual",
-      label: "Visual Settings",
+      label: t("visualSettings"),
       icon: PaintBrushIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "profile",
       label: t("profile"),
       icon: UserCircleIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "security",
       label: t("security"),
       icon: ShieldCheckIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "notifications",
-      label: "Notifications",
+      label: t("notifications"),
       icon: BellIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "accessibility",
-      label: "Accessibility",
+      label: t("accessibility"),
       icon: EyeIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "settingsPresets",
-      label: "Settings Presets",
+      label: t("settingsPresets"),
       icon: StarIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "versionHistory",
-      label: "Version History",
+      label: t("versionHistory"),
       icon: DocumentDuplicateIcon,
       adminOnly: false,
-      category: "Personal",
+      category: t("personal"),
     },
     {
       id: "usageTracking",
       label: t("usageTracking") || "Usage Tracking Settings",
       icon: Cog6ToothIcon,
       adminOnly: false,
-      category: "System",
+      category: t("system"),
     },
     {
       id: "firebaseUsage",
       label: t("firebaseUsageDashboard") || "Firebase Usage Dashboard",
       icon: ChartBarIcon,
       adminOnly: false,
-      category: "System",
+      category: t("system"),
     },
     {
       id: "users",
       label: t("userManagement"),
       icon: UsersIcon,
       adminOnly: true,
-      category: "Admin",
+      category: t("admin"),
     },
     {
       id: "accreditationHub",
       label: t("accreditationHub"),
       icon: GlobeAltIcon,
       adminOnly: true,
-      category: "Admin",
+      category: t("admin"),
     },
     {
       id: "competencies",
       label: t("competencies"),
       icon: IdentificationIcon,
       adminOnly: true,
-      category: "Admin",
+      category: t("admin"),
     },
     {
       id: "data",
       label: t("data"),
       icon: CircleStackIcon,
       adminOnly: true,
-      category: "Admin",
+      category: t("admin"),
     },
     {
       id: "auditLog",
-      label: "Audit Log",
+      label: t("auditLog"),
       icon: ClockIcon,
       adminOnly: true,
-      category: "Admin",
+      category: t("admin"),
     },
     {
       id: "bulkUserImport",
-      label: "Bulk User Import",
+      label: t("bulkUserImport"),
       icon: ArrowUpTrayIcon,
       adminOnly: true,
-      category: "Admin",
+      category: t("admin"),
     },
     ...(isAdmin
       ? [
@@ -173,7 +173,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
             label: t("firebaseSetup"),
             icon: SparklesIcon,
             adminOnly: true,
-            category: "Admin",
+            category: t("admin"),
           },
         ]
       : []),
@@ -182,7 +182,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       label: t("about"),
       icon: InformationCircleIcon,
       adminOnly: false,
-      category: "System",
+      category: t("system"),
     },
   ];
 
@@ -190,16 +190,19 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
 
   const filteredNavItems = searchQuery
     ? navItems.filter((item) =>
-        item.label.toLowerCase().includes(searchQuery.toLowerCase())
+        item.label.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : navItems;
 
-  const groupedItems = filteredNavItems.reduce((acc, item) => {
-    const category = item.category || "Other";
-    if (!acc[category]) acc[category] = [];
-    acc[category].push(item);
-    return acc;
-  }, {} as Record<string, typeof navItems>);
+  const groupedItems = filteredNavItems.reduce(
+    (acc, item) => {
+      const category = item.category || "Other";
+      if (!acc[category]) acc[category] = [];
+      acc[category].push(item);
+      return acc;
+    },
+    {} as Record<string, typeof navItems>,
+  );
 
   const renderSection = () => {
     switch (section) {
@@ -252,7 +255,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
-            placeholder="Search settings..."
+            placeholder={t("searchSettings")}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all"
@@ -312,7 +315,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="lg:hidden fixed bottom-6 right-6 z-50 p-4 bg-brand-primary text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 active:scale-95"
-        aria-label="Toggle settings menu"
+        aria-label={t("toggleSettingsMenu")}
       >
         {isSidebarOpen ? (
           <XMarkIcon className="w-6 h-6" />

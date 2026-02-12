@@ -100,7 +100,7 @@ const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({
       <button
         onClick={handleCreate}
         disabled={isCreating || errors.length > 0}
-        className="flex-1 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        className="flex-1 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {isCreating ? (
           <>

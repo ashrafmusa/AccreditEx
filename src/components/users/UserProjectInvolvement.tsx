@@ -74,11 +74,11 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
               {t("projects")}
             </p>
           </div>
-          <div className="bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-200 dark:border-purple-800">
-            <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+          <div className="bg-rose-50 dark:bg-pink-900/20 p-3 rounded-lg border border-rose-200 dark:border-pink-700">
+            <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">
               {leadingCount}
             </p>
-            <p className="text-xs text-purple-700 dark:text-purple-300">
+            <p className="text-xs text-pink-600 dark:text-rose-300">
               {t("leading")}
             </p>
           </div>
@@ -148,7 +148,7 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
                       {p.status}
                     </span>
                     {isLead && (
-                      <span className="text-xs px-2 py-1 rounded bg-purple-200 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300">
+                      <span className="text-xs px-2 py-1 rounded bg-rose-200 dark:bg-pink-900/50 text-pink-700 dark:text-rose-300">
                         {t("lead")}
                       </span>
                     )}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   NavigationState,
   Project,
@@ -7,6 +7,8 @@ import {
 } from "@/types";
 import { ProjectTemplate } from "@/types/templates";
 import { useTranslation } from "@/hooks/useTranslation";
+import { ContextualHelp } from "@/components/common/ContextualHelp";
+import { getHelpContent } from "@/data/helpContent";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
@@ -65,7 +67,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
       setLeadId(existingProject.projectLead?.id || "");
       setStartDate(new Date(existingProject.startDate));
       setEndDate(
-        existingProject.endDate ? new Date(existingProject.endDate) : undefined
+        existingProject.endDate ? new Date(existingProject.endDate) : undefined,
       );
       setShowTemplateSelector(false);
     }
@@ -163,7 +165,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
         };
         await updateProject(updatedData);
         toast.success(
-          t("projectUpdatedSuccessfully") || "Project updated successfully"
+          t("projectUpdatedSuccessfully") || "Project updated successfully",
         );
         setNavigation({ view: "projectDetail", projectId: existingProject.id });
       } else {
@@ -227,17 +229,20 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
 
         // Remove any undefined values recursively
         const removeUndefined = <T extends Record<string, unknown>>(
-          obj: T
+          obj: T,
         ): T => {
           if (Array.isArray(obj)) {
             return obj.map(removeUndefined) as T;
           } else if (obj !== null && typeof obj === "object") {
-            return Object.entries(obj).reduce((acc, [key, value]) => {
-              if (value !== undefined) {
-                acc[key] = removeUndefined(value as Record<string, unknown>);
-              }
-              return acc;
-            }, {} as Record<string, unknown>) as T;
+            return Object.entries(obj).reduce(
+              (acc, [key, value]) => {
+                if (value !== undefined) {
+                  acc[key] = removeUndefined(value as Record<string, unknown>);
+                }
+                return acc;
+              },
+              {} as Record<string, unknown>,
+            ) as T;
           }
           return obj;
         };
@@ -246,7 +251,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
 
         await addProject(cleanedData as Omit<Project, "id">);
         toast.success(
-          t("projectCreatedSuccessfully") || "Project created successfully"
+          t("projectCreatedSuccessfully") || "Project created successfully",
         );
         setNavigation({ view: "projects" });
       }
@@ -267,9 +272,12 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
       <div className="flex items-center space-x-3 rtl:space-x-reverse self-start mb-6">
         <FolderIcon className="h-8 w-8 text-brand-primary" />
         <div>
-          <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-            {isEditMode ? t("editProject") : t("createNewProject")}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
+              {isEditMode ? t("editProject") : t("createNewProject")}
+            </h1>
+            <ContextualHelp content={getHelpContent("createProject")!} />
+          </div>
         </div>
       </div>
 
@@ -508,7 +516,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
                           {item.description}
                         </p>
                         {item.category && (
-                          <span className="inline-block mt-2 px-2 py-1 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 rounded">
+                          <span className="inline-block mt-2 px-2 py-1 text-xs bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 rounded">
                             {item.category}
                           </span>
                         )}
@@ -530,7 +538,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
                       setPreviewTemplate(null);
                       setShowTemplateSelector(false);
                     }}
-                    className="px-4 py-2 bg-brand-primary text-white rounded hover:bg-indigo-700"
+                    className="px-4 py-2 bg-brand-primary text-white rounded hover:bg-sky-700"
                   >
                     {t("useThisTemplate")}
                   </button>

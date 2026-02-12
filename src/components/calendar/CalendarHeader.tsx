@@ -54,7 +54,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({ currentDate, setCurrent
                         <button key={option.id} onClick={() => setView(option.id)} className={`px-3 py-1 text-sm font-semibold rounded-md ${view === option.id ? 'bg-white dark:bg-gray-700 shadow-sm' : ''}`}>{option.label}</button>
                     ))}
                 </div>
-                <button onClick={onAddEvent} className="bg-brand-primary text-white p-2 rounded-lg hover:bg-indigo-700"><PlusIcon className="w-5 h-5"/></button>
+                <button onClick={onAddEvent} className="bg-brand-primary text-white p-2 rounded-lg hover:bg-sky-700"><PlusIcon className="w-5 h-5"/></button>
             </div>
         </div>
     );

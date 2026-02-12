@@ -80,7 +80,7 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, disabled, fromDa
               } else if (isSelected) {
                 classes += "bg-brand-primary text-white font-bold";
               } else if (isToday) {
-                classes += "bg-indigo-100 dark:bg-indigo-900/50 text-brand-primary";
+                classes += "bg-sky-100 dark:bg-sky-900/50 text-brand-primary";
               } else {
                 classes += "hover:bg-gray-100 dark:hover:bg-gray-700";
               }

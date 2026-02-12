@@ -12,6 +12,7 @@ export interface EnhancedMessage extends Message {
   conversationId: string;
   attachments?: string[];
   mentions?: string[];
+  reactions?: { [key: string]: string[] };
 }
 
 export interface MessageFilter {
@@ -38,6 +39,14 @@ class MessagingService {
   private conversationListeners: ((conversations: ConversationMetadata[]) => void)[] = [];
   private readonly MAX_MESSAGES = 1000;
   private readonly MESSAGE_EXPIRY_DAYS = 365;
+
+  // Conversation states
+  private pinnedConversations: Set<string> = new Set();
+  private mutedConversations: Set<string> = new Set();
+  private archivedConversations: Set<string> = new Set();
+
+  // Typing indicators
+  private typingUsers: Map<string, Date> = new Map();
 
   /**
    * Generate conversation ID from two user IDs
@@ -195,28 +204,34 @@ class MessagingService {
   /**
    * Search messages
    */
-  public searchMessages(
-    userId: string,
-    searchTerm: string,
-    options: { conversationId?: string; limit?: number } = {}
-  ): EnhancedMessage[] {
-    const limit = options.limit || 100;
-    const lowerTerm = searchTerm.toLowerCase();
+   public searchMessages(
+     userId: string,
+     searchTerm: string,
+     options: { conversationId?: string; limit?: number; includeAttachments?: boolean; includeMentions?: boolean; includeReactions?: boolean } = {}
+   ): EnhancedMessage[] {
+     const limit = options.limit || 100;
+     const lowerTerm = searchTerm.toLowerCase();
 
-    return this.messageQueue
-      .filter(msg => {
-        const isInvolvedUser =
-          msg.senderId === userId || msg.recipientId === userId;
-        const matchesConversation = !options.conversationId ||
-          msg.conversationId === options.conversationId;
-        const matchesSearch =
-          msg.content.toLowerCase().includes(lowerTerm) ||
-          (msg.mentions && msg.mentions.some(m => m.toLowerCase().includes(lowerTerm)));
+     return this.messageQueue
+       .filter(msg => {
+         const isInvolvedUser =
+           msg.senderId === userId || msg.recipientId === userId;
+         const matchesConversation = !options.conversationId ||
+           msg.conversationId === options.conversationId;
+         const matchesContent = msg.content.toLowerCase().includes(lowerTerm);
+         const matchesMentions = options.includeMentions && msg.mentions ? 
+           msg.mentions.some(m => m.toLowerCase().includes(lowerTerm)) : false;
+         const matchesAttachments = options.includeAttachments && msg.attachments ? 
+           msg.attachments.some(att => att.toLowerCase().includes(lowerTerm)) : false;
+         const matchesReactions = options.includeReactions && msg.reactions ? 
+           Object.keys(msg.reactions).some(reaction => reaction.toLowerCase().includes(lowerTerm)) : false;
 
-        return isInvolvedUser && matchesConversation && matchesSearch && msg.status !== 'deleted';
-      })
-      .slice(0, limit);
-  }
+         const matchesSearch = matchesContent || matchesMentions || matchesAttachments || matchesReactions;
+
+         return isInvolvedUser && matchesConversation && matchesSearch && msg.status !== 'deleted';
+       })
+       .slice(0, limit);
+   }
 
   /**
    * Get messages with filter
@@ -336,6 +351,127 @@ class MessagingService {
     const blockListKey = `blocked_${potentialBlockerId}`;
     const blockedList = JSON.parse(localStorage.getItem(blockListKey) || '[]');
     return blockedList.includes(userId);
+  }
+
+  /**
+   * Pin/Unpin conversation
+   */
+  public pinConversation(conversationId: string, pinned: boolean): void {
+    if (pinned) {
+      this.pinnedConversations.add(conversationId);
+    } else {
+      this.pinnedConversations.delete(conversationId);
+    }
+    this.notifyConversationListeners();
+  }
+
+  /**
+   * Check if conversation is pinned
+   */
+  public isConversationPinned(conversationId: string): boolean {
+    return this.pinnedConversations.has(conversationId);
+  }
+
+  /**
+   * Mute/Unmute conversation
+   */
+  public muteConversation(conversationId: string, muted: boolean): void {
+    if (muted) {
+      this.mutedConversations.add(conversationId);
+    } else {
+      this.mutedConversations.delete(conversationId);
+    }
+    this.notifyConversationListeners();
+  }
+
+  /**
+   * Check if conversation is muted
+   */
+  public isConversationMuted(conversationId: string): boolean {
+    return this.mutedConversations.has(conversationId);
+  }
+
+  /**
+   * Archive/Unarchive conversation
+   */
+  public archiveConversation(conversationId: string, archived: boolean): void {
+    if (archived) {
+      this.archivedConversations.add(conversationId);
+    } else {
+      this.archivedConversations.delete(conversationId);
+    }
+    this.notifyConversationListeners();
+  }
+
+  /**
+   * Check if conversation is archived
+   */
+  public isConversationArchived(conversationId: string): boolean {
+    return this.archivedConversations.has(conversationId);
+  }
+
+  /**
+   * Set typing indicator
+   */
+  public setTyping(conversationId: string, userId: string, isTyping: boolean): void {
+    if (isTyping) {
+      this.typingUsers.set(`${conversationId}_${userId}`, new Date());
+    } else {
+      this.typingUsers.delete(`${conversationId}_${userId}`);
+    }
+    this.notifyListeners();
+  }
+
+  /**
+   * Get typing users in conversation
+   */
+  public getTypingUsers(conversationId: string): string[] {
+    const now = new Date();
+    const typingUsers: string[] = [];
+
+    for (const [key, timestamp] of this.typingUsers.entries()) {
+      const [convId, userId] = key.split('_');
+      if (convId === conversationId && now.getTime() - timestamp.getTime() < 3000) {
+        typingUsers.push(userId);
+      } else if (now.getTime() - timestamp.getTime() >= 3000) {
+        this.typingUsers.delete(key);
+      }
+    }
+
+    return typingUsers;
+  }
+
+  /**
+   * Add reaction to message
+   */
+  public addReaction(messageId: string, userId: string, reaction: string): void {
+    const message = this.messageQueue.find(msg => msg.id === messageId);
+    if (message) {
+      if (!message.reactions) {
+        message.reactions = {};
+      }
+      if (!message.reactions[reaction]) {
+        message.reactions[reaction] = [];
+      }
+      if (!message.reactions[reaction].includes(userId)) {
+        message.reactions[reaction].push(userId);
+      }
+      this.notifyListeners();
+    }
+  }
+
+  /**
+   * Remove reaction from message
+   */
+  public removeReaction(messageId: string, userId: string, reaction: string): void {
+    const message = this.messageQueue.find(msg => msg.id === messageId);
+    if (message && message.reactions && message.reactions[reaction]) {
+      message.reactions[reaction] = message.reactions[reaction].filter(id => id !== userId);
+      if (message.reactions[reaction].length === 0) {
+        delete message.reactions[reaction];
+      }
+      this.notifyListeners();
+    }
   }
 
   /**

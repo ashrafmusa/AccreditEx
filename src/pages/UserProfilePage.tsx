@@ -108,7 +108,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = (props) => {
         {/* Right Column - Quick Stats */}
         <div className="space-y-6">
           {/* Profile Completeness Card */}
-          <div className="bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
+          <div className="bg-gradient-to-br from-rose-50 to-blue-50 dark:from-pink-900/20 dark:to-blue-900/20 p-6 rounded-lg border border-rose-200 dark:border-pink-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {t("profileStatus")}
             </h3>
@@ -118,13 +118,13 @@ const UserProfilePage: React.FC<UserProfilePageProps> = (props) => {
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t("completeness")}
                   </span>
-                  <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
+                  <span className="text-sm font-bold text-rose-600 dark:text-rose-400">
                     {profileCompleteness.percentage}%
                   </span>
                 </div>
                 <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-purple-500 to-blue-500 transition-all duration-300"
+                    className="h-full bg-gradient-to-r from-rose-500 to-blue-500 transition-all duration-300"
                     style={{ width: `${profileCompleteness.percentage}%` }}
                   />
                 </div>

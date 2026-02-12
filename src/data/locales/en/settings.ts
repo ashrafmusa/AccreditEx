@@ -551,4 +551,27 @@ export const en = {
     successfullyImported: 'Successfully imported {count} users',
     failedToImport: 'Failed to import {count} users',
     onlyAdminsCanImport: 'Only administrators can import users',
+
+    // Visual Settings
+    primaryColorLabel: 'Primary Color',
+    successColorLabel: 'Success Color',
+    warningColorLabel: 'Warning Color',
+    dangerColorLabel: 'Danger Color',
+    baseColorLabel: 'Base Color',
+    markerColorLabel: 'Marker Color',
+    glowColorLabel: 'Glow Color',
+    rotationSpeedLabel: 'Rotation Speed',
+    livePreviewLabel: 'Live Preview',
+    applicationIdentity: 'Application Identity',
+    enterApplicationName: 'Enter application name',
+    visualAssets: 'Visual Assets',
+    saveChangesPermanent: 'Save Changes below to make them permanent',
+    savedPresets: 'Saved Presets',
+
+    // Settings Categories
+    categoryVisual: 'Visual',
+    categorySecurity: 'Security',
+    categoryPerformance: 'Performance',
+    categoryAccessibility: 'Accessibility',
+    categoryCustom: 'Custom',
 };

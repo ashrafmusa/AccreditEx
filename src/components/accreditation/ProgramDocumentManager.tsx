@@ -120,9 +120,9 @@ const ProgramDocumentManager: React.FC<ProgramDocumentManagerProps> = ({
     <div className="space-y-4">
       {canModify && (
         <div className="flex flex-col gap-3">
-          <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-indigo-300 rounded-lg cursor-pointer hover:bg-indigo-50 dark:border-indigo-600 dark:hover:bg-indigo-900/20 transition">
-            <CloudUploadIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <span className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
+          <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-sky-300 rounded-lg cursor-pointer hover:bg-sky-50 dark:border-sky-600 dark:hover:bg-sky-900/20 transition">
+            <CloudUploadIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+            <span className="text-sm font-medium text-sky-600 dark:text-sky-400">
               {isUploading ? `${t('uploading') || 'Uploading'} ${Math.round(uploadProgress)}%` : (t('uploadDocument') || 'Upload Document')}
             </span>
             <input
