@@ -350,7 +350,7 @@ class UnifiedAccreditexAgent:
         
         return context_text
 
-    def _get_base_system_prompt(self, org_context: Optional[Dict[str, Any]] = None, ai_instructions: Optional[Dict[str, Any]] = None, task_type: str = 'general') -> str:
+    def _get_base_system_prompt(self, context: Optional[Dict[str, Any]] = None, ai_instructions: Optional[Dict[str, Any]] = None, task_type: str = 'general') -> str:
         """
         Get the system prompt with dynamic context and specialist routing
         
@@ -505,13 +505,13 @@ Always be specific and actionable, using real data from their workspace.
             if thread_id not in self.conversations:
                 # Use specialist prompt based on detected task type
                 self.conversations[thread_id] = [
-                    {"role": "system", "content": self._get_system_prompt(enhanced_context, task_type=task_type)}
+                    {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)}
                 ]
             else:
                 # Update system prompt with fresh context + specialist routing
                 self.conversations[thread_id][0] = {
                     "role": "system", 
-                    "content": self._get_system_prompt(enhanced_context, task_type=task_type)
+                    "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)
                 }
 
             # Append user message
