@@ -66,7 +66,7 @@ const GlobeSettingsPage: React.FC = () => {
         footer={
           <button
             onClick={handleSave}
-            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-indigo-700"
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-sky-700"
           >
             {t("saveChanges")}
           </button>

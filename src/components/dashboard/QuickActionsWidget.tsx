@@ -56,7 +56,7 @@ const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ setNavigation }
       titleKey: 'scheduleMockSurvey',
       descriptionKey: 'quickActionScheduleSurvey',
       icon: CalendarDaysIcon,
-      color: 'from-purple-500 to-purple-600',
+      color: 'from-rose-500 to-pink-600',
       action: () => setNavigation({ view: 'calendar' })
     },
     {
@@ -72,7 +72,7 @@ const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({ setNavigation }
       titleKey: 'addStandard',
       descriptionKey: 'quickActionAddStandard',
       icon: CheckCircleIcon,
-      color: 'from-indigo-500 to-indigo-600',
+      color: 'from-sky-500 to-sky-600',
       action: () => setNavigation({ view: 'accreditationHub' })
     }
   ];

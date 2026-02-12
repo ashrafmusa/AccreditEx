@@ -256,7 +256,7 @@ const ProfileSettingsPage: React.FC = () => {
       >
         <div className="space-y-6">
           {/* User Info Summary */}
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-blue-800">
+          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-blue-800">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
               <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full flex-shrink-0">
                 <UserCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400" />

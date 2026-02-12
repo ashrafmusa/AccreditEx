@@ -262,7 +262,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                   e.stopPropagation();
                   handleSave();
                 }}
-                className="px-3 py-1 text-xs bg-brand-primary text-white rounded hover:bg-indigo-700 transition-colors"
+                className="px-3 py-1 text-xs bg-brand-primary text-white rounded hover:bg-sky-700 transition-colors"
               >
                 {t("save")}
               </button>
@@ -398,7 +398,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                       handleAskAI();
                     }}
                     disabled={isGeneratingAI}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-lg hover:from-purple-700 hover:to-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isGeneratingAI ? (
                       <>
@@ -432,7 +432,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                       e.stopPropagation();
                       handleCreatePDCA();
                     }}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors"
                   >
                     <PlusIcon className="w-4 h-4" />
                     Create PDCA Cycle
@@ -442,7 +442,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                       e.stopPropagation();
                       handleCreateCAPA();
                     }}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-rose-600 text-white rounded-lg hover:bg-pink-600 transition-colors"
                   >
                     <PlusIcon className="w-4 h-4" />
                     Create CAPA Report

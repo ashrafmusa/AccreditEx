@@ -146,11 +146,14 @@ export const useMessaging = (options: UseMessagingOptions = {}) => {
    * Search messages
    */
   const searchMessages = useCallback(
-    (searchTerm: string, convId?: string, limit = 100) => {
+    (searchTerm: string, convId?: string, limit = 100, options?: { includeAttachments?: boolean; includeMentions?: boolean; includeReactions?: boolean }) => {
       if (!currentUser) return [];
       return messagingService.searchMessages(currentUser.id, searchTerm, {
         conversationId: convId,
         limit,
+        includeAttachments: options?.includeAttachments,
+        includeMentions: options?.includeMentions,
+        includeReactions: options?.includeReactions,
       });
     },
     [currentUser]
@@ -226,6 +229,109 @@ export const useMessaging = (options: UseMessagingOptions = {}) => {
     return messagingService.hasUnreadMessages(currentUser.id);
   }, [currentUser]);
 
+  /**
+   * Pin/Unpin conversation
+   */
+  const pinConversation = useCallback(
+    (conversationId: string, pinned: boolean) => {
+      messagingService.pinConversation(conversationId, pinned);
+    },
+    []
+  );
+
+  /**
+   * Check if conversation is pinned
+   */
+  const isConversationPinned = useCallback(
+    (conversationId: string) => {
+      return messagingService.isConversationPinned(conversationId);
+    },
+    []
+  );
+
+  /**
+   * Mute/Unmute conversation
+   */
+  const muteConversation = useCallback(
+    (conversationId: string, muted: boolean) => {
+      messagingService.muteConversation(conversationId, muted);
+    },
+    []
+  );
+
+  /**
+   * Check if conversation is muted
+   */
+  const isConversationMuted = useCallback(
+    (conversationId: string) => {
+      return messagingService.isConversationMuted(conversationId);
+    },
+    []
+  );
+
+  /**
+   * Archive/Unarchive conversation
+   */
+  const archiveConversation = useCallback(
+    (conversationId: string, archived: boolean) => {
+      messagingService.archiveConversation(conversationId, archived);
+    },
+    []
+  );
+
+  /**
+   * Check if conversation is archived
+   */
+  const isConversationArchived = useCallback(
+    (conversationId: string) => {
+      return messagingService.isConversationArchived(conversationId);
+    },
+    []
+  );
+
+  /**
+   * Set typing indicator
+   */
+  const setTyping = useCallback(
+    (conversationId: string, isTyping: boolean) => {
+      if (!currentUser) return;
+      messagingService.setTyping(conversationId, currentUser.id, isTyping);
+    },
+    [currentUser]
+  );
+
+  /**
+   * Get typing users in conversation
+   */
+  const getTypingUsers = useCallback(
+    (conversationId: string) => {
+      return messagingService.getTypingUsers(conversationId);
+    },
+    []
+  );
+
+  /**
+   * Add reaction to message
+   */
+  const addReaction = useCallback(
+    (messageId: string, reaction: string) => {
+      if (!currentUser) return;
+      messagingService.addReaction(messageId, currentUser.id, reaction);
+    },
+    [currentUser]
+  );
+
+  /**
+   * Remove reaction from message
+   */
+  const removeReaction = useCallback(
+    (messageId: string, reaction: string) => {
+      if (!currentUser) return;
+      messagingService.removeReaction(messageId, currentUser.id, reaction);
+    },
+    [currentUser]
+  );
+
   return {
     // State
     messages,
@@ -243,6 +349,8 @@ export const useMessaging = (options: UseMessagingOptions = {}) => {
     getFilteredMessages,
     getRecentMessages,
     exportMessages,
+    addReaction,
+    removeReaction,
 
     // Conversation operations
     getConversations,
@@ -251,6 +359,14 @@ export const useMessaging = (options: UseMessagingOptions = {}) => {
     clearConversation,
     getConversationUnreadCount,
     hasUnreadMessages,
+    pinConversation,
+    isConversationPinned,
+    muteConversation,
+    isConversationMuted,
+    archiveConversation,
+    isConversationArchived,
+    setTyping,
+    getTypingUsers,
 
     // User blocking
     blockUser,

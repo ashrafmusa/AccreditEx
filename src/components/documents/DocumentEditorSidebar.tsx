@@ -236,8 +236,13 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
               }}
               className={`w-full text-left text-sm p-2 rounded-md ${
                 viewingVersion === "current"
+<<<<<<< HEAD
                   ? "bg-indigo-100 font-semibold"
                   : selectedVersionForComparison === 'current'
+=======
+                  ? "bg-sky-100 font-semibold"
+                  : selectedVersionForComparison === "current"
+>>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
                   ? "bg-blue-100 ring-2 ring-blue-500"
                   : "hover:bg-gray-100"
               }`}
@@ -265,7 +270,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                 }}
                 className={`w-full text-left text-sm p-2 rounded-md ${
                   viewingVersion === v.version
-                    ? "bg-indigo-100 font-semibold"
+                    ? "bg-sky-100 font-semibold"
                     : selectedVersionForComparison === v.version
                     ? "bg-blue-100 ring-2 ring-blue-500"
                     : "hover:bg-gray-100"

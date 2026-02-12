@@ -325,4 +325,55 @@ export const ar = {
     continue: 'متابعة',
     successfully: 'بنجاح',
     programs: 'البرامج',
+
+    // Accessibility
+    openAiAssistant: 'فتح مساعد الذكاء الاصطناعي',
+    chatWithAiAssistant: 'الدردشة مع مساعد الذكاء الاصطناعي',
+    closeDialog: 'إغلاق',
+    uploadProfilePicture: 'تحميل صورة الملف الشخصي',
+    editProfile: 'تعديل الملف الشخصي',
+    selectLanguage: 'اختيار اللغة',
+    toggleSettingsMenu: 'فتح/إغلاق قائمة الإعدادات',
+    toggleMenu: 'فتح/إغلاق القائمة',
+    tabs: 'علامات التبويب',
+    sendMessage: 'إرسال رسالة',
+
+    // Status & State
+    statusActive: 'نشط',
+    statusOnTrack: 'على المسار',
+    statusInProgress: 'قيد التنفيذ',
+    statusPending: 'معلق',
+    statusScheduled: 'مجدول',
+    statusRunning: 'قيد التشغيل',
+    statusPaused: 'متوقف مؤقتاً',
+    statusFailed: 'فشل',
+    statusCompleted: 'مكتمل',
+
+    // Common Actions
+    copyToClipboard: 'نسخ إلى الحافظة',
+    refresh: 'تحديث',
+
+    // Languages
+    englishLanguage: 'English',
+    arabicLanguage: 'العربية',
+    switchToArabic: 'التبديل إلى العربية',
+    switchToEnglish: 'Switch to English',
+    displayLanguage: 'لغة العرض',
+    chooseLanguageDescription: 'اختر لغتك المفضلة لواجهة التطبيق',
+
+    // Filters
+    allUsers: 'جميع المستخدمين',
+    allActions: 'جميع الإجراءات',
+
+    // Labels
+    categories: 'الفئات',
+    admins: 'المسؤولون',
+    criticality: 'الأهمية',
+
+    // Messages
+    noSavedVersionsYet: 'لا توجد نسخ محفوظة بعد',
+    noAuditLogsFound: 'لم يتم العثور على سجلات تدقيق',
+    tryDifferentKeywords: 'جرب كلمات مفتاحية مختلفة',
+    adminAccessRequired: 'يتطلب وصول المسؤول',
+    saveTheExcelFile: 'حفظ ملف Excel',
 };

@@ -92,7 +92,7 @@ const SettingsPresetsPanel: React.FC = () => {
         newPreset.category,
         appSettings,
         currentUser.id,
-        newPreset.isPublic
+        newPreset.isPublic,
       );
       toast.success("Preset created successfully");
       setShowCreateModal(false);
@@ -136,7 +136,7 @@ const SettingsPresetsPanel: React.FC = () => {
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg flex items-center gap-2 transition-colors"
+          className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg flex items-center gap-2 transition-colors"
         >
           <SparklesIcon className="w-4 h-4" />
           Create Preset
@@ -151,7 +151,7 @@ const SettingsPresetsPanel: React.FC = () => {
             onClick={() => setSelectedCategory(category.id)}
             className={`px-4 py-2 rounded-lg flex items-center gap-2 whitespace-nowrap transition-colors ${
               selectedCategory === category.id
-                ? "bg-purple-500 text-white"
+                ? "bg-rose-500 text-white"
                 : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
             }`}
           >
@@ -187,10 +187,10 @@ const SettingsPresetsPanel: React.FC = () => {
                       preset.category === "visual"
                         ? "bg-blue-100 dark:bg-blue-900/30"
                         : preset.category === "security"
-                        ? "bg-red-100 dark:bg-red-900/30"
-                        : preset.category === "performance"
-                        ? "bg-green-100 dark:bg-green-900/30"
-                        : "bg-purple-100 dark:bg-purple-900/30"
+                          ? "bg-red-100 dark:bg-red-900/30"
+                          : preset.category === "performance"
+                            ? "bg-green-100 dark:bg-green-900/30"
+                            : "bg-rose-100 dark:bg-pink-900/30"
                     }`}
                   >
                     <IconComponent
@@ -198,10 +198,10 @@ const SettingsPresetsPanel: React.FC = () => {
                         preset.category === "visual"
                           ? "text-blue-600 dark:text-blue-400"
                           : preset.category === "security"
-                          ? "text-red-600 dark:text-red-400"
-                          : preset.category === "performance"
-                          ? "text-green-600 dark:text-green-400"
-                          : "text-purple-600 dark:text-purple-400"
+                            ? "text-red-600 dark:text-red-400"
+                            : preset.category === "performance"
+                              ? "text-green-600 dark:text-green-400"
+                              : "text-rose-600 dark:text-rose-400"
                       }`}
                     />
                   </div>
@@ -228,7 +228,7 @@ const SettingsPresetsPanel: React.FC = () => {
 
                 <button
                   onClick={() => handleApplyPreset(preset.id!)}
-                  className="w-full px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors group-hover:shadow-md"
+                  className="w-full px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg transition-colors group-hover:shadow-md"
                 >
                   Apply Preset
                 </button>
@@ -239,9 +239,9 @@ const SettingsPresetsPanel: React.FC = () => {
       )}
 
       {/* Built-in Presets Highlight */}
-      <div className="bg-gradient-to-r from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 rounded-lg p-6 border border-purple-200 dark:border-purple-800">
+      <div className="bg-gradient-to-r from-rose-100 to-cyan-100 dark:from-pink-900/30 dark:to-cyan-900/30 rounded-lg p-6 border border-rose-200 dark:border-pink-700">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-          <SparklesIcon className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+          <SparklesIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
           Built-in Presets
         </h3>
         <p className="text-sm text-gray-700 dark:text-gray-300 mb-4">
@@ -286,7 +286,7 @@ const SettingsPresetsPanel: React.FC = () => {
                     setNewPreset({ ...newPreset, name: e.target.value })
                   }
                   placeholder="e.g., My Custom Theme"
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
                 />
               </div>
 
@@ -300,7 +300,7 @@ const SettingsPresetsPanel: React.FC = () => {
                     setNewPreset({ ...newPreset, description: e.target.value })
                   }
                   placeholder="Describe this preset..."
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
                   rows={3}
                 />
               </div>
@@ -317,13 +317,17 @@ const SettingsPresetsPanel: React.FC = () => {
                       category: e.target.value as SettingsPreset["category"],
                     })
                   }
-                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
                 >
-                  <option value="visual">Visual</option>
-                  <option value="security">Security</option>
-                  <option value="performance">Performance</option>
-                  <option value="accessibility">Accessibility</option>
-                  <option value="custom">Custom</option>
+                  <option value="visual">{t("categoryVisual")}</option>
+                  <option value="security">{t("categorySecurity")}</option>
+                  <option value="performance">
+                    {t("categoryPerformance")}
+                  </option>
+                  <option value="accessibility">
+                    {t("categoryAccessibility")}
+                  </option>
+                  <option value="custom">{t("categoryCustom")}</option>
                 </select>
               </div>
 
@@ -335,7 +339,7 @@ const SettingsPresetsPanel: React.FC = () => {
                   onChange={(e) =>
                     setNewPreset({ ...newPreset, isPublic: e.target.checked })
                   }
-                  className="w-4 h-4 text-purple-600 focus:ring-2 focus:ring-purple-500 rounded"
+                  className="w-4 h-4 text-rose-600 focus:ring-2 focus:ring-rose-500 rounded"
                 />
                 <label
                   htmlFor="isPublic"
@@ -355,7 +359,7 @@ const SettingsPresetsPanel: React.FC = () => {
               </button>
               <button
                 onClick={handleCreatePreset}
-                className="flex-1 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg flex items-center justify-center gap-2"
               >
                 <CheckCircleIcon className="w-5 h-5" />
                 Create

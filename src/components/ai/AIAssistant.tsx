@@ -23,6 +23,7 @@ import {
   ChatResponse,
 } from "@/services/aiAgentService";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AIAssistantProps {
   defaultOpen?: boolean;
@@ -39,8 +40,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isHealthy, setIsHealthy] = useState(true);
+  const [showContext, setShowContext] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
+  const { t } = useTranslation();
 
   // Simple markdown-like formatting
   const formatMessage = (text: string) => {
@@ -52,22 +55,22 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         // Headers: ## text or === underline
         .replace(
           /^##\s+(.+)$/gm,
-          '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>'
+          '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>',
         )
         .replace(
           /^(.+)\n=+$/gm,
-          '<h2 class="text-xl font-bold mt-4 mb-3">$1</h2>'
+          '<h2 class="text-xl font-bold mt-4 mb-3">$1</h2>',
         )
         .replace(
           /^(.+)\n-+$/gm,
-          '<h3 class="text-lg font-semibold mt-3 mb-2">$1</h3>'
+          '<h3 class="text-lg font-semibold mt-3 mb-2">$1</h3>',
         )
         // Lists: - item or * item
         .replace(/^\s*[-*]\s+(.+)$/gm, '<li class="ml-4 mb-1">• $1</li>')
         // Code blocks: `code`
         .replace(
           /`(.+?)`/g,
-          '<code class="bg-gray-100 dark:bg-slate-600 px-1 py-0.5 rounded text-sm">$1</code>'
+          '<code class="bg-gray-100 dark:bg-slate-600 px-1 py-0.5 rounded text-sm">$1</code>',
         )
         // Line breaks
         .replace(/\n\n/g, "<br/><br/>")
@@ -157,15 +160,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-[9999] bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-indigo-500/50 group relative cursor-pointer`}
+        className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-[9999] bg-gradient-to-br from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-sky-500/50 group relative cursor-pointer`}
         style={{ touchAction: "manipulation" }}
-        aria-label="Open AI Assistant"
-        title="Chat with AI Assistant"
+        aria-label={t("openAiAssistant")}
+        title={t("chatWithAiAssistant")}
       >
         <ChatBubbleBottomCenterTextIcon className="w-6 h-6 drop-shadow-lg" />
         {/* Pulse animation ring - only when healthy */}
         {isHealthy && (
-          <span className="absolute inset-0 rounded-full bg-indigo-400 animate-ping opacity-20 pointer-events-none"></span>
+          <span className="absolute inset-0 rounded-full bg-sky-400 animate-ping opacity-20 pointer-events-none"></span>
         )}
         {/* Badge indicator */}
         <span
@@ -184,7 +187,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       } bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 flex flex-col transition-all duration-300 backdrop-blur-sm`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-t-2xl cursor-move">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-t-2xl cursor-move">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -220,8 +223,8 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           <button
             onClick={() => setIsOpen(false)}
             className="hover:bg-white/20 p-1.5 rounded-lg transition-all duration-200"
-            aria-label="Close"
-            title="Close"
+            aria-label={t("closeDialog")}
+            title={t("closeDialog")}
           >
             <XMarkIcon className="w-4 h-4" />
           </button>
@@ -234,9 +237,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800">
             {messages.length === 0 && (
               <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900/30 dark:to-cyan-900/30 rounded-2xl flex items-center justify-center">
                   {isHealthy ? (
-                    <ChatBubbleBottomCenterTextIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
+                    <ChatBubbleBottomCenterTextIcon className="w-8 h-8 text-sky-600 dark:text-sky-400" />
                   ) : (
                     <ExclamationCircleIcon className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
                   )}
@@ -257,19 +260,19 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                       onClick={() =>
                         setInput("What are the key OHAS standards?")
                       }
-                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors text-gray-700 dark:text-gray-300"
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-sky-400 dark:hover:border-sky-500 transition-colors text-gray-700 dark:text-gray-300"
                     >
                       OHAS Standards
                     </button>
                     <button
                       onClick={() => setInput("Help me with risk assessment")}
-                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors text-gray-700 dark:text-gray-300"
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-sky-400 dark:hover:border-sky-500 transition-colors text-gray-700 dark:text-gray-300"
                     >
                       Risk Assessment
                     </button>
                     <button
                       onClick={() => setInput("Show compliance checklist")}
-                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-indigo-400 dark:hover:border-indigo-500 transition-colors text-gray-700 dark:text-gray-300"
+                      className="px-3 py-1.5 text-xs bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-full hover:border-sky-400 dark:hover:border-sky-500 transition-colors text-gray-700 dark:text-gray-300"
                     >
                       Compliance Checklist
                     </button>
@@ -288,7 +291,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 <div
                   className={`max-w-[85%] rounded-2xl p-3 shadow-sm ${
                     message.role === "user"
-                      ? "bg-gradient-to-br from-indigo-600 to-purple-600 text-white"
+                      ? "bg-gradient-to-br from-sky-600 to-cyan-600 text-white"
                       : "bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600"
                   }`}
                 >
@@ -313,15 +316,15 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 <div className="bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-2xl p-4 shadow-sm">
                   <div className="flex space-x-2">
                     <div
-                      className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-sky-600 rounded-full animate-bounce"
                       style={{ animationDelay: "0ms" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-cyan-600 rounded-full animate-bounce"
                       style={{ animationDelay: "150ms" }}
                     ></div>
                     <div
-                      className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                      className="w-2 h-2 bg-sky-600 rounded-full animate-bounce"
                       style={{ animationDelay: "300ms" }}
                     ></div>
                   </div>
@@ -337,7 +340,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             {messages.length > 0 && (
               <button
                 onClick={resetConversation}
-                className="text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 mb-3 flex items-center gap-1 transition-colors"
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-sky-600 dark:hover:text-sky-400 mb-3 flex items-center gap-1 transition-colors"
               >
                 <svg
                   className="w-3 h-3"
@@ -367,16 +370,16 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                       : "AI Assistant unavailable"
                   }
                   disabled={isLoading || !isHealthy}
-                  className="w-full resize-none border border-gray-300 dark:border-slate-600 rounded-xl p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
+                  className="w-full resize-none border border-gray-300 dark:border-slate-600 rounded-xl p-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent disabled:bg-gray-100 dark:disabled:bg-slate-900 disabled:cursor-not-allowed bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 transition-all"
                   rows={2}
                 />
               </div>
               <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim() || !isHealthy}
-                className="bg-gradient-to-br from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-xl px-4 transition-all duration-200 shadow-lg hover:shadow-indigo-500/50 disabled:shadow-none flex items-center justify-center"
-                aria-label="Send message"
-                title="Send message"
+                className="bg-gradient-to-br from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-xl px-4 transition-all duration-200 shadow-lg hover:shadow-sky-500/50 disabled:shadow-none flex items-center justify-center"
+                aria-label={t("sendMessage")}
+                title={t("sendMessage")}
               >
                 <PaperAirplaneIcon className="w-5 h-5" />
               </button>

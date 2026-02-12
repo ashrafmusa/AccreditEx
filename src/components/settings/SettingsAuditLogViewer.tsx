@@ -88,7 +88,7 @@ const SettingsAuditLogViewer: React.FC = () => {
         </div>
         <button
           onClick={loadLogs}
-          className="px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg flex items-center gap-2 transition-colors"
+          className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white rounded-lg flex items-center gap-2 transition-colors"
         >
           <ArrowPathIcon className="w-4 h-4" />
           Refresh
@@ -112,7 +112,7 @@ const SettingsAuditLogViewer: React.FC = () => {
             <select
               value={filter.userId}
               onChange={(e) => setFilter({ ...filter, userId: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
             >
               <option value="">All Users</option>
               {users.map((user) => (
@@ -132,7 +132,7 @@ const SettingsAuditLogViewer: React.FC = () => {
               onChange={(e) =>
                 setFilter({ ...filter, category: e.target.value })
               }
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
             >
               <option value="">All Categories</option>
               {categories.map((cat) => (
@@ -150,7 +150,7 @@ const SettingsAuditLogViewer: React.FC = () => {
             <select
               value={filter.action}
               onChange={(e) => setFilter({ ...filter, action: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
             >
               <option value="">All Actions</option>
               {actions.map((action) => (
@@ -171,7 +171,7 @@ const SettingsAuditLogViewer: React.FC = () => {
               onChange={(e) =>
                 setFilter({ ...filter, dateFrom: e.target.value })
               }
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
             />
           </div>
 
@@ -183,7 +183,7 @@ const SettingsAuditLogViewer: React.FC = () => {
               type="date"
               value={filter.dateTo}
               onChange={(e) => setFilter({ ...filter, dateTo: e.target.value })}
-              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
             />
           </div>
 
@@ -198,7 +198,7 @@ const SettingsAuditLogViewer: React.FC = () => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search field or value..."
-                className="w-full pl-10 pr-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500"
+                className="w-full pl-10 pr-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500"
               />
             </div>
           </div>

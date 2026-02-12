@@ -155,17 +155,17 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
           </div>
 
           {/* Received Messages */}
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+          <div className="bg-gradient-to-br from-rose-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-700/30 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase">
+                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase">
                   Received
                 </p>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                <p className="text-2xl font-bold text-pink-900 dark:text-rose-100 mt-1">
                   {stats.receivedMessages}
                 </p>
               </div>
-              <SparklesIcon className="w-8 h-8 text-purple-400 opacity-50" />
+              <SparklesIcon className="w-8 h-8 text-rose-400 opacity-50" />
             </div>
           </div>
 
@@ -184,20 +184,20 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
             </div>
           </div>
 
-          {/* Conversations */}
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-lg p-4 border border-indigo-200 dark:border-indigo-800">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase">
-                  Active Conversations
-                </p>
-                <p className="text-2xl font-bold text-indigo-900 dark:text-indigo-100 mt-1">
-                  {stats.conversationCount}
-                </p>
-              </div>
-              <DocumentTextIcon className="w-8 h-8 text-indigo-400 opacity-50" />
-            </div>
-          </div>
+           {/* Conversations */}
+           <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+             <div className="flex items-center justify-between">
+               <div>
+                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
+                   Active Conversations
+                 </p>
+                 <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                   {stats.conversationCount}
+                 </p>
+               </div>
+               <DocumentTextIcon className="w-8 h-8 text-blue-400 opacity-50" />
+             </div>
+           </div>
 
           {/* Unread Conversations */}
           <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-lg p-4 border border-red-200 dark:border-red-800">

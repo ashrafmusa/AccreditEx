@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { User, NavigationState, UserRole } from "../types";
 import { useTranslation } from "../hooks/useTranslation";
+import { ContextualHelp } from "../components/common/ContextualHelp";
+import { getHelpContent } from "../data/helpContent";
 import { useUserStore } from "../stores/useUserStore";
 import { useAppStore } from "../stores/useAppStore";
 import UserModal from "../components/users/UserModal";
@@ -92,9 +94,12 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
       {/* Header with Add Button */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
-            {t("usersManagement")}
-          </h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {t("usersManagement")}
+            </h1>
+            <ContextualHelp content={getHelpContent("users")!} />
+          </div>
           <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
             {t("totalUsers")}:{" "}
             <span className="font-semibold">{users.length}</span> |{" "}

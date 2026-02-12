@@ -163,7 +163,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 placeholder="Define corrective action..."
               />
             ) : (
-              <div className="text-gray-900 dark:text-white bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 p-4 rounded-md border border-purple-200 dark:border-purple-800 whitespace-pre-wrap">
+              <div className="text-gray-900 dark:text-white bg-gradient-to-br from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 p-4 rounded-md border border-rose-200 dark:border-pink-700 whitespace-pre-wrap">
                 {capa.correctiveAction}
               </div>
             )}
@@ -225,7 +225,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                       : capa.pdcaStage === "Do"
                       ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
                       : capa.pdcaStage === "Check"
-                      ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                      ? "bg-rose-100 text-pink-700 dark:bg-pink-900/30 dark:text-rose-300"
                       : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                   }`}
                 >
@@ -298,7 +298,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 </button>
                 <button
                   onClick={handleSave}
-                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
+                  className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-pink-600"
                 >
                   Save Changes
                 </button>
@@ -313,7 +313,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 </button>
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-md hover:bg-purple-700"
+                  className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-pink-600"
                 >
                   Edit
                 </button>

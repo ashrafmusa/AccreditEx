@@ -1,13 +1,14 @@
-import React from 'react';
-import { ProjectDetailView, Project } from '@/types';
-import { 
-  ChartBarIcon, 
-  ClipboardDocumentCheckIcon, 
-  CubeIcon, 
-  ClipboardDocumentListIcon, 
+import React from "react";
+import { ProjectDetailView, Project } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ChartBarIcon,
+  ClipboardDocumentCheckIcon,
+  CubeIcon,
+  ClipboardDocumentListIcon,
   ClockIcon,
-  ArrowPathIcon
-} from '@/components/icons';
+  ArrowPathIcon,
+} from "@/components/icons";
 
 interface ProjectDetailSidebarProps {
   project: Project;
@@ -15,17 +16,47 @@ interface ProjectDetailSidebarProps {
   setActiveView: (view: ProjectDetailView) => void;
 }
 
-const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({ project, activeView, setActiveView }) => {
+const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({
+  project,
+  activeView,
+  setActiveView,
+}) => {
+  const { t } = useTranslation();
+
   // Count active PDCA cycles (not completed)
-  const activePDCACycles = (project.pdcaCycles || []).filter(cycle => cycle.currentStage !== 'Completed').length;
-  
-  const navItems: { id: ProjectDetailView; label: string; icon: React.ElementType; badge?: number }[] = [
-    { id: 'overview', label: 'Overview', icon: ChartBarIcon },
-    { id: 'checklist', label: 'Checklist', icon: ClipboardDocumentCheckIcon },
-    { id: 'design_controls', label: 'Design Controls', icon: CubeIcon },
-    { id: 'mock_surveys', label: 'Mock Surveys', icon: ClipboardDocumentListIcon },
-    { id: 'pdca_cycles', label: 'PDCA Cycles', icon: ArrowPathIcon, badge: activePDCACycles },
-    { id: 'audit_log', label: 'Audit Log', icon: ClockIcon },
+  const activePDCACycles = (project.pdcaCycles || []).filter(
+    (cycle) => cycle.currentStage !== "Completed",
+  ).length;
+
+  const navItems: {
+    id: ProjectDetailView;
+    label: string;
+    icon: React.ElementType;
+    badge?: number;
+  }[] = [
+    { id: "overview", label: t("projects.overview"), icon: ChartBarIcon },
+    {
+      id: "checklist",
+      label: t("projects.checklist"),
+      icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      id: "design_controls",
+      label: t("projects.designControls"),
+      icon: CubeIcon,
+    },
+    {
+      id: "mock_surveys",
+      label: t("projects.mockSurveys"),
+      icon: ClipboardDocumentListIcon,
+    },
+    {
+      id: "pdca_cycles",
+      label: t("projects.pdcaCycles"),
+      icon: ArrowPathIcon,
+      badge: activePDCACycles,
+    },
+    { id: "audit_log", label: t("projects.auditLog"), icon: ClockIcon },
   ];
 
   return (
@@ -37,8 +68,8 @@ const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({ project, ac
             onClick={() => setActiveView(item.id)}
             className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 ${
               activeView === item.id
-                ? 'bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-primary-light'
-                : 'text-brand-text-secondary hover:bg-slate-100 dark:text-dark-brand-text-secondary dark:hover:bg-slate-800'
+                ? "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/20 dark:text-brand-primary-light"
+                : "text-brand-text-secondary hover:bg-slate-100 dark:text-dark-brand-text-secondary dark:hover:bg-slate-800"
             }`}
           >
             <item.icon className="w-5 h-5" />

@@ -91,10 +91,10 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ configId }
           <p className="text-xs text-gray-500 mt-1">Per sync operation</p>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-purple-500">
+        <div className="bg-white rounded-lg shadow p-4 border-l-4 border-rose-500">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-gray-600 uppercase">Total Syncs</span>
-            <CheckCircle size={16} className="text-purple-500" />
+            <CheckCircle size={16} className="text-rose-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900">{performance?.totalSyncs}</div>
           <p className="text-xs text-gray-500 mt-1">Completed operations</p>

@@ -49,7 +49,7 @@ const PDCACycleTracker: React.FC<PDCACycleTrackerProps> = ({ projects }) => {
       label: t('check') || 'Check', 
       count: pdcaStats.check, 
       icon: ClipboardDocumentCheckIcon, 
-      color: 'text-purple-600 bg-purple-100 dark:bg-purple-900/30 dark:text-purple-400',
+      color: 'text-rose-600 bg-rose-100 dark:bg-pink-900/30 dark:text-rose-400',
       description: t('checkDesc') || 'Verify effectiveness'
     },
     { 

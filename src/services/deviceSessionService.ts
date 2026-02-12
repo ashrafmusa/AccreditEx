@@ -1,15 +1,15 @@
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  getDocs, 
-  deleteDoc, 
-  query, 
+import {
+  collection,
+  doc,
+  setDoc,
+  getDocs,
+  deleteDoc,
+  query,
   where,
   updateDoc,
   orderBy,
   limit,
-  Timestamp 
+  Timestamp
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { freeTierMonitor } from '@/services/freeTierMonitor';
@@ -36,7 +36,7 @@ class DeviceSessionService {
   private generateDeviceId(): string {
     const nav = navigator;
     const screen = window.screen;
-    
+
     const fingerprint = [
       nav.userAgent,
       nav.language,
@@ -45,7 +45,7 @@ class DeviceSessionService {
       screen.height,
       new Date().getTimezoneOffset(),
     ].join('|');
-    
+
     // Simple hash function
     let hash = 0;
     for (let i = 0; i < fingerprint.length; i++) {
@@ -53,7 +53,7 @@ class DeviceSessionService {
       hash = ((hash << 5) - hash) + char;
       hash = hash & hash;
     }
-    
+
     return `device_${Math.abs(hash)}`;
   }
 
@@ -62,7 +62,7 @@ class DeviceSessionService {
    */
   private parseUserAgent(): { browser: string; os: string; deviceName: string } {
     const ua = navigator.userAgent;
-    
+
     // Detect browser
     let browser = 'Unknown';
     if (ua.includes('Firefox')) browser = 'Firefox';
@@ -70,7 +70,7 @@ class DeviceSessionService {
     else if (ua.includes('Edg')) browser = 'Edge';
     else if (ua.includes('Safari') && !ua.includes('Chrome')) browser = 'Safari';
     else if (ua.includes('Opera') || ua.includes('OPR')) browser = 'Opera';
-    
+
     // Detect OS
     let os = 'Unknown';
     if (ua.includes('Windows')) os = 'Windows';
@@ -78,26 +78,40 @@ class DeviceSessionService {
     else if (ua.includes('Linux')) os = 'Linux';
     else if (ua.includes('Android')) os = 'Android';
     else if (ua.includes('iOS') || ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
-    
+
     const deviceName = `${browser} on ${os}`;
-    
+
     return { browser, os, deviceName };
   }
 
   /**
-   * Get approximate location from IP (using free API)
+   * Get approximate location from IP (with CORS-friendly fallback)
    */
   private async getLocation(): Promise<string> {
+    // For development/localhost, return default location
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      return 'Development Environment';
+    }
+
     try {
-      const response = await fetch('https://ipapi.co/json/', {
-        signal: AbortSignal.timeout(3000)
+      // Try with jsonp/cors proxy for production
+      const response = await fetch('https://api.ipdata.co/?api-key=test&fields=city,country_name', {
+        signal: AbortSignal.timeout(3000),
+        mode: 'cors'
       });
+
+      if (!response.ok) {
+        throw new Error('Location service unavailable');
+      }
+
       const data = await response.json();
-      return data.city && data.country_name 
-        ? `${data.city}, ${data.country_name}` 
-        : 'Unknown';
-    } catch {
-      return 'Unknown';
+      return data.city && data.country_name
+        ? `${data.city}, ${data.country_name}`
+        : 'Unknown Location';
+    } catch (error) {
+      console.warn('🌍 Location detection failed, using fallback:', error);
+      // Graceful fallback - don't block login for location detection
+      return 'Location Unavailable';
     }
   }
 
@@ -109,12 +123,12 @@ class DeviceSessionService {
       const deviceId = this.generateDeviceId();
       const { browser, os, deviceName } = this.parseUserAgent();
       const now = new Date().toISOString();
-      
+
       // Get location in background (don't block login)
       const locationPromise = this.getLocation();
-      
+
       const sessionRef = doc(db, 'users', userId, 'sessions', deviceId);
-      
+
       const sessionData: Partial<DeviceSession> = {
         userId,
         deviceName,
@@ -127,18 +141,18 @@ class DeviceSessionService {
       const sessionsRef = collection(db, 'users', userId, 'sessions');
       const q = query(sessionsRef, where('__name__', '==', deviceId));
       const snapshot = await getDocs(q);
-      
+
       if (snapshot.empty) {
         // New session
         sessionData.loginTime = now;
-        
+
         // Check session limit before creating
         await this.enforceSessionLimit(userId);
-        
+
         // Get location and add to session
         const location = await locationPromise;
         sessionData.location = location;
-        
+
         await setDoc(sessionRef, sessionData);
         freeTierMonitor.recordWrite(1);
       } else {
@@ -146,7 +160,7 @@ class DeviceSessionService {
         await updateDoc(sessionRef, { lastActive: now });
         freeTierMonitor.recordWrite(1);
       }
-      
+
       return deviceId;
     } catch (error) {
       console.error('Failed to create/update session:', error);
@@ -162,17 +176,17 @@ class DeviceSessionService {
       const sessionsRef = collection(db, 'users', userId, 'sessions');
       const q = query(sessionsRef, orderBy('lastActive', 'desc'));
       const snapshot = await getDocs(q);
-      
+
       freeTierMonitor.recordRead(snapshot.size);
-      
+
       const sessions: DeviceSession[] = [];
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - this.SESSION_TIMEOUT_DAYS);
-      
+
       snapshot.forEach((doc) => {
         const data = doc.data();
         const lastActive = new Date(data.lastActive);
-        
+
         // Filter out expired sessions
         if (lastActive > cutoffDate) {
           sessions.push({
@@ -181,7 +195,7 @@ class DeviceSessionService {
           } as DeviceSession);
         }
       });
-      
+
       return sessions;
     } catch (error) {
       console.error('Failed to get user sessions:', error);
@@ -203,11 +217,11 @@ class DeviceSessionService {
     try {
       const deviceId = this.generateDeviceId();
       const sessionRef = doc(db, 'users', userId, 'sessions', deviceId);
-      
+
       await updateDoc(sessionRef, {
         lastActive: new Date().toISOString(),
       });
-      
+
       freeTierMonitor.recordWrite(1);
     } catch (error) {
       // Silently fail - not critical
@@ -236,7 +250,7 @@ class DeviceSessionService {
     try {
       const currentDeviceId = this.generateDeviceId();
       const sessions = await this.getUserSessions(userId);
-      
+
       let count = 0;
       for (const session of sessions) {
         if (session.id !== currentDeviceId) {
@@ -244,7 +258,7 @@ class DeviceSessionService {
           count++;
         }
       }
-      
+
       return count;
     } catch (error) {
       console.error('Failed to sign out all devices:', error);
@@ -258,11 +272,11 @@ class DeviceSessionService {
   async signOutAllDevices(userId: string): Promise<number> {
     try {
       const sessions = await this.getUserSessions(userId);
-      
+
       for (const session of sessions) {
         await this.signOutDevice(userId, session.id);
       }
-      
+
       return sessions.length;
     } catch (error) {
       console.error('Failed to sign out all devices:', error);
@@ -276,11 +290,11 @@ class DeviceSessionService {
   private async enforceSessionLimit(userId: string): Promise<void> {
     try {
       const sessions = await this.getUserSessions(userId);
-      
+
       // Remove oldest sessions if limit exceeded
       if (sessions.length >= this.MAX_SESSIONS) {
         const sessionsToRemove = sessions.slice(this.MAX_SESSIONS - 1);
-        
+
         for (const session of sessionsToRemove) {
           await this.signOutDevice(userId, session.id);
         }
@@ -297,7 +311,7 @@ class DeviceSessionService {
     try {
       const currentDeviceId = this.generateDeviceId();
       const sessions = await this.getUserSessions(userId);
-      
+
       return sessions.some(session => session.id === currentDeviceId);
     } catch (error) {
       return true; // Assume active on error to avoid unnecessary logouts
@@ -311,24 +325,24 @@ class DeviceSessionService {
     try {
       const sessionsRef = collection(db, 'users', userId, 'sessions');
       const snapshot = await getDocs(sessionsRef);
-      
+
       freeTierMonitor.recordRead(snapshot.size);
-      
+
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - this.SESSION_TIMEOUT_DAYS);
-      
+
       let cleaned = 0;
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data();
         const lastActive = new Date(data.lastActive);
-        
+
         if (lastActive < cutoffDate) {
           await deleteDoc(doc(db, 'users', userId, 'sessions', docSnap.id));
           freeTierMonitor.recordDelete(1);
           cleaned++;
         }
       }
-      
+
       return cleaned;
     } catch (error) {
       console.error('Failed to cleanup expired sessions:', error);

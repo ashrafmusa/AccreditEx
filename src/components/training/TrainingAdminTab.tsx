@@ -69,7 +69,7 @@ const TrainingAdminTab: React.FC<Props> = ({
             setEditingProgram(null);
             setIsProgramModalOpen(true);
           }}
-          className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center justify-center font-semibold shadow-sm"
+          className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-sky-700 flex items-center justify-center font-semibold shadow-sm"
         >
           <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
           {t("createNewTraining")}

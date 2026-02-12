@@ -49,7 +49,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({
                 {title}
               </h4>
               {badge && (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300">
+                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-sky-100 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300">
                   {badge}
                 </span>
               )}

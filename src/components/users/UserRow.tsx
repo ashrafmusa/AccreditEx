@@ -22,22 +22,43 @@ const UserRow: React.FC<UserRowProps> = ({
   const { t, lang } = useTranslation();
 
   // Calculate performance metrics
-  const completedTraining = user.trainingAssignments?.filter(a => a.assignedDate).length || 0;
+  const completedTraining =
+    user.trainingAssignments?.filter((a) => a.assignedDate).length || 0;
   const totalAssignments = user.trainingAssignments?.length || 0;
   const completedCompetencies = user.competencies?.length || 0;
   const projectAssignments = user.trainingAssignments?.length || 0;
 
   const getStatusBadge = () => {
     if (completedTraining === 0 && totalAssignments === 0) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">Active</span>;
+      return (
+        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+          {t("statusActive")}
+        </span>
+      );
     }
-    if (completedTraining > 0 && completedTraining === totalAssignments && totalAssignments > 0) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">On Track</span>;
+    if (
+      completedTraining > 0 &&
+      completedTraining === totalAssignments &&
+      totalAssignments > 0
+    ) {
+      return (
+        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300">
+          {t("statusOnTrack")}
+        </span>
+      );
     }
     if (totalAssignments > 0 && completedTraining < totalAssignments) {
-      return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">In Progress</span>;
+      return (
+        <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300">
+          {t("statusInProgress")}
+        </span>
+      );
     }
-    return <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300">Pending</span>;
+    return (
+      <span className="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300">
+        {t("statusPending")}
+      </span>
+    );
   };
 
   return (
@@ -67,7 +88,7 @@ const UserRow: React.FC<UserRowProps> = ({
         <span
           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
             user.role === UserRole.Admin
-              ? "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300"
+              ? "bg-sky-100 text-sky-800 dark:bg-sky-900/50 dark:text-sky-300"
               : "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300"
           }`}
         >
@@ -78,7 +99,8 @@ const UserRow: React.FC<UserRowProps> = ({
         <div className="flex flex-col gap-1">
           {getStatusBadge()}
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {completedCompetencies} {t('competencies')} • {projectAssignments} {t('tasks')}
+            {completedCompetencies} {t("competencies")} • {projectAssignments}{" "}
+            {t("tasks")}
           </span>
         </div>
       </td>

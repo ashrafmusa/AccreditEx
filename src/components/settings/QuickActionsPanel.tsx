@@ -61,7 +61,7 @@ const QuickActionsPanel: React.FC<QuickActionsProps> = ({
       title: "View Activity Log",
       description: "Check recent user activities",
       icon: ClockIcon,
-      color: "bg-purple-500",
+      color: "bg-rose-500",
       adminOnly: false,
       action: () => {
         navigate({ view: "settings", section: "usageMonitor" });
@@ -85,7 +85,7 @@ const QuickActionsPanel: React.FC<QuickActionsProps> = ({
       title: "Refresh Data",
       description: "Reload all data from server",
       icon: ArrowPathIcon,
-      color: "bg-indigo-500",
+      color: "bg-sky-500",
       adminOnly: false,
       action: () => {
         window.location.reload();
@@ -132,7 +132,7 @@ const QuickActionsPanel: React.FC<QuickActionsProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-rose-500 to-cyan-600 rounded-lg">
                 <BoltIcon className="w-6 h-6 text-white" />
               </div>
               <div>
@@ -159,7 +159,7 @@ const QuickActionsPanel: React.FC<QuickActionsProps> = ({
               placeholder="Search actions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-4 py-2 bg-gray-100 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-500"
             />
           </div>
 

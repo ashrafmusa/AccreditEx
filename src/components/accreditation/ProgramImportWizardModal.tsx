@@ -219,7 +219,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
 
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary hover:bg-indigo-50 dark:hover:bg-gray-700 transition-colors"
+              className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-brand-primary hover:bg-sky-50 dark:hover:bg-gray-700 transition-colors"
             >
               <input
                 ref={fileInputRef}
@@ -413,7 +413,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
               <button
                 onClick={handleContinue}
                 disabled={!selectedFile || isProcessing}
-                className="px-4 py-2 bg-brand-primary hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
+                className="px-4 py-2 bg-brand-primary hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
               >
                 {isProcessing ? t('validating') : t('continue')}
               </button>
@@ -423,7 +423,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
               <button
                 onClick={handleConfirmImport}
                 disabled={!validationResult?.isValid}
-                className="px-4 py-2 bg-brand-primary hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
+                className="px-4 py-2 bg-brand-primary hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium"
               >
                 {t('next')}
               </button>

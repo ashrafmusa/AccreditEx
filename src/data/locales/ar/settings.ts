@@ -553,4 +553,27 @@ export const ar = {
     'successfullyImported': 'تم استيراد {count} مستخدم بنجاح',
     'failedToImport': 'فشل استيراد {count} مستخدم',
     'onlyAdminsCanImport': 'يمكن للمسؤولين فقط استيراد المستخدمين',
+
+    // Visual Settings
+    'primaryColorLabel': 'اللون الأساسي',
+    'successColorLabel': 'لون النجاح',
+    'warningColorLabel': 'لون التحذير',
+    'dangerColorLabel': 'لون الخطر',
+    'baseColorLabel': 'اللون الأساسي',
+    'markerColorLabel': 'لون العلامة',
+    'glowColorLabel': 'لون التوهج',
+    'rotationSpeedLabel': 'سرعة الدوران',
+    'livePreviewLabel': 'معاينة مباشرة',
+    'applicationIdentity': 'هوية التطبيق',
+    'enterApplicationName': 'أدخل اسم التطبيق',
+    'visualAssets': 'الأصول المرئية',
+    'saveChangesPermanent': 'احفظ التغييرات أدناه لجعلها دائمة',
+    'savedPresets': 'الإعدادات المحفوظة',
+
+    // Settings Categories
+    'categoryVisual': 'مرئي',
+    'categorySecurity': 'أمن',
+    'categoryPerformance': 'أداء',
+    'categoryAccessibility': 'إمكانية الوصول',
+    'categoryCustom': 'مخصص',
 };

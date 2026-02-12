@@ -157,14 +157,14 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
           <div>
             <div className="flex items-center gap-3 mb-2">
               <span className={`px-2 py-0.5 rounded text-xs font-medium uppercase tracking-wide ${
-                type === 'cycle' ? 'bg-indigo-100 text-indigo-800' : 'bg-orange-100 text-orange-800'
+                type === 'cycle' ? 'bg-sky-100 text-sky-800' : 'bg-orange-100 text-orange-800'
               }`}>
                 {type === 'cycle' ? t('pdcaCycle') : 'CAPA'}
               </span>
               <span className={`px-2 py-0.5 rounded-full text-xs font-medium border ${
                 currentStage === 'Plan' ? 'bg-blue-100 text-blue-800 border-blue-200' :
                 currentStage === 'Do' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                currentStage === 'Check' ? 'bg-purple-100 text-purple-800 border-purple-200' :
+                currentStage === 'Check' ? 'bg-rose-100 text-pink-700 border-rose-200' :
                 currentStage === 'Act' ? 'bg-green-100 text-green-800 border-green-200' :
                 'bg-gray-100 text-gray-800 border-gray-200'
               }`}>
@@ -303,21 +303,21 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
             {/* Sidebar (AI Suggestions & Info) */}
             <div className="space-y-6">
               {activeTab !== 'History' && (
-                <div className="bg-indigo-50 dark:bg-indigo-900/20 rounded-lg p-4 border border-indigo-100 dark:border-indigo-800">
-                  <h4 className="font-medium text-indigo-900 dark:text-indigo-300 flex items-center gap-2 mb-3">
+                <div className="bg-sky-50 dark:bg-sky-900/20 rounded-lg p-4 border border-sky-100 dark:border-sky-800">
+                  <h4 className="font-medium text-sky-900 dark:text-sky-300 flex items-center gap-2 mb-3">
                     <LightBulbIcon className="w-5 h-5" />
                     {t('aiSuggestions') || 'AI Suggestions'}
                   </h4>
                   {isLoadingSuggestions ? (
                     <div className="animate-pulse space-y-2">
-                      <div className="h-4 bg-indigo-200 dark:bg-indigo-800 rounded w-3/4"></div>
-                      <div className="h-4 bg-indigo-200 dark:bg-indigo-800 rounded w-1/2"></div>
+                      <div className="h-4 bg-sky-200 dark:bg-sky-800 rounded w-3/4"></div>
+                      <div className="h-4 bg-sky-200 dark:bg-sky-800 rounded w-1/2"></div>
                     </div>
                   ) : (
                     <ul className="space-y-3">
                       {suggestions.map(suggestion => (
-                        <li key={suggestion.id} className="text-sm bg-white dark:bg-gray-800 p-3 rounded border border-indigo-100 dark:border-indigo-900 shadow-sm">
-                          <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 block mb-1">
+                        <li key={suggestion.id} className="text-sm bg-white dark:bg-gray-800 p-3 rounded border border-sky-100 dark:border-sky-900 shadow-sm">
+                          <span className="text-xs font-bold text-sky-600 dark:text-sky-400 block mb-1">
                             {suggestion.category}
                           </span>
                           <span className="text-gray-700 dark:text-gray-300">
@@ -326,7 +326,7 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                         </li>
                       ))}
                       {suggestions.length === 0 && (
-                        <li className="text-sm text-indigo-700 dark:text-indigo-400 italic">
+                        <li className="text-sm text-sky-700 dark:text-sky-400 italic">
                           {t('noSuggestions') || 'No suggestions available for this stage.'}
                         </li>
                       )}

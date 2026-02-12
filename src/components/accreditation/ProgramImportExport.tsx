@@ -189,7 +189,7 @@ const ProgramImportExport: React.FC<ProgramImportExportProps> = ({
       </button>
 
       {/* Import Button */}
-      <label className="flex items-center justify-center px-4 py-2 bg-brand-primary hover:bg-indigo-700 rounded-lg cursor-pointer font-medium text-sm text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+      <label className="flex items-center justify-center px-4 py-2 bg-brand-primary hover:bg-sky-700 rounded-lg cursor-pointer font-medium text-sm text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
         <UploadIcon className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
         {isImporting ? `${t('importing')} ${Math.round(importProgress)}%` : t('importPrograms')}
         <input

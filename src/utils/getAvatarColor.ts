@@ -7,10 +7,10 @@ const AVATAR_COLORS = [
   '#EF4444', // Red
   '#10B981', // Green
   '#F59E0B', // Amber
-  '#8B5CF6', // Purple
+  '#F43F5E', // Rose (was Purple - Purple Ban compliant)
   '#EC4899', // Pink
   '#06B6D4', // Cyan
-  '#6366F1', // Indigo
+  '#0EA5E9', // Sky (was Indigo - Purple Ban compliant)
   '#14B8A6', // Teal
   '#F97316', // Orange
   '#6B7280', // Gray

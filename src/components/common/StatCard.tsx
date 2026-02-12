@@ -23,7 +23,7 @@ interface StatCardProps {
   onClick?: () => void;
 }
 
-const Sparkline: FC<{ data: number[]; color?: string }> = ({ data, color = '#4f46e5' }) => {
+const Sparkline: FC<{ data: number[]; color?: string }> = ({ data, color = '#0ea5e9' }) => {
   if (!data || data.length < 2) return null;
 
   const max = Math.max(...data);
@@ -133,8 +133,8 @@ const StatCard: FC<StatCardProps> = ({
                      color?.includes('emerald') ? '#10b981' : 
                      color?.includes('red') ? '#ef4444' : 
                      color?.includes('orange') ? '#f97316' :
-                     color?.includes('indigo') ? '#6366f1' :
-                     color?.includes('amber') ? '#f59e0b' : '#4f46e5'} 
+                     color?.includes('sky') ? '#0ea5e9' :
+                     color?.includes('amber') ? '#f59e0b' : '#0ea5e9'} 
             />
           </div>
         )}

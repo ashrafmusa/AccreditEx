@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { MagnifyingGlassIcon, CalendarDaysIcon, DocumentTextIcon } from '@/components/icons';
+import React, { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  MagnifyingGlassIcon,
+  CalendarDaysIcon,
+  DocumentTextIcon,
+} from "@/components/icons";
 
 interface MessageSearchProps {
   onSearch: (query: string, filters: MessageSearchFilters) => void;
@@ -14,6 +18,7 @@ export interface MessageSearchFilters {
   endDate?: Date;
   hasAttachments?: boolean;
   isMention?: boolean;
+  hasReactions?: boolean;
 }
 
 const MessageSearch: React.FC<MessageSearchProps> = ({
@@ -22,12 +27,13 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
   isSearching = false,
 }) => {
   const { t } = useTranslation();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [hasAttachments, setHasAttachments] = useState(false);
   const [isMention, setIsMention] = useState(false);
+  const [hasReactions, setHasReactions] = useState(false);
 
   const handleSearch = () => {
     onSearch(query, {
@@ -36,15 +42,17 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
       endDate: endDate ? new Date(endDate) : undefined,
       hasAttachments,
       isMention,
+      hasReactions,
     });
   };
 
   const handleClear = () => {
-    setQuery('');
-    setStartDate('');
-    setEndDate('');
+    setQuery("");
+    setStartDate("");
+    setEndDate("");
     setHasAttachments(false);
     setIsMention(false);
+    setHasReactions(false);
     onClear();
   };
 
@@ -55,10 +63,10 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
         <div className="flex-1 relative">
           <input
             type="text"
-            placeholder={t('searchMessages')}
+            placeholder={t("searchMessages")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
           />
           <MagnifyingGlassIcon className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
@@ -66,18 +74,18 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
         <button
           onClick={handleSearch}
           disabled={isSearching || !query.trim()}
-          className="px-4 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
+          className="px-4 py-2.5 bg-brand-primary text-white rounded-lg hover:bg-sky-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors font-medium"
         >
-          {isSearching ? t('searchingMessages') : t('search')}
+          {isSearching ? t("searchingMessages") : t("search")}
         </button>
       </div>
 
       {/* Advanced Filters Toggle */}
       <button
         onClick={() => setShowFilters(!showFilters)}
-        className="text-sm text-brand-primary hover:text-indigo-700 font-medium transition-colors"
+        className="text-sm text-brand-primary hover:text-sky-700 font-medium transition-colors"
       >
-        {showFilters ? '▼' : '▶'} {t('advancedFilters')}
+        {showFilters ? "▼" : "▶"} {t("advancedFilters")}
       </button>
 
       {/* Filters */}
@@ -87,7 +95,7 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               <CalendarDaysIcon className="w-4 h-4 inline mr-2" />
-              {t('filterByDate')}
+              {t("filterByDate")}
             </label>
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -115,7 +123,9 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
                 className="w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
               />
               <DocumentTextIcon className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-              <span className="text-sm text-gray-700 dark:text-gray-300">{t('hasAttachments')}</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t("hasAttachments")}
+              </span>
             </label>
 
             <label className="flex items-center gap-2 cursor-pointer">
@@ -125,7 +135,33 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
                 onChange={(e) => setIsMention(e.target.checked)}
                 className="w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
               />
-              <span className="text-sm text-gray-700 dark:text-gray-300">{t('mentionsOnly')}</span>
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t("mentionsOnly")}
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hasReactions}
+                onChange={(e) => setHasReactions(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t("hasReactions")}
+              </span>
+            </label>
+
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={isMention}
+                onChange={(e) => setIsMention(e.target.checked)}
+                className="w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+              />
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {t("mentionsOnly")}
+              </span>
             </label>
           </div>
 
@@ -135,14 +171,14 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
               onClick={handleClear}
               className="flex-1 px-3 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
             >
-              {t('clearFilters')}
+              {t("clearFilters")}
             </button>
             <button
               onClick={handleSearch}
               disabled={isSearching}
-              className="flex-1 px-3 py-2 bg-brand-primary text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 transition-colors text-sm font-medium"
+              className="flex-1 px-3 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 disabled:bg-gray-400 transition-colors text-sm font-medium"
             >
-              {t('send')}
+              {t("send")}
             </button>
           </div>
         </div>

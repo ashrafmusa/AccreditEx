@@ -78,7 +78,7 @@ const AppInitializer: React.FC = () => {
     if (appSettings?.primaryColor) {
       document.documentElement.style.setProperty(
         "--user-primary",
-        appSettings.primaryColor
+        appSettings.primaryColor,
       );
     }
   }, [appSettings?.primaryColor]);
@@ -98,7 +98,7 @@ const AppManager: React.FC = () => {
   const currentUser = useUserStore((state) => state.currentUser);
   const [authChecked, setAuthChecked] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(
-    () => !localStorage.getItem("accreditex-onboarding-complete")
+    () => !localStorage.getItem("accreditex-onboarding-complete"),
   );
 
   useFirebaseAuth(); // This hook handles user state

@@ -61,7 +61,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   const handleUpdate = (
     index: number,
     field: keyof DesignControlItem,
-    value: any
+    value: any,
   ) => {
     const newControls = [...controls];
     (newControls[index] as any)[field] = value;
@@ -88,7 +88,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
 
   const handleSave = () => {
     onSave(controls);
-    alert("Changes saved!");
+    alert(t("changesSaved"));
   };
 
   const handleAIComplianceCheck = async () => {
@@ -110,9 +110,9 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
 
       setAiModalContent(complianceCheck);
       setAiModalOpen(true);
-      toast.success("AI compliance check complete!");
+      toast.success(t("aiComplianceCheckComplete"));
     } catch (error) {
-      toast.error("Failed to perform AI compliance check");
+      toast.error(t("failedAiComplianceCheck"));
       console.error("AI compliance check error:", error);
     } finally {
       setAiChecking(false);
@@ -130,7 +130,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
       // Add new documents, avoiding duplicates
       const existingIds = newControls[currentRowIndex].linkedDocumentIds;
       const uniqueNewIds = documentIds.filter(
-        (id) => !existingIds.includes(id)
+        (id) => !existingIds.includes(id),
       );
       newControls[currentRowIndex].linkedDocumentIds = [
         ...existingIds,
@@ -164,7 +164,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
       const fileUrl = await storageService.uploadDocument(
         file,
         documentId,
-        (progress) => setUploadProgress(progress.progress)
+        (progress) => setUploadProgress(progress.progress),
       );
       const newDoc: AppDocument = {
         id: documentId,
@@ -226,11 +226,10 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
             <h2 className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-              Evidence Matrix
+              {t("evidenceMatrix")}
             </h2>
             <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-              Trace compliance from standard requirements to implementation
-              evidence.
+              {t("evidenceMatrixDescription")}
             </p>
           </div>
           {!isFinalized && (
@@ -238,7 +237,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
               <button
                 onClick={handleAIComplianceCheck}
                 disabled={aiChecking || controls.length === 0}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-5 py-2.5 rounded-lg hover:from-purple-700 hover:to-indigo-700 font-semibold shadow-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-5 py-2.5 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold shadow-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {aiChecking ? (
                   <>
@@ -258,15 +257,15 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Checking...
+                    {t("checking")}
                   </>
                 ) : (
-                  <>🤖 AI Compliance Check</>
+                  <>🤖 {t("aiComplianceCheck")}</>
                 )}
               </button>
               <button
                 onClick={handleSave}
-                className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-indigo-700 font-semibold shadow-sm w-full sm:w-auto"
+                className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-sky-700 font-semibold shadow-sm w-full sm:w-auto"
               >
                 {t("saveChanges")}
               </button>
@@ -285,37 +284,37 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    Standard Requirement
+                    {t("standardRequirement")}
                   </th>
                   <th
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    Policy/Process
+                    {t("policyProcess")}
                   </th>
                   <th
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    Implementation Evidence
+                    {t("implementationEvidence")}
                   </th>
                   <th
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    Audit Findings
+                    {t("auditFindings")}
                   </th>
                   <th
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    Outcome/KPI
+                    {t("outcomeKPI")}
                   </th>
                   <th
                     scope="col"
                     className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
                   >
-                    Status
+                    {t("status")}
                   </th>
                   <th scope="col" className="w-12 px-4 py-3"></th>
                 </tr>
@@ -331,7 +330,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                         }
                         disabled={isFinalized}
                         className={textareaClasses}
-                        placeholder="Enter requirement..."
+                        placeholder={t("enterRequirement")}
                       />
                     </td>
                     <td className="p-2 align-top">
@@ -351,7 +350,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                           handleUpdate(
                             index,
                             "implementationEvidence",
-                            e.target.value
+                            e.target.value,
                           )
                         }
                         disabled={isFinalized}
@@ -427,7 +426,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                           handleUpdate(
                             index,
                             "status",
-                            e.target.value as ComplianceStatus
+                            e.target.value as ComplianceStatus,
                           )
                         }
                         disabled={isFinalized}
@@ -435,7 +434,12 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                       >
                         {Object.values(ComplianceStatus).map((status) => (
                           <option key={status} value={status}>
-                            {status}
+                            {t(
+                              status
+                                .replace(/\s/g, "")
+                                .replace(/\-/g, "")
+                                .toLowerCase() as any,
+                            ) || status}
                           </option>
                         ))}
                       </select>
@@ -462,7 +466,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
           onClick={addRow}
           className="flex items-center gap-2 text-sm font-semibold text-brand-primary hover:underline"
         >
-          <PlusIcon className="w-4 h-4" /> Add New Item
+          <PlusIcon className="w-4 h-4" /> {t("addNewItem")}
         </button>
       )}
 
@@ -553,7 +557,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
       <AISuggestionModal
         isOpen={aiModalOpen}
         onClose={() => setAiModalOpen(false)}
-        title="AI Compliance Check"
+        title={t("aiComplianceCheck")}
         content={aiModalContent}
         type="compliance-check"
       />

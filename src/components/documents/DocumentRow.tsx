@@ -40,7 +40,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({ doc, canModify, onApprove, on
                 <div className="flex items-center gap-2 mt-1">
                     <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">{doc.type}</div>
                     {doc.category && (
-                        <span className="text-xs px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded">
+                        <span className="text-xs px-2 py-0.5 bg-rose-100 dark:bg-pink-900/30 text-pink-600 dark:text-rose-300 rounded">
                             {doc.category}
                         </span>
                     )}

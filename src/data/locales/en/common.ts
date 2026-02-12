@@ -323,6 +323,7 @@ export const en = {
     selectConversation: 'Select a conversation to start messaging',
     noConversations: 'No conversations. Start a new one:',
     noMessages: 'No messages',
+    noNotifications: 'No notifications',
     typeMessage: 'Type a message...',
     search: 'Search',
     statistics: 'Statistics',
@@ -384,4 +385,55 @@ export const en = {
     continue: 'Continue',
     successfully: 'Successfully',
     programs: 'Programs',
+
+    // Accessibility
+    openAiAssistant: 'Open AI Assistant',
+    chatWithAiAssistant: 'Chat with AI Assistant',
+    closeDialog: 'Close',
+    uploadProfilePicture: 'Upload profile picture',
+    editProfile: 'Edit profile',
+    selectLanguage: 'Select language',
+    toggleSettingsMenu: 'Toggle settings menu',
+    toggleMenu: 'Toggle menu',
+    tabs: 'Tabs',
+    sendMessage: 'Send message',
+
+    // Status & State
+    statusActive: 'Active',
+    statusOnTrack: 'On Track',
+    statusInProgress: 'In Progress',
+    statusPending: 'Pending',
+    statusScheduled: 'Scheduled',
+    statusRunning: 'Running',
+    statusPaused: 'Paused',
+    statusFailed: 'Failed',
+    statusCompleted: 'Completed',
+
+    // Common Actions
+    copyToClipboard: 'Copy to Clipboard',
+    refresh: 'Refresh',
+
+    // Languages
+    englishLanguage: 'English',
+    arabicLanguage: 'العربية',
+    switchToArabic: 'Switch to Arabic',
+    switchToEnglish: 'Switch to English',
+    displayLanguage: 'Display Language',
+    chooseLanguageDescription: 'Choose your preferred language for the application interface',
+
+    // Filters
+    allUsers: 'All Users',
+    allActions: 'All Actions',
+
+    // Labels
+    categories: 'Categories',
+    admins: 'Admins',
+    criticality: 'Criticality',
+
+    // Messages
+    noSavedVersionsYet: 'No saved versions yet',
+    noAuditLogsFound: 'No audit logs found',
+    tryDifferentKeywords: 'Try different keywords',
+    adminAccessRequired: 'Admin access required',
+    saveTheExcelFile: 'Save the Excel file',
 };

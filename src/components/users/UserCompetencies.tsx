@@ -205,7 +205,7 @@ const UserCompetencies: React.FC<Props> = ({
                 setEditingCompetency(null);
                 setIsModalOpen(true);
               }}
-              className="flex items-center justify-center text-sm bg-brand-primary text-white px-2 sm:px-3 py-1.5 rounded-md hover:bg-indigo-700"
+              className="flex items-center justify-center text-sm bg-brand-primary text-white px-2 sm:px-3 py-1.5 rounded-md hover:bg-sky-700"
               title={t("addCompetency")}
             >
               <PlusIcon className="w-4 h-4" />

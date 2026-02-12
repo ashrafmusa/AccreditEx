@@ -146,7 +146,7 @@ const LoginPage: React.FC<LoginPageProps> = () => {
                 <div className="text-sm">
                   <a
                     href="#"
-                    className="font-medium text-brand-primary hover:text-indigo-500"
+                    className="font-medium text-brand-primary hover:text-sky-600"
                   >
                     {t("forgotPassword")}
                   </a>

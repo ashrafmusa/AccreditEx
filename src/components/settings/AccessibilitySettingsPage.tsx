@@ -218,8 +218,8 @@ const AccessibilitySettingsPage: React.FC = () => {
 
         {/* Contrast Info */}
         {accessibility.highContrast && (
-          <div className="mt-4 p-3 rounded-lg bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800">
-            <p className="text-sm text-purple-700 dark:text-purple-300">
+          <div className="mt-4 p-3 rounded-lg bg-rose-50 dark:bg-pink-900/20 border border-rose-200 dark:border-pink-700">
+            <p className="text-sm text-pink-600 dark:text-rose-300">
               ✓ High contrast mode is active. UI elements will display with
               stronger color differences for better visibility.
             </p>

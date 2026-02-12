@@ -149,7 +149,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
             disabled={aiAssessing || failedItems.length === 0}
             variant="secondary"
             size="sm"
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+            className="bg-gradient-to-r from-rose-600 to-cyan-600 hover:from-rose-700 hover:to-cyan-700 text-white"
           >
             {aiAssessing ? (
               <>
@@ -180,7 +180,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
             disabled={autoCreating || failedItems.length === 0}
             variant="primary"
             size="sm"
-            className="bg-purple-600 hover:bg-purple-700"
+            className="bg-rose-600 hover:bg-pink-600"
           >
             <PlusIcon className="w-4 h-4 mr-2" />
             {autoCreating

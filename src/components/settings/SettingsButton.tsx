@@ -33,7 +33,7 @@ const SettingsButton: FC<SettingsButtonProps> = ({
     primary:
       disabled || loading
         ? "bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
-        : "bg-brand-primary hover:bg-indigo-700 text-white shadow-sm hover:shadow-md active:scale-[0.98] hover:-translate-y-0.5",
+        : "bg-brand-primary hover:bg-sky-700 text-white shadow-sm hover:shadow-md active:scale-[0.98] hover:-translate-y-0.5",
     secondary: disabled
       ? "bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
       : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 active:scale-[0.98]",

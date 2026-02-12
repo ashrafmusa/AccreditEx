@@ -161,17 +161,17 @@ const NotificationSettingsPage: React.FC = () => {
               <InformationCircleIcon className="w-8 h-8 text-amber-400" />
             </div>
           </div>
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-lg p-4 border border-purple-200 dark:border-purple-800">
+          <div className="bg-gradient-to-br from-rose-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-700/30 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase">
+                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase">
                   Critical
                 </p>
-                <p className="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                <p className="text-2xl font-bold text-pink-900 dark:text-rose-100 mt-1">
                   {stats.byPriority["critical"] || 0}
                 </p>
               </div>
-              <ChartBarIcon className="w-8 h-8 text-purple-400" />
+              <ChartBarIcon className="w-8 h-8 text-rose-400" />
             </div>
           </div>
           <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg p-4 border border-green-200 dark:border-green-800">

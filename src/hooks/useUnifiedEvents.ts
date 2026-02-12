@@ -7,7 +7,7 @@ import { useTranslation } from './useTranslation';
 
 const eventColorMap: Record<CalendarEventType, string> = {
     Project: 'bg-blue-500',
-    Survey: 'bg-purple-500',
+    Survey: 'bg-rose-500',
     Document: 'bg-green-500',
     CAPA: 'bg-red-500',
     Custom: 'bg-gray-500',

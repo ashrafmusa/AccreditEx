@@ -91,19 +91,19 @@ const VisualSettingsPage: React.FC = () => {
     // Apply primary color
     root.style.setProperty(
       "--user-primary",
-      settings.appearance.customColors.primary
+      settings.appearance.customColors.primary,
     );
     root.style.setProperty(
       "--user-success",
-      settings.appearance.customColors.success
+      settings.appearance.customColors.success,
     );
     root.style.setProperty(
       "--user-warning",
-      settings.appearance.customColors.warning
+      settings.appearance.customColors.warning,
     );
     root.style.setProperty(
       "--user-danger",
-      settings.appearance.customColors.danger
+      settings.appearance.customColors.danger,
     );
 
     // Apply appearance modes
@@ -200,7 +200,7 @@ const VisualSettingsPage: React.FC = () => {
             "visual",
             "appName",
             appSettings.appName,
-            settings.appName
+            settings.appName,
           );
         }
         if (
@@ -213,7 +213,7 @@ const VisualSettingsPage: React.FC = () => {
             "visual",
             "primaryColor",
             appSettings.appearance.customColors.primary,
-            settings.appearance.customColors.primary
+            settings.appearance.customColors.primary,
           );
         }
       } catch (logError) {
@@ -227,7 +227,7 @@ const VisualSettingsPage: React.FC = () => {
           currentUser.id,
           newSettings,
           "Auto-saved version",
-          ["auto", "visual"]
+          ["auto", "visual"],
         );
       } catch (versionError) {
         // Version snapshot errors shouldn't prevent save success
@@ -285,14 +285,14 @@ const VisualSettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Live Preview Info Banner */}
       {hasChanges && (
-        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 border-2 border-indigo-200 dark:border-indigo-800 rounded-lg p-4">
+        <div className="bg-gradient-to-r from-sky-50 to-pink-50 dark:from-sky-900/20 dark:to-pink-900/20 border-2 border-sky-200 dark:border-sky-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <SparklesIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
+            <SparklesIcon className="w-6 h-6 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
-              <h4 className="font-semibold text-indigo-900 dark:text-indigo-100 mb-1">
+              <h4 className="font-semibold text-sky-900 dark:text-sky-100 mb-1">
                 Live Preview Active
               </h4>
-              <p className="text-sm text-indigo-700 dark:text-indigo-300">
+              <p className="text-sm text-sky-700 dark:text-sky-300">
                 Your changes are being previewed in real-time! Colors and
                 display options update instantly. Click{" "}
                 <strong>Save Changes</strong> below to make them permanent.
@@ -311,7 +311,7 @@ const VisualSettingsPage: React.FC = () => {
         defaultExpanded
       >
         <SettingsSection
-          title="Application Identity"
+          title={t("applicationIdentity")}
           description="Basic branding settings for your application"
           noBorder
         >
@@ -327,13 +327,13 @@ const VisualSettingsPage: React.FC = () => {
                 handleChange((s) => ({ ...s, appName: e.target.value }))
               }
               className={`${inputClasses} transition-all focus:ring-2`}
-              placeholder="Enter application name"
+              placeholder={t("enterApplicationName")}
             />
           </div>
         </SettingsSection>
 
         <SettingsSection
-          title="Visual Assets"
+          title={t("visualAssets")}
           description="Logo and primary brand color"
           gridCols={1}
           noBorder
@@ -513,7 +513,7 @@ const VisualSettingsPage: React.FC = () => {
           noBorder
         >
           <div>
-            <label className={labelClasses}>Primary Color</label>
+            <label className={labelClasses}>{t("primaryColorLabel")}</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -553,7 +553,7 @@ const VisualSettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className={labelClasses}>Success Color</label>
+            <label className={labelClasses}>{t("successColorLabel")}</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -593,7 +593,7 @@ const VisualSettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className={labelClasses}>Warning Color</label>
+            <label className={labelClasses}>{t("warningColorLabel")}</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -633,7 +633,7 @@ const VisualSettingsPage: React.FC = () => {
           </div>
 
           <div>
-            <label className={labelClasses}>Danger Color</label>
+            <label className={labelClasses}>{t("dangerColorLabel")}</label>
             <div className="flex items-center gap-3">
               <input
                 type="color"
@@ -763,7 +763,7 @@ const VisualSettingsPage: React.FC = () => {
               noBorder
             >
               <div>
-                <label className={labelClasses}>Base Color</label>
+                <label className={labelClasses}>{t("baseColorLabel")}</label>
                 <ColorPicker
                   color={settings.globeSettings.baseColor}
                   onChange={(color) =>
@@ -776,7 +776,7 @@ const VisualSettingsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className={labelClasses}>Marker Color</label>
+                <label className={labelClasses}>{t("markerColorLabel")}</label>
                 <ColorPicker
                   color={settings.globeSettings.markerColor}
                   onChange={(color) =>
@@ -789,7 +789,7 @@ const VisualSettingsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className={labelClasses}>Glow Color</label>
+                <label className={labelClasses}>{t("glowColorLabel")}</label>
                 <ColorPicker
                   color={settings.globeSettings.glowColor}
                   onChange={(color) =>
@@ -808,7 +808,9 @@ const VisualSettingsPage: React.FC = () => {
               noBorder
             >
               <div>
-                <label className={labelClasses}>Rotation Speed</label>
+                <label className={labelClasses}>
+                  {t("rotationSpeedLabel")}
+                </label>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"

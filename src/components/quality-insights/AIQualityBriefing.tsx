@@ -67,7 +67,7 @@ const AIQualityBriefing: React.FC<AIQualityBriefingProps> = ({ projects, risks, 
   );
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 dark:from-indigo-900/50 to-purple-50 dark:to-purple-900/50 p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border">
+    <div className="bg-gradient-to-br from-sky-50 dark:from-sky-900/50 to-pink-50 dark:to-pink-900/50 p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary flex items-center gap-2">
@@ -79,14 +79,14 @@ const AIQualityBriefing: React.FC<AIQualityBriefingProps> = ({ projects, risks, 
         <button
           onClick={handleGenerate}
           disabled={isLoading}
-          className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors flex items-center justify-center font-semibold shadow-sm w-full sm:w-auto disabled:bg-indigo-400 disabled:cursor-wait"
+          className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center font-semibold shadow-sm w-full sm:w-auto disabled:bg-sky-400 disabled:cursor-wait"
         >
           {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin ltr:mr-2 rtl:ml-2" /> : <SparklesIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />}
           {isLoading ? t('generatingBriefing') : hasGenerated ? t('regenerateBriefing') : t('generateBriefing')}
         </button>
       </div>
 
-      <div className="mt-6 border-t border-indigo-200 dark:border-indigo-800 pt-6">
+      <div className="mt-6 border-t border-sky-200 dark:border-sky-800 pt-6">
         {isLoading && !lastMessage ? renderSkeleton() : null}
         
         {error && <p className="text-red-500 text-center">{error}</p>}

@@ -29,7 +29,7 @@ const DataActionButton: FC<DataActionButtonProps> = ({ title, description, butto
 
     const buttonClasses = isDestructive
       ? "bg-red-600 hover:bg-red-700 text-white shadow-md hover:shadow-lg active:scale-95"
-      : "bg-brand-primary hover:bg-indigo-700 text-white shadow-md hover:shadow-lg active:scale-95";
+      : "bg-brand-primary hover:bg-sky-700 text-white shadow-md hover:shadow-lg active:scale-95";
 
     return (
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 px-4 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-800/30 dark:to-transparent border-t border-brand-border dark:border-dark-brand-border first:border-t-0 first:pt-0 last:pb-0 rounded-lg transition-all">

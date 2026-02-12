@@ -240,7 +240,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           {t('firebaseConfig.title')}
         </h3>
@@ -262,7 +262,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         <button
           onClick={handleLoadFromEnv}
           disabled={isLoading || isSaving}
-          className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
+          className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
         >
           {isLoading ? t('firebaseConfig.loading') : t('firebaseConfig.loadFromEnv')}
         </button>
@@ -276,7 +276,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         <button
           onClick={handleExportJSON}
           disabled={isSaving}
-          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
+          className="px-4 py-2 bg-rose-600 hover:bg-pink-600 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
         >
           {t('firebaseConfig.exportJSON')}
         </button>

@@ -56,7 +56,7 @@ export const AdvancedToggle: React.FC<AdvancedToggleProps> = ({
     blue: 'bg-blue-600',
     green: 'bg-green-600',
     red: 'bg-red-600',
-    purple: 'bg-purple-600',
+    purple: 'bg-rose-600',
     amber: 'bg-amber-600',
   };
 

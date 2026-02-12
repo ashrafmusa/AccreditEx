@@ -54,7 +54,7 @@ const YearView: React.FC<YearViewProps> = ({ currentDate, events, setCurrentDate
                                 const day = dayIndex + 1;
                                 const hasEvent = eventDays.has(day);
                                 return (
-                                    <div key={day} className={`w-6 h-6 flex items-center justify-center rounded-full text-xs ${hasEvent ? 'bg-indigo-200 dark:bg-indigo-900/50' : ''}`}>
+                                    <div key={day} className={`w-6 h-6 flex items-center justify-center rounded-full text-xs ${hasEvent ? 'bg-sky-200 dark:bg-sky-900/50' : ''}`}>
                                         {day}
                                     </div>
                                 );

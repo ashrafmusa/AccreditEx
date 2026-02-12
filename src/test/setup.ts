@@ -1,22 +1,75 @@
 import '@testing-library/jest-dom';
 
-// Mock import.meta.env for Vite
+// Mock import.meta.env for Vite (both window and global)
+const mockEnv = {
+  DEV: true,
+  PROD: false,
+  MODE: 'test',
+  VITE_API_KEY: 'test-key',
+  VITE_AUTH_DOMAIN: 'test.firebaseapp.com',
+  VITE_PROJECT_ID: 'test-project',
+  VITE_STORAGE_BUCKET: 'test.appspot.com',
+  VITE_MESSAGING_SENDER_ID: 'test-id',
+  VITE_APP_ID: 'test-app-id',
+  VITE_AI_AGENT_URL: 'http://localhost:8000',
+  VITE_AI_AGENT_API_KEY: 'test-api-key',
+  VITE_GEMINI_API_KEY: 'test-gemini-key',
+};
+
+// Mock for window environment
 Object.defineProperty(window, 'import', {
   value: {
     meta: {
-      env: {
-        VITE_API_KEY: 'test-key',
-        VITE_AUTH_DOMAIN: 'test.firebaseapp.com',
-        VITE_PROJECT_ID: 'test-project',
-        VITE_STORAGE_BUCKET: 'test.appspot.com',
-        VITE_MESSAGING_SENDER_ID: 'test-id',
-        VITE_APP_ID: 'test-app-id',
-      },
+      env: mockEnv,
     },
   },
   writable: true,
   configurable: true,
 });
+
+// Mock for Node.js global environment
+(global as any).import = {
+  meta: {
+    env: mockEnv,
+  },
+};
+
+// Mock logger service to avoid import.meta.env issues
+jest.mock('@/services/logger', () => ({
+  logger: {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+// Mock AI service to avoid import.meta.env issues
+jest.mock('@/services/ai', () => ({
+  aiService: {
+    chat: jest.fn(),
+    analyzeDocument: jest.fn(),
+    generateTrainingPlan: jest.fn(),
+    assessCompliance: jest.fn(),
+  },
+}));
+
+// Mock Firebase config to avoid import.meta.env issues
+jest.mock('@/firebase/firebaseConfig', () => ({
+  app: {},
+  auth: {},
+  db: {},
+  storage: {},
+}));
+
+// Mock storage service
+jest.mock('@/services/storageService', () => ({
+  storageService: {
+    uploadFile: jest.fn(),
+    deleteFile: jest.fn(),
+    getFileUrl: jest.fn(),
+  },
+}));
 
 // Mock Firebase Auth
 jest.mock('@firebase/auth', () => ({

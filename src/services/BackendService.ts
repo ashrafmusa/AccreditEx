@@ -364,12 +364,22 @@ class BackendService {
         return this._getAllData().users;
     }
 
+    async getUserById(userId: string): Promise<User | null> {
+        const users = this._getAllData().users;
+        return users.find(u => u.id === userId) || null;
+    }
+
     async addUser(userData: Omit<User, 'id'>): Promise<User> {
         const data = this._getAllData();
         const newUser: User = { id: `user-${Date.now()}`, ...userData };
         data.users.push(newUser);
         this._saveAllData(data);
         return newUser;
+    }
+
+    // Alias for addUser to maintain test compatibility
+    async createUser(userData: Omit<User, 'id'>): Promise<User> {
+        return this.addUser(userData);
     }
 
     async updateUser(updatedUser: User): Promise<User> {
@@ -387,6 +397,18 @@ class BackendService {
         const data = this._getAllData();
         data.users = data.users.filter(u => u.id !== userId);
         this._saveAllData(data);
+    }
+
+    // Projects helper methods
+    async updateProjectProgress(projectId: string, progress: number): Promise<Project> {
+        const data = this._getAllData();
+        const project = data.projects.find(p => p.id === projectId);
+        if (!project) {
+            throw new Error("Project not found");
+        }
+        project.progress = Math.max(0, Math.min(100, progress)); // Clamp to 0-100
+        this._saveAllData(data);
+        return project;
     }
 
     // AI Service passthrough
@@ -415,4 +437,6 @@ class BackendService {
     }
 }
 
+// Export both the class (for testing) and the singleton instance (for app use)
+export { BackendService };
 export const backendService = new BackendService();

@@ -82,7 +82,7 @@ const EventModal: FC<EventModalProps> = ({ isOpen, onClose, onSave, onDelete, se
                         </div>
                         <div className="flex justify-end space-x-3 rtl:space-x-reverse">
                             <button type="button" onClick={onClose} className="bg-white dark:bg-gray-600 py-2 px-4 border border-gray-300 dark:border-gray-500 rounded-md text-sm">{t('cancel')}</button>
-                            <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-indigo-700">{t('save')}</button>
+                            <button type="submit" className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-sky-700">{t('save')}</button>
                         </div>
                     </div>
                 </form>

@@ -174,14 +174,14 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={() => setShowUploader(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-brand-primary hover:bg-indigo-700 rounded-md transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 rounded-md transition-colors"
           >
             <UploadIcon className="w-4 h-4" />
             {t("uploadEvidence") || "Upload Evidence"}
           </button>
           <button
             onClick={() => setIsPickerOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-primary hover:bg-indigo-50 dark:hover:bg-indigo-900/20 border border-brand-primary rounded-md transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-brand-primary hover:bg-sky-50 dark:hover:bg-sky-900/20 border border-brand-primary rounded-md transition-colors"
           >
             <PaperClipIcon className="w-4 h-4" />
             {t("linkDocument") || "Link Document"}

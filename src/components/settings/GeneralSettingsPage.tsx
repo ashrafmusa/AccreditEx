@@ -18,7 +18,7 @@ const GeneralSettingsPage: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
 
   const handleSettingChange = (
-    updater: (s: typeof settings) => typeof settings
+    updater: (s: typeof settings) => typeof settings,
   ) => {
     const newSettings = updater(settings);
     setSettings(newSettings);
@@ -103,8 +103,8 @@ const GeneralSettingsPage: React.FC = () => {
               }
               className={`${inputClasses} transition-all`}
             >
-              <option value="en">English</option>
-              <option value="ar">العربية</option>
+              <option value="en">{t("englishLanguage")}</option>
+              <option value="ar">{t("arabicLanguage")}</option>
             </select>
           </div>
           <div>
@@ -170,7 +170,7 @@ const GeneralSettingsPage: React.FC = () => {
           className={`inline-flex items-center justify-center py-2.5 px-6 rounded-lg font-medium text-sm transition-all duration-200 gap-2 ${
             loading || !hasChanges
               ? "bg-gray-200 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
-              : "bg-brand-primary hover:bg-indigo-700 text-white shadow-md hover:shadow-lg active:scale-95"
+              : "bg-brand-primary hover:bg-sky-700 text-white shadow-md hover:shadow-lg active:scale-95"
           }`}
         >
           {loading ? (

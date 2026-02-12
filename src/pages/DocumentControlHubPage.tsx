@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast";
+import { ContextualHelp } from "../components/common/ContextualHelp";
+import { getHelpContent } from "../data/helpContent";
 import { AppDocument, User, UserRole, Standard, Department } from "../types";
 import { useProjectStore } from "@/stores/useProjectStore";
 import DocumentEditorModal from "../components/documents/DocumentEditorModal";
@@ -76,7 +78,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [showOnlyMyDocs, setShowOnlyMyDocs] = useState(
-    !currentUser || currentUser.role !== UserRole.Admin
+    !currentUser || currentUser.role !== UserRole.Admin,
   );
   const canModify = currentUser.role === UserRole.Admin;
 
@@ -87,7 +89,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     try {
       onApproveDocument(signingDoc.id);
       toast.success(
-        t("documentApprovedSuccessfully") || "Document approved successfully"
+        t("documentApprovedSuccessfully") || "Document approved successfully",
       );
       setSigningDoc(null);
     } catch (error) {
@@ -107,7 +109,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     try {
       onUpdateDocument(doc);
       toast.success(
-        t("documentSavedSuccessfully") || "Document saved successfully"
+        t("documentSavedSuccessfully") || "Document saved successfully",
       );
       setViewingDoc(null);
     } catch (error) {
@@ -131,7 +133,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         `${
           t("areYouSureDeleteDocument") ||
           "Are you sure you want to delete this document?"
-        } "${docName}"?`
+        } "${docName}"?`,
       )
     ) {
       return;
@@ -141,7 +143,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     try {
       onDeleteDocument(docId);
       toast.success(
-        t("documentDeletedSuccessfully") || "Document deleted successfully"
+        t("documentDeletedSuccessfully") || "Document deleted successfully",
       );
     } catch (error) {
       const errorMsg =
@@ -168,7 +170,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
       onCreateDocument(docData);
       toast.success(
-        t("documentCreatedSuccessfully") || "Document created successfully"
+        t("documentCreatedSuccessfully") || "Document created successfully",
       );
       setIsMetaModalOpen(false);
     } catch (error) {
@@ -185,7 +187,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     try {
       if (!mapData.name?.en || !mapData.name?.en.trim()) {
         toast.error(
-          t("processMapNameRequired") || "Process map name is required"
+          t("processMapNameRequired") || "Process map name is required",
         );
         return;
       }
@@ -202,7 +204,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         departmentIds: mapData.departmentIds,
       });
       toast.success(
-        t("processMapCreatedSuccessfully") || "Process map created successfully"
+        t("processMapCreatedSuccessfully") ||
+          "Process map created successfully",
       );
       setIsProcessMapModalOpen(false);
     } catch (error) {
@@ -241,7 +244,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       filtered = filtered
         .sort(
           (a, b) =>
-            new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+            new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
         )
         .slice(0, 10);
     } else if (activeCategory.startsWith("dept_")) {
@@ -259,7 +262,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         (doc) =>
           doc.name.en.toLowerCase().includes(query) ||
           doc.name.ar.toLowerCase().includes(query) ||
-          doc.tags?.some((tag) => tag.toLowerCase().includes(query))
+          doc.tags?.some((tag) => tag.toLowerCase().includes(query)),
       );
     }
 
@@ -271,22 +274,22 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       filtered = filtered.filter((doc) =>
         doc.uploadedBy
           ?.toLowerCase()
-          .includes(activeFilters.author!.toLowerCase())
+          .includes(activeFilters.author!.toLowerCase()),
       );
     }
     if (activeFilters.category) {
       filtered = filtered.filter(
-        (doc) => doc.category === activeFilters.category
+        (doc) => doc.category === activeFilters.category,
       );
     }
     if (activeFilters.departmentId) {
       filtered = filtered.filter((doc) =>
-        doc.departmentIds?.includes(activeFilters.departmentId!)
+        doc.departmentIds?.includes(activeFilters.departmentId!),
       );
     }
     if (activeFilters.tags && activeFilters.tags.length > 0) {
       filtered = filtered.filter((doc) =>
-        doc.tags?.some((tag) => activeFilters.tags!.includes(tag))
+        doc.tags?.some((tag) => activeFilters.tags!.includes(tag)),
       );
     }
 
@@ -317,19 +320,19 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     ["Policy", "Procedure", "Process Map", "Evidence", "Report"].forEach(
       (type) => {
         counts[type] = controlled.filter((d) => d.type === type).length;
-      }
+      },
     );
 
     // Count by category
     counts.my_documents = controlled.filter(
-      (doc) => doc.uploadedBy === currentUser.name
+      (doc) => doc.uploadedBy === currentUser.name,
     ).length;
     counts.recent = Math.min(10, controlled.length);
 
     // Count by department
     departments.forEach((dept) => {
       counts[dept.id] = controlled.filter((doc) =>
-        doc.departmentIds?.includes(dept.id)
+        doc.departmentIds?.includes(dept.id),
       ).length;
     });
 
@@ -342,9 +345,12 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         <div className="flex items-center space-x-3 rtl:space-x-reverse self-start">
           <DocumentTextIcon className="h-8 w-8 text-brand-primary" />
           <div>
-            <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-              {t("documentControl")}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
+                {t("documentControl")}
+              </h1>
+              <ContextualHelp content={getHelpContent("documentControl")!} />
+            </div>
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
               {t("documentControlHubDescription")}
             </p>

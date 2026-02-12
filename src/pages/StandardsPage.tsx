@@ -8,6 +8,8 @@ import {
 } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/useToast";
+import { ContextualHelp } from "@/components/common/ContextualHelp";
+import { getHelpContent } from "@/data/helpContent";
 import {
   ShieldCheckIcon,
   PlusIcon,
@@ -26,7 +28,7 @@ interface StandardsPageProps {
   standards: Standard[];
   currentUser: User;
   onCreateStandard: (
-    standard: Omit<Standard, "programId"> & { programId: string }
+    standard: Omit<Standard, "programId"> & { programId: string },
   ) => Promise<void>;
   onUpdateStandard: (standard: Standard) => Promise<void>;
   onDeleteStandard: (standardId: string) => Promise<void>;
@@ -48,7 +50,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
   const [searchTerm, setSearchTerm] = useState("");
   const [riskFilter, setRiskFilter] = useState<StandardCriticality | "all">(
-    "all"
+    "all",
   );
   const [showFilters, setShowFilters] = useState(false);
 
@@ -87,7 +89,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
       if (!Array.isArray(data)) {
         toast.error(
           t("invalidStandardsFormat") ||
-            "Invalid standards format. Expected an array."
+            "Invalid standards format. Expected an array.",
         );
         return;
       }
@@ -110,14 +112,14 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
         toast.error(
           `Validation errors: ${validationErrors.slice(0, 3).join("; ")}${
             validationErrors.length > 3 ? "..." : ""
-          }`
+          }`,
         );
         return;
       }
 
       if (validStandards.length === 0) {
         toast.error(
-          t("noValidStandardsFound") || "No valid standards found in file"
+          t("noValidStandardsFound") || "No valid standards found in file",
         );
         return;
       }
@@ -139,7 +141,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
         } catch (error) {
           console.warn(
             `Failed to import standard ${standard.standardId}:`,
-            error
+            error,
           );
           failCount++;
         }
@@ -160,7 +162,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
         setIsImportModalOpen(false);
       } else {
         toast.error(
-          t("noValidStandardsFound") || "No standards could be imported"
+          t("noValidStandardsFound") || "No standards could be imported",
         );
       }
     } catch (error) {
@@ -187,12 +189,12 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
       if (editingStandard) {
         await onUpdateStandard({ ...data, programId: program.id });
         toast.success(
-          t("standardUpdatedSuccessfully") || "Standard updated successfully"
+          t("standardUpdatedSuccessfully") || "Standard updated successfully",
         );
       } else {
         await onCreateStandard({ ...data, programId: program.id });
         toast.success(
-          t("standardCreatedSuccessfully") || "Standard created successfully"
+          t("standardCreatedSuccessfully") || "Standard created successfully",
         );
       }
       setIsModalOpen(false);
@@ -209,7 +211,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
   const handleDelete = async (standardId: string) => {
     if (
       !window.confirm(
-        t("areYouSureDeleteStandard") || "Are you sure? This cannot be undone."
+        t("areYouSureDeleteStandard") || "Are you sure? This cannot be undone.",
       )
     ) {
       return;
@@ -218,7 +220,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
     try {
       await onDeleteStandard(standardId);
       toast.success(
-        t("standardDeletedSuccessfully") || "Standard deleted successfully"
+        t("standardDeletedSuccessfully") || "Standard deleted successfully",
       );
     } catch (error) {
       const errorMsg =
@@ -249,7 +251,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
           setFileContent(content);
           setIsImportModalOpen(true);
           toast.success(
-            t("fileLoadedSuccessfully") || "File loaded successfully"
+            t("fileLoadedSuccessfully") || "File loaded successfully",
           );
         } catch (parseError) {
           toast.error(t("invalidJsonFormat") || "Invalid JSON format in file");
@@ -278,9 +280,12 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
         <div className="flex items-center space-x-3 rtl:space-x-reverse">
           <ShieldCheckIcon className="h-8 w-8 text-brand-primary" />
           <div>
-            <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-              {program.name}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
+                {program.name}
+              </h1>
+              <ContextualHelp content={getHelpContent("standards")!} />
+            </div>
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
               {t("programStandards")}
             </p>
