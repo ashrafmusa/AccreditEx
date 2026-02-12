@@ -83,8 +83,14 @@ class UnifiedAccreditexAgent:
         self.temperature = 0.7
         self.max_tokens = 4096
         
-        # Initialize context manager (Week 1 - Quick Win 3)
-        self.context_manager = ContextManager(firebase_client)
+        # Initialize context manager (3-tier system)
+        try:
+            self.context_manager = ContextManager()
+            logger.info("✅ Context Manager initialized")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Context Manager: {e}")
+            # Fallback to basic context handling if needed
+            self.context_manager = None
         
         # Initialize specialist agents (Week 2 - Agent Specialization)
         logger.info("🤖 Initializing specialist agents...")
