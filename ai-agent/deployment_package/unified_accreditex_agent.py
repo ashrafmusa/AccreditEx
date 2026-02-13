@@ -1,6 +1,7 @@
 import os
 import json
 import asyncio
+import time
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
 import logging
@@ -102,6 +103,36 @@ class UnifiedAccreditexAgent:
         # Conversation history (managed manually since not using Assistants API)
         # In production, this should be in Redis or Firestore
         self.conversations: Dict[str, List[Dict[str, str]]] = {}
+
+        # Routing mode and telemetry (additive, safe)
+        self.strict_specialist_routing = os.getenv("STRICT_SPECIALIST_ROUTING", "true").lower() == "true"
+        self.routing_metrics: Dict[str, Any] = {
+            "total_requests": 0,
+            "by_task_type": {
+                "compliance": 0,
+                "risk": 0,
+                "training": 0,
+                "general": 0
+            },
+            "by_route_mode": {
+                "specialist": 0,
+                "legacy": 0,
+                "legacy-fallback": 0
+            },
+            "failures": 0,
+            "avg_latency_ms": {
+                "compliance": 0.0,
+                "risk": 0.0,
+                "training": 0.0,
+                "general": 0.0
+            },
+            "_latency_samples": {
+                "compliance": 0,
+                "risk": 0,
+                "training": 0,
+                "general": 0
+            }
+        }
         
         # Initialize Firebase (if credentials exist)
         self._initialize_firebase()
@@ -225,6 +256,7 @@ class UnifiedAccreditexAgent:
         if type_scores:
             detected_type = max(type_scores, key=type_scores.get)
             logger.info(f"🎯 Task type detected: {detected_type} (confidence: {type_scores[detected_type]} keywords)")
+            return detected_type
         # Check for compliance keywords
         compliance_keywords = TASK_ROUTING_MAP.get('compliance', [])
         if any(keyword in message_lower for keyword in compliance_keywords):
@@ -245,6 +277,38 @@ class UnifiedAccreditexAgent:
         
         logger.info(f"🎯 Task type detected: general")
         return 'general'
+
+    def _record_routing_metric(self, task_type: str, route_mode: str, latency_ms: float, success: bool = True):
+        """Record routing telemetry for audit and release checks."""
+        metrics = self.routing_metrics
+        safe_task_type = task_type if task_type in metrics["by_task_type"] else "general"
+        safe_route_mode = route_mode if route_mode in metrics["by_route_mode"] else "legacy"
+
+        metrics["total_requests"] += 1
+        metrics["by_task_type"][safe_task_type] += 1
+        metrics["by_route_mode"][safe_route_mode] += 1
+
+        if not success:
+            metrics["failures"] += 1
+
+        sample_count = metrics["_latency_samples"][safe_task_type] + 1
+        current_avg = metrics["avg_latency_ms"][safe_task_type]
+        metrics["avg_latency_ms"][safe_task_type] = ((current_avg * (sample_count - 1)) + latency_ms) / sample_count
+        metrics["_latency_samples"][safe_task_type] = sample_count
+
+    def get_routing_metrics(self) -> Dict[str, Any]:
+        """Expose routing telemetry without internal counters."""
+        return {
+            "strict_specialist_routing": self.strict_specialist_routing,
+            "total_requests": self.routing_metrics["total_requests"],
+            "by_task_type": dict(self.routing_metrics["by_task_type"]),
+            "by_route_mode": dict(self.routing_metrics["by_route_mode"]),
+            "failures": self.routing_metrics["failures"],
+            "avg_latency_ms": {
+                key: round(value, 2)
+                for key, value in self.routing_metrics["avg_latency_ms"].items()
+            }
+        }
     
     async def route_to_specialist(
         self,
@@ -517,6 +581,34 @@ Always be specific and actionable, using real data from their workspace.
             # Append user message
             self.conversations[thread_id].append({"role": "user", "content": message})
 
+            routing_start = time.perf_counter()
+            route_mode = "legacy"
+            full_response = ""
+
+            # Strict specialist dispatch for specialist task types (safe fallback enabled)
+            if self.strict_specialist_routing and task_type in ("compliance", "risk", "training"):
+                route_mode = "specialist"
+                try:
+                    async for chunk in self.route_to_specialist(
+                        task_type=task_type,
+                        message=message,
+                        context=enhanced_context,
+                        stream=True
+                    ):
+                        full_response += chunk
+                        yield chunk
+
+                    # Append assistant response to history
+                    self.conversations[thread_id].append({"role": "assistant", "content": full_response})
+                    latency_ms = (time.perf_counter() - routing_start) * 1000
+                    self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
+                    return
+                except Exception as specialist_error:
+                    logger.error(f"Specialist routing failed, falling back to legacy path: {specialist_error}")
+                    latency_ms = (time.perf_counter() - routing_start) * 1000
+                    self._record_routing_metric(task_type, route_mode, latency_ms, success=False)
+                    route_mode = "legacy-fallback"
+
             
             # Keep history manageable (last 10 messages + system prompt)
             if len(self.conversations[thread_id]) > 11:
@@ -532,7 +624,6 @@ Always be specific and actionable, using real data from their workspace.
                 max_tokens=1024
             )
 
-            full_response = ""
             async for chunk in stream:
                 if chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
@@ -541,9 +632,12 @@ Always be specific and actionable, using real data from their workspace.
             
             # Append assistant response to history
             self.conversations[thread_id].append({"role": "assistant", "content": full_response})
+            latency_ms = (time.perf_counter() - routing_start) * 1000
+            self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
             
         except Exception as e:
             logger.error(f"Chat error: {e}")
+            self._record_routing_metric('general', 'legacy', 0.0, success=False)
             yield f"I encountered an error: {str(e)}"
 
     async def check_document_compliance(self, document_type: str, standard: str, content_summary: str, requirements: Optional[List[str]] = None) -> Dict[str, Any]:

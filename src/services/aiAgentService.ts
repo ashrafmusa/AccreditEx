@@ -10,6 +10,7 @@
 
 import { useUserStore } from '@/stores/useUserStore';
 import { useAppStore } from '@/stores/useAppStore';
+import { getAuthInstance } from '@/firebase/firebaseConfig';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -83,43 +84,55 @@ export class AIAgentService {
      * Enhanced with comprehensive user and workspace data
      */
     private getContext(): ChatRequest['context'] {
-        const { currentUser } = useUserStore.getState();
-        const { appSettings, projects, departments, documents, users } = useAppStore.getState();
+        const { currentUser, users } = useUserStore.getState();
+        const { appSettings, projects, departments, documents } = useAppStore.getState();
+
+        const safeUsers = users || [];
+        const safeProjects = projects || [];
+        const safeDepartments = departments || [];
+        const safeDocuments = documents || [];
+
+        const authUser = getAuthInstance().currentUser;
+        const resolvedUser = currentUser || (authUser?.email
+            ? safeUsers.find(u => u.email === authUser.email) || null
+            : null);
 
         // Get user's assigned projects
-        const userProjects = projects.filter(p =>
-            p.projectLeadId === currentUser?.id ||
-            p.teamMembers?.includes(currentUser?.id)
+        const userProjects = safeProjects.filter(p =>
+            p.projectLeadId === resolvedUser?.id ||
+            p.teamMembers?.includes(resolvedUser?.id)
         );
 
         // Get user's department info
-        const userDepartment = departments.find(d =>
-            d.id === currentUser?.department ||
-            d.members?.some(m => m.userId === currentUser?.id)
+        const userDepartment = safeDepartments.find(d =>
+            d.id === resolvedUser?.department ||
+            d.members?.some(m => m.userId === resolvedUser?.id)
         );
 
         // Get recent documents user has access to
-        const userDocuments = documents
+        const userDocuments = safeDocuments
             .filter(doc =>
-                doc.uploadedBy === currentUser?.name ||
-                doc.departmentIds?.includes(currentUser?.department || '')
+                doc.uploadedBy === resolvedUser?.name ||
+                doc.departmentIds?.includes(resolvedUser?.department || '')
             )
             .slice(0, 10); // Limit to recent 10
 
+        const resolvedRole = resolvedUser?.role || (authUser ? 'Authenticated User' : 'Guest');
+
         return {
-            user_id: currentUser?.id,
+            user_id: resolvedUser?.id || authUser?.uid,
             page_title: document.title,
             route: window.location.pathname,
-            user_role: currentUser?.role || 'Guest',
+            user_role: resolvedRole,
             current_data: {
                 // App context
                 app_name: appSettings?.appName,
 
                 // User info
-                user_name: currentUser?.name,
-                user_email: currentUser?.email,
-                user_department: userDepartment?.name?.en || currentUser?.department,
-                user_permissions: currentUser?.permissions || [],
+                user_name: resolvedUser?.name || authUser?.displayName,
+                user_email: resolvedUser?.email || authUser?.email,
+                user_department: userDepartment?.name?.en || resolvedUser?.department,
+                user_permissions: resolvedUser?.permissions || [],
 
                 // User's projects summary
                 assigned_projects: userProjects.map(p => ({
@@ -132,10 +145,10 @@ export class AIAgentService {
                 active_projects_count: userProjects.filter(p => p.status === 'In Progress').length,
 
                 // Workspace overview
-                total_projects: projects.length,
-                total_departments: departments.length,
-                total_documents: documents.length,
-                total_users: users.length,
+                total_projects: safeProjects.length,
+                total_departments: safeDepartments.length,
+                total_documents: safeDocuments.length,
+                total_users: safeUsers.length,
 
                 // Recent activity
                 recent_documents: userDocuments.map(d => ({

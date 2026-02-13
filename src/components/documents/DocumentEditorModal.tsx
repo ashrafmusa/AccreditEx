@@ -28,7 +28,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
   const [document, setDocument] = useState<AppDocument>(documentData);
   const [isEditMode, setIsEditMode] = useState(documentData.status === "Draft");
   const [viewingVersion, setViewingVersion] = useState<number | "current">(
-    "current"
+    "current",
   );
   const [comparisonModal, setComparisonModal] = useState<{
     isOpen: boolean;
@@ -47,7 +47,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
       return document.content;
     }
     const historyItem = document.versionHistory.find(
-      (v) => v.version === viewingVersion
+      (v) => v.version === viewingVersion,
     );
     return historyItem ? historyItem.content : document.content;
   }, [document, viewingVersion]);
@@ -78,7 +78,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
   const handleCompareVersions = (
     v1: number | "current",
-    v2: number | "current"
+    v2: number | "current",
   ) => {
     setComparisonModal({ isOpen: true, version1: v1, version2: v2 });
   };
@@ -112,19 +112,10 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
               v{document.currentVersion} -{" "}
               {t(
                 (document.status.charAt(0).toLowerCase() +
-                  document.status.slice(1).replace(" ", "")) as any
+                  document.status.slice(1).replace(" ", "")) as any,
               )}
             </p>
           </div>
-<<<<<<< HEAD
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-500 rounded-full dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Close"
-          >
-            <XMarkIcon className="w-6 h-6" />
-          </button>
-=======
           <div className="flex items-center gap-2">
             {isEditMode && viewingVersion === "current" && (
               <button
@@ -155,7 +146,6 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
               <XMarkIcon className="w-6 h-6" />
             </button>
           </div>
->>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
         </header>
 
         <main className="flex-grow flex overflow-hidden">

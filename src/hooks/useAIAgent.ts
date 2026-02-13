@@ -1,4 +1,6 @@
 import { useState, useCallback } from 'react';
+import { useUserStore } from '@/stores/useUserStore';
+import { getAuthInstance } from '@/firebase/firebaseConfig';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -7,6 +9,7 @@ export interface ChatMessage {
 }
 
 export interface AIAgentContext {
+  user_id?: string;
   route?: string;
   page_title?: string;
   user_role?: string;
@@ -42,6 +45,16 @@ export function useAIAgent() {
     setChatHistory(prev => [...prev, userMessage]);
 
     try {
+      const { currentUser } = useUserStore.getState();
+      const authUser = getAuthInstance().currentUser;
+      const enrichedContext: AIAgentContext = {
+        user_id: context?.user_id || currentUser?.id || authUser?.uid,
+        route: context?.route || window.location.pathname,
+        page_title: context?.page_title || document.title,
+        user_role: context?.user_role || currentUser?.role || (authUser ? 'Authenticated User' : 'Guest'),
+        timestamp: context?.timestamp || new Date().toISOString(),
+      };
+
       const response = await fetch(`${API_BASE_URL}/chat`, {
         method: 'POST',
         headers: {
@@ -51,7 +64,7 @@ export function useAIAgent() {
         body: JSON.stringify({
           message,
           thread_id: threadId,
-          context: context || {}
+          context: enrichedContext
         }),
       });
 

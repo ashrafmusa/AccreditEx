@@ -22,6 +22,11 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
+  // Let browser handle cross-origin requests directly (avoids CSP-related SW errors)
+  if (url.origin !== self.location.origin) {
+    return;
+  }
+
   // Network-first for HTML and JS (always get fresh CSP and code)
   if (request.destination === 'document' || 
       request.destination === 'script' ||
@@ -29,7 +34,10 @@ self.addEventListener('fetch', event => {
       url.pathname.endsWith('.js')) {
     event.respondWith(
       fetch(request)
-        .catch(() => caches.match(request)) // Fallback to cache if offline
+        .catch(async () => {
+          const cached = await caches.match(request);
+          return cached || Response.error();
+        }) // Fallback to cache if offline
     );
     return;
   }
@@ -50,14 +58,14 @@ self.addEventListener('fetch', event => {
               cache.put(request, fetchResponse.clone());
               return fetchResponse;
             });
-          });
+          }).catch(() => Response.error());
         })
     );
     return;
   }
 
   // Network-only for everything else (API calls, etc)
-  event.respondWith(fetch(request));
+  event.respondWith(fetch(request).catch(() => Response.error()));
 });
 
 // Activate event - clean up old caches

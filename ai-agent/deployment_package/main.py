@@ -418,6 +418,22 @@ async def get_workspace_analytics_endpoint():
         logger.error(f"Analytics retrieval error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+# AI routing telemetry endpoint
+@app.get("/api/ai/routing-metrics", dependencies=[Depends(verify_api_key)])
+async def get_ai_routing_metrics():
+    """Get specialist routing telemetry and route distribution metrics."""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+
+    try:
+        return JSONResponse(content={
+            "timestamp": datetime.utcnow().isoformat(),
+            "routing_metrics": agent.get_routing_metrics()
+        })
+    except Exception as e:
+        logger.error(f"Routing metrics error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 # NEW: Training status with AI recommendations
 @app.get("/api/ai/training/{user_id}", dependencies=[Depends(verify_api_key)])
 async def get_training_status_ai(user_id: str):
@@ -536,6 +552,7 @@ async def root():
             "GET /api/ai/search - AI document search",
             "GET /api/ai/context/{user_id} - User context",
             "GET /api/ai/analytics - Workspace analytics",
+            "GET /api/ai/routing-metrics - Specialist routing telemetry",
             "GET /api/ai/training/{user_id} - Training status with AI",
             "POST /check-compliance - Document compliance",
             "POST /assess-risk - Risk assessment",
