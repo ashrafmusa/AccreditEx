@@ -59,8 +59,9 @@ const SettingsPresetsPanel: React.FC = () => {
         : [];
       setPresets([...BUILT_IN_PRESETS, ...publicPresets, ...userPresets]);
     } catch (error) {
-      console.error("Failed to load presets:", error);
-      toast.error("Failed to load presets");
+      // Firestore indexes may not exist yet — gracefully fall back to built-in presets
+      console.warn("Could not load Firestore presets, using built-in only:", error);
+      setPresets([...BUILT_IN_PRESETS]);
     } finally {
       setLoading(false);
     }
