@@ -43,6 +43,17 @@ export interface AssessorReportPack {
     }>;
 }
 
+export interface AssessorPackExportAuditEntry {
+    id: string;
+    projectId: string;
+    projectName: string;
+    generatedBy: string;
+    exportedAt: string;
+    format: "json+csv";
+}
+
+const ASSESSOR_PACK_AUDIT_STORAGE_KEY = "accreditex_assessor_pack_export_audit";
+
 const safeText = (value?: string): string => value || "";
 
 export const buildAssessorReportPack = (params: {
@@ -175,4 +186,47 @@ export const exportAssessorEvidenceMatrixCsv = (pack: AssessorReportPack): void 
             .toISOString()
             .slice(0, 10)}.csv`,
     );
+};
+
+export const recordAssessorPackExportAudit = (
+    pack: AssessorReportPack,
+): AssessorPackExportAuditEntry => {
+    const entry: AssessorPackExportAuditEntry = {
+        id: `assessor-pack-export-${Date.now()}`,
+        projectId: pack.metadata.projectId,
+        projectName: pack.metadata.projectName,
+        generatedBy: pack.metadata.generatedBy,
+        exportedAt: new Date().toISOString(),
+        format: "json+csv",
+    };
+
+    try {
+        const existing = getAssessorPackExportAudit();
+        localStorage.setItem(
+            ASSESSOR_PACK_AUDIT_STORAGE_KEY,
+            JSON.stringify([entry, ...existing].slice(0, 500)),
+        );
+    } catch {
+        // no-op; export should remain non-blocking
+    }
+
+    return entry;
+};
+
+export const getAssessorPackExportAudit = (): AssessorPackExportAuditEntry[] => {
+    try {
+        const raw = localStorage.getItem(ASSESSOR_PACK_AUDIT_STORAGE_KEY);
+        if (!raw) {
+            return [];
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return parsed as AssessorPackExportAuditEntry[];
+    } catch {
+        return [];
+    }
 };
