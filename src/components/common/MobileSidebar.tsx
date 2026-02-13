@@ -122,7 +122,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, setIsOpen, setNav
       icon: DocumentTextIcon,
     },
     {
-      nav: { view: "risk" },
+      nav: { view: "riskHub" },
       key: "risk",
       label: t("riskHub"),
       icon: ExclamationTriangleIcon,
@@ -165,7 +165,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, setIsOpen, setNav
   ];
 
   const visibleNavItems = allNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role === UserRole.Admin
+    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin"
   );
   const mainItems = visibleNavItems.filter((item) => !item.bottom);
   const bottomItems = visibleNavItems.filter((item) => item.bottom);

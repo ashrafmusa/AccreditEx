@@ -181,10 +181,10 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
   ];
 
   const visibleNavItems = allNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role === UserRole.Admin
+    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin"
   );
   const visibleBottomNavItems = bottomNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role === UserRole.Admin
+    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin"
   );
 
   const isActive = (key: string) => {
@@ -201,6 +201,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       }`}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
+      aria-expanded={isExpanded}
       aria-label="Main Navigation Rail"
       ref={navRef}
     >
