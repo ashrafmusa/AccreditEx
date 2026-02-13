@@ -1,7 +1,7 @@
 # Product & TQM Domain SWOT Audit
 
 **Domain:** Product coverage, quality-management flow, accreditation readiness  
-**Date:** February 13, 2026  
+**Date:** February 14, 2026  
 **Method:** Product-owner + project-planner style analysis using existing code and audit artifacts
 
 ---
@@ -53,17 +53,17 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 
 ## Weaknesses
 
-1. **Evidence integrity policy is not explicit as a single cross-module rule**
-   - Capabilities exist, but mandatory evidence fields and traceability checks are not yet centrally enforced as release gates.
+1. **Strict governance is partly feature-flag dependent**
+   - Core evidence and closure controls are implemented, but strict enforcement remains configuration-controlled for safe rollout.
 
-2. **Readiness scoring model is still composite rather than accreditation-outcome-calibrated**
-   - Current KPIs are useful, but weighted scoring tied to pass probability and critical standard groups can be strengthened.
+2. **Readiness model is operationally strong but still maturing for predictive assurance**
+   - Current readiness and evidence integrity indicators are live; predictive pass-likelihood modeling is the next maturity step.
 
-3. **Advanced reporting appears document-centric, not yet deeply configurable by assurance lens**
-   - Reporting UX supports retrieval/export, but structured “assessor-ready packs” and programmable views are limited.
+3. **Assessor packs exist but review workflow depth can improve**
+   - Structured assessor pack export is now available; formal reviewer sign-off workflow is an enhancement opportunity.
 
-4. **Cross-standard harmonization logic is not yet explicit**
-   - Programs are supported, but overlap mapping (e.g., common controls across JCI/CBAHI/ISO) is not prominently productized.
+4. **Cross-standard mapping is operational, reuse automation can still expand**
+   - Crosswalk and evidence reuse suggestions are implemented; future versions can extend to auto-suggested CAPA templates.
 
 5. **Feature discoverability remains an adoption bottleneck**
    - Existing audits already identify this risk; advanced quality features may be underused by default users.
@@ -72,8 +72,8 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 
 ## Opportunities
 
-1. **Create an Accreditation Readiness Control Tower**
-   - Add weighted readiness model by domain (governance, patient safety, document control, competency, risk, audit).
+1. **Advance from readiness visibility to predictive readiness intelligence**
+   - Add trend-based pass-likelihood and early-warning indicators from recurring CAPA and overdue evidence patterns.
 
 2. **Institutionalize evidence integrity controls**
    - Require minimum metadata and linkage rules for CAPA/PDCA/audit findings before closure.
@@ -81,8 +81,8 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 3. **Build crosswalk intelligence between standards**
    - Reuse evidence and controls across programs to cut duplication and speed readiness cycles.
 
-4. **Standardize assessor-ready evidence packs**
-   - One-click pack generation by project/program/survey cycle with chain-of-custody metadata.
+4. **Expand assessor-ready packs into governed approval workflow**
+   - One-click pack generation now exists; next is reviewer sign-off + export audit history.
 
 5. **Strengthen quality learning loop**
    - Track recurrence, CAPA effectiveness, cycle time, and embed recommendations into dashboard insights.
@@ -107,30 +107,30 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 
 ## Product & TQM Domain Score
 
-- Coverage Breadth: **94/100**
-- TQM Process Maturity: **91/100**
-- Evidence Governance Explicitness: **82/100**
-- Accreditation Outcome Predictability: **84/100**
-- Overall Product & TQM Domain: **88/100**
+- Coverage Breadth: **96/100**
+- TQM Process Maturity: **94/100**
+- Evidence Governance Explicitness: **91/100**
+- Accreditation Outcome Predictability: **89/100**
+- Overall Product & TQM Domain: **93/100**
 
 ---
 
 ## Prioritized Actions (30/60/90)
 
 ### 0–30 Days
-1. Enforce minimum evidence metadata policy for CAPA/PDCA/audit closure.
-2. Publish TQM capability ownership matrix (module owner + data owner + KPI owner).
-3. Define critical control list per program and map to existing checklist structures.
+1. Add assessor pack reviewer sign-off and export audit trail.
+2. Track and report First Accreditation Cycle guide completion KPIs.
+3. Optimize remaining large frontend chunks for faster first-load performance.
 
 ### 31–60 Days
-1. Introduce cross-program control mapping (common controls and reusable evidence).
-2. Add readiness scorecards by department and project.
-3. Add recurrence + effectiveness trend views (CAPA and incidents).
+1. Extend cross-standard reuse from evidence suggestions to action-plan/CAPA template suggestions.
+2. Add predictive quality risk trend indicators in Quality Insights.
+3. Add export governance dashboard for assessor pack usage and audit-readiness cadence.
 
 ### 61–90 Days
-1. Deliver assessor-ready evidence pack generator.
-2. Add predictive indicators for audit risk (based on open critical items, overdue actions, repeated findings).
-3. Establish quarterly standards review governance cycle.
+1. Introduce accreditation rehearsal mode with assessor simulation checklist.
+2. Add quarterly quality governance review reports auto-generated from platform telemetry.
+3. Establish continuous controls monitoring for high-criticality standards.
 
 ---
 
