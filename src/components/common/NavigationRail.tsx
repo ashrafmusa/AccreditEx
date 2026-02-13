@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { NavigationState, UserRole } from "@/types";
 import {
   ChartPieIcon,
@@ -21,6 +21,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { useArrowNavigation } from "@/hooks/useArrowNavigation";
 
 interface NavigationRailProps {
   setNavigation: (state: NavigationState) => void;
@@ -46,6 +47,9 @@ const NavItem: React.FC<{
   <li>
     <button
       onClick={onClick}
+      id={`nav-item-${item.key}`}
+      aria-label={item.label}
+      aria-current={isActive ? "page" : undefined}
       className={`w-full flex items-center h-12 px-4 rounded-lg transition-colors duration-200 group ${
         isActive
           ? "bg-brand-primary text-white"
@@ -78,6 +82,9 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
     navigation.view === "projects" ||
     navigation.view === "projectDetail" ||
     navigation.view === "createProject";
+
+  const navRef = useRef<HTMLElement>(null);
+  useArrowNavigation(navRef);
 
   const allNavItems: NavItemData[] = [
     {
@@ -129,7 +136,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: DocumentTextIcon,
     },
     {
-      nav: { view: "risk" },
+      nav: { view: "riskHub" },
       key: "risk",
       label: t("riskHub"),
       icon: ExclamationTriangleIcon,
@@ -194,6 +201,8 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       }`}
       onMouseEnter={() => setIsExpanded(true)}
       onMouseLeave={() => setIsExpanded(false)}
+      aria-label="Main Navigation Rail"
+      ref={navRef}
     >
       <div
         className={`flex items-center justify-center h-16 mb-4 flex-shrink-0 ${
@@ -220,8 +229,8 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
           <span className="text-brand-primary">Ex</span>
         </h1>
       </div>
-      <nav className="flex-1 px-3 overflow-y-auto min-h-0">
-        <ul className="space-y-2">
+      <nav className="flex-1 px-3 overflow-y-auto min-h-0" role="navigation" aria-label="Primary Navigation">
+        <ul className="space-y-2" role="list">
           {visibleNavItems.map((item) => (
             <NavItem
               key={item.key}
@@ -234,7 +243,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
         </ul>
       </nav>
       <div className="px-3">
-        <ul className="space-y-2">
+        <ul className="space-y-2" role="list" aria-label="Secondary Navigation">
           {visibleBottomNavItems.map((item) => (
             <NavItem
               key={item.key}

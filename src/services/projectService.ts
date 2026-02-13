@@ -28,6 +28,7 @@ import {
   ComplianceStatus,
   Project
 } from '@/types';
+import { canCloseCapa } from './tqmReadinessService';
 
 const projectsCollection = collection(db, 'projects');
 
@@ -249,9 +250,27 @@ export const updateCapa = async (
   const project = await getProjectById(projectId);
   if (!project) throw new Error('Project not found');
 
-  const updatedCapas = (project.capaReports || []).map(capa =>
-    capa.id === capaId ? { ...capa, ...updates } : capa
-  );
+  const strictClosureValidationEnabled =
+    (import.meta.env.VITE_STRICT_CAPA_CLOSURE_VALIDATION || 'false') === 'true';
+
+  const updatedCapas = (project.capaReports || []).map(capa => {
+    if (capa.id !== capaId) {
+      return capa;
+    }
+
+    const nextCapa = { ...capa, ...updates };
+
+    if (strictClosureValidationEnabled && nextCapa.status === ProjectStatus.Finalized) {
+      const closureDecision = canCloseCapa(nextCapa, strictClosureValidationEnabled);
+      if (!closureDecision.allowed) {
+        throw new Error(
+          `CAPA closure blocked by strict validation. ${closureDecision.reason || 'Incomplete closure evidence.'}`,
+        );
+      }
+    }
+
+    return nextCapa;
+  });
 
   await updateProject(projectId, { capaReports: updatedCapas });
 };

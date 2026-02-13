@@ -1,22 +1,17 @@
-import React, { useState, useMemo } from "react";
+import React, { lazy, Suspense, useMemo, useState } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast";
 import { ContextualHelp } from "../components/common/ContextualHelp";
 import { getHelpContent } from "../data/helpContent";
 import { AppDocument, User, UserRole, Standard, Department } from "../types";
 import { useProjectStore } from "@/stores/useProjectStore";
-import DocumentEditorModal from "../components/documents/DocumentEditorModal";
-import ProcessMapEditor from "../components/documents/ProcessMapEditor";
-import ProcessMapMetadataModal from "../components/documents/ProcessMapMetadataModal";
 import StatCard from "../components/common/StatCard";
 import DocumentSidebar from "../components/documents/DocumentSidebar";
 import DocumentSearch, {
   DocumentFilters,
 } from "../components/documents/DocumentSearch";
-import DocumentMetadataModal from "../components/documents/DocumentMetadataModal";
 import SignatureModal from "../components/common/SignatureModal";
 import ControlledDocumentsTable from "../components/documents/ControlledDocumentsTable";
-import PDFViewerModal from "../components/documents/PDFViewerModal";
 import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
 import { Button } from "@/components/ui";
 import {
@@ -27,6 +22,22 @@ import {
   ClockIcon,
   PencilIcon,
 } from "../components/icons";
+
+const DocumentEditorModal = lazy(
+  () => import("../components/documents/DocumentEditorModal"),
+);
+const ProcessMapEditor = lazy(
+  () => import("../components/documents/ProcessMapEditor"),
+);
+const ProcessMapMetadataModal = lazy(
+  () => import("../components/documents/ProcessMapMetadataModal"),
+);
+const DocumentMetadataModal = lazy(
+  () => import("../components/documents/DocumentMetadataModal"),
+);
+const PDFViewerModal = lazy(
+  () => import("../components/documents/PDFViewerModal"),
+);
 
 interface DocumentControlHubPageProps {
   documents: AppDocument[];
@@ -467,18 +478,22 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       </div>
 
       {/* Process Map Metadata Modal */}
-      <ProcessMapMetadataModal
-        isOpen={isProcessMapModalOpen}
-        onClose={() => setIsProcessMapModalOpen(false)}
-        onSave={handleAddProcessMap}
-      />
+      <Suspense fallback={null}>
+        <ProcessMapMetadataModal
+          isOpen={isProcessMapModalOpen}
+          onClose={() => setIsProcessMapModalOpen(false)}
+          onSave={handleAddProcessMap}
+        />
+      </Suspense>
 
       {/* Document Metadata Modal */}
-      <DocumentMetadataModal
-        isOpen={isMetaModalOpen}
-        onClose={() => setIsMetaModalOpen(false)}
-        onSave={handleCreateDocument}
-      />
+      <Suspense fallback={null}>
+        <DocumentMetadataModal
+          isOpen={isMetaModalOpen}
+          onClose={() => setIsMetaModalOpen(false)}
+          onSave={handleCreateDocument}
+        />
+      </Suspense>
 
       {signingDoc && (
         <SignatureModal
@@ -492,33 +507,39 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       )}
 
       {viewingDoc && viewingDoc.type !== "Process Map" && (
-        <DocumentEditorModal
-          isOpen={!!viewingDoc}
-          onClose={() => setViewingDoc(null)}
-          document={viewingDoc}
-          onSave={handleSaveDocument}
-          standards={standards}
-          isSaving={isSaving}
-        />
+        <Suspense fallback={null}>
+          <DocumentEditorModal
+            isOpen={!!viewingDoc}
+            onClose={() => setViewingDoc(null)}
+            document={viewingDoc}
+            onSave={handleSaveDocument}
+            standards={standards}
+            isSaving={isSaving}
+          />
+        </Suspense>
       )}
 
       {viewingDoc && viewingDoc.type === "Process Map" && (
-        <ProcessMapEditor
-          isOpen={!!viewingDoc}
-          onClose={() => setViewingDoc(null)}
-          document={viewingDoc}
-          onSave={handleSaveDocument}
-          isSaving={isSaving}
-        />
+        <Suspense fallback={null}>
+          <ProcessMapEditor
+            isOpen={!!viewingDoc}
+            onClose={() => setViewingDoc(null)}
+            document={viewingDoc}
+            onSave={handleSaveDocument}
+            isSaving={isSaving}
+          />
+        </Suspense>
       )}
 
       {viewingPDF && (
-        <PDFViewerModal
-          isOpen={!!viewingPDF}
-          onClose={() => setViewingPDF(null)}
-          fileUrl={viewingPDF.fileUrl || ""}
-          fileName={viewingPDF.name[lang]}
-        />
+        <Suspense fallback={null}>
+          <PDFViewerModal
+            isOpen={!!viewingPDF}
+            onClose={() => setViewingPDF(null)}
+            fileUrl={viewingPDF.fileUrl || ""}
+            fileName={viewingPDF.name[lang]}
+          />
+        </Suspense>
       )}
     </div>
   );

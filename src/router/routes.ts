@@ -71,6 +71,9 @@ export const routes: RouteConfig[] = [
 
     // Messaging
     { path: "/messages", view: "messaging", requiresAuth: true },
+
+    // AI Tools
+    { path: "/ai-document-generator", view: "aiDocumentGenerator", requiresAuth: true },
 ];
 
 /**
@@ -128,6 +131,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/data";
         case "messaging":
             return "/messages";
+        case "aiDocumentGenerator":
+            return "/ai-document-generator";
         default:
             return "/dashboard";
     }
@@ -242,6 +247,10 @@ export const pathToNavigationState = (
 
     if (path === "/messages") {
         return { view: "messaging" };
+    }
+
+    if (path === "/ai-document-generator") {
+        return { view: "aiDocumentGenerator" };
     }
 
     // Default fallback

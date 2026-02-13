@@ -22,10 +22,18 @@ import ImportStandardsModal from "@/components/accreditation/ImportStandardsModa
 import RestrictedFeatureIndicator from "@/components/common/RestrictedFeatureIndicator";
 import { Button, Input } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import {
+  exportStandardsGovernanceLog,
+  getStandardsGovernanceStatus,
+  saveStandardsBaseline,
+} from "@/services/standardsGovernanceService";
+import { buildCrossStandardMappingSummary } from "@/services/crossStandardMappingService";
 
 interface StandardsPageProps {
   program: AccreditationProgram;
   standards: Standard[];
+  allStandards: Standard[];
+  allPrograms: AccreditationProgram[];
   currentUser: User;
   onCreateStandard: (
     standard: Omit<Standard, "programId"> & { programId: string },
@@ -37,6 +45,8 @@ interface StandardsPageProps {
 const StandardsPage: React.FC<StandardsPageProps> = ({
   program,
   standards,
+  allStandards,
+  allPrograms,
   currentUser,
   onCreateStandard,
   onUpdateStandard,
@@ -55,8 +65,21 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
   const [showFilters, setShowFilters] = useState(false);
 
   const [fileContent, setFileContent] = useState("");
+  const [governanceRefreshKey, setGovernanceRefreshKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canModify = currentUser.role === UserRole.Admin;
+
+  const governanceStatus = useMemo(() => {
+    return getStandardsGovernanceStatus(program.id, standards);
+  }, [program.id, standards, governanceRefreshKey]);
+
+  const crosswalkSummary = useMemo(() => {
+    return buildCrossStandardMappingSummary(
+      program.id,
+      allStandards,
+      allPrograms,
+    );
+  }, [program.id, allStandards, allPrograms]);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -274,6 +297,34 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
     setSearchTerm("");
   };
 
+  const handleSetBaseline = () => {
+    saveStandardsBaseline(program.id, standards);
+    setGovernanceRefreshKey((prev) => prev + 1);
+    toast.success(
+      "Standards baseline has been updated for governance tracking.",
+    );
+  };
+
+  const handleExportGovernanceLog = () => {
+    try {
+      const exportPayload = exportStandardsGovernanceLog(program.id);
+      const blob = new Blob([exportPayload], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `standards-governance-${program.id}-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      URL.revokeObjectURL(url);
+      toast.success("Governance log exported successfully.");
+    } catch (error) {
+      toast.error("Failed to export governance log.");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -322,6 +373,116 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
       {!canModify && (
         <RestrictedFeatureIndicator featureName="Standards Management" />
       )}
+
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Standards Change Governance
+            </p>
+            {!governanceStatus.hasBaseline ? (
+              <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                No governance baseline found for this program. Set a baseline to
+                detect future drift.
+              </p>
+            ) : governanceStatus.driftDetected ? (
+              <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
+                Drift detected since baseline (count:{" "}
+                {governanceStatus.standardCount}). Review and re-baseline after
+                approval.
+              </p>
+            ) : (
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                No drift detected since baseline.
+              </p>
+            )}
+            {governanceStatus.baseline && (
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Baseline date:{" "}
+                {new Date(governanceStatus.baseline.createdAt).toLocaleString()}
+              </p>
+            )}
+          </div>
+          {canModify && (
+            <div className="flex gap-2">
+              <Button onClick={handleExportGovernanceLog} variant="ghost">
+                Export Governance Log
+              </Button>
+              <Button onClick={handleSetBaseline} variant="secondary">
+                {governanceStatus.hasBaseline
+                  ? "Refresh Baseline"
+                  : "Set Baseline"}
+              </Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+        <div className="flex flex-col gap-3">
+          <div>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">
+              Cross-Standard Control Mapping
+            </p>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+              Reuse opportunities across accreditation programs based on control
+              section and key terms.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Mapped Standards
+              </p>
+              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {crosswalkSummary.mappedStandardsCount}/
+                {crosswalkSummary.totalStandardsInProgram}
+              </p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Coverage
+              </p>
+              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {crosswalkSummary.mappingCoveragePercent}%
+              </p>
+            </div>
+            <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Reusable Control Groups
+              </p>
+              <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                {crosswalkSummary.reusableControlGroupsCount}
+              </p>
+            </div>
+          </div>
+
+          {crosswalkSummary.topReusableControlGroups.length > 0 ? (
+            <div className="space-y-2">
+              {crosswalkSummary.topReusableControlGroups
+                .slice(0, 3)
+                .map((group) => (
+                  <div
+                    key={group.controlKey}
+                    className="rounded-lg border border-slate-200 dark:border-slate-700 p-3"
+                  >
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      Section: {group.section}
+                    </p>
+                    <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                      Programs: {group.programsCovered} | Key terms:{" "}
+                      {group.keyTerms.join(", ") || "general"}
+                    </p>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              No cross-program mappings detected yet for this program.
+            </p>
+          )}
+        </div>
+      </div>
 
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">

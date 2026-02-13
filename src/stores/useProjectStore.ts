@@ -291,7 +291,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     if (!project || !project.pdcaCycles) {
       return [];
     }
-    return project.pdcaCycles.filter(cycle => cycle.status === stage);
+    return project.pdcaCycles.filter(cycle => cycle.currentStage === stage);
   },
 
   // Bulk Operations

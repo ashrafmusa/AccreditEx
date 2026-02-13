@@ -62,6 +62,9 @@ const SurveyReportPage = lazy(() => import("@/pages/SurveyReportPage"));
 // Data and Communication
 const DataHubPage = lazy(() => import("@/pages/DataHubPage"));
 const MessagingPage = lazy(() => import("@/pages/MessagingPage"));
+const AIDocumentGeneratorPage = lazy(
+  () => import("@/pages/AIDocumentGeneratorPage"),
+);
 
 // Loading component for lazy-loaded routes
 const RouteLoadingFallback: React.FC = () => (
@@ -333,6 +336,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
             standards={standards.filter(
               (s) => s.programId === navigation.programId,
             )}
+            allStandards={standards}
+            allPrograms={accreditationPrograms}
             currentUser={currentUser}
             onCreateStandard={addStandard}
             onUpdateStandard={updateStandard}
@@ -371,6 +376,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
             department={department}
             users={users}
             projects={projects}
+            risks={risks}
             currentUser={currentUser}
             setNavigation={setNavigation}
             onUpdateDepartment={updateDepartment}
@@ -429,6 +435,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <DataHubPage />;
       case "messaging":
         return <MessagingPage setNavigation={setNavigation} />;
+      case "aiDocumentGenerator":
+        return <AIDocumentGeneratorPage />;
       default:
         return <DashboardPage setNavigation={setNavigation} />;
     }

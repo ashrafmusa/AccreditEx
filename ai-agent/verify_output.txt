@@ -1,0 +1,28 @@
+Traceback (most recent call last):
+  File "D:\_Projects\accreditex\ai-agent\deployment_package\firebase_client.py", line 49, in __init__
+    cred = credentials.Certificate(cred_path)
+  File "C:\Users\SAMEH\AppData\Roaming\Python\Python313\site-packages\firebase_admin\credentials.py", line 97, in __init__
+    with open(cert, encoding='utf-8') as json_file:
+         ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'serviceAccountKey.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\_Projects\accreditex\ai-agent\verify_unified_agent.py", line 18, in <module>
+    from unified_accreditex_agent import UnifiedAccreditexAgent
+  File "D:\_Projects\accreditex\ai-agent\deployment_package\unified_accreditex_agent.py", line 23, in <module>
+    from firebase_client import firebase_client
+  File "D:\_Projects\accreditex\ai-agent\deployment_package\firebase_client.py", line 345, in <module>
+    firebase_client = FirebaseClient()
+  File "D:\_Projects\accreditex\ai-agent\deployment_package\firebase_client.py", line 54, in __init__
+    print(f"\u26a0\ufe0f Firebase initialization warning: {e}")
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python313\Lib\encodings\cp1252.py", line 19, in encode
+    return codecs.charmap_encode(input,self.errors,encoding_table)[0]
+           ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'charmap' codec can't encode characters in position 0-1: character maps to <undefined>
+>>> STARTING PRE-FLIGHT CHECK...
+1. Importing UnifiedAccreditexAgent...
+
+[FATAL ERROR] 'charmap' codec can't encode characters in position 0-1: character maps to <undefined>
