@@ -1,4 +1,8 @@
-import { buildCrossStandardMappingSummary } from "@/services/crossStandardMappingService";
+import {
+    buildCrossStandardMappingSummary,
+    getRelatedCrosswalkStandards,
+    suggestReusableEvidenceForChecklistItem,
+} from "@/services/crossStandardMappingService";
 import type { AccreditationProgram, Standard } from "@/types";
 
 describe("crossStandardMappingService", () => {
@@ -83,5 +87,40 @@ describe("crossStandardMappingService", () => {
         expect(summary.mappedStandardsCount).toBe(0);
         expect(summary.mappingCoveragePercent).toBe(0);
         expect(summary.reusableControlGroupsCount).toBe(0);
+    });
+
+    it("finds cross-program related standards for a source standard", () => {
+        const related = getRelatedCrosswalkStandards("JCI-IPC-01", "jci", standards);
+        expect(related.map((item) => item.standardId)).toContain("CBAHI-IPC-09");
+        expect(related.every((item) => item.programId !== "jci")).toBe(true);
+    });
+
+    it("suggests reusable evidence documents based on crosswalk links", () => {
+        const documents: any[] = [
+            {
+                id: "doc-1",
+                name: { en: "Infection surveillance policy", ar: "" },
+                isControlled: true,
+                tags: ["cbahi-ipc-09", "surveillance"],
+            },
+            {
+                id: "doc-2",
+                name: { en: "Unrelated HR policy", ar: "" },
+                isControlled: true,
+                tags: ["hr"],
+            },
+        ];
+
+        const suggestions = suggestReusableEvidenceForChecklistItem({
+            standardId: "JCI-IPC-01",
+            checklistText: "infection surveillance",
+            currentProgramId: "jci",
+            standards,
+            documents: documents as any,
+            existingEvidenceIds: [],
+        });
+
+        expect(suggestions.length).toBeGreaterThan(0);
+        expect(suggestions[0].documentId).toBe("doc-1");
     });
 });

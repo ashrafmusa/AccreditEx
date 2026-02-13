@@ -35,7 +35,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
     loading,
   } = useProjectStore();
   const { currentUser } = useUserStore();
-  const { accreditationPrograms, documents } = useAppStore();
+  const { accreditationPrograms, documents, standards, risks } = useAppStore();
   const toast = useToast();
 
   const [activeView, setActiveView] = useState<ProjectDetailView>("overview");
@@ -93,11 +93,11 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
                 if (isSubscribed) {
                   console.error("Subscription error:", error);
                   toast.warning(
-                    "Failed to load real-time updates, showing cached data"
+                    "Failed to load real-time updates, showing cached data",
                   );
                   setLocalLoading(false);
                 }
-              }
+              },
             );
           } catch (error) {
             console.error("Subscription setup failed:", error);
@@ -154,15 +154,39 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
 
   const handleGenerateReport = async (reportType: string) => {
     try {
+      if (reportType === "assessorPack") {
+        const {
+          buildAssessorReportPack,
+          exportAssessorEvidenceMatrixCsv,
+          exportAssessorReportPackJson,
+        } = await import("@/services/assessorReportPackService");
+
+        const reportPack = buildAssessorReportPack({
+          project,
+          standards,
+          documents,
+          risks,
+          generatedBy: currentUser.name,
+        });
+
+        exportAssessorReportPackJson(reportPack);
+        exportAssessorEvidenceMatrixCsv(reportPack);
+        toast.success(
+          "Assessor pack exported successfully (JSON + evidence matrix CSV).",
+        );
+        setIsGeneratingReport(false);
+        return;
+      }
+
       setIsGeneratingReport(false); // Close modal immediately
       toast.info(
-        "Generating professional PDF compliance report with AI analysis... This may take 30-60 seconds."
+        "Generating professional PDF compliance report with AI analysis... This may take 30-60 seconds.",
       );
 
       const reportDoc = await generateReport(project.id, reportType);
 
       toast.success(
-        `PDF report generated successfully! View it in Document Control Hub or download from the report link.`
+        `PDF report generated successfully! View it in Document Control Hub or download from the report link.`,
       );
 
       // Optional: Auto-download the PDF
@@ -180,7 +204,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
       toast.error(
         error instanceof Error
           ? error.message
-          : "Failed to generate report. Please try again."
+          : "Failed to generate report. Please try again.",
       );
       setIsGeneratingReport(false);
     }

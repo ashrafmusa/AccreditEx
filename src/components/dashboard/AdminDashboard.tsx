@@ -30,6 +30,8 @@ import {
   FolderIcon,
   PlayCircleIcon,
   CalendarDaysIcon,
+  ClipboardDocumentCheckIcon,
+  XMarkIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
@@ -117,11 +119,92 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
 
   // Loading state - simulate loading for first 1.5 seconds
   const [isLoading, setIsLoading] = useState(true);
+  const [cycleGuideDismissed, setCycleGuideDismissed] = useState<boolean>(
+    () => {
+      try {
+        return (
+          localStorage.getItem("accreditex-first-cycle-guide-dismissed") ===
+          "true"
+        );
+      } catch {
+        return false;
+      }
+    },
+  );
+
+  const [cycleGuideCompleted, setCycleGuideCompleted] = useState<string[]>(
+    () => {
+      try {
+        const raw = localStorage.getItem("accreditex-first-cycle-guide-steps");
+        return raw ? (JSON.parse(raw) as string[]) : [];
+      } catch {
+        return [];
+      }
+    },
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setIsLoading(false), 1500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        "accreditex-first-cycle-guide-dismissed",
+        cycleGuideDismissed ? "true" : "false",
+      );
+      localStorage.setItem(
+        "accreditex-first-cycle-guide-steps",
+        JSON.stringify(cycleGuideCompleted),
+      );
+    } catch {
+      // no-op
+    }
+  }, [cycleGuideDismissed, cycleGuideCompleted]);
+
+  const firstProgramId = projects[0]?.programId;
+
+  const accreditationCycleSteps = useMemo(
+    () => [
+      {
+        id: "standards",
+        title: "Review accreditation standards",
+        action: () =>
+          firstProgramId
+            ? setNavigation({ view: "standards", programId: firstProgramId })
+            : setNavigation({ view: "projects" }),
+      },
+      {
+        id: "project",
+        title: "Create first accreditation project",
+        action: () => setNavigation({ view: "createProject" }),
+      },
+      {
+        id: "evidence",
+        title: "Upload and link controlled evidence",
+        action: () => setNavigation({ view: "documentControl" }),
+      },
+      {
+        id: "audit",
+        title: "Schedule and run internal audits",
+        action: () => setNavigation({ view: "auditHub" }),
+      },
+      {
+        id: "readiness",
+        title: "Validate readiness and close open findings",
+        action: () => setNavigation({ view: "qualityInsights" }),
+      },
+    ],
+    [firstProgramId, setNavigation],
+  );
+
+  const cycleGuideProgress =
+    accreditationCycleSteps.length > 0
+      ? Math.round(
+          (cycleGuideCompleted.length / accreditationCycleSteps.length) * 100,
+        )
+      : 0;
 
   const dashboardData = useMemo(() => {
     try {
@@ -550,6 +633,67 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
               </div>
             </div>
+
+            {!cycleGuideDismissed && (
+              <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary flex items-center gap-2">
+                      <ClipboardDocumentCheckIcon className="w-5 h-5" />
+                      First Accreditation Cycle Guide
+                    </h3>
+                    <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+                      Guided in-app flow to complete your first accreditation
+                      cycle.
+                    </p>
+                    <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
+                      Progress: {cycleGuideCompleted.length}/
+                      {accreditationCycleSteps.length} ({cycleGuideProgress}%)
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setCycleGuideDismissed(true)}
+                    className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label="Dismiss guide"
+                  >
+                    <XMarkIcon className="w-5 h-5 text-gray-500" />
+                  </button>
+                </div>
+
+                <div className="mt-4 space-y-2">
+                  {accreditationCycleSteps.map((step) => {
+                    const done = cycleGuideCompleted.includes(step.id);
+                    return (
+                      <div
+                        key={step.id}
+                        className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 p-3 rounded border border-brand-border dark:border-dark-brand-border"
+                      >
+                        <label className="flex items-center gap-2 text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
+                          <input
+                            type="checkbox"
+                            checked={done}
+                            onChange={() => {
+                              setCycleGuideCompleted((prev) =>
+                                prev.includes(step.id)
+                                  ? prev.filter((id) => id !== step.id)
+                                  : [...prev, step.id],
+                              );
+                            }}
+                          />
+                          {step.title}
+                        </label>
+                        <button
+                          onClick={step.action}
+                          className="px-3 py-1 text-xs rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                        >
+                          Open
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
               <div className="lg:col-span-3 bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">

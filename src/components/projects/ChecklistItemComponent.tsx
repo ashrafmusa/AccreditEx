@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ChecklistItem, Project, ComplianceStatus, Comment } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -14,6 +14,8 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useToast } from "@/hooks/useToast";
 import { aiAgentService } from "@/services/aiAgentService";
+import { useAppStore } from "@/stores/useAppStore";
+import { suggestReusableEvidenceForChecklistItem } from "@/services/crossStandardMappingService";
 
 interface ChecklistItemComponentProps {
   item: ChecklistItem;
@@ -33,11 +35,44 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
   const { createPDCACycle, createCAPA } = useProjectStore();
+  const { standards, documents } = useAppStore();
   const toast = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editedItem, setEditedItem] = useState<Partial<ChecklistItem>>(item);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+
+  const reusableEvidenceSuggestions = useMemo(
+    () =>
+      suggestReusableEvidenceForChecklistItem({
+        standardId: item.standardId,
+        checklistText: item.item,
+        currentProgramId: project.programId,
+        standards,
+        documents,
+        existingEvidenceIds: item.evidenceFiles,
+      }),
+    [
+      item.standardId,
+      item.item,
+      item.evidenceFiles,
+      project.programId,
+      standards,
+      documents,
+    ],
+  );
+
+  const suggestedCrossReferences = useMemo(
+    () =>
+      [
+        ...new Set(
+          reusableEvidenceSuggestions.flatMap(
+            (entry) => entry.matchedStandardIds,
+          ),
+        ),
+      ].slice(0, 6),
+    [reusableEvidenceSuggestions],
+  );
 
   const statusColors = {
     [ComplianceStatus.Compliant]:
@@ -113,7 +148,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
         },
       });
       toast.success(
-        "PDCA Cycle created successfully! View in PDCA Cycles tab."
+        "PDCA Cycle created successfully! View in PDCA Cycles tab.",
       );
     } catch (error) {
       toast.error("Failed to create PDCA cycle");
@@ -129,7 +164,11 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
     try {
       await createCAPA(project.id, {
         checklistItemId: currentData.id,
-        description: `${currentData.standardId}: ${currentData.item}`,
+        description: `${currentData.standardId}: ${currentData.item}${
+          suggestedCrossReferences.length > 0
+            ? `\nCross-standard references: ${suggestedCrossReferences.join(", ")}`
+            : ""
+        }`,
         rootCause: "To be analyzed",
         correctiveAction: currentData.actionPlan || "To be defined",
         preventiveAction: "To be defined",
@@ -177,9 +216,9 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
         onClick={() => setIsExpanded(!isExpanded)}
         className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors flex items-start justify-between"
       >
-        <div className="flex-grow">
+        <div className="grow">
           <div className="flex items-center gap-3 mb-2">
-            <h3 className="font-semibold text-gray-900 dark:text-white flex-grow">
+            <h3 className="font-semibold text-gray-900 dark:text-white grow">
               {isEditing ? (
                 <input
                   type="text"
@@ -201,7 +240,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
             >
               {t(
                 (item.status.charAt(0).toLowerCase() +
-                  item.status.slice(1).replace(/\s/g, "")) as any
+                  item.status.slice(1).replace(/\s/g, "")) as any,
               )}
             </span>
           </div>
@@ -301,7 +340,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                 onChange={(e) =>
                   setEditedItem({ ...editedItem, actionPlan: e.target.value })
                 }
-                className="w-full p-2 border rounded text-sm min-h-[100px]"
+                className="w-full p-2 border rounded text-sm min-h-25"
               />
             ) : (
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
@@ -321,7 +360,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                 onChange={(e) =>
                   setEditedItem({ ...editedItem, notes: e.target.value })
                 }
-                className="w-full p-2 border rounded text-sm min-h-[80px]"
+                className="w-full p-2 border rounded text-sm min-h-20"
               />
             ) : (
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
@@ -350,7 +389,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                   <option key={status} value={status}>
                     {t(
                       (status.charAt(0).toLowerCase() +
-                        status.slice(1).replace(/\s/g, "")) as any
+                        status.slice(1).replace(/\s/g, "")) as any,
                     )}
                   </option>
                 ))}
@@ -369,6 +408,48 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                 onLinkData={() => {}}
                 onUpdate={handleEvidenceUpdate}
               />
+            </div>
+          )}
+
+          {!isEditing && reusableEvidenceSuggestions.length > 0 && (
+            <div className="rounded-lg border border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 p-3">
+              <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-200 mb-2">
+                Reusable Evidence Suggestions
+              </h4>
+              <div className="space-y-2">
+                {reusableEvidenceSuggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.documentId}
+                    className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 bg-white dark:bg-gray-800 rounded p-2"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-gray-900 dark:text-white">
+                        {suggestion.documentName}
+                      </p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        Match score: {suggestion.matchScore}
+                        {suggestion.matchedStandardIds.length > 0
+                          ? ` • Standards: ${suggestion.matchedStandardIds.join(", ")}`
+                          : ""}
+                      </p>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEvidenceUpdate({
+                          evidenceFiles: [
+                            ...item.evidenceFiles,
+                            suggestion.documentId,
+                          ],
+                        });
+                      }}
+                      className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                    >
+                      Attach
+                    </button>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
@@ -398,7 +479,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
                       handleAskAI();
                     }}
                     disabled={isGeneratingAI}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isGeneratingAI ? (
                       <>
