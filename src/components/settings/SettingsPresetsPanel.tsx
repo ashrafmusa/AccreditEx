@@ -71,7 +71,19 @@ const SettingsPresetsPanel: React.FC = () => {
     if (!currentUser) return;
 
     try {
-      await applyPreset(currentUser.id, presetId, appSettings, setAppSettings);
+      // Find preset from locally loaded list (works for built-in + Firestore presets)
+      const preset = presets.find((p) => p.id === presetId);
+      if (!preset) {
+        toast.error("Preset not found");
+        return;
+      }
+
+      // Apply preset settings locally
+      if (preset.settings && appSettings) {
+        const merged = { ...appSettings, ...preset.settings };
+        setAppSettings(merged);
+      }
+
       toast.success("Preset applied successfully");
     } catch (error) {
       console.error("Failed to apply preset:", error);
