@@ -159,6 +159,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
           buildAssessorReportPack,
           exportAssessorEvidenceMatrixCsv,
           exportAssessorReportPackJson,
+          recordAssessorPackExportAudit,
         } = await import("@/services/assessorReportPackService");
 
         const reportPack = buildAssessorReportPack({
@@ -171,6 +172,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
 
         exportAssessorReportPackJson(reportPack);
         exportAssessorEvidenceMatrixCsv(reportPack);
+        recordAssessorPackExportAudit(reportPack);
         toast.success(
           "Assessor pack exported successfully (JSON + evidence matrix CSV).",
         );

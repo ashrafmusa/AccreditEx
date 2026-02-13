@@ -1,7 +1,15 @@
-import { buildAssessorReportPack } from "@/services/assessorReportPackService";
+import {
+    buildAssessorReportPack,
+    getAssessorPackExportAudit,
+    recordAssessorPackExportAudit,
+} from "@/services/assessorReportPackService";
 import { ComplianceStatus, ProjectStatus, type Project, type Risk, type Standard } from "@/types";
 
 describe("assessorReportPackService", () => {
+    beforeEach(() => {
+        localStorage.clear();
+    });
+
     const project: Project = {
         id: "project-1",
         name: "Medication Safety Program",
@@ -90,5 +98,23 @@ describe("assessorReportPackService", () => {
         expect(pack.summary.totalChecklistItems).toBe(1);
         expect(pack.evidenceMatrix.length).toBeGreaterThan(0);
         expect(pack.openFindings.length).toBeGreaterThan(0);
+    });
+
+    it("records and retrieves assessor export audit entries", () => {
+        const pack = buildAssessorReportPack({
+            project,
+            standards,
+            documents: documents as any,
+            risks,
+            generatedBy: "QA Lead",
+        });
+
+        const entry = recordAssessorPackExportAudit(pack);
+        const audit = getAssessorPackExportAudit();
+
+        expect(entry.projectId).toBe("project-1");
+        expect(audit.length).toBe(1);
+        expect(audit[0].projectName).toBe("Medication Safety Program");
+        expect(audit[0].format).toBe("json+csv");
     });
 });
