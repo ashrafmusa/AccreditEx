@@ -15,12 +15,12 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({ project }) => {
   const { updateChecklistItem } = useProjectStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ComplianceStatus | "all">(
-    "all"
+    "all",
   );
 
   const handleChecklistItemUpdate = async (
     itemId: string,
-    updates: Partial<ChecklistItem>
+    updates: Partial<ChecklistItem>,
   ) => {
     await updateChecklistItem(project.id, itemId, updates);
   };
@@ -30,7 +30,7 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({ project }) => {
       const matchesSearch =
         (item.item?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
         (item.standardId?.toLowerCase() || "").includes(
-          searchTerm.toLowerCase()
+          searchTerm.toLowerCase(),
         );
       const matchesStatus =
         statusFilter === "all" || item.status === statusFilter;
@@ -61,7 +61,7 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({ project }) => {
             <option key={s} value={s}>
               {t(
                 (s.charAt(0).toLowerCase() +
-                  s.slice(1).replace(/\s/g, "")) as any
+                  s.slice(1).replace(/\s/g, "")) as any,
               )}
             </option>
           ))}

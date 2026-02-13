@@ -3,15 +3,15 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import { useToast } from "@/hooks/useToast";
 import {
-  SendIcon,
-  MoreVerticalIcon,
-  SearchIcon,
-  PlusIcon,
-  UsersIcon,
-  PaperclipIcon,
-  SmileIcon,
+  MagnifyingGlassIcon as SearchIcon,
+  PaperClipIcon as PaperclipIcon,
+  SparklesIcon as SmileIcon,
   TrashIcon,
-} from "lucide-react";
+  UsersIcon,
+  XMarkIcon,
+  ChatBubbleLeftEllipsisIcon,
+} from "@/components/icons";
+import UserAvatar from "@/components/common/UserAvatar";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
 import UserPresence from "./UserPresence";
@@ -181,7 +181,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
             <UsersIcon className="w-5 h-5" />
           </button>
           <button className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
-            <MoreVerticalIcon className="w-5 h-5" />
+            <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
           </button>
         </div>
       </div>
@@ -200,7 +200,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
               </h3>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {users.length} members
+                  {users.length} {t("members")}
                 </span>
                 <UserPresence isOnline={true} showLabel={true} />
               </div>
@@ -209,21 +209,10 @@ const TeamChat: React.FC<TeamChatProps> = ({
           {onClose && (
             <button
               onClick={onClose}
-              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              aria-label={t("close")}
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <XMarkIcon className="w-5 h-5" />
             </button>
           )}
         </div>
@@ -325,8 +314,21 @@ const TeamChat: React.FC<TeamChatProps> = ({
               type="submit"
               disabled={!messageInput.trim()}
               className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+              aria-label={t("sendMessage")}
             >
-              <SendIcon className="w-5 h-5" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
+                />
+              </svg>
             </button>
           </form>
         </div>
@@ -340,7 +342,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
               {t("channelMembers")}
             </h3>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-              {users.length} members
+              {users.length} {t("members")}
             </p>
           </div>
           <div className="p-4 space-y-3 max-h-[calc(100%-80px)] overflow-y-auto">
@@ -349,15 +351,13 @@ const TeamChat: React.FC<TeamChatProps> = ({
                 key={user.id}
                 className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
-                <div className="w-8 h-8 bg-sky-500 text-white rounded-full flex items-center justify-center text-xs font-semibold">
-                  {user.name.charAt(0)}
-                </div>
+                <UserAvatar user={user} size="sm" showStatus={true} />
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {user.name}
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {user.role}
+                    {user.jobTitle || user.role}
                   </p>
                 </div>
               </div>

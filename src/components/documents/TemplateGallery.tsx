@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { X, Search, FileText, CheckCircle2 } from "lucide-react";
+import DOMPurify from "dompurify";
 import {
   documentTemplates,
   DocumentTemplate,
@@ -16,8 +17,7 @@ interface TemplateGalleryProps {
 
 const categoryColors = {
   policy: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
-  procedure:
-    "bg-rose-100 text-pink-600 dark:bg-pink-900/30 dark:text-rose-300",
+  procedure: "bg-rose-100 text-pink-600 dark:bg-pink-900/30 dark:text-rose-300",
   sop: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
   manual:
     "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
@@ -71,7 +71,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
     // Filter by category
     if (selectedCategory !== "all") {
       templates = getTemplatesByCategory(
-        selectedCategory as DocumentTemplate["category"]
+        selectedCategory as DocumentTemplate["category"],
       );
     }
 
@@ -281,7 +281,9 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
               <div className="flex-1 overflow-y-auto p-6">
                 <div
                   className="prose dark:prose-invert max-w-none"
-                  dangerouslySetInnerHTML={{ __html: previewTemplate.content }}
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(previewTemplate.content),
+                  }}
                 />
               </div>
 

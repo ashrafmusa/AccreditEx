@@ -25,13 +25,13 @@ const RiskRegisterTab: React.FC = () => {
         await updateRisk(riskData);
         showToast(
           t("riskUpdatedSuccessfully") || "Risk updated successfully",
-          "success"
+          "success",
         );
       } else {
         await addRisk(riskData);
         showToast(
           t("riskCreatedSuccessfully") || "Risk created successfully",
-          "success"
+          "success",
         );
       }
       setIsModalOpen(false);
@@ -54,7 +54,7 @@ const RiskRegisterTab: React.FC = () => {
         `${
           t("areYouSureDeleteRisk") ||
           "Are you sure you want to delete this risk?"
-        } "${riskTitle}"?`
+        } "${riskTitle}"?`,
       )
     ) {
       return;
@@ -65,7 +65,7 @@ const RiskRegisterTab: React.FC = () => {
       await deleteRisk(riskId);
       showToast(
         t("riskDeletedSuccessfully") || "Risk deleted successfully",
-        "success"
+        "success",
       );
     } catch (error) {
       const errorMsg =
@@ -82,9 +82,9 @@ const RiskRegisterTab: React.FC = () => {
   const sortedRisks = useMemo(
     () =>
       [...risks].sort(
-        (a, b) => b.likelihood * b.impact - a.likelihood * a.impact
+        (a, b) => b.likelihood * b.impact - a.likelihood * a.impact,
       ),
-    [risks]
+    [risks],
   );
 
   return (
@@ -147,6 +147,7 @@ const RiskRegisterTab: React.FC = () => {
                             setIsModalOpen(true);
                           }}
                           className="p-1 hover:text-brand-primary disabled:opacity-50"
+                          aria-label={t("editRisk")}
                         >
                           <PencilIcon className="w-4 h-4" />
                         </button>
@@ -154,6 +155,7 @@ const RiskRegisterTab: React.FC = () => {
                           disabled={isDeleting}
                           onClick={() => handleDelete(risk.id)}
                           className="p-1 hover:text-red-600 disabled:opacity-50"
+                          aria-label={t("deleteRisk")}
                         >
                           <TrashIcon className="w-4 h-4" />
                         </button>

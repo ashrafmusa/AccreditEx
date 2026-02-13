@@ -40,6 +40,9 @@ export const ar = {
   archiveConversation: 'أرشفة المحادثة',
   muteConversation: 'كتم إشعارات المحادثة',
   pinConversation: 'تثبيت المحادثة',
+  unpinConversation: 'إلغاء تثبيت المحادثة',
+  unmuteConversation: 'تفعيل إشعارات المحادثة',
+  unarchiveConversation: 'إلغاء أرشفة المحادثة',
   conversationDeleted: 'تم حذف المحادثة',
   conversationArchived: 'تم أرشفة المحادثة',
   conversationUnarchived: 'تم إلغاء أرشفة المحادثة',
@@ -56,8 +59,10 @@ export const ar = {
   from: 'من',
   to: 'إلى',
   hasAttachments: 'يحتوي على مرفقات',
+  hasReactions: 'يحتوي على تفاعلات',
   mentionsOnly: 'الإشارات فقط',
   clearFilters: 'مسح المرشحات',
+  applyFilters: 'تطبيق المرشحات',
   searchResults: 'نتائج البحث',
   noSearchResults: 'لم يتم العثور على رسائل تطابق بحثك',
   searchingMessages: 'جاري البحث عن الرسائل...',
@@ -92,6 +97,7 @@ export const ar = {
 
   // Privacy & Security
   privacyControls: 'أدوات التحكم في الخصوصية',
+  privacyTip: 'تلميح: يمكنك حظر المستخدمين لمنعهم من مراسلتك. المستخدمون المحظورون لن يتمكنوا من رؤية ملفك الشخصي أو إرسال رسائل إليك.',
   encryptionStatus: 'حالة التشفير',
   encryptionEnabled: 'تم تفعيل التشفير من طرف إلى طرف',
   encryptionDisabled: 'التشفير غير متاح',
@@ -173,6 +179,21 @@ export const ar = {
   messageDeleted: 'تم حذف الرسالة',
   userUnblocked: 'تم إلغاء حظر المستخدم',
 
+  // Messaging Page
+  totalMessages: 'إجمالي الرسائل',
+  receivedLabel: 'مستلمة',
+  unread: 'غير مقروءة',
+  activeConversations: 'المحادثات النشطة',
+  unreadChats: 'الدردشات غير المقروءة',
+  communicateTeamMembers: 'تواصل مع أعضاء الفريق',
+  messagingPrivacy: 'خصوصية الرسائل',
+  messagingPrivacyDesc: 'قم بحظر المستخدمين لمنعهم من مراسلتك. لن يرى المستخدمون المحظورون ملفك الشخصي ولن يتمكنوا من إرسال رسائل إليك.',
+  manageBlockedUsers: 'إدارة المستخدمين المحظورين',
+  selectUserToBlock: 'اختر مستخدمًا لحظره',
+  conversations: 'المحادثات',
+  statistics: 'الإحصائيات',
+  blockNewUser: 'حظر مستخدم',
+
   // Accessibility
   openMessaging: 'فتح مركز الرسائل',
   closeMessaging: 'إغلاق مركز الرسائل',
@@ -187,6 +208,15 @@ export const ar = {
   mentionUser: 'إشارة إلى مستخدم',
   mentionedYou: '{name} أشار إليك',
   yourMention: 'تمت الإشارة إليك',
+
+  // UI UX Enhancements
+  compose: 'دردشة جديدة',
+  back: 'رجوع',
+  typeMessage: 'اكتب رسالة...',
+  directMessages: 'الرسائل المباشرة',
+  channelMembers: 'أعضاء القناة',
+  noResultsFound: 'لا توجد نتائج',
+  searchUsersPlaceholder: 'ابحث عن مستخدمين لبدء المحادثة...',
 
   // Conversation Info
   conversationInfo: 'معلومات المحادثة',

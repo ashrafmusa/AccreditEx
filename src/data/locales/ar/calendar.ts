@@ -14,4 +14,6 @@ export const ar = {
     eventDescriptionAr: 'الوصف (العربية، اختياري)',
     noEventsForDay: 'لا توجد أحداث مجدولة لهذا اليوم.',
     noEventsForMonth: 'لا توجد أحداث مجدولة لهذا الشهر.',
+    previousMonth: 'السابق',
+    nextMonth: 'التالي',
 };

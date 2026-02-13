@@ -14,4 +14,6 @@ export const en = {
     eventDescriptionAr: 'Description (Arabic, Optional)',
     noEventsForDay: 'No events scheduled for this day.',
     noEventsForMonth: 'No events scheduled for this month.',
+    previousMonth: 'Previous',
+    nextMonth: 'Next',
 };

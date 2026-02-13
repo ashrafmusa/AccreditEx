@@ -137,4 +137,4 @@ const UserRow: React.FC<UserRowProps> = ({
   );
 };
 
-export default UserRow;
+export default React.memo(UserRow);

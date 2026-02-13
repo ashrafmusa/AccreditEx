@@ -335,6 +335,9 @@ export const ar = {
     selectLanguage: 'اختيار اللغة',
     toggleSettingsMenu: 'فتح/إغلاق قائمة الإعدادات',
     toggleMenu: 'فتح/إغلاق القائمة',
+    closeMenu: 'إغلاق القائمة',
+    userMenu: 'قائمة المستخدم',
+    notifications: 'الإشعارات',
     tabs: 'علامات التبويب',
     sendMessage: 'إرسال رسالة',
 

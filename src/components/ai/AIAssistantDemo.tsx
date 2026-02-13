@@ -8,6 +8,7 @@
  */
 
 import React, { useState } from "react";
+import DOMPurify from "dompurify";
 import { useAIAssistant } from "@/hooks/useAIAssistant";
 import { SparklesIcon, DocumentIcon, SearchIcon } from "../icons";
 
@@ -334,7 +335,11 @@ const AIAssistantDemo: React.FC<AIAssistantDemoProps> = ({
               </div>
 
               <div className="bg-gray-50 border rounded-md p-4 max-h-96 overflow-auto">
-                <div dangerouslySetInnerHTML={{ __html: result.content }} />
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: DOMPurify.sanitize(result.content),
+                  }}
+                />
               </div>
             </div>
           )}

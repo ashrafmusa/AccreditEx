@@ -7,6 +7,7 @@ export const ar = {
     // Risk
     addNewRisk: 'إضافة خطر جديد',
     editRisk: 'تعديل الخطر',
+    deleteRisk: 'حذف الخطر',
     areYouSureDeleteRisk: 'هل أنت متأكد أنك تريد حذف هذا الخطر؟',
     riskMatrix: 'مصفوفة المخاطر',
     impact: 'التأثير',

@@ -17,6 +17,7 @@ import {
   LightBulbIcon,
   CircleStackIcon,
   ClipboardDocumentSearchIcon,
+  ChatBubbleLeftEllipsisIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -50,6 +51,7 @@ const NavItem: React.FC<{
       id={`nav-item-${item.key}`}
       aria-label={item.label}
       aria-current={isActive ? "page" : undefined}
+      title={!isExpanded ? item.label : undefined}
       className={`w-full flex items-center h-12 px-4 rounded-lg transition-colors duration-200 group ${
         isActive
           ? "bg-brand-primary text-white"
@@ -59,7 +61,9 @@ const NavItem: React.FC<{
       <item.icon className="h-6 w-6 flex-shrink-0" />
       <span
         className={`transition-opacity duration-200 font-semibold whitespace-nowrap ${
-          isExpanded ? "opacity-100 ltr:ml-4 rtl:mr-4" : "opacity-0"
+          isExpanded
+            ? "opacity-100 ltr:ml-4 rtl:mr-4"
+            : "opacity-0 w-0 overflow-hidden"
         }`}
       >
         {item.label}
@@ -133,11 +137,11 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       nav: { view: "messaging" },
       key: "messaging",
       label: t("messages"),
-      icon: DocumentTextIcon,
+      icon: ChatBubbleLeftEllipsisIcon,
     },
     {
       nav: { view: "riskHub" },
-      key: "risk",
+      key: "riskHub",
       label: t("riskHub"),
       icon: ExclamationTriangleIcon,
     },
@@ -181,10 +185,10 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
   ];
 
   const visibleNavItems = allNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin"
+    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin",
   );
   const visibleBottomNavItems = bottomNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin"
+    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin",
   );
 
   const isActive = (key: string) => {
@@ -230,8 +234,12 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
           <span className="text-brand-primary">Ex</span>
         </h1>
       </div>
-      <nav className="flex-1 px-3 overflow-y-auto min-h-0" role="navigation" aria-label="Primary Navigation">
-        <ul className="space-y-2" role="list">
+      <nav
+        className="flex-1 px-3 overflow-y-auto min-h-0 scrollbar-thin"
+        role="navigation"
+        aria-label="Primary Navigation"
+      >
+        <ul className="space-y-1" role="list">
           {visibleNavItems.map((item) => (
             <NavItem
               key={item.key}
@@ -243,7 +251,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
           ))}
         </ul>
       </nav>
-      <div className="px-3">
+      <div className="px-3 pt-3 border-t border-brand-border dark:border-dark-brand-border">
         <ul className="space-y-2" role="list" aria-label="Secondary Navigation">
           {visibleBottomNavItems.map((item) => (
             <NavItem
