@@ -143,114 +143,82 @@ export const navigationStateToPath = (state: NavigationState): string => {
  */
 export const pathToNavigationState = (
     pathname: string,
-    params: Record<string, string | undefined>
+    _params: Record<string, string | undefined>
 ): NavigationState => {
     // Remove trailing slash
     const path = pathname.replace(/\/$/, "") || "/";
+    // Split path into segments for dynamic matching
+    const segments = path.split("/").filter(Boolean);
 
-    // Match against route patterns
-    if (path === "/" || path === "/dashboard") {
-        return { view: "dashboard" };
+    // Static routes (exact match)
+    if (path === "/" || path === "/dashboard") return { view: "dashboard" };
+    if (path === "/analytics") return { view: "analytics" };
+    if (path === "/quality-insights") return { view: "qualityInsights" };
+    if (path === "/calendar") return { view: "calendar" };
+    if (path === "/risk") return { view: "riskHub" };
+    if (path === "/audit") return { view: "auditHub" };
+    if (path === "/documents") return { view: "documentControl" };
+    if (path === "/tasks") return { view: "myTasks" };
+    if (path === "/departments") return { view: "departments" };
+    if (path === "/settings") return { view: "settings" };
+    if (path === "/training") return { view: "trainingHub" };
+    if (path === "/data") return { view: "dataHub" };
+    if (path === "/messages") return { view: "messaging" };
+    if (path === "/ai-document-generator") return { view: "aiDocumentGenerator" };
+    if (path === "/projects") return { view: "projects" };
+    if (path === "/projects/create") return { view: "createProject" };
+
+    // Dynamic routes - parse segments from URL path directly
+    // (useParams() is always empty because AppRouter uses catch-all /* route)
+
+    // /settings/:section
+    if (segments[0] === "settings" && segments[1]) {
+        return { view: "settings", section: segments[1] as any };
     }
 
-    if (path === "/analytics") {
-        return { view: "analytics" };
+    // /departments/:departmentId
+    if (segments[0] === "departments" && segments[1]) {
+        return { view: "departmentDetail", departmentId: segments[1] };
     }
 
-    if (path === "/quality-insights") {
-        return { view: "qualityInsights" };
+    // /projects/:projectId/survey/:surveyId
+    if (segments[0] === "projects" && segments[2] === "survey" && segments[3]) {
+        return { view: "mockSurvey", projectId: segments[1], surveyId: segments[3] };
     }
 
-    if (path === "/calendar") {
-        return { view: "calendar" };
+    // /projects/:projectId/edit
+    if (segments[0] === "projects" && segments[2] === "edit") {
+        return { view: "editProject", projectId: segments[1] };
     }
 
-    if (path === "/risk") {
-        return { view: "riskHub" };
+    // /projects/:projectId
+    if (segments[0] === "projects" && segments[1]) {
+        return { view: "projectDetail", projectId: segments[1] };
     }
 
-    if (path === "/audit") {
-        return { view: "auditHub" };
+    // /programs/:programId/standards
+    if (segments[0] === "programs" && segments[2] === "standards") {
+        return { view: "standards", programId: segments[1] };
     }
 
-    if (path === "/documents") {
-        return { view: "documentControl" };
+    // /users/:userId
+    if (segments[0] === "users" && segments[1]) {
+        return { view: "userProfile", userId: segments[1] };
     }
 
-    if (path === "/projects") {
-        return { view: "projects" };
+    // /training/:trainingId
+    if (segments[0] === "training" && segments[1]) {
+        return { view: "trainingDetail", trainingId: segments[1] };
     }
 
-    if (path === "/projects/create") {
-        return { view: "createProject" };
+    // /certificates/:certificateId
+    if (segments[0] === "certificates" && segments[1]) {
+        return { view: "certificate", certificateId: segments[1] };
     }
 
-    if (params.projectId && path.includes("/edit")) {
-        return { view: "editProject", projectId: params.projectId };
-    }
-
-    if (params.projectId && params.surveyId) {
-        return { view: "mockSurvey", projectId: params.projectId, surveyId: params.surveyId };
-    }
-
-    if (params.projectId) {
-        return { view: "projectDetail", projectId: params.projectId };
-    }
-
-    if (params.programId) {
-        return { view: "standards", programId: params.programId };
-    }
-
-    if (path === "/tasks") {
-        return { view: "myTasks" };
-    }
-
-    if (path === "/departments") {
-        return { view: "departments" };
-    }
-
-    if (params.departmentId) {
-        return { view: "departmentDetail", departmentId: params.departmentId };
-    }
-
-    if (params.section) {
-        return { view: "settings", section: params.section as any };
-    }
-
-    if (path === "/settings") {
-        return { view: "settings" };
-    }
-
-    if (params.userId) {
-        return { view: "userProfile", userId: params.userId };
-    }
-
-    if (path === "/training") {
-        return { view: "trainingHub" };
-    }
-
-    if (params.trainingId) {
-        return { view: "trainingDetail", trainingId: params.trainingId };
-    }
-
-    if (params.certificateId) {
-        return { view: "certificate", certificateId: params.certificateId };
-    }
-
-    if (params.surveyId && path.includes("/report")) {
-        return { view: "surveyReport", surveyId: params.surveyId };
-    }
-
-    if (path === "/data") {
-        return { view: "dataHub" };
-    }
-
-    if (path === "/messages") {
-        return { view: "messaging" };
-    }
-
-    if (path === "/ai-document-generator") {
-        return { view: "aiDocumentGenerator" };
+    // /surveys/:surveyId/report
+    if (segments[0] === "surveys" && segments[2] === "report") {
+        return { view: "surveyReport", surveyId: segments[1] };
     }
 
     // Default fallback

@@ -169,6 +169,9 @@ const MainRouter: React.FC<MainRouterProps> = ({
       } else {
         setUnauthorizedAttempt(false);
       }
+    } else if (currentUser && isAdmin) {
+      // FIX: Explicitly clear unauthorized state if user IS admin
+      setUnauthorizedAttempt(false);
     }
   }, [navigation, currentUser, setNavigation]);
 
