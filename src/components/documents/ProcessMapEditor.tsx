@@ -369,7 +369,7 @@ const ProcessMapEditorContent: React.FC<
       setHasChanges(true);
       setTimeout(saveToHistory, 100);
     },
-    [setEdges, saveToHistory]
+    [setEdges, saveToHistory],
   );
 
   const handleAddNode = () => {
@@ -475,7 +475,7 @@ const ProcessMapEditorContent: React.FC<
     if (
       window.confirm(
         t("confirmClearProcessMap") ||
-          "Are you sure you want to clear the entire process map?"
+          "Are you sure you want to clear the entire process map?",
       )
     ) {
       setNodes([]);
@@ -511,7 +511,7 @@ const ProcessMapEditorContent: React.FC<
         1080,
         0.5,
         2,
-        0.1
+        0.1,
       );
 
       const dataUrl = await toPng(reactFlowWrapper.current, {
@@ -528,7 +528,7 @@ const ProcessMapEditorContent: React.FC<
       const link = document.createElement("a");
       link.download = `${documentData.name.en.replace(
         /\s+/g,
-        "_"
+        "_",
       )}_process_map.png`;
       link.href = dataUrl;
       link.click();
@@ -544,7 +544,7 @@ const ProcessMapEditorContent: React.FC<
     setIsExporting(true);
     try {
       const svg = reactFlowWrapper.current?.querySelector(
-        ".react-flow__viewport"
+        ".react-flow__viewport",
       );
       if (!svg) return;
 
@@ -555,7 +555,7 @@ const ProcessMapEditorContent: React.FC<
       const link = document.createElement("a");
       link.download = `${documentData.name.en.replace(
         /\\s+/g,
-        "_"
+        "_",
       )}_process_map.svg`;
       link.href = url;
       link.click();
@@ -598,8 +598,8 @@ const ProcessMapEditorContent: React.FC<
       nds.map((node) =>
         node.id === selectedNodeForColor
           ? { ...node, data: { ...node.data, customColor: color } }
-          : node
-      )
+          : node,
+      ),
     );
     setHasChanges(true);
     setShowColorPicker(false);
@@ -642,8 +642,8 @@ const ProcessMapEditorContent: React.FC<
         nds.map((node) =>
           node.selected
             ? { ...node, position: { ...node.position, y: avgY } }
-            : node
-        )
+            : node,
+        ),
       );
     } else {
       const avgX =
@@ -653,8 +653,8 @@ const ProcessMapEditorContent: React.FC<
         nds.map((node) =>
           node.selected
             ? { ...node, position: { ...node.position, x: avgX } }
-            : node
-        )
+            : node,
+        ),
       );
     }
 
@@ -674,7 +674,7 @@ const ProcessMapEditorContent: React.FC<
             v{documentData.currentVersion} -{" "}
             {t(
               (documentData.status.charAt(0).toLowerCase() +
-                documentData.status.slice(1).replace(" ", "")) as any
+                documentData.status.slice(1).replace(" ", "")) as any,
             )}
             {hasChanges && (
               <span className="ml-2 text-yellow-600 dark:text-yellow-500 animate-pulse">
@@ -701,8 +701,6 @@ const ProcessMapEditorContent: React.FC<
         </div>
       </header>
 
-<<<<<<< HEAD
-=======
       {/* AI-Powered Toolbar */}
       <div className="border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-2 bg-rose-50 dark:bg-pink-900/20">
         <div className="flex items-center gap-2 text-sm font-semibold text-pink-600 dark:text-rose-300">
@@ -802,8 +800,6 @@ const ProcessMapEditorContent: React.FC<
           </div>
         )}
       </div>
-
->>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
       <main className="flex-grow overflow-hidden relative">
         <ReactFlow
           nodes={nodes}
@@ -1468,8 +1464,6 @@ const ProcessMapEditorContent: React.FC<
           </div>
         </div>
       )}
-<<<<<<< HEAD
-=======
 
       {/* AI Generator Modal */}
       {showAIGenerator && (
@@ -1581,8 +1575,8 @@ const ProcessMapEditorContent: React.FC<
                       opt.priority === "high"
                         ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800"
                         : opt.priority === "medium"
-                        ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
-                        : "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800"
+                          ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
+                          : "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -1599,8 +1593,8 @@ const ProcessMapEditorContent: React.FC<
                               opt.priority === "high"
                                 ? "bg-red-200 dark:bg-red-900 text-red-900 dark:text-red-100"
                                 : opt.priority === "medium"
-                                ? "bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100"
-                                : "bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
+                                  ? "bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100"
+                                  : "bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
                             }`}
                           >
                             {opt.priority.toUpperCase()}
@@ -1729,7 +1723,7 @@ const ProcessMapEditorContent: React.FC<
                           >
                             • {issue}
                           </li>
-                        )
+                        ),
                       )}
                     </ul>
                   </div>
@@ -1749,7 +1743,7 @@ const ProcessMapEditorContent: React.FC<
                           >
                             • {rec}
                           </li>
-                        )
+                        ),
                       )}
                     </ul>
                   </div>
@@ -1804,7 +1798,7 @@ const ProcessMapEditorContent: React.FC<
             <div className="mt-4 max-h-64 overflow-y-auto">
               {nodes
                 .filter((n) =>
-                  n.data.label.toLowerCase().includes(searchTerm.toLowerCase())
+                  n.data.label.toLowerCase().includes(searchTerm.toLowerCase()),
                 )
                 .map((node) => (
                   <div
@@ -1812,7 +1806,7 @@ const ProcessMapEditorContent: React.FC<
                     className="p-3 mb-2 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border border-gray-200 dark:border-gray-700"
                     onClick={() => {
                       setNodes((nds) =>
-                        nds.map((n) => ({ ...n, selected: n.id === node.id }))
+                        nds.map((n) => ({ ...n, selected: n.id === node.id })),
                       );
                       setViewport({
                         x: -node.position.x + 300,
@@ -1891,7 +1885,6 @@ const ProcessMapEditorContent: React.FC<
           </div>
         </div>
       )}
->>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
     </>
   );
 };

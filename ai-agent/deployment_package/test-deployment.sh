@@ -52,6 +52,18 @@ else
     exit 1
 fi
 
+# Release gate: specialist routing tests must pass
+echo ""
+echo "🧭 Running specialist routing release gate..."
+pytest -v tests/test_specialist_routing.py --tb=short
+
+if [ $? -ne 0 ]; then
+    echo "❌ Specialist routing release gate failed"
+    exit 1
+fi
+
+echo "✅ Specialist routing gate passed"
+
 # Test server startup (quick check)
 echo ""
 echo "🚀 Testing server startup..."

@@ -21,7 +21,7 @@ interface DocumentEditorSidebarProps {
   canEdit: boolean;
   viewingVersion: number | "current";
   setViewingVersion: (version: number | "current") => void;
-  onCompareVersions?: (v1: number | 'current', v2: number | 'current') => void;
+  onCompareVersions?: (v1: number | "current", v2: number | "current") => void;
 }
 
 const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
@@ -40,23 +40,24 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
   const toast = useToast();
   const { documents } = useAppStore();
 
-  const [selectedVersionForComparison, setSelectedVersionForComparison] = React.useState<number | 'current' | null>(null);
+  const [selectedVersionForComparison, setSelectedVersionForComparison] =
+    React.useState<number | "current" | null>(null);
 
   // Get related documents
   const relatedDocuments = useMemo(() => {
     if (!document.relatedDocumentIds?.length) return [];
-    return documents.filter(d => document.relatedDocumentIds?.includes(d.id));
+    return documents.filter((d) => document.relatedDocumentIds?.includes(d.id));
   }, [document.relatedDocumentIds, documents]);
 
   // Get parent document
   const parentDocument = useMemo(() => {
     if (!document.parentDocumentId) return null;
-    return documents.find(d => d.id === document.parentDocumentId);
+    return documents.find((d) => d.id === document.parentDocumentId);
   }, [document.parentDocumentId, documents]);
 
   // Get child documents
   const childDocuments = useMemo(() => {
-    return documents.filter(d => d.parentDocumentId === document.id);
+    return documents.filter((d) => d.parentDocumentId === document.id);
   }, [document.id, documents]);
 
   const handleGenerate = async (standardId: string) => {
@@ -65,7 +66,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
     try {
       const content = await aiService.generatePolicyFromStandard(
         standard,
-        lang
+        lang,
       );
       setDocument((d) => ({
         ...d,
@@ -81,7 +82,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
     try {
       const improved = await aiService.improveWriting(
         document.content[lang],
-        lang
+        lang,
       );
       setDocument((d) => ({
         ...d,
@@ -97,7 +98,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
       const targetLang = lang === "en" ? "ar" : "en";
       const translated = await aiService.translateText(
         document.content[lang],
-        lang
+        lang,
       );
       setDocument((d) => ({
         ...d,
@@ -159,16 +160,20 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
 
       <div className="p-4 flex-grow overflow-y-auto">
         {/* Related Documents Section */}
-        {(relatedDocuments.length > 0 || parentDocument || childDocuments.length > 0) && (
+        {(relatedDocuments.length > 0 ||
+          parentDocument ||
+          childDocuments.length > 0) && (
           <div className="mb-6">
             <h4 className="text-sm font-semibold flex items-center gap-1 mb-2">
               <LinkIcon className="w-4 h-4" />
               {t("relatedDocuments") || "Related Documents"}
             </h4>
-            
+
             {parentDocument && (
               <div className="mb-3">
-                <p className="text-xs text-gray-500 mb-1">{t("parentDocument") || "Parent Document"}</p>
+                <p className="text-xs text-gray-500 mb-1">
+                  {t("parentDocument") || "Parent Document"}
+                </p>
                 <div className="text-sm p-2 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 cursor-pointer border border-blue-200 dark:border-blue-800">
                   <div className="font-medium">{parentDocument.name[lang]}</div>
                   <div className="text-xs text-gray-600 dark:text-gray-400">
@@ -180,10 +185,15 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
 
             {childDocuments.length > 0 && (
               <div className="mb-3">
-                <p className="text-xs text-gray-500 mb-1">{t("childDocuments") || "Child Documents"}</p>
+                <p className="text-xs text-gray-500 mb-1">
+                  {t("childDocuments") || "Child Documents"}
+                </p>
                 <div className="space-y-1">
-                  {childDocuments.map(doc => (
-                    <div key={doc.id} className="text-sm p-2 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer border border-green-200 dark:border-green-800">
+                  {childDocuments.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="text-sm p-2 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 cursor-pointer border border-green-200 dark:border-green-800"
+                    >
                       <div className="font-medium">{doc.name[lang]}</div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
                         {doc.type} • v{doc.currentVersion}
@@ -196,14 +206,20 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
 
             {relatedDocuments.length > 0 && (
               <div>
-                <p className="text-xs text-gray-500 mb-1">{t("linkedDocuments") || "Linked Documents"}</p>
+                <p className="text-xs text-gray-500 mb-1">
+                  {t("linkedDocuments") || "Linked Documents"}
+                </p>
                 <div className="space-y-1">
-                  {relatedDocuments.map(doc => (
-                    <div key={doc.id} className="text-sm p-2 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border border-gray-200 dark:border-gray-700">
+                  {relatedDocuments.map((doc) => (
+                    <div
+                      key={doc.id}
+                      className="text-sm p-2 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer border border-gray-200 dark:border-gray-700"
+                    >
                       <div className="font-medium">{doc.name[lang]}</div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">
                         {doc.type} • v{doc.currentVersion}
-                        {document.relationshipType && ` • ${document.relationshipType}`}
+                        {document.relationshipType &&
+                          ` • ${document.relationshipType}`}
                       </div>
                     </div>
                   ))}
@@ -214,43 +230,43 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
         )}
 
         <h4 className="text-sm font-semibold">{t("versionHistory")}</h4>
-        {document.versionHistory && document.versionHistory.length > 0 && onCompareVersions && (
-          <p className="text-xs text-gray-500 mt-1 mb-2">
-            {selectedVersionForComparison 
-              ? t('clickVersionToCompare') || 'Click a version to compare'
-              : t('selectVersionToCompare') || 'Select versions to compare'}
-          </p>
-        )}
+        {document.versionHistory &&
+          document.versionHistory.length > 0 &&
+          onCompareVersions && (
+            <p className="text-xs text-gray-500 mt-1 mb-2">
+              {selectedVersionForComparison
+                ? t("clickVersionToCompare") || "Click a version to compare"
+                : t("selectVersionToCompare") || "Select versions to compare"}
+            </p>
+          )}
         <ul className="mt-2 space-y-2">
           <li>
             <button
               onClick={() => {
-                if (selectedVersionForComparison !== null && onCompareVersions) {
-                  onCompareVersions(selectedVersionForComparison, 'current');
+                if (
+                  selectedVersionForComparison !== null &&
+                  onCompareVersions
+                ) {
+                  onCompareVersions(selectedVersionForComparison, "current");
                   setSelectedVersionForComparison(null);
                 } else if (onCompareVersions) {
-                  setSelectedVersionForComparison('current');
+                  setSelectedVersionForComparison("current");
                 } else {
                   setViewingVersion("current");
                 }
               }}
               className={`w-full text-left text-sm p-2 rounded-md ${
                 viewingVersion === "current"
-<<<<<<< HEAD
-                  ? "bg-indigo-100 font-semibold"
-                  : selectedVersionForComparison === 'current'
-=======
                   ? "bg-sky-100 font-semibold"
                   : selectedVersionForComparison === "current"
->>>>>>> d4dbbd0 (fix: Purple Ban compliance - automated bulk replacement of purple/indigo colors)
-                  ? "bg-blue-100 ring-2 ring-blue-500"
-                  : "hover:bg-gray-100"
+                    ? "bg-blue-100 ring-2 ring-blue-500"
+                    : "hover:bg-gray-100"
               }`}
             >
               v{document.currentVersion} (
               {t(
                 (document.status.charAt(0).toLowerCase() +
-                  document.status.slice(1).replace(" ", "")) as any
+                  document.status.slice(1).replace(" ", "")) as any,
               )}
               ) - Current
             </button>
@@ -259,7 +275,10 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
             <li key={v.version}>
               <button
                 onClick={() => {
-                  if (selectedVersionForComparison !== null && onCompareVersions) {
+                  if (
+                    selectedVersionForComparison !== null &&
+                    onCompareVersions
+                  ) {
                     onCompareVersions(selectedVersionForComparison, v.version);
                     setSelectedVersionForComparison(null);
                   } else if (onCompareVersions) {
@@ -272,8 +291,8 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                   viewingVersion === v.version
                     ? "bg-sky-100 font-semibold"
                     : selectedVersionForComparison === v.version
-                    ? "bg-blue-100 ring-2 ring-blue-500"
-                    : "hover:bg-gray-100"
+                      ? "bg-blue-100 ring-2 ring-blue-500"
+                      : "hover:bg-gray-100"
                 }`}
               >
                 v{v.version} (Approved)

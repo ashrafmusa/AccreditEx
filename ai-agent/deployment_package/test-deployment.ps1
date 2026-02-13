@@ -39,16 +39,29 @@ pytest -v --tb=short
 if ($LASTEXITCODE -eq 0) {
     Write-Host ""
     Write-Host "✅ All tests passed!" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host ""
     Write-Host "❌ Tests failed. Fix errors before deploying." -ForegroundColor Red
     exit 1
 }
 
+# Release gate: specialist routing tests must pass
+Write-Host ""
+Write-Host "🧭 Running specialist routing release gate..." -ForegroundColor Yellow
+pytest -v tests/test_specialist_routing.py --tb=short
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "❌ Specialist routing release gate failed" -ForegroundColor Red
+    exit 1
+}
+
+Write-Host "✅ Specialist routing gate passed" -ForegroundColor Green
+
 # Test imports
 Write-Host ""
 Write-Host "🔍 Testing imports..." -ForegroundColor Yellow
-python -c "from monitoring import performance_monitor; from cache import cache; from document_analyzer import document_analyzer; print('✅ All imports successful')"
+python -c "from monitoring import performance_monitor; from cache import cache; from document_analyzer import document_analyzer; from unified_accreditex_agent import UnifiedAccreditexAgent; print('✅ All imports successful')"
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "❌ Import test failed" -ForegroundColor Red
@@ -74,7 +87,8 @@ if ($missingVars.Count -gt 0) {
         Write-Host "   - $var" -ForegroundColor Yellow
     }
     Write-Host "   Set these in Render.com dashboard before deploying" -ForegroundColor Yellow
-} else {
+}
+else {
     Write-Host "✅ All required environment variables are set" -ForegroundColor Green
 }
 
@@ -83,7 +97,8 @@ Write-Host ""
 Write-Host "🔥 Checking Firebase credentials..." -ForegroundColor Yellow
 if (Test-Path "serviceAccountKey.json") {
     Write-Host "✅ Firebase credentials found" -ForegroundColor Green
-} else {
+}
+else {
     Write-Host "⚠️  Warning: serviceAccountKey.json not found" -ForegroundColor Yellow
     Write-Host "   Make sure to upload it or set FIREBASE_CREDENTIALS_JSON env var" -ForegroundColor Yellow
 }
