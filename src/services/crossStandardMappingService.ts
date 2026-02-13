@@ -1,4 +1,4 @@
-import { AccreditationProgram, Standard } from "@/types";
+import { AccreditationProgram, AppDocument, Standard } from "@/types";
 
 export interface CrossStandardControlMember {
     programId: string;
@@ -22,6 +22,14 @@ export interface CrossStandardMappingSummary {
     mappingCoveragePercent: number;
     reusableControlGroupsCount: number;
     topReusableControlGroups: CrossStandardControlGroup[];
+}
+
+export interface ReusableEvidenceSuggestion {
+    documentId: string;
+    documentName: string;
+    matchScore: number;
+    matchedStandardIds: string[];
+    rationale: string[];
 }
 
 const STOP_WORDS = new Set([
@@ -92,6 +100,128 @@ const hasCrossProgramCoverage = (
 ): boolean => {
     const programSet = new Set(members.map((member) => member.programId));
     return programSet.has(currentProgramId) && programSet.size > 1;
+};
+
+export const getRelatedCrosswalkStandards = (
+    standardId: string,
+    currentProgramId: string,
+    standards: Standard[],
+): Standard[] => {
+    const source = standards.find(
+        (standard) =>
+            standard.standardId === standardId &&
+            standard.programId === currentProgramId,
+    );
+
+    if (!source) {
+        return [];
+    }
+
+    const sourceControlKey = buildControlKey(source).key;
+
+    return standards.filter((standard) => {
+        if (standard.programId === currentProgramId) {
+            return false;
+        }
+
+        return buildControlKey(standard).key === sourceControlKey;
+    });
+};
+
+const toLowerText = (value: unknown): string =>
+    typeof value === "string" ? value.toLowerCase() : "";
+
+const tokenize = (value: string): string[] =>
+    normalize(value)
+        .split(" ")
+        .filter((token) => token.length >= 4);
+
+export const suggestReusableEvidenceForChecklistItem = (params: {
+    standardId: string;
+    checklistText: string;
+    currentProgramId: string;
+    standards: Standard[];
+    documents: AppDocument[];
+    existingEvidenceIds?: string[];
+    maxSuggestions?: number;
+}): ReusableEvidenceSuggestion[] => {
+    const {
+        standardId,
+        checklistText,
+        currentProgramId,
+        standards,
+        documents,
+        existingEvidenceIds = [],
+        maxSuggestions = 5,
+    } = params;
+
+    const existing = new Set(existingEvidenceIds);
+    const relatedStandards = getRelatedCrosswalkStandards(
+        standardId,
+        currentProgramId,
+        standards,
+    );
+    const relatedStandardIds = new Set(
+        [standardId, ...relatedStandards.map((standard) => standard.standardId)]
+            .map((id) => id.toLowerCase()),
+    );
+    const relatedTerms = new Set([
+        ...tokenize(checklistText),
+        ...relatedStandards.flatMap((standard) => tokenize(standard.description || "")),
+    ]);
+
+    const suggestions = documents
+        .filter((doc) => doc.isControlled && !existing.has(doc.id))
+        .map((doc) => {
+            let score = 0;
+            const rationale: string[] = [];
+            const matchedStandardIds = new Set<string>();
+
+            const tags = (doc.tags || []).map((tag) => tag.toLowerCase());
+            const nameText = `${toLowerText(doc.name?.en)} ${toLowerText(doc.name?.ar)}`;
+            const categoryText = toLowerText(doc.category);
+
+            tags.forEach((tag) => {
+                if (relatedStandardIds.has(tag)) {
+                    score += 4;
+                    matchedStandardIds.add(tag.toUpperCase());
+                    rationale.push(`Tag match: ${tag}`);
+                }
+            });
+
+            relatedStandardIds.forEach((relatedId) => {
+                if (nameText.includes(relatedId) || categoryText.includes(relatedId)) {
+                    score += 3;
+                    matchedStandardIds.add(relatedId.toUpperCase());
+                    rationale.push(`Reference match: ${relatedId}`);
+                }
+            });
+
+            relatedTerms.forEach((term) => {
+                const inTag = tags.some((tag) => tag.includes(term));
+                const inName = nameText.includes(term);
+                if (inTag || inName) {
+                    score += 1;
+                }
+            });
+
+            if (score === 0) {
+                return null;
+            }
+
+            return {
+                documentId: doc.id,
+                documentName: doc.name?.en || doc.name?.ar || doc.id,
+                matchScore: score,
+                matchedStandardIds: [...matchedStandardIds],
+                rationale: [...new Set(rationale)].slice(0, 3),
+            } as ReusableEvidenceSuggestion;
+        })
+        .filter((item): item is ReusableEvidenceSuggestion => Boolean(item))
+        .sort((a, b) => b.matchScore - a.matchScore)
+        .slice(0, maxSuggestions);
+
+    return suggestions;
 };
 
 export const buildCrossStandardMappingSummary = (

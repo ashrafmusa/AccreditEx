@@ -12,14 +12,14 @@
 |---|---|---|---|---|---|---|---|
 | PTQM-001 | No explicit enterprise evidence policy across CAPA/PDCA/Audit/Docs | Weak chain-of-custody can reduce assessor confidence | High | Medium | P1 | Completed (Phase 3 - Non-Blocking Policy Engine) | Product + Backend | Define mandatory evidence schema and closure checks |
 | PTQM-002 | Readiness score not explicitly tied to critical standard groups | Executive status may look good while critical controls lag | High | Medium | P1 | Completed (Phase 1) | Product + Analytics | Build weighted readiness model by criticality domain |
-| PTQM-003 | Cross-standard control mapping is limited | Duplicate work across JCI/CBAHI/ISO increases effort | High | High | P2 | In Progress (Phase 1 - Crosswalk Engine + Mapping Preview) | Product + Data | Create control crosswalk and reusable evidence mapping |
-| PTQM-004 | Advanced report packaging for assessor workflows is limited | Audit prep remains partially manual | Medium | Medium | P2 | Open | Product + Documents | Add assessor-ready report/evidence bundle templates |
+| PTQM-003 | Cross-standard control mapping is limited | Duplicate work across JCI/CBAHI/ISO increases effort | High | High | P2 | Completed (Phase 1 + Phase 2 Reuse Linkage) | Product + Data | Create control crosswalk and reusable evidence mapping |
+| PTQM-004 | Advanced report packaging for assessor workflows is limited | Audit prep remains partially manual | Medium | Medium | P2 | Completed (Assessor Pack Export Templates) | Product + Documents | Add assessor-ready report/evidence bundle templates |
 | PTQM-005 | Discoverability of advanced quality tools can be inconsistent | Underuse of high-value features slows outcomes | Medium | Low | P1 | Completed (Admin Dashboard Quick Actions) | Product + Frontend | Surface contextual prompts and dashboard quick actions |
 | PTQM-006 | Recurrence/effectiveness analytics for CAPA not strongly surfaced | Difficult to prove sustained improvement over time | High | Medium | P1 | Completed (Phase 1) | Product + Quality Insights | Add recurrence trend + CAPA effectiveness dashboard widgets |
 | PTQM-007 | Standards change-management governance not explicit in product workflow | Criteria drift may create hidden compliance lag | High | Medium | P1 | Completed (Baseline + Drift + Exportable Audit Log) | Product + Data Governance | Establish standards update review cadence and impact alerts |
 | PTQM-008 | Department-level quality accountability scorecards not fully formalized | Leadership visibility can be fragmented | Medium | Medium | P2 | Completed (Department Accountability Scorecards) | Product + Departments | Add department readiness and overdue action scorecards |
 | PTQM-009 | Closure gates for critical findings can be bypassed by process variance | High-risk findings may close with incomplete evidence | High | Medium | P1 | Completed (Safe + Strict Mode) | Backend + QA | Enforce closure validation rules with auditable exceptions |
-| PTQM-010 | Onboarding for quality workflows relies on prior training | Initial value realization can be delayed | Medium | Low | P2 | Open | Product + UX | Add in-app guided flow for first accreditation cycle |
+| PTQM-010 | Onboarding for quality workflows relies on prior training | Initial value realization can be delayed | Medium | Low | P2 | Completed (First Cycle Guided Flow) | Product + UX | Add in-app guided flow for first accreditation cycle |
 
 ---
 
@@ -113,6 +113,26 @@
    - Added `src/services/__tests__/crossStandardMappingService.test.ts` for mapping coverage and overlap logic.
    - Updated `src/pages/StandardsPage.tsx` with a non-blocking **Cross-Standard Control Mapping** preview panel.
    - Updated `src/components/common/MainRouter.tsx` to pass full standards/program context into Standards page.
+
+13. **Cross-Standard Reuse Linkage (PTQM-003 Phase 2 Completion)**
+   - Extended `src/services/crossStandardMappingService.ts` with:
+     - Related crosswalk standard lookup per checklist standard
+     - Reusable evidence suggestion scoring
+   - Updated `src/components/projects/ChecklistItemComponent.tsx` to show reusable evidence suggestions with one-click attach.
+   - CAPA creation now includes cross-standard reference context where available.
+
+14. **Assessor-Ready Report Packaging (PTQM-004 Completion)**
+   - Added `src/services/assessorReportPackService.ts` to generate assessor-ready pack templates.
+   - Added `src/services/__tests__/assessorReportPackService.test.ts`.
+   - Updated `src/components/documents/GenerateReportModal.tsx` with **Assessor Evidence Pack (JSON + CSV)** option.
+   - Updated `src/pages/ProjectDetailPage.tsx` to export:
+     - structured assessor pack JSON
+     - evidence matrix CSV
+
+15. **Guided First Accreditation Cycle (PTQM-010 Completion)**
+   - Updated `src/components/dashboard/AdminDashboard.tsx` with a persistent in-app **First Accreditation Cycle Guide** panel.
+   - Added step-by-step guided actions to Standards, Project Creation, Evidence Control, Audit Hub, and Quality Insights.
+   - Added local progress tracking and dismiss controls (localStorage-backed).
 
 5. **Automated Validation Tests**
    - Added `src/services/__tests__/tqmReadinessService.test.ts`.
