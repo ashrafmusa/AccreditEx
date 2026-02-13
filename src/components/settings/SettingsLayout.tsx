@@ -67,7 +67,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Firebase Setup is admin-only
-  const isAdmin = currentUser?.role === "Admin";
+  const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
   const allNavItems = [
     {
