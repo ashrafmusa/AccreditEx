@@ -1,7 +1,11 @@
 import { BulkUserOperation, User, UserRole } from '@/types';
 import { collection, addDoc, updateDoc, doc, getDocs, Timestamp, query, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
-import ExcelJS from 'exceljs';
+
+const loadExcelJS = async () => {
+    const module = await import('exceljs');
+    return module.default;
+};
 
 const COLLECTION_NAME = 'bulk_user_operations';
 
@@ -57,6 +61,8 @@ export const getBulkOperations = async (userId?: string): Promise<BulkUserOperat
  * @returns Blob containing the Excel file
  */
 export const exportUsersToExcel = async (users: User[]): Promise<Blob> => {
+    const ExcelJS = await loadExcelJS();
+
     // Create a new workbook and worksheet
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Users');
@@ -118,6 +124,8 @@ export const exportUsersToExcel = async (users: User[]): Promise<Blob> => {
  */
 export const importUsersFromExcel = async (file: File): Promise<Partial<User>[]> => {
     try {
+        const ExcelJS = await loadExcelJS();
+
         // Read file as ArrayBuffer
         const arrayBuffer = await file.arrayBuffer();
 

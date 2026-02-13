@@ -1,5 +1,6 @@
 import {
     buildAssessorReportPack,
+    calculateAssessorPackExportMetrics,
     getAssessorPackExportAudit,
     recordAssessorPackExportAudit,
 } from "@/services/assessorReportPackService";
@@ -116,5 +117,50 @@ describe("assessorReportPackService", () => {
         expect(audit.length).toBe(1);
         expect(audit[0].projectName).toBe("Medication Safety Program");
         expect(audit[0].format).toBe("json+csv");
+    });
+
+    it("persists reviewer sign-off metadata when provided", () => {
+        const pack = buildAssessorReportPack({
+            project,
+            standards,
+            documents: documents as any,
+            risks,
+            generatedBy: "QA Lead",
+        });
+
+        recordAssessorPackExportAudit(pack, {
+            reviewerName: "Dr. Sarah Ahmed",
+            note: "Reviewed for mock assessor readiness",
+        });
+
+        const audit = getAssessorPackExportAudit();
+        expect(audit[0].reviewerSignOff?.reviewerName).toBe("Dr. Sarah Ahmed");
+        expect(audit[0].reviewerSignOff?.approvedAt).toBeDefined();
+        expect(audit[0].reviewerSignOff?.note).toBe(
+            "Reviewed for mock assessor readiness",
+        );
+    });
+
+    it("calculates assessor export metrics including sign-off rate", () => {
+        const pack = buildAssessorReportPack({
+            project,
+            standards,
+            documents: documents as any,
+            risks,
+            generatedBy: "QA Lead",
+        });
+
+        recordAssessorPackExportAudit(pack, {
+            reviewerName: "Dr. Sarah Ahmed",
+            note: "Approved",
+        });
+        recordAssessorPackExportAudit(pack);
+
+        const entries = getAssessorPackExportAudit();
+        const metrics = calculateAssessorPackExportMetrics(entries);
+
+        expect(metrics.totalExports).toBe(2);
+        expect(metrics.exportsLast30Days).toBe(2);
+        expect(metrics.reviewerSignOffRatePercent).toBe(50);
     });
 });

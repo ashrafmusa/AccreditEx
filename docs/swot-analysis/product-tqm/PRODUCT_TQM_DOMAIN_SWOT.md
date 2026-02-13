@@ -59,8 +59,8 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 2. **Readiness model is operationally strong but still maturing for predictive assurance**
    - Current readiness and evidence integrity indicators are live; predictive pass-likelihood modeling is the next maturity step.
 
-3. **Assessor packs exist but review workflow depth can improve**
-   - Structured assessor pack export is now available; formal reviewer sign-off workflow is an enhancement opportunity.
+3. **Assessor packs are operational with baseline governance controls**
+   - Structured assessor pack export and reviewer sign-off metadata capture are implemented; formal multi-stage approval depth remains a future enhancement.
 
 4. **Cross-standard mapping is operational, reuse automation can still expand**
    - Crosswalk and evidence reuse suggestions are implemented; future versions can extend to auto-suggested CAPA templates.
@@ -81,8 +81,8 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 3. **Build crosswalk intelligence between standards**
    - Reuse evidence and controls across programs to cut duplication and speed readiness cycles.
 
-4. **Expand assessor-ready packs into governed approval workflow**
-   - One-click pack generation now exists; next is reviewer sign-off + export audit history.
+4. **Expand assessor-ready packs into deeper governed approval workflow**
+   - Reviewer sign-off metadata and export audit history are now in place; next is staged approvals and exception analytics.
 
 5. **Strengthen quality learning loop**
    - Track recurrence, CAPA effectiveness, cycle time, and embed recommendations into dashboard insights.
@@ -118,9 +118,9 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 ## Prioritized Actions (30/60/90)
 
 ### 0–30 Days
-1. Add assessor pack reviewer sign-off and export audit trail.
-2. Track and report First Accreditation Cycle guide completion KPIs.
-3. Optimize remaining large frontend chunks for faster first-load performance.
+1. Consolidate newly implemented outcome intelligence metrics into governance review SOP.
+2. Expand predictive risk model with department-level weighting and threshold calibration.
+3. Continue optimization of remaining large editor/report bundles.
 
 ### 31–60 Days
 1. Extend cross-standard reuse from evidence suggestions to action-plan/CAPA template suggestions.
@@ -138,3 +138,9 @@ Evaluate whether Product + TQM capabilities are sufficient for sustained accredi
 
 - `TQM_COVERAGE_MATRIX.md`
 - `ACCREDITATION_GAP_REGISTER.md`
+
+---
+
+## Remaining-Gap Closure Note (February 14, 2026)
+
+- Remaining Product & TQM closure items (outcome intelligence correlation, predictive audit-risk indicator, and low-risk bundle hardening for bulk import Excel payload) are now implemented and validated.

@@ -50,6 +50,17 @@ export interface AssessorPackExportAuditEntry {
     generatedBy: string;
     exportedAt: string;
     format: "json+csv";
+    reviewerSignOff?: {
+        reviewerName: string;
+        approvedAt: string;
+        note?: string;
+    };
+}
+
+export interface AssessorPackExportMetrics {
+    totalExports: number;
+    exportsLast30Days: number;
+    reviewerSignOffRatePercent: number;
 }
 
 const ASSESSOR_PACK_AUDIT_STORAGE_KEY = "accreditex_assessor_pack_export_audit";
@@ -190,7 +201,14 @@ export const exportAssessorEvidenceMatrixCsv = (pack: AssessorReportPack): void 
 
 export const recordAssessorPackExportAudit = (
     pack: AssessorReportPack,
+    reviewerSignOff?: {
+        reviewerName?: string;
+        note?: string;
+    },
 ): AssessorPackExportAuditEntry => {
+    const normalizedReviewerName = reviewerSignOff?.reviewerName?.trim();
+    const normalizedReviewerNote = reviewerSignOff?.note?.trim();
+
     const entry: AssessorPackExportAuditEntry = {
         id: `assessor-pack-export-${Date.now()}`,
         projectId: pack.metadata.projectId,
@@ -198,6 +216,13 @@ export const recordAssessorPackExportAudit = (
         generatedBy: pack.metadata.generatedBy,
         exportedAt: new Date().toISOString(),
         format: "json+csv",
+        reviewerSignOff: normalizedReviewerName
+            ? {
+                reviewerName: normalizedReviewerName,
+                approvedAt: new Date().toISOString(),
+                note: normalizedReviewerNote || undefined,
+            }
+            : undefined,
     };
 
     try {
@@ -229,4 +254,28 @@ export const getAssessorPackExportAudit = (): AssessorPackExportAuditEntry[] => 
     } catch {
         return [];
     }
+};
+
+export const calculateAssessorPackExportMetrics = (
+    entries: AssessorPackExportAuditEntry[],
+): AssessorPackExportMetrics => {
+    const now = new Date();
+    const days30Ago = new Date();
+    days30Ago.setDate(now.getDate() - 30);
+
+    const totalExports = entries.length;
+    const exportsLast30Days = entries.filter((entry) => {
+        const exportedAt = new Date(entry.exportedAt);
+        return !Number.isNaN(exportedAt.getTime()) && exportedAt >= days30Ago;
+    }).length;
+
+    const withSignOff = entries.filter((entry) => Boolean(entry.reviewerSignOff?.reviewerName)).length;
+    const reviewerSignOffRatePercent =
+        totalExports > 0 ? Math.round((withSignOff / totalExports) * 100) : 0;
+
+    return {
+        totalExports,
+        exportsLast30Days,
+        reviewerSignOffRatePercent,
+    };
 };

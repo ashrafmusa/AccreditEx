@@ -43,6 +43,16 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { exportDashboardMetricsToCSV } from "@/utils/exportUtils";
+import {
+  calculateAssessorPackExportMetrics,
+  getAssessorPackExportAudit,
+} from "@/services/assessorReportPackService";
+import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
+import {
+  calculateGuideReadinessCorrelation,
+  getRecentMonthlyQualityOutcomeSnapshots,
+  recordMonthlyQualityOutcomeSnapshot,
+} from "@/services/qualityOutcomeIntelligenceService";
 import DashboardHeader from "./DashboardHeader";
 // FIX: Corrected import path for CapaListItem
 import CapaListItem from "./CapaListItem";
@@ -205,6 +215,49 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
           (cycleGuideCompleted.length / accreditationCycleSteps.length) * 100,
         )
       : 0;
+
+  const assessorExportMetrics = useMemo(() => {
+    const auditEntries = getAssessorPackExportAudit();
+    return calculateAssessorPackExportMetrics(auditEntries);
+  }, [cycleGuideCompleted.length, cycleGuideDismissed]);
+
+  const readinessMetrics = useMemo(
+    () => calculatePortfolioReadiness(projects, risks, documents),
+    [projects, risks, documents],
+  );
+
+  const monthlyOutcomeSnapshots = useMemo(
+    () => getRecentMonthlyQualityOutcomeSnapshots(6),
+    [
+      readinessMetrics.readinessScore,
+      readinessMetrics.criticalOpenFindings,
+      cycleGuideProgress,
+      assessorExportMetrics.exportsLast30Days,
+      assessorExportMetrics.reviewerSignOffRatePercent,
+    ],
+  );
+
+  const guideReadinessCorrelation = useMemo(
+    () => calculateGuideReadinessCorrelation(monthlyOutcomeSnapshots),
+    [monthlyOutcomeSnapshots],
+  );
+
+  useEffect(() => {
+    recordMonthlyQualityOutcomeSnapshot({
+      readinessScore: readinessMetrics.readinessScore,
+      guideCompletionPercent: cycleGuideProgress,
+      assessorExportsLast30Days: assessorExportMetrics.exportsLast30Days,
+      reviewerSignOffRatePercent:
+        assessorExportMetrics.reviewerSignOffRatePercent,
+      criticalOpenFindings: readinessMetrics.criticalOpenFindings,
+    });
+  }, [
+    readinessMetrics.readinessScore,
+    readinessMetrics.criticalOpenFindings,
+    cycleGuideProgress,
+    assessorExportMetrics.exportsLast30Days,
+    assessorExportMetrics.reviewerSignOffRatePercent,
+  ]);
 
   const dashboardData = useMemo(() => {
     try {
@@ -694,6 +747,50 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
               </div>
             )}
+
+            <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
+              <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
+                Governance Adoption Snapshot
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    First Cycle Guide Completion
+                  </p>
+                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                    {cycleGuideProgress}%
+                  </p>
+                </div>
+                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    Assessor Pack Exports (30d)
+                  </p>
+                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                    {assessorExportMetrics.exportsLast30Days}
+                  </p>
+                </div>
+                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    Reviewer Sign-off Rate
+                  </p>
+                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                    {assessorExportMetrics.reviewerSignOffRatePercent}%
+                  </p>
+                </div>
+                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    Guide vs Readiness Correlation
+                  </p>
+                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                    {guideReadinessCorrelation.coefficient}
+                  </p>
+                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+                    {guideReadinessCorrelation.label} (
+                    {monthlyOutcomeSnapshots.length} month snapshots)
+                  </p>
+                </div>
+              </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
               <div className="lg:col-span-3 bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">

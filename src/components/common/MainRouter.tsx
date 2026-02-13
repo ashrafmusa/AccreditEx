@@ -112,7 +112,10 @@ const MainRouter: React.FC<MainRouterProps> = ({
 
   // Role-based Access Control
   useEffect(() => {
-    if (currentUser && currentUser.role !== UserRole.Admin) {
+    // Robust check: Handle Case-Insensitivity (Admin vs admin)
+    const isAdmin = currentUser?.role?.toLowerCase() === "admin";
+    
+    if (currentUser && !isAdmin) {
       const adminOnlyViews: NavigationState["view"][] = [
         "departments",
         "departmentDetail",
@@ -125,16 +128,22 @@ const MainRouter: React.FC<MainRouterProps> = ({
 
       // Allow settings for profile section for all users
       if (navigation.view === "settings") {
+        // MATCHING SettingsLayout.tsx availability
         const userAllowedSections = [
+          "visual", // Default page
           "profile",
           "security",
-          "appearance",
-          "globe",
-          "general",
           "notifications",
           "accessibility",
+          "settingsPresets",
+          "versionHistory",
+          "usageTracking", // System metric
+          "firebaseUsage", // System metric
+          "about",
         ];
-        const currentSection = navigation.section || "general";
+        
+        const currentSection = navigation.section || "visual";
+        
         if (!userAllowedSections.includes(currentSection)) {
           isUnauthorized = true;
           message =
