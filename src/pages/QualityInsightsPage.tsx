@@ -24,6 +24,11 @@ import PDCACycleTracker from "../components/quality-insights/PDCACycleTracker";
 import QualityTrendChart from "../components/quality-insights/QualityTrendChart";
 import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
 import { useAppStore } from "@/stores/useAppStore";
+import {
+  calculateAssessorPackExportMetrics,
+  getAssessorPackExportAudit,
+} from "@/services/assessorReportPackService";
+import { calculatePredictiveAuditRisk } from "@/services/qualityOutcomeIntelligenceService";
 
 interface QualityInsightsPageProps {
   projects: Project[];
@@ -83,6 +88,38 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
   const readiness = useMemo(() => {
     return calculatePortfolioReadiness(props.projects, props.risks, documents);
   }, [props.projects, props.risks, documents]);
+
+  const assessorExportMetrics = useMemo(() => {
+    const auditEntries = getAssessorPackExportAudit();
+    return calculateAssessorPackExportMetrics(auditEntries);
+  }, [props.projects.length]);
+
+  const openCapas = useMemo(
+    () =>
+      props.projects
+        .flatMap((project) => project.capaReports || [])
+        .filter((capa) => capa.status === "Open").length,
+    [props.projects],
+  );
+
+  const predictiveAuditRisk = useMemo(
+    () =>
+      calculatePredictiveAuditRisk({
+        readinessScore: readiness.readinessScore,
+        evidenceIntegrityIndex: readiness.evidenceIntegrityIndex,
+        criticalOpenFindings: readiness.criticalOpenFindings,
+        openCapas,
+        reviewerSignOffRatePercent:
+          assessorExportMetrics.reviewerSignOffRatePercent,
+      }),
+    [
+      readiness.readinessScore,
+      readiness.evidenceIntegrityIndex,
+      readiness.criticalOpenFindings,
+      openCapas,
+      assessorExportMetrics.reviewerSignOffRatePercent,
+    ],
+  );
 
   // Generate sparkline data based on current score (simulated history)
   const qualitySparkline = useMemo(() => {
@@ -191,6 +228,36 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
+            <div>
+              <h3 className="text-base font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                Predictive Audit-Risk Indicator
+              </h3>
+              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+                Forward-looking signal based on readiness, evidence quality,
+                open findings, CAPA load, and reviewer sign-off discipline.
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                Predicted Risk Level
+              </p>
+              <p className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                {predictiveAuditRisk.level} ({predictiveAuditRisk.score}/100)
+              </p>
+            </div>
+          </div>
+
+          {predictiveAuditRisk.reasons.length > 0 && (
+            <ul className="mt-3 list-disc list-inside text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary space-y-1">
+              {predictiveAuditRisk.reasons.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

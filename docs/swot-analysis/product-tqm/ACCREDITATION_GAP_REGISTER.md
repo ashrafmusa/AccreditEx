@@ -139,9 +139,39 @@
    - Updated `src/pages/ProjectDetailPage.tsx` to record assessor pack export events.
    - Added audit trail tests in `src/services/__tests__/assessorReportPackService.test.ts`.
 
-16. **Automated Validation Tests**
+17. **Reviewer Sign-Off Metadata in Assessor Export Flow (Post-Closure Hardening)**
+   - Updated `src/components/documents/GenerateReportModal.tsx` to capture optional reviewer sign-off details before export.
+   - Updated `src/pages/ProjectDetailPage.tsx` to persist reviewer sign-off metadata with assessor export audit entries.
+   - Extended `src/services/assessorReportPackService.ts` and tests to verify sign-off persistence.
+
+18. **Governance Adoption KPI Snapshot (Post-Closure Hardening)**
+   - Extended `src/services/assessorReportPackService.ts` with export KPI aggregation (`totalExports`, `exportsLast30Days`, `reviewerSignOffRatePercent`).
+   - Updated `src/components/dashboard/AdminDashboard.tsx` with a governance/adoption snapshot panel showing:
+     - First Cycle Guide completion
+     - Assessor Pack Exports (30d)
+     - Reviewer Sign-off rate
+   - Added metrics validation tests in `src/services/__tests__/assessorReportPackService.test.ts`.
+
+19. **Automated Validation Tests**
    - Added `src/services/__tests__/tqmReadinessService.test.ts`.
    - Verifies readiness and completeness computations.
+
+20. **Outcome Intelligence Correlation (Remaining Gap Closed)**
+   - Added `src/services/qualityOutcomeIntelligenceService.ts` for monthly quality outcome snapshots and guide-to-readiness correlation.
+   - Updated `src/components/dashboard/AdminDashboard.tsx` to:
+     - persist monthly outcome snapshots,
+     - display guide vs readiness correlation score,
+     - show correlation strength and snapshot count.
+   - Added tests in `src/services/__tests__/qualityOutcomeIntelligenceService.test.ts`.
+
+21. **Predictive Audit-Risk Indicator (Remaining Gap Closed)**
+   - Extended `QualityInsightsPage` with a predictive audit-risk panel.
+   - Risk model now combines readiness, evidence integrity, open CAPA volume, critical findings, and reviewer sign-off discipline.
+   - Added deterministic scoring in `qualityOutcomeIntelligenceService` with explainable risk drivers.
+
+22. **Low-Risk Bundle Optimization (Remaining Gap Closed)**
+   - Updated `src/services/bulkUserService.ts` to lazy-load `exceljs` only when bulk import/export actions are triggered.
+   - Build output now separates Excel payload to a dedicated async chunk (`exceljs.min-*`) and reduces initial settings-page impact.
 
 ---
 
@@ -150,6 +180,12 @@
 - Targeted tests passed:
    - `npm test -- assessorReportPackService crossStandardMappingService tqmReadinessService`
    - Result: 3 suites passed, 12 tests passed.
+- Additional hardening validation passed:
+   - `npm test -- assessorReportPackService`
+   - Result: 1 suite passed, 4 tests passed.
+- Final remaining-gap validation passed:
+   - `npm test -- qualityOutcomeIntelligenceService assessorReportPackService tqmReadinessService`
+   - Result: 3 suites passed, 14 tests passed.
 - Production build passed:
   - `npm run build`
   - Result: build successful, no compile regressions.
@@ -159,19 +195,64 @@
 
 ---
 
+## UI Reflection and How to Benefit
+
+### Is everything reflected in the UI?
+
+Yes, the implemented Product/TQM capabilities are reflected in user-facing screens, with one intentional governance gate:
+
+- **Visible now in UI**
+  - **Quality Insights**: readiness score, evidence integrity, CAPA effectiveness, critical findings.
+  - **Standards**: baseline/drift governance panel, cross-standard mapping preview, governance log export action.
+  - **Project Checklist**: reusable evidence suggestions from cross-standard linkage.
+  - **Generate Report Modal + Project Detail**: assessor evidence pack export with optional reviewer sign-off metadata and export audit recording.
+  - **Admin Dashboard**: quality quick actions, first accreditation cycle guided panel, and governance adoption snapshot (guide completion, assessor exports in last 30 days, reviewer sign-off rate).
+  - **Department Detail**: readiness and accountability scorecards.
+
+- **Intentionally gated (not always active by default)**
+  - **Strict CAPA closure enforcement** depends on feature flag `VITE_STRICT_CAPA_CLOSURE_VALIDATION=true`.
+  - Default remains safe/non-blocking to prevent disruption for teams still maturing evidence quality.
+
+### How you can benefit immediately
+
+1. **Use Admin Dashboard as weekly command center**
+   - Track adoption via First Cycle Guide completion and reviewer sign-off rate.
+   - Trigger next actions from Quick Actions rather than navigating manually.
+
+2. **Use Quality Insights for leadership review cadence**
+   - Review readiness/evidence integrity before mock survey and before executive checkpoints.
+   - Escalate projects with low readiness despite high completion percentages.
+
+3. **Use Standards governance before policy updates**
+   - Refresh baseline after standards committee decisions.
+   - Export governance log for audit prep evidence.
+
+4. **Use assessor pack workflow as audit-prep default**
+   - Generate structured assessor pack (JSON + CSV) from Project Detail.
+   - Include reviewer sign-off metadata for stronger chain-of-custody narrative.
+
+5. **Use department scorecards for accountability conversations**
+   - Focus department meetings on overdue actions and open critical risks, not only aggregate progress.
+
+### Suggested operating rhythm
+
+- **Weekly**: Admin Dashboard adoption + Quality Insights readiness check.
+- **Monthly**: Standards baseline/drift review + governance log export.
+- **Before external survey**: Assessor pack generation with reviewer sign-off metadata.
+
+---
+
 ## Next Execution Queue (Post-Closure)
 
-1. **Performance Hardening (Low Risk)**
-   - Split `BulkUserImport` payload and remaining large chunks with route-level lazy boundaries.
-   - Re-run build and compare chunk deltas.
+**Remaining Product/TQM gap status: Fully closed for this cycle.**
 
-2. **Operational Governance Hardening**
-   - Add assessor-pack export audit trail entry (who exported, when, project) to governance logs.
-   - Add optional reviewer sign-off metadata before assessor pack export.
+Future optimization backlog (non-gap, continuous improvement):
 
-3. **Adoption and Outcome Measurement**
-   - Track completion rate of First Accreditation Cycle guide and correlate with readiness score improvements.
-   - Add monthly quality adoption KPI to Admin dashboard.
+1. **Advanced Performance Optimization**
+   - Further reduce large editor/report chunks with deeper feature-level lazy boundaries.
+
+2. **Expanded Outcome Intelligence**
+   - Add long-window trend charts and benchmark targets for readiness/adoption correlation.
 
 ---
 

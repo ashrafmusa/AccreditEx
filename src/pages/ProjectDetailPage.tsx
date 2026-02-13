@@ -152,7 +152,13 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
     }
   };
 
-  const handleGenerateReport = async (reportType: string) => {
+  const handleGenerateReport = async (
+    reportType: string,
+    options?: {
+      reviewerName?: string;
+      signOffNote?: string;
+    },
+  ) => {
     try {
       if (reportType === "assessorPack") {
         const {
@@ -172,7 +178,10 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
 
         exportAssessorReportPackJson(reportPack);
         exportAssessorEvidenceMatrixCsv(reportPack);
-        recordAssessorPackExportAudit(reportPack);
+        recordAssessorPackExportAudit(reportPack, {
+          reviewerName: options?.reviewerName,
+          note: options?.signOffNote,
+        });
         toast.success(
           "Assessor pack exported successfully (JSON + evidence matrix CSV).",
         );

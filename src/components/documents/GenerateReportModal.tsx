@@ -5,7 +5,13 @@ import { SparklesIcon, DocumentTextIcon } from "../icons";
 interface GenerateReportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onGenerate: (reportType: string) => void;
+  onGenerate: (
+    reportType: string,
+    options?: {
+      reviewerName?: string;
+      signOffNote?: string;
+    },
+  ) => void;
 }
 
 const GenerateReportModal: FC<GenerateReportModalProps> = ({
@@ -15,10 +21,21 @@ const GenerateReportModal: FC<GenerateReportModalProps> = ({
 }) => {
   const { t, dir } = useTranslation();
   const [reportType, setReportType] = useState("complianceSummary");
+  const [includeReviewerSignOff, setIncludeReviewerSignOff] = useState(false);
+  const [reviewerName, setReviewerName] = useState("");
+  const [signOffNote, setSignOffNote] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onGenerate(reportType);
+    const options =
+      reportType === "assessorPack" && includeReviewerSignOff
+        ? {
+            reviewerName: reviewerName.trim(),
+            signOffNote: signOffNote.trim(),
+          }
+        : undefined;
+
+    onGenerate(reportType, options);
     onClose();
   };
 
@@ -88,6 +105,52 @@ const GenerateReportModal: FC<GenerateReportModalProps> = ({
                 complexity.
               </p>
             </div>
+
+            {reportType === "assessorPack" && (
+              <div className="mt-4 border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-slate-50 dark:bg-slate-900/40 space-y-3">
+                <label className="flex items-center gap-2 text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
+                  <input
+                    type="checkbox"
+                    checked={includeReviewerSignOff}
+                    onChange={(e) =>
+                      setIncludeReviewerSignOff(e.target.checked)
+                    }
+                  />
+                  Include reviewer sign-off metadata
+                </label>
+
+                {includeReviewerSignOff && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-1">
+                        Reviewer Name
+                      </label>
+                      <input
+                        type="text"
+                        value={reviewerName}
+                        onChange={(e) => setReviewerName(e.target.value)}
+                        required={includeReviewerSignOff}
+                        className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-brand-primary focus:border-brand-primary"
+                        placeholder="Enter reviewer full name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-1">
+                        Sign-off Note (Optional)
+                      </label>
+                      <textarea
+                        value={signOffNote}
+                        onChange={(e) => setSignOffNote(e.target.value)}
+                        rows={3}
+                        className="w-full border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-md px-3 py-2 focus:ring-brand-primary focus:border-brand-primary"
+                        placeholder="Add reviewer context or approval note"
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
           </div>
           <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 flex justify-end gap-3 rounded-b-lg">
             <button
