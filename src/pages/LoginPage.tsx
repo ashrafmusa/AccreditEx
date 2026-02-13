@@ -116,6 +116,7 @@ const LoginPage: React.FC<LoginPageProps> = () => {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="text-gray-400"
+                        aria-label={showPassword ? "Hide password" : "Show password"}
                       >
                         {showPassword ? (
                           <EyeSlashIcon className="h-5 w-5" />

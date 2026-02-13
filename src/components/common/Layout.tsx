@@ -61,14 +61,20 @@ const Layout: React.FC<LayoutProps> = ({
     return () => clearInterval(interval);
   }, [currentUser.id]);
 
-  const handleMarkAsRead = (notificationId: string | "all") => {
-    if (notificationId === "all") {
-      backendService.markAllNotificationsAsRead(currentUser.id);
-    } else {
-      backendService.markNotificationAsRead(currentUser.id, notificationId);
+  const handleMarkAsRead = async (notificationId: string | "all") => {
+    try {
+      const { markNotificationAsRead, markAllNotificationsAsRead } = await import("@/services/notificationServiceFirebase");
+      if (notificationId === "all") {
+        await markAllNotificationsAsRead(currentUser.id);
+      } else {
+        await markNotificationAsRead(notificationId);
+      }
+      // Refetch immediately after marking as read
+      const updated = await getNotificationsForUser(currentUser.id);
+      setNotifications(updated);
+    } catch (error) {
+      console.warn("Failed to mark notification as read:", error);
     }
-    // Refetch immediately after marking as read
-    backendService.getNotifications(currentUser.id).then(setNotifications);
   };
 
   const isProjectsActive = [
@@ -81,6 +87,13 @@ const Layout: React.FC<LayoutProps> = ({
 
   return (
     <>
+      {/* Skip to main content link for keyboard/screen reader users */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:px-4 focus:py-2 focus:bg-brand-primary focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none"
+      >
+        Skip to main content
+      </a>
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         setIsOpen={setIsCommandPaletteOpen}
@@ -125,6 +138,7 @@ const Layout: React.FC<LayoutProps> = ({
             onMarkAsRead={handleMarkAsRead}
           />
           <main
+            id="main-content"
             className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-brand-background dark:bg-dark-brand-background page-enter-active scroll-smooth overscroll-contain touch-pan-y"
             style={{ WebkitOverflowScrolling: "touch" }}
           >

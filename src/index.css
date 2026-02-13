@@ -1,9 +1,12 @@
-/* Arabic Typography - Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
+/* Typography - Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
 
 @import "tailwindcss";
 
+/* Tailwind v4: Use .dark class selector instead of prefers-color-scheme media query */
+@custom-variant dark (&:where(.dark, .dark *));
 @theme {
+--font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   --color-brand-primary: var(--user-primary, #4f46e5);
   --color-brand-surface: #ffffff;
   --color-brand-background: #f8fafc;
@@ -217,19 +220,16 @@
 }
 
 /* Process Map Editor Animations */
-@keyframes fadeIn {
+/* Staggered entrance animation */
+@keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(16px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-.animate-fadeIn {
-    animation: fadeIn 0.3s ease-out;
 }
 
 @keyframes slideIn {
@@ -243,13 +243,87 @@
     }
 }
 
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
 .animate-slideIn {
     animation: slideIn 0.4s ease-out;
 }
 
-/* Smooth hover transitions for interactive elements */
+.animate-slideUp {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.animate-scaleIn {
+    animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Staggered children - apply to parent container */
+.stagger-children>* {
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.stagger-children>*:nth-child(1) {
+    animation-delay: 0ms;
+}
+
+.stagger-children>*:nth-child(2) {
+    animation-delay: 50ms;
+}
+
+.stagger-children>*:nth-child(3) {
+    animation-delay: 100ms;
+}
+
+.stagger-children>*:nth-child(4) {
+    animation-delay: 150ms;
+}
+
+.stagger-children>*:nth-child(5) {
+    animation-delay: 200ms;
+}
+
+.stagger-children>*:nth-child(6) {
+    animation-delay: 250ms;
+}
+
+/* Micro-interaction utilities */
 button, a, .interactive {
-    transition: all 0.2s ease-in-out;
+    transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1),
+            box-shadow 0.15s ease,
+            background-color 0.2s ease,
+            color 0.2s ease,
+            opacity 0.2s ease;
+    }
+    
+    /* Primary button hover/active feedback */
+    button:not(:disabled):hover {
+        transform: translateY(-1px);
+    }
+    
+    button:not(:disabled):active {
+        transform: translateY(0) scale(0.98);
+    }
+    
+    /* System prefers-reduced-motion support */
+    @media (prefers-reduced-motion: reduce) {
+    
+        *,
+        *::before,
+        *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+            scroll-behavior: auto !important;
+        }
 }
 
 /* React Flow custom styles */
