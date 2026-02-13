@@ -5,6 +5,7 @@ import { XMarkIcon, TrashIcon } from "@/components/icons";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useToast } from "@/hooks/useToast";
+import { evaluateCapaCompleteness } from "@/services/tqmReadinessService";
 
 interface CAPADetailsModalProps {
   isOpen: boolean;
@@ -49,9 +50,9 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
       console.error("Project is undefined. CAPA:", capa);
       return;
     }
-    
+
     setShowDeleteConfirm(false);
-    
+
     try {
       await deleteCapa(project.id, capa.id);
       toast.success("CAPA deleted successfully!");
@@ -63,6 +64,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
   };
 
   const pdcaStages = ["Plan", "Do", "Check", "Act"];
+  const completeness = evaluateCapaCompleteness(editedCapa);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
@@ -93,14 +95,16 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {!project && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                ⚠️ Warning: Parent project not found. Delete and edit functions are disabled.
+                ⚠️ Warning: Parent project not found. Delete and edit functions
+                are disabled.
               </p>
               <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
-                CAPA ID: {capa.id} | Source Project ID: {capa.sourceProjectId || "N/A"}
+                CAPA ID: {capa.id} | Source Project ID:{" "}
+                {capa.sourceProjectId || "N/A"}
               </p>
             </div>
           )}
-          
+
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
@@ -223,10 +227,10 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                     capa.pdcaStage === "Plan"
                       ? "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
                       : capa.pdcaStage === "Do"
-                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                      : capa.pdcaStage === "Check"
-                      ? "bg-rose-100 text-pink-700 dark:bg-pink-900/30 dark:text-rose-300"
-                      : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                        : capa.pdcaStage === "Check"
+                          ? "bg-rose-100 text-pink-700 dark:bg-pink-900/30 dark:text-rose-300"
+                          : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
                   }`}
                 >
                   {capa.pdcaStage || "Plan"}
@@ -267,6 +271,33 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                   {new Date(capa.updatedAt).toLocaleDateString()}
                 </span>
               </div>
+            )}
+          </div>
+
+          {/* Evidence Governance Check (non-blocking) */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-900/40">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                Evidence Governance Check
+              </p>
+              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
+                {completeness.completenessScore}%
+              </span>
+            </div>
+            {completeness.missingFields.length > 0 ? (
+              <p className="text-xs text-amber-700 dark:text-amber-300">
+                Missing fields: {completeness.missingFields.join(", ")}
+              </p>
+            ) : (
+              <p className="text-xs text-green-700 dark:text-green-300">
+                Required evidence fields are complete.
+              </p>
+            )}
+            {!completeness.isClosureReady && (
+              <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
+                Closure readiness is incomplete (guidance only, no blocking
+                applied).
+              </p>
             )}
           </div>
         </div>

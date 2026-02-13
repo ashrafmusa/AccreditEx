@@ -16,6 +16,11 @@ import { getAuthInstance } from "@/firebase/firebaseConfig";
 
 // Lazy load heavy components
 const MainRouter = React.lazy(() => import("@/components/common/MainRouter"));
+// Import AppRouter but don't lazy load it as it's small and needed immediately
+import { AppRouter } from "@/router/AppRouter";
+import { useNavigation } from "@/hooks/useNavigation";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+
 const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
 const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
 
@@ -87,13 +92,21 @@ const AppInitializer: React.FC = () => {
     return <LoadingScreen />;
   }
 
-  return <AppManager />;
+  return (
+    <AppRouter>
+      <AppManager />
+    </AppRouter>
+  );
 };
 
 const AppManager: React.FC = () => {
-  const [navigation, setNavigation] = useState<NavigationState>({
+  // Use the new navigation hook that syncs with URL
+  const { navigation, setNavigation } = useNavigation({
     view: "dashboard",
   });
+
+  // Use the document title hook for SEO
+  useDocumentTitle(navigation);
 
   const currentUser = useUserStore((state) => state.currentUser);
   const [authChecked, setAuthChecked] = useState(false);

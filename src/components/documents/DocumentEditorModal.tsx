@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { lazy, Suspense, useState, useEffect, useMemo } from "react";
 import { AppDocument, Standard } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSanitizedHTML } from "../../hooks/useSanitizedHTML";
 import { XMarkIcon } from "../icons";
 import DocumentEditorSidebar from "./DocumentEditorSidebar";
-import RichTextEditor from "./RichTextEditor";
 import DocumentVersionComparisonModal from "./DocumentVersionComparisonModal";
 import { exportToDocx } from "../../services/docxExportService";
+
+const RichTextEditor = lazy(() => import("./RichTextEditor"));
 
 interface DocumentEditorModalProps {
   isOpen: boolean;
@@ -163,17 +164,25 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
             )}
 
             {isEditMode && viewingVersion === "current" ? (
-              <RichTextEditor
-                content={document.content[lang] || ""}
-                onChange={(html) =>
-                  setDocument((d) => ({
-                    ...d,
-                    content: { ...d.content, [lang]: html },
-                  }))
+              <Suspense
+                fallback={
+                  <div className="p-4 text-sm text-gray-500 dark:text-gray-400">
+                    Loading editor...
+                  </div>
                 }
-                editable={true}
-                placeholder={t("startTyping") || "Start typing..."}
-              />
+              >
+                <RichTextEditor
+                  content={document.content[lang] || ""}
+                  onChange={(html) =>
+                    setDocument((d) => ({
+                      ...d,
+                      content: { ...d.content, [lang]: html },
+                    }))
+                  }
+                  editable={true}
+                  placeholder={t("startTyping") || "Start typing..."}
+                />
+              </Suspense>
             ) : (
               <SanitizedDocContent content={currentContent[lang] || ""} />
             )}

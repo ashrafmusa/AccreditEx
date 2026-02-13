@@ -1,25 +1,34 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { NavigationState, SettingsSection } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
-import GeneralSettingsPage from "./GeneralSettingsPage";
-import ProfileSettingsPage from "./ProfileSettingsPage";
-import SecuritySettingsPage from "./SecuritySettingsPage";
-import AccreditationHubPage from "@/pages/AccreditationHubPage";
-import CompetencyLibraryPage from "../competencies/CompetencyLibraryPage";
-import DataSettingsPage from "./DataSettingsPage";
-import AboutSettingsPage from "./AboutSettingsPage";
-import NotificationSettingsPage from "./NotificationSettingsPage";
-import AccessibilitySettingsPage from "./AccessibilitySettingsPage";
-import UsageMonitorSettingsPage from "./UsageMonitorSettingsPage";
-import UsageMonitorPage from "./UsageMonitorPage";
-import UsersPage from "@/pages/UsersPage";
-import FirebaseSetupPage from "./firebase/FirebaseSetupPage";
-import VisualSettingsPage from "./VisualSettingsPage";
-import SettingsAuditLogViewer from "./SettingsAuditLogViewer";
-import SettingsVersionHistory from "./SettingsVersionHistory";
-import SettingsPresetsPanel from "./SettingsPresetsPanel";
-import BulkUserImport from "./BulkUserImport";
+
+const GeneralSettingsPage = lazy(() => import("./GeneralSettingsPage"));
+const ProfileSettingsPage = lazy(() => import("./ProfileSettingsPage"));
+const SecuritySettingsPage = lazy(() => import("./SecuritySettingsPage"));
+const AccreditationHubPage = lazy(() => import("@/pages/AccreditationHubPage"));
+const CompetencyLibraryPage = lazy(
+  () => import("../competencies/CompetencyLibraryPage"),
+);
+const DataSettingsPage = lazy(() => import("./DataSettingsPage"));
+const AboutSettingsPage = lazy(() => import("./AboutSettingsPage"));
+const NotificationSettingsPage = lazy(
+  () => import("./NotificationSettingsPage"),
+);
+const AccessibilitySettingsPage = lazy(
+  () => import("./AccessibilitySettingsPage"),
+);
+const UsageMonitorSettingsPage = lazy(
+  () => import("./UsageMonitorSettingsPage"),
+);
+const UsageMonitorPage = lazy(() => import("./UsageMonitorPage"));
+const UsersPage = lazy(() => import("@/pages/UsersPage"));
+const FirebaseSetupPage = lazy(() => import("./firebase/FirebaseSetupPage"));
+const VisualSettingsPage = lazy(() => import("./VisualSettingsPage"));
+const SettingsAuditLogViewer = lazy(() => import("./SettingsAuditLogViewer"));
+const SettingsVersionHistory = lazy(() => import("./SettingsVersionHistory"));
+const SettingsPresetsPanel = lazy(() => import("./SettingsPresetsPanel"));
+const BulkUserImport = lazy(() => import("./BulkUserImport"));
 import {
   Cog6ToothIcon,
   UserCircleIcon,
@@ -345,7 +354,17 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
 
       {/* Main Content */}
       <main className="w-full lg:flex-1 min-h-[calc(100vh-8rem)]">
-        <div className="animate-fadeIn">{renderSection()}</div>
+        <div className="animate-fadeIn">
+          <Suspense
+            fallback={
+              <div className="p-6 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                Loading settings section...
+              </div>
+            }
+          >
+            {renderSection()}
+          </Suspense>
+        </div>
       </main>
     </div>
   );

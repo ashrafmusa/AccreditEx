@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { NavigationState, SettingsSection, UserRole } from '@/types';
 import { ChartPieIcon, FolderIcon, LogoIcon, BuildingOffice2Icon, Cog6ToothIcon, AcademicCapIcon, ClipboardDocumentCheckIcon, XMarkIcon, ChartBarSquareIcon, CalendarDaysIcon, ExclamationTriangleIcon, UsersIcon, ShieldCheckIcon, DocumentTextIcon, LightBulbIcon, CircleStackIcon, ClipboardDocumentSearchIcon } from '@/components/icons';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -28,6 +28,49 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, setIsOpen, setNav
   const currentUser = useUserStore(state => state.currentUser);
   const appSettings = useAppStore(state => state.appSettings);
   const currentView = navigation.view;
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Focus Trap
+  useEffect(() => {
+    if (isOpen && sidebarRef.current) {
+      const focusableElements = sidebarRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+      );
+      const firstElement = focusableElements[0] as HTMLElement;
+      const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+      const handleTabKey = (e: KeyboardEvent) => {
+        if (e.key === 'Tab') {
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        }
+      };
+
+      const handleEscapeKey = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setIsOpen(false);
+        }
+      };
+
+      document.addEventListener('keydown', handleTabKey);
+      document.addEventListener('keydown', handleEscapeKey);
+      firstElement?.focus();
+
+      return () => {
+        document.removeEventListener('keydown', handleTabKey);
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
+    }
+  }, [isOpen, setIsOpen]);
 
   const allNavItems: NavItemType[] = [
     {
@@ -156,8 +199,14 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, setIsOpen, setNav
       <div 
         className={`fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity sm:hidden ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
         onClick={() => setIsOpen(false)}
+        aria-hidden="true"
       ></div>
-      <div className={`fixed inset-y-0 ${dir === 'ltr' ? 'left-0' : 'right-0'} w-64 bg-brand-text-primary text-white transform transition-transform z-40 sm:hidden ${isOpen ? 'translate-x-0' : (dir === 'ltr' ? '-translate-x-full' : 'translate-x-full')}`}>
+      <div 
+        ref={sidebarRef}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Mobile Navigation"
+        className={`fixed inset-y-0 ${dir === 'ltr' ? 'left-0' : 'right-0'} w-64 bg-brand-text-primary text-white transform transition-transform z-40 sm:hidden ${isOpen ? 'translate-x-0' : (dir === 'ltr' ? '-translate-x-full' : 'translate-x-full')}`}>
         <div className="flex items-center justify-between h-20 px-4 border-b border-white/10">
           <div className="flex items-center">
             {appSettings?.logoUrl ? (
@@ -167,10 +216,10 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, setIsOpen, setNav
             )}
             <h1 className="text-2xl font-bold mx-3"><span className="text-gray-100">Accredit</span><span className="text-brand-primary">Ex</span></h1>
           </div>
-          <button onClick={() => setIsOpen(false)}><XMarkIcon className="h-6 w-6" /></button>
+          <button onClick={() => setIsOpen(false)} aria-label="Close menu"><XMarkIcon className="h-6 w-6" aria-hidden="true" /></button>
         </div>
-        <nav className="flex-1 px-4 py-6 flex flex-col justify-between h-[calc(100%-5rem)]">
-          <ul>
+        <nav className="flex-1 px-4 py-6 flex flex-col justify-between h-[calc(100%-5rem)]" aria-label="Main Navigation">
+          <ul role="list">
             {mainItems.map((item) => (
               <li key={item.key}>
                 <button
@@ -183,7 +232,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ isOpen, setIsOpen, setNav
               </li>
             ))}
           </ul>
-          <ul>
+          <ul role="list" aria-label="Secondary Navigation">
             {bottomItems.map((item) => (
               <li key={item.key}>
                 <button

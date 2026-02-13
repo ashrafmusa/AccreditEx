@@ -1,5 +1,5 @@
 import React from "react";
-import { UserRole, NavigationState } from "@/types";
+import { UserRole, NavigationState, Risk } from "@/types";
 import { useUserStore } from "@/stores/useUserStore";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import ProjectLeadDashboard from "@/components/dashboard/ProjectLeadDashboard";
@@ -10,9 +10,10 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 interface DashboardPageProps {
   setNavigation: (state: NavigationState) => void;
+  risks?: Risk[];
 }
 
-const DashboardPage: React.FC<DashboardPageProps> = ({ setNavigation }) => {
+const DashboardPage: React.FC<DashboardPageProps> = ({ setNavigation, risks = [] }) => {
   const { currentUser } = useUserStore();
   const { t } = useTranslation();
 
@@ -26,7 +27,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ setNavigation }) => {
 
     switch (normalizedRole) {
       case UserRole.Admin:
-        return <AdminDashboard setNavigation={setNavigation} />;
+        return <AdminDashboard setNavigation={setNavigation} risks={risks} />;
       case UserRole.ProjectLead:
         return <ProjectLeadDashboard setNavigation={setNavigation} />;
       case UserRole.Auditor:

@@ -15,11 +15,12 @@ All project documentation has been consolidated into comprehensive reports at th
    - Build & deployment guide
    - **START HERE** for understanding the project
 
-2. **[SWOT Analysis Report](../SWOT_ANALYSIS_REPORT.md)**
+2. **[SWOT Analysis Report](swot-analysis/SWOT_ANALYSIS_REPORT_2026.md)**
    - Strategic strengths and weaknesses
    - Market opportunities and threats
    - Performance metrics
    - Future recommendations
+   - Domain execution workspace: [SWOT Workspace](swot-analysis/README.md)
 
 3. **[API Key Rotation Guide](../API_KEY_ROTATION_GUIDE.md)**
    - **CRITICAL:** Security key rotation steps
@@ -44,7 +45,7 @@ All project documentation has been consolidated into comprehensive reports at th
 ### For New Developers
 1. Read [README.md](../README.md) for quick start
 2. Review [Project Structure Audit Report](../ACCREDITEX_PROJECT_STRUCTURE_AUDIT_REPORT.md) for architecture
-3. Check [SWOT Analysis](../SWOT_ANALYSIS_REPORT.md) for strategic context
+3. Check [SWOT Analysis](swot-analysis/SWOT_ANALYSIS_REPORT_2026.md) for strategic context
 
 ### For Security Review
 1. **URGENT:** [API Key Rotation Guide](../API_KEY_ROTATION_GUIDE.md)
@@ -72,7 +73,8 @@ All project documentation has been consolidated into comprehensive reports at th
 
 All relevant information from old docs has been consolidated into:
 - `ACCREDITEX_PROJECT_STRUCTURE_AUDIT_REPORT.md` (Architecture & Implementation)
-- `SWOT_ANALYSIS_REPORT.md` (Strategic Analysis)
+- `swot-analysis/SWOT_ANALYSIS_REPORT_2026.md` (Strategic Analysis)
+- `swot-analysis/SWOT_AUDIT_PLAYBOOK_2026.md` (Operational SWOT Playbook)
 
 This consolidation reduces maintenance overhead and ensures single source of truth.
 

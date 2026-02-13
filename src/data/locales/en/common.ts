@@ -436,4 +436,19 @@ export const en = {
     tryDifferentKeywords: 'Try different keywords',
     adminAccessRequired: 'Admin access required',
     saveTheExcelFile: 'Save the Excel file',
+
+    // Feature Discovery Widget
+    discoverHiddenFeatures: 'Discover Hidden Features',
+    discoverHiddenFeaturesDesc: 'Unlock the full potential of AccreditEx with these powerful tools.',
+    aiDocumentGenerator: 'AI Document Generator',
+    aiDocumentGeneratorDesc: 'Draft policies and SOPs in seconds with AI assistance.',
+    mockSurveyFeature: 'Mock Survey Builder',
+    mockSurveyFeatureDesc: 'Simulate a real audit to identify gaps before the surveyor arrives.',
+    qualityInsightsFeature: 'Quality Insights Dashboard',
+    qualityInsightsFeatureDesc: 'Track PDCA cycles and standardized quality metrics.',
+    aiRecommendations: 'AI Smart Recommendations',
+    aiRecommendationsDesc: 'Get actionable steps to improve your compliance score.',
+    featuresRotateWeekly: 'Features rotate weekly to help you learn.',
+    learnMore: 'Learn More',
+    proTip: 'Pro Tip',
 };
