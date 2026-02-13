@@ -61,8 +61,14 @@
   - `src/services/__tests__/crossStandardMappingService.test.ts`
   - `src/services/__tests__/assessorReportPackService.test.ts`
 - Verified by:
-  - `npm test -- crossStandardMappingService assessorReportPackService tqmReadinessService`
+  - `npm test -- assessorReportPackService crossStandardMappingService tqmReadinessService`
   - `npm run build`
+
+### 8) Post-Closure Hardening Progress
+- Extended assessor pack workflow with export audit trail:
+  - Added `recordAssessorPackExportAudit` and `getAssessorPackExportAudit` in `src/services/assessorReportPackService.ts`.
+  - Wired export audit recording in `src/pages/ProjectDetailPage.tsx`.
+  - Added test coverage for persistence/retrieval in `src/services/__tests__/assessorReportPackService.test.ts`.
 
 ## Why this is safe
 - No existing CRUD endpoint contracts were changed.

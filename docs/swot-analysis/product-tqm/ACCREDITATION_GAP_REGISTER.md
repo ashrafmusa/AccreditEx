@@ -134,6 +134,11 @@
    - Added step-by-step guided actions to Standards, Project Creation, Evidence Control, Audit Hub, and Quality Insights.
    - Added local progress tracking and dismiss controls (localStorage-backed).
 
+16. **Assessor Pack Export Audit Trail (Post-Closure Hardening)**
+   - Extended `src/services/assessorReportPackService.ts` with export audit logging and retrieval utilities.
+   - Updated `src/pages/ProjectDetailPage.tsx` to record assessor pack export events.
+   - Added audit trail tests in `src/services/__tests__/assessorReportPackService.test.ts`.
+
 16. **Automated Validation Tests**
    - Added `src/services/__tests__/tqmReadinessService.test.ts`.
    - Verifies readiness and completeness computations.
@@ -143,8 +148,8 @@
 ## Closure Verification (Latest)
 
 - Targeted tests passed:
-  - `npm test -- crossStandardMappingService assessorReportPackService tqmReadinessService`
-  - Result: 3 suites passed, 11 tests passed.
+   - `npm test -- assessorReportPackService crossStandardMappingService tqmReadinessService`
+   - Result: 3 suites passed, 12 tests passed.
 - Production build passed:
   - `npm run build`
   - Result: build successful, no compile regressions.
