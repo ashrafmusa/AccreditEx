@@ -9,6 +9,7 @@
  */
 
 import React, { useState, useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
 import {
   ChatBubbleBottomCenterTextIcon,
   XMarkIcon,
@@ -298,10 +299,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                   <div
                     className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{
-                      __html:
+                      __html: DOMPurify.sanitize(
                         message.role === "assistant"
                           ? formatMessage(message.content)
                           : message.content,
+                      ),
                     }}
                   />
                   <span className="text-xs opacity-70 mt-1.5 block">

@@ -395,6 +395,9 @@ export const en = {
     selectLanguage: 'Select language',
     toggleSettingsMenu: 'Toggle settings menu',
     toggleMenu: 'Toggle menu',
+    closeMenu: 'Close menu',
+    userMenu: 'User menu',
+    notifications: 'Notifications',
     tabs: 'Tabs',
     sendMessage: 'Send message',
 

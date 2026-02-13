@@ -1,24 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { 
-  ExclamationTriangleIcon, 
-  ChartBarIcon, 
-  ClockIcon, 
+import React, { useState, useEffect } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ExclamationTriangleIcon,
+  ChartBarIcon,
+  ClockIcon,
   ServerIcon,
   CheckCircleIcon,
   XCircleIcon,
   ArrowPathIcon,
-  EyeIcon
-} from '@heroicons/react/24/outline';
+  EyeIcon,
+} from "@heroicons/react/24/outline";
 
 // Types for monitoring data
 interface ErrorLog {
   id: string;
   timestamp: Date;
-  level: 'error' | 'warn' | 'info';
+  level: "error" | "warn" | "info";
   message: string;
   stack?: string;
-  source: 'console' | 'api' | 'network';
+  source: "console" | "api" | "network";
   url?: string;
   statusCode?: number;
 }
@@ -26,19 +26,19 @@ interface ErrorLog {
 interface PerformanceMetric {
   id: string;
   timestamp: Date;
-  type: 'page-load' | 'api-response' | 'e2e-test' | 'build';
+  type: "page-load" | "api-response" | "e2e-test" | "build";
   value: number;
   url?: string;
   testName?: string;
   buildVersion?: string;
-  status: 'success' | 'warning' | 'error';
+  status: "success" | "warning" | "error";
 }
 
 interface SystemHealth {
-  api: 'online' | 'degraded' | 'offline';
-  database: 'online' | 'degraded' | 'offline';
-  storage: 'online' | 'degraded' | 'offline';
-  ai: 'online' | 'degraded' | 'offline';
+  api: "online" | "degraded" | "offline";
+  database: "online" | "degraded" | "offline";
+  storage: "online" | "degraded" | "offline";
+  ai: "online" | "degraded" | "offline";
 }
 
 interface MonitoringStats {
@@ -53,18 +53,20 @@ interface MonitoringStats {
 
 export default function MonitoringDashboard() {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<'overview' | 'errors' | 'performance' | 'system'>('overview');
+  const [activeTab, setActiveTab] = useState<
+    "overview" | "errors" | "performance" | "system"
+  >("overview");
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  
+
   // Monitoring data state
   const [errors, setErrors] = useState<ErrorLog[]>([]);
   const [metrics, setMetrics] = useState<PerformanceMetric[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
-    api: 'online',
-    database: 'online',
-    storage: 'online',
-    ai: 'degraded' // Example: AI service might be having issues
+    api: "online",
+    database: "online",
+    storage: "online",
+    ai: "degraded", // Example: AI service might be having issues
   });
   const [stats, setStats] = useState<MonitoringStats>({
     totalErrors: 0,
@@ -73,7 +75,7 @@ export default function MonitoringDashboard() {
     avgApiResponseTime: 0,
     successfulBuilds: 0,
     failedBuilds: 0,
-    lastUpdateTime: new Date()
+    lastUpdateTime: new Date(),
   });
 
   // Error monitoring setup
@@ -82,14 +84,14 @@ export default function MonitoringDashboard() {
       const errorLog: ErrorLog = {
         id: `error-${Date.now()}-${Math.random()}`,
         timestamp: new Date(),
-        level: 'error',
+        level: "error",
         message: event.message,
         stack: event.error?.stack,
-        source: 'console',
-        url: event.filename
+        source: "console",
+        url: event.filename,
       };
-      
-      setErrors(prev => [errorLog, ...prev.slice(0, 99)]); // Keep last 100 errors
+
+      setErrors((prev) => [errorLog, ...prev.slice(0, 99)]); // Keep last 100 errors
       updateStats();
     };
 
@@ -97,12 +99,12 @@ export default function MonitoringDashboard() {
       const errorLog: ErrorLog = {
         id: `rejection-${Date.now()}-${Math.random()}`,
         timestamp: new Date(),
-        level: 'error',
+        level: "error",
         message: `Unhandled Promise Rejection: ${event.reason}`,
-        source: 'console'
+        source: "console",
       };
-      
-      setErrors(prev => [errorLog, ...prev.slice(0, 99)]);
+
+      setErrors((prev) => [errorLog, ...prev.slice(0, 99)]);
       updateStats();
     };
 
@@ -112,22 +114,25 @@ export default function MonitoringDashboard() {
       const errorLog: ErrorLog = {
         id: `console-${Date.now()}-${Math.random()}`,
         timestamp: new Date(),
-        level: 'error',
-        message: args.join(' '),
-        source: 'console'
+        level: "error",
+        message: args.join(" "),
+        source: "console",
       };
-      
-      setErrors(prev => [errorLog, ...prev.slice(0, 99)]);
+
+      setErrors((prev) => [errorLog, ...prev.slice(0, 99)]);
       updateStats();
       originalConsoleError(...args);
     };
 
-    window.addEventListener('error', handleError);
-    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+    window.addEventListener("error", handleError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
 
     return () => {
-      window.removeEventListener('error', handleError);
-      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+      window.removeEventListener("error", handleError);
+      window.removeEventListener(
+        "unhandledrejection",
+        handleUnhandledRejection,
+      );
       console.error = originalConsoleError;
     };
   }, []);
@@ -135,11 +140,11 @@ export default function MonitoringDashboard() {
   // Network monitoring
   useEffect(() => {
     const originalFetch = window.fetch;
-    
+
     window.fetch = async (...args) => {
       const startTime = performance.now();
-      const url = typeof args[0] === 'string' ? args[0] : args[0].url;
-      
+      const url = typeof args[0] === "string" ? args[0] : args[0].url;
+
       try {
         const response = await originalFetch(...args);
         const endTime = performance.now();
@@ -149,27 +154,27 @@ export default function MonitoringDashboard() {
         const metric: PerformanceMetric = {
           id: `api-${Date.now()}-${Math.random()}`,
           timestamp: new Date(),
-          type: 'api-response',
+          type: "api-response",
           value: responseTime,
           url,
-          status: response.ok ? 'success' : 'error'
+          status: response.ok ? "success" : "error",
         };
 
-        setMetrics(prev => [metric, ...prev.slice(0, 99)]);
+        setMetrics((prev) => [metric, ...prev.slice(0, 99)]);
 
         // Log API errors
         if (!response.ok) {
           const errorLog: ErrorLog = {
             id: `api-error-${Date.now()}-${Math.random()}`,
             timestamp: new Date(),
-            level: 'error',
+            level: "error",
             message: `API Error: ${response.status} ${response.statusText}`,
-            source: 'api',
+            source: "api",
             url,
-            statusCode: response.status
+            statusCode: response.status,
           };
-          
-          setErrors(prev => [errorLog, ...prev.slice(0, 99)]);
+
+          setErrors((prev) => [errorLog, ...prev.slice(0, 99)]);
         }
 
         updateStats();
@@ -182,24 +187,24 @@ export default function MonitoringDashboard() {
         const errorLog: ErrorLog = {
           id: `network-${Date.now()}-${Math.random()}`,
           timestamp: new Date(),
-          level: 'error',
-          message: `Network Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          source: 'network',
-          url
+          level: "error",
+          message: `Network Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+          source: "network",
+          url,
         };
-        
-        setErrors(prev => [errorLog, ...prev.slice(0, 99)]);
+
+        setErrors((prev) => [errorLog, ...prev.slice(0, 99)]);
 
         const metric: PerformanceMetric = {
           id: `api-failed-${Date.now()}-${Math.random()}`,
           timestamp: new Date(),
-          type: 'api-response',
+          type: "api-response",
           value: responseTime,
           url,
-          status: 'error'
+          status: "error",
         };
 
-        setMetrics(prev => [metric, ...prev.slice(0, 99)]);
+        setMetrics((prev) => [metric, ...prev.slice(0, 99)]);
         updateStats();
         throw error;
       }
@@ -215,25 +220,31 @@ export default function MonitoringDashboard() {
     // Monitor page load performance
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        if (entry.entryType === 'navigation') {
+        if (entry.entryType === "navigation") {
           const navigationEntry = entry as PerformanceNavigationTiming;
-          
+
           const metric: PerformanceMetric = {
             id: `page-load-${Date.now()}`,
             timestamp: new Date(),
-            type: 'page-load',
-            value: navigationEntry.loadEventEnd - navigationEntry.navigationStart,
+            type: "page-load",
+            value:
+              navigationEntry.loadEventEnd - navigationEntry.navigationStart,
             url: window.location.href,
-            status: navigationEntry.loadEventEnd < 2000 ? 'success' : navigationEntry.loadEventEnd < 4000 ? 'warning' : 'error'
+            status:
+              navigationEntry.loadEventEnd < 2000
+                ? "success"
+                : navigationEntry.loadEventEnd < 4000
+                  ? "warning"
+                  : "error",
           };
 
-          setMetrics(prev => [metric, ...prev.slice(0, 99)]);
+          setMetrics((prev) => [metric, ...prev.slice(0, 99)]);
           updateStats();
         }
       }
     });
 
-    observer.observe({ entryTypes: ['navigation'] });
+    observer.observe({ entryTypes: ["navigation"] });
 
     return () => observer.disconnect();
   }, []);
@@ -251,23 +262,35 @@ export default function MonitoringDashboard() {
   }, [autoRefresh]);
 
   const updateStats = () => {
-    setStats(prev => {
-      const last24Hours = Date.now() - (24 * 60 * 60 * 1000);
-      const recentErrors = errors.filter(e => e.timestamp.getTime() > last24Hours);
-      const recentMetrics = metrics.filter(m => m.timestamp.getTime() > last24Hours);
-      
-      const apiMetrics = recentMetrics.filter(m => m.type === 'api-response');
-      const pageLoadMetrics = recentMetrics.filter(m => m.type === 'page-load');
-      
+    setStats((prev) => {
+      const last24Hours = Date.now() - 24 * 60 * 60 * 1000;
+      const recentErrors = errors.filter(
+        (e) => e.timestamp.getTime() > last24Hours,
+      );
+      const recentMetrics = metrics.filter(
+        (m) => m.timestamp.getTime() > last24Hours,
+      );
+
+      const apiMetrics = recentMetrics.filter((m) => m.type === "api-response");
+      const pageLoadMetrics = recentMetrics.filter(
+        (m) => m.type === "page-load",
+      );
+
       return {
         ...prev,
         totalErrors: recentErrors.length,
-        criticalErrors: recentErrors.filter(e => e.level === 'error').length,
-        avgApiResponseTime: apiMetrics.length > 0 ? 
-          apiMetrics.reduce((sum, m) => sum + m.value, 0) / apiMetrics.length : 0,
-        avgPageLoadTime: pageLoadMetrics.length > 0 ? 
-          pageLoadMetrics.reduce((sum, m) => sum + m.value, 0) / pageLoadMetrics.length : 0,
-        lastUpdateTime: new Date()
+        criticalErrors: recentErrors.filter((e) => e.level === "error").length,
+        avgApiResponseTime:
+          apiMetrics.length > 0
+            ? apiMetrics.reduce((sum, m) => sum + m.value, 0) /
+              apiMetrics.length
+            : 0,
+        avgPageLoadTime:
+          pageLoadMetrics.length > 0
+            ? pageLoadMetrics.reduce((sum, m) => sum + m.value, 0) /
+              pageLoadMetrics.length
+            : 0,
+        lastUpdateTime: new Date(),
       };
     });
   };
@@ -276,10 +299,10 @@ export default function MonitoringDashboard() {
     // Simulate system health checks
     // In a real implementation, these would be actual API calls to health endpoints
     setSystemHealth({
-      api: Math.random() > 0.1 ? 'online' : 'degraded',
-      database: Math.random() > 0.05 ? 'online' : 'degraded', 
-      storage: Math.random() > 0.02 ? 'online' : 'degraded',
-      ai: Math.random() > 0.3 ? 'online' : 'degraded' // AI service more likely to have issues
+      api: Math.random() > 0.1 ? "online" : "degraded",
+      database: Math.random() > 0.05 ? "online" : "degraded",
+      storage: Math.random() > 0.02 ? "online" : "degraded",
+      ai: Math.random() > 0.3 ? "online" : "degraded", // AI service more likely to have issues
     });
   };
 
@@ -292,14 +315,14 @@ export default function MonitoringDashboard() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'online':
-      case 'success':
+      case "online":
+      case "success":
         return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
-      case 'degraded':
-      case 'warning':
+      case "degraded":
+      case "warning":
         return <ExclamationTriangleIcon className="w-5 h-5 text-yellow-500" />;
-      case 'offline':
-      case 'error':
+      case "offline":
+      case "error":
         return <XCircleIcon className="w-5 h-5 text-red-500" />;
       default:
         return <ClockIcon className="w-5 h-5 text-gray-400" />;
@@ -308,17 +331,17 @@ export default function MonitoringDashboard() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'online':
-      case 'success':
-        return 'text-green-600 bg-green-50';
-      case 'degraded':
-      case 'warning':
-        return 'text-yellow-600 bg-yellow-50';
-      case 'offline':
-      case 'error':
-        return 'text-red-600 bg-red-50';
+      case "online":
+      case "success":
+        return "text-green-600 bg-green-50";
+      case "degraded":
+      case "warning":
+        return "text-yellow-600 bg-yellow-50";
+      case "offline":
+      case "error":
+        return "text-red-600 bg-red-50";
       default:
-        return 'text-gray-600 bg-gray-50';
+        return "text-gray-600 bg-gray-50";
     }
   };
 
@@ -339,10 +362,11 @@ export default function MonitoringDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
-                {t('monitoringDashboard') || 'Development Monitoring'}
+                {t("monitoringDashboard") || "Development Monitoring"}
               </h1>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {t('lastUpdated') || 'Last updated'}: {formatTimestamp(stats.lastUpdateTime)}
+                {t("lastUpdated") || "Last updated"}:{" "}
+                {formatTimestamp(stats.lastUpdateTime)}
               </p>
             </div>
             <div className="flex items-center space-x-3">
@@ -354,7 +378,7 @@ export default function MonitoringDashboard() {
                   className="mr-2"
                 />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('autoRefresh') || 'Auto-refresh'}
+                  {t("autoRefresh") || "Auto-refresh"}
                 </span>
               </label>
               <button
@@ -362,11 +386,10 @@ export default function MonitoringDashboard() {
                 disabled={isRefreshing}
                 className="inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sky-500 disabled:opacity-50"
               >
-                <ArrowPathIcon className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>{t('refresh') || 'Refresh'}</span>
-              </button>
-                <ArrowPathIcon className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-                <span>{t('refresh') || 'Refresh'}</span>
+                <ArrowPathIcon
+                  className={`w-4 h-4 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+                <span>{t("refresh") || "Refresh"}</span>
               </button>
             </div>
           </div>
@@ -375,26 +398,28 @@ export default function MonitoringDashboard() {
         {/* Tabs */}
         <div className="border-b border-gray-200 dark:border-gray-700">
           <nav className="px-6 flex space-x-8">
-            {(['overview', 'errors', 'performance', 'system'] as const).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === tab
-                    ? 'border-sky-500 text-sky-600 dark:text-sky-400'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
-                }`}
-              >
-                {t(tab) || tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
+            {(["overview", "errors", "performance", "system"] as const).map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                    activeTab === tab
+                      ? "border-sky-500 text-sky-600 dark:text-sky-400"
+                      : "border-transparent text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
+                  }`}
+                >
+                  {t(tab) || tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ),
+            )}
           </nav>
         </div>
       </div>
 
       {/* Content */}
       <div className="px-6 py-8">
-        {activeTab === 'overview' && (
+        {activeTab === "overview" && (
           <div className="space-y-6">
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -405,7 +430,7 @@ export default function MonitoringDashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('criticalErrors') || 'Critical Errors'}
+                      {t("criticalErrors") || "Critical Errors"}
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                       {stats.criticalErrors}
@@ -421,7 +446,7 @@ export default function MonitoringDashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('avgPageLoad') || 'Avg Page Load'}
+                      {t("avgPageLoad") || "Avg Page Load"}
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                       {formatTime(stats.avgPageLoadTime)}
@@ -437,7 +462,7 @@ export default function MonitoringDashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('avgApiResponse') || 'Avg API Response'}
+                      {t("avgApiResponse") || "Avg API Response"}
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                       {formatTime(stats.avgApiResponseTime)}
@@ -453,7 +478,7 @@ export default function MonitoringDashboard() {
                   </div>
                   <div className="ml-4">
                     <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                      {t('totalErrors24h') || 'Total Errors (24h)'}
+                      {t("totalErrors24h") || "Total Errors (24h)"}
                     </p>
                     <p className="text-2xl font-semibold text-gray-900 dark:text-white">
                       {stats.totalErrors}
@@ -466,7 +491,7 @@ export default function MonitoringDashboard() {
             {/* System Health */}
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                {t('systemHealth') || 'System Health'}
+                {t("systemHealth") || "System Health"}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {Object.entries(systemHealth).map(([service, status]) => (
@@ -492,13 +517,13 @@ export default function MonitoringDashboard() {
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                  {t('recentErrors') || 'Recent Errors'}
+                  {t("recentErrors") || "Recent Errors"}
                 </h3>
                 <button
-                  onClick={() => setActiveTab('errors')}
+                  onClick={() => setActiveTab("errors")}
                   className="text-sky-600 dark:text-sky-400 hover:text-sky-500 text-sm font-medium"
                 >
-                  {t('viewAll') || 'View All'}
+                  {t("viewAll") || "View All"}
                 </button>
               </div>
               <div className="space-y-3">
@@ -507,7 +532,7 @@ export default function MonitoringDashboard() {
                     key={error.id}
                     className="flex items-start space-x-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg"
                   >
-                    {getStatusIcon('error')}
+                    {getStatusIcon("error")}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
                         {error.message}
@@ -521,7 +546,7 @@ export default function MonitoringDashboard() {
                 ))}
                 {errors.length === 0 && (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-4">
-                    {t('noRecentErrors') || 'No recent errors'}
+                    {t("noRecentErrors") || "No recent errors"}
                   </p>
                 )}
               </div>
@@ -529,11 +554,11 @@ export default function MonitoringDashboard() {
           </div>
         )}
 
-        {activeTab === 'errors' && (
+        {activeTab === "errors" && (
           <div className="space-y-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                {t('errorLogs') || 'Error Logs'}
+                {t("errorLogs") || "Error Logs"}
               </h3>
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {errors.map((error) => (
@@ -556,7 +581,7 @@ export default function MonitoringDashboard() {
                           {error.stack && (
                             <details className="mt-2">
                               <summary className="text-xs text-gray-600 dark:text-gray-300 cursor-pointer">
-                                {t('stackTrace') || 'Stack trace'}
+                                {t("stackTrace") || "Stack trace"}
                               </summary>
                               <pre className="text-xs bg-gray-50 dark:bg-gray-900 p-2 rounded mt-1 overflow-x-auto">
                                 {error.stack}
@@ -570,7 +595,7 @@ export default function MonitoringDashboard() {
                 ))}
                 {errors.length === 0 && (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                    {t('noErrors') || 'No errors recorded'}
+                    {t("noErrors") || "No errors recorded"}
                   </p>
                 )}
               </div>
@@ -578,11 +603,11 @@ export default function MonitoringDashboard() {
           </div>
         )}
 
-        {activeTab === 'performance' && (
+        {activeTab === "performance" && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                {t('performanceMetrics') || 'Performance Metrics'}
+                {t("performanceMetrics") || "Performance Metrics"}
               </h3>
               <div className="space-y-3 max-h-96 overflow-y-auto">
                 {metrics.map((metric) => (
@@ -594,7 +619,9 @@ export default function MonitoringDashboard() {
                       {getStatusIcon(metric.status)}
                       <div>
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          {metric.type.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          {metric.type
+                            .replace("-", " ")
+                            .replace(/\b\w/g, (l) => l.toUpperCase())}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-400">
                           {formatTimestamp(metric.timestamp)}
@@ -612,7 +639,7 @@ export default function MonitoringDashboard() {
                 ))}
                 {metrics.length === 0 && (
                   <p className="text-gray-500 dark:text-gray-400 text-center py-8">
-                    {t('noMetrics') || 'No performance metrics recorded'}
+                    {t("noMetrics") || "No performance metrics recorded"}
                   </p>
                 )}
               </div>
@@ -620,11 +647,11 @@ export default function MonitoringDashboard() {
           </div>
         )}
 
-        {activeTab === 'system' && (
+        {activeTab === "system" && (
           <div className="space-y-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                {t('systemHealthDetail') || 'System Health Details'}
+                {t("systemHealthDetail") || "System Health Details"}
               </h3>
               <div className="space-y-4">
                 {Object.entries(systemHealth).map(([service, status]) => (
@@ -640,11 +667,14 @@ export default function MonitoringDashboard() {
                             {t(service) || service} Service
                           </h4>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {t(`${service}Description`) || `${service.charAt(0).toUpperCase() + service.slice(1)} service monitoring`}
+                            {t(`${service}Description`) ||
+                              `${service.charAt(0).toUpperCase() + service.slice(1)} service monitoring`}
                           </p>
                         </div>
                       </div>
-                      <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)}`}>
+                      <span
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)}`}
+                      >
                         {status}
                       </span>
                     </div>

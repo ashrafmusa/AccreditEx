@@ -34,6 +34,7 @@ import {
   XMarkIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
 import { useTheme } from "@/components/common/ThemeProvider";
 import StatCard from "@/components/common/StatCard";
 import StatCardSkeleton from "@/components/common/StatCardSkeleton";
@@ -121,6 +122,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
   risks = [],
 }) => {
   const { t } = useTranslation();
+  const toast = useToast();
   const { theme } = useTheme();
 
   const projects = useProjectStore((state) => state.projects);
@@ -522,6 +524,9 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       exportDashboardMetricsToCSV(metricsData, "Admin Dashboard");
     } catch (error) {
       console.error("Error exporting metrics:", error);
+      toast.error(
+        t("exportFailed") || "Failed to export metrics. Please try again.",
+      );
     }
   };
 

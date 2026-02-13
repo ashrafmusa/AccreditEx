@@ -1,6 +1,10 @@
-import React from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { ShieldCheckIcon, ExclamationTriangleIcon, XMarkIcon } from '@/components/icons';
+import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ShieldCheckIcon,
+  ExclamationTriangleIcon,
+  XMarkIcon,
+} from "@/components/icons";
 
 interface PrivacyControlsPanelProps {
   isUserBlocked: boolean;
@@ -30,12 +34,10 @@ const PrivacyControlsPanel: React.FC<PrivacyControlsPanelProps> = ({
           <ShieldCheckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
           <div>
             <p className="text-sm font-medium text-blue-900 dark:text-blue-200">
-              {isEncrypted ? t('encryptionEnabled') : t('encryptionDisabled')}
+              {isEncrypted ? t("encryptionEnabled") : t("encryptionDisabled")}
             </p>
             <p className="text-xs text-blue-700 dark:text-blue-300">
-              {isEncrypted
-                ? t('encryptionEnabled')
-                : t('privacyControls')}
+              {isEncrypted ? t("encryptionEnabled") : t("privacyControls")}
             </p>
           </div>
         </div>
@@ -43,23 +45,25 @@ const PrivacyControlsPanel: React.FC<PrivacyControlsPanelProps> = ({
 
       {/* User Blocking */}
       <div className="space-y-2">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">{t('block')}</h4>
+        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+          {t("block")}
+        </h4>
         {isUserBlocked ? (
           <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
             <XMarkIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
             <div className="flex-1">
               <p className="text-sm font-medium text-red-900 dark:text-red-200">
-                {userName} {t('userBlocked').toLowerCase()}
+                {userName} {t("userBlocked").toLowerCase()}
               </p>
               <p className="text-xs text-red-700 dark:text-red-300">
-                {t('blockedUsers')}
+                {t("blockedUsers")}
               </p>
             </div>
             <button
               onClick={onUnblock}
               className="px-3 py-1.5 bg-red-200 dark:bg-red-800 text-red-900 dark:text-red-100 rounded hover:bg-red-300 dark:hover:bg-red-700 transition-colors text-xs font-medium whitespace-nowrap"
             >
-              {t('unblock')}
+              {t("unblock")}
             </button>
           </div>
         ) : (
@@ -68,7 +72,7 @@ const PrivacyControlsPanel: React.FC<PrivacyControlsPanelProps> = ({
             className="w-full px-4 py-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors font-medium text-sm"
           >
             <XMarkIcon className="w-4 h-4 inline mr-2" />
-            {t('block')} {userName}
+            {t("block")} {userName}
           </button>
         )}
       </div>
@@ -80,14 +84,13 @@ const PrivacyControlsPanel: React.FC<PrivacyControlsPanelProps> = ({
           className="w-full px-4 py-2.5 bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors font-medium text-sm"
         >
           <ExclamationTriangleIcon className="w-4 h-4 inline mr-2" />
-          {t('report')} {userName}
+          {t("report")} {userName}
         </button>
       )}
 
       {/* Privacy Notice */}
       <p className="text-xs text-gray-600 dark:text-gray-400 p-3 bg-gray-100 dark:bg-gray-700/50 rounded-lg">
-        💡 Tip: You can block users to prevent them from messaging you. Blocked users won't see
-        your profile or be able to send you messages.
+        💡 {t("privacyTip")}
       </p>
     </div>
   );

@@ -66,7 +66,7 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
             placeholder={t("searchMessages")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
           />
           <MagnifyingGlassIcon className="absolute left-3 top-2.5 w-5 h-5 text-gray-400 dark:text-gray-500" />
@@ -151,18 +151,6 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
                 {t("hasReactions")}
               </span>
             </label>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={isMention}
-                onChange={(e) => setIsMention(e.target.checked)}
-                className="w-4 h-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
-              />
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t("mentionsOnly")}
-              </span>
-            </label>
           </div>
 
           {/* Action Buttons */}
@@ -178,7 +166,7 @@ const MessageSearch: React.FC<MessageSearchProps> = ({
               disabled={isSearching}
               className="flex-1 px-3 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 disabled:bg-gray-400 transition-colors text-sm font-medium"
             >
-              {t("send")}
+              {t("applyFilters")}
             </button>
           </div>
         </div>

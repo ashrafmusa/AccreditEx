@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import mammoth from "mammoth";
+import DOMPurify from "dompurify";
 
 interface DOCXViewerProps {
   fileUrl: string;
@@ -44,7 +45,7 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
                 };
               });
             }),
-          }
+          },
         );
 
         setHtmlContent(result.value);
@@ -56,7 +57,7 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
       } catch (err) {
         console.error("Error loading DOCX:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to load document"
+          err instanceof Error ? err.message : "Failed to load document",
         );
       } finally {
         setLoading(false);
@@ -113,7 +114,7 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
     <div className={`docx-viewer-container ${className}`}>
       <div
         className="prose dark:prose-invert max-w-none p-6"
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
         style={{
           backgroundColor: "white",
           minHeight: "500px",

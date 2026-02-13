@@ -4,13 +4,14 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/useToast";
 import {
-  DocumentTextIcon,
+  ChatBubbleLeftEllipsisIcon,
   CheckIcon,
-  TrashIcon,
   SparklesIcon,
-  PhotoIcon,
+  XMarkIcon,
+  BellIcon,
 } from "@/components/icons";
 import MessagingCenter from "@/components/messaging/MessagingCenter";
+import UserAvatar from "@/components/common/UserAvatar";
 import SettingsCard from "@/components/settings/SettingsCard";
 import SettingsAlert from "@/components/settings/SettingsAlert";
 import { Button } from "@/components/ui";
@@ -34,7 +35,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
   } = useMessaging({ autoSubscribe: true });
 
   const [view, setView] = useState<"conversations" | "statistics" | "privacy">(
-    "conversations"
+    "conversations",
   );
   const [blockedUsers, setBlockedUsers] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -52,17 +53,17 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
   const handleBlockUser = (userId: string) => {
     blockUser(userId);
     setBlockedUsers([...blockedUsers, userId]);
-    toast.success("User blocked");
+    toast.success(t("userBlocked"));
   };
 
   const handleUnblockUser = (userId: string) => {
     const blockListKey = `blocked_${currentUser?.id}`;
     const blocked = JSON.parse(
-      localStorage.getItem(blockListKey) || "[]"
+      localStorage.getItem(blockListKey) || "[]",
     ).filter((id: string) => id !== userId);
     localStorage.setItem(blockListKey, JSON.stringify(blocked));
     setBlockedUsers(blocked);
-    toast.success("User unblocked");
+    toast.success(t("userUnblocked"));
   };
 
   const blockedUsersList = getBlockedUsersList();
@@ -72,7 +73,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <DocumentTextIcon className="w-8 h-8 text-brand-primary" />
+          <ChatBubbleLeftEllipsisIcon className="w-8 h-8 text-brand-primary" />
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t("messages") || "Messages"}
           </h1>
@@ -114,7 +115,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
         <div className="space-y-4">
           <SettingsCard
             title={t("directMessages") || "Direct Messages"}
-            description="Communicate with team members"
+            description={t("communicateTeamMembers")}
           >
             <MessagingCenter maxHeight="700px" />
           </SettingsCard>
@@ -125,26 +126,26 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
       {view === "statistics" && stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Total Messages */}
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
-                  Total Messages
+                  {t("totalMessages")}
                 </p>
                 <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
                   {stats.totalMessages}
                 </p>
               </div>
-              <DocumentTextIcon className="w-8 h-8 text-blue-400 opacity-50" />
+              <ChatBubbleLeftEllipsisIcon className="w-8 h-8 text-blue-400 opacity-50" />
             </div>
           </div>
 
           {/* Sent Messages */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg p-4 border border-green-200 dark:border-green-800">
+          <div className="bg-linear-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg p-4 border border-green-200 dark:border-green-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase">
-                  Sent
+                  {t("sent")}
                 </p>
                 <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
                   {stats.sentMessages}
@@ -155,11 +156,11 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
           </div>
 
           {/* Received Messages */}
-          <div className="bg-gradient-to-br from-rose-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-700/30 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
+          <div className="bg-linear-to-br from-rose-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-700/30 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase">
-                  Received
+                  {t("receivedLabel")}
                 </p>
                 <p className="text-2xl font-bold text-pink-900 dark:text-rose-100 mt-1">
                   {stats.receivedMessages}
@@ -170,41 +171,41 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
           </div>
 
           {/* Unread */}
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
+          <div className="bg-linear-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase">
-                  Unread
+                  {t("unread")}
                 </p>
                 <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 mt-1">
                   {stats.unreadCount}
                 </p>
               </div>
-              <TrashIcon className="w-8 h-8 text-amber-400 opacity-50" />
+              <BellIcon className="w-8 h-8 text-amber-400 opacity-50" />
             </div>
           </div>
 
-           {/* Conversations */}
-           <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-             <div className="flex items-center justify-between">
-               <div>
-                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
-                   Active Conversations
-                 </p>
-                 <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
-                   {stats.conversationCount}
-                 </p>
-               </div>
-               <DocumentTextIcon className="w-8 h-8 text-blue-400 opacity-50" />
-             </div>
-           </div>
+          {/* Conversations */}
+          <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
+                  {t("activeConversations")}
+                </p>
+                <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                  {stats.conversationCount}
+                </p>
+              </div>
+              <ChatBubbleLeftEllipsisIcon className="w-8 h-8 text-blue-400 opacity-50" />
+            </div>
+          </div>
 
           {/* Unread Conversations */}
-          <div className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-lg p-4 border border-red-200 dark:border-red-800">
+          <div className="bg-linear-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-lg p-4 border border-red-200 dark:border-red-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase">
-                  Unread Chats
+                  {t("unreadChats")}
                 </p>
                 <p className="text-2xl font-bold text-red-900 dark:text-red-100 mt-1">
                   {stats.unreadConversationCount}
@@ -221,13 +222,13 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
         <div className="space-y-4">
           <SettingsAlert
             type="info"
-            title="Messaging Privacy"
-            message="Block users to prevent them from messaging you. Blocked users won't see your profile or be able to send you messages."
+            title={t("messagingPrivacy")}
+            message={t("messagingPrivacyDesc")}
           />
 
           <SettingsCard
             title={t("blockedUsers") || "Blocked Users"}
-            description="Manage blocked users"
+            description={t("manageBlockedUsers")}
           >
             {blockedUsersList.length > 0 ? (
               <div className="space-y-2">
@@ -236,19 +237,22 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
                     key={user.id}
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                   >
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {user.name}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {user.email}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar user={user} size="sm" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {user.name}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleUnblockUser(user.id)}
                       className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
                     >
-                      <PhotoIcon className="w-5 h-5" />
+                      <XMarkIcon className="w-5 h-5" />
                       {t("unblock") || "Unblock"}
                     </button>
                   </div>
@@ -263,33 +267,36 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
 
           <SettingsCard
             title={t("blockNewUser") || "Block a User"}
-            description="Select a user to block"
+            description={t("selectUserToBlock")}
           >
             <div className="space-y-2">
               {users
                 .filter(
                   (u) =>
                     u.id !== currentUser?.id &&
-                    !blockedUsersList.find((b: any) => b.id === u.id)
+                    !blockedUsersList.find((b: any) => b.id === u.id),
                 )
                 .map((user) => (
                   <div
                     key={user.id}
                     className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                   >
-                    <div>
-                      <p className="font-medium text-gray-900 dark:text-white">
-                        {user.name}
-                      </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {user.email}
-                      </p>
+                    <div className="flex items-center gap-3">
+                      <UserAvatar user={user} size="sm" />
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {user.name}
+                        </p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {user.email}
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={() => handleBlockUser(user.id)}
                       className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors flex items-center gap-2"
                     >
-                      <PhotoIcon className="w-5 h-5" />
+                      <XMarkIcon className="w-5 h-5" />
                       {t("block") || "Block"}
                     </button>
                   </div>

@@ -43,9 +43,9 @@ const DepartmentTaskTable: React.FC<DepartmentTaskTableProps> = ({
       tasks.filter(
         (task) =>
           task.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          task.standardId.toLowerCase().includes(searchTerm.toLowerCase())
+          task.standardId.toLowerCase().includes(searchTerm.toLowerCase()),
       ),
-    [tasks, searchTerm]
+    [tasks, searchTerm],
   );
 
   return (

@@ -44,11 +44,12 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="h-16 bg-brand-surface dark:bg-dark-brand-surface border-b border-brand-border dark:border-dark-brand-border flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
+    <header className="h-16 bg-brand-surface dark:bg-dark-brand-surface border-b border-brand-border dark:border-dark-brand-border flex items-center justify-between px-4 sm:px-6 flex-shrink-0 shadow-sm">
       <div className="flex items-center gap-4">
         <button
           onClick={onToggleMobileMenu}
-          className="sm:hidden p-2 text-brand-text-secondary dark:text-dark-brand-text-secondary"
+          className="sm:hidden p-2 text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+          aria-label={t("toggleMenu")}
         >
           <Bars3Icon className="h-6 w-6" />
         </button>
@@ -56,20 +57,14 @@ const Header: React.FC<HeaderProps> = ({
           <HeaderTitle navigation={navigation} />
           {!isOnline && (
             <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 animate-pulse">
-              Offline
+              {t("offline") || "Offline"}
             </span>
           )}
         </div>
       </div>
       <div className="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
         <HeaderActions onOpenCommandPalette={onOpenCommandPalette} />
-        <button
-          onClick={() => setNavigation({ view: "messaging" })}
-          className="p-2 text-brand-text-secondary dark:text-dark-brand-text-secondary hover:text-brand-text-primary dark:hover:text-dark-brand-text-primary transition-colors"
-          title={t("messages")}
-        >
-          <MessagingBell position="left" showCount={true} />
-        </button>
+        <MessagingBell position="left" showCount={true} />
         <NotificationButton
           notifications={notifications}
           setNavigation={setNavigation}

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import DOMPurify from "dompurify";
 import ReactFlow, {
   Node,
   Edge,
@@ -1859,7 +1860,9 @@ const ProcessMapEditorContent: React.FC<
             </h3>
             <div
               className="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
-              dangerouslySetInnerHTML={{ __html: exportedDoc }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(exportedDoc),
+              }}
             />
             <div className="mt-4 flex gap-2 justify-end">
               <button

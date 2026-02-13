@@ -7,6 +7,7 @@ export const en = {
     // Risk
     addNewRisk: 'Add New Risk',
     editRisk: 'Edit Risk',
+    deleteRisk: 'Delete Risk',
     areYouSureDeleteRisk: 'Are you sure you want to delete this risk?',
     riskMatrix: 'Risk Matrix',
     impact: 'Impact',

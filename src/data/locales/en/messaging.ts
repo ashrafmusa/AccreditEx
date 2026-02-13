@@ -40,6 +40,9 @@ export const en = {
   archiveConversation: 'Archive conversation',
   muteConversation: 'Mute notifications',
   pinConversation: 'Pin conversation',
+  unpinConversation: 'Unpin conversation',
+  unmuteConversation: 'Unmute notifications',
+  unarchiveConversation: 'Unarchive conversation',
   conversationDeleted: 'Conversation deleted',
   conversationArchived: 'Conversation archived',
   conversationUnarchived: 'Conversation unarchived',
@@ -56,8 +59,10 @@ export const en = {
   from: 'From',
   to: 'To',
   hasAttachments: 'Has attachments',
+  hasReactions: 'Has reactions',
   mentionsOnly: 'Mentions only',
   clearFilters: 'Clear filters',
+  applyFilters: 'Apply filters',
   searchResults: 'Search Results',
   noSearchResults: 'No messages found matching your search',
   searchingMessages: 'Searching messages...',
@@ -91,6 +96,7 @@ export const en = {
 
   // Privacy & Security
   privacyControls: 'Privacy Controls',
+  privacyTip: 'Tip: You can block users to prevent them from messaging you. Blocked users won\'t see your profile or be able to send you messages.',
   encryptionStatus: 'Encryption Status',
   encryptionEnabled: 'End-to-End Encryption Enabled',
   encryptionDisabled: 'Encryption Not Available',
@@ -172,6 +178,21 @@ export const en = {
   messageDeleted: 'Message deleted',
   userUnblocked: 'User unblocked',
 
+  // Messaging Page
+  totalMessages: 'Total Messages',
+  receivedLabel: 'Received',
+  unread: 'Unread',
+  activeConversations: 'Active Conversations',
+  unreadChats: 'Unread Chats',
+  communicateTeamMembers: 'Communicate with team members',
+  messagingPrivacy: 'Messaging Privacy',
+  messagingPrivacyDesc: 'Block users to prevent them from messaging you. Blocked users won\'t see your profile or be able to send you messages.',
+  manageBlockedUsers: 'Manage blocked users',
+  selectUserToBlock: 'Select a user to block',
+  conversations: 'Conversations',
+  statistics: 'Statistics',
+  blockNewUser: 'Block a User',
+
   // Accessibility
   openMessaging: 'Open messaging center',
   closeMessaging: 'Close messaging center',
@@ -186,6 +207,16 @@ export const en = {
   mentionUser: 'Mention user',
   mentionedYou: '{name} mentioned you',
   yourMention: 'You were mentioned',
+
+  // UI UX Enhancements
+  compose: 'New Chat',
+  back: 'Back',
+  yesterday: 'Yesterday',
+  typeMessage: 'Type a message...',
+  directMessages: 'Direct Messages',
+  channelMembers: 'Channel Members',
+  noResultsFound: 'No results found',
+  searchUsersPlaceholder: 'Search users to start chatting...',
 
   // Conversation Info
   conversationInfo: 'Conversation info',
