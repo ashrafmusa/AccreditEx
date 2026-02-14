@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/useToast';
+import React, { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
 import {
   CheckCircleIcon,
   ExclamationTriangleIcon,
   EyeIcon,
   EyeSlashIcon,
-} from '@/components/icons';
+} from "@/components/icons";
 
 interface FirebaseConfig {
   projectId: string;
@@ -24,47 +24,50 @@ interface FormErrors {
 }
 
 export const FirebaseConfigurationEntry: React.FC = () => {
-  const { t } = useTranslation('settings');
+  const { t } = useTranslation();
   const { toast } = useToast();
   const [showKeys, setShowKeys] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [config, setConfig] = useState<FirebaseConfig>({
-    projectId: '',
-    apiKey: '',
-    authDomain: '',
-    databaseURL: '',
-    storageBucket: '',
-    messagingSenderId: '',
-    appId: '',
-    measurementId: '',
+    projectId: "",
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: "",
+    measurementId: "",
   });
   const [errors, setErrors] = useState<FormErrors>({});
-  const [successMessage, setSuccessMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState("");
 
   const validateConfig = (): boolean => {
     const newErrors: FormErrors = {};
 
     if (!config.projectId.trim()) {
-      newErrors.projectId = t('firebaseConfig.projectIdRequired');
+      newErrors.projectId = t("firebaseConfig.projectIdRequired");
     } else if (!/^[a-z0-9-]+$/.test(config.projectId)) {
-      newErrors.projectId = t('firebaseConfig.projectIdInvalid');
+      newErrors.projectId = t("firebaseConfig.projectIdInvalid");
     }
 
     if (!config.apiKey.trim()) {
-      newErrors.apiKey = t('firebaseConfig.apiKeyRequired');
+      newErrors.apiKey = t("firebaseConfig.apiKeyRequired");
     } else if (config.apiKey.length < 20) {
-      newErrors.apiKey = t('firebaseConfig.apiKeyTooShort');
+      newErrors.apiKey = t("firebaseConfig.apiKeyTooShort");
     }
 
     if (!config.authDomain.trim()) {
-      newErrors.authDomain = t('firebaseConfig.authDomainRequired');
-    } else if (!config.authDomain.includes('.firebaseapp.com')) {
-      newErrors.authDomain = t('firebaseConfig.authDomainInvalid');
+      newErrors.authDomain = t("firebaseConfig.authDomainRequired");
+    } else if (!config.authDomain.includes(".firebaseapp.com")) {
+      newErrors.authDomain = t("firebaseConfig.authDomainInvalid");
     }
 
-    if (config.storageBucket && !config.storageBucket.includes('.appspot.com')) {
-      newErrors.storageBucket = t('firebaseConfig.storageBucketInvalid');
+    if (
+      config.storageBucket &&
+      !config.storageBucket.includes(".appspot.com")
+    ) {
+      newErrors.storageBucket = t("firebaseConfig.storageBucketInvalid");
     }
 
     setErrors(newErrors);
@@ -89,45 +92,46 @@ export const FirebaseConfigurationEntry: React.FC = () => {
 
   const handleSave = async () => {
     if (!validateConfig()) {
-      toast.error(t('firebaseConfig.validationFailed'));
+      toast.error(t("firebaseConfig.validationFailed"));
       return;
     }
 
     setIsSaving(true);
     try {
       // Save to localStorage temporarily
-      localStorage.setItem('firebaseConfig', JSON.stringify(config));
-      
+      localStorage.setItem("firebaseConfig", JSON.stringify(config));
+
       // Save to environment or app settings
-      const response = await fetch('/api/settings/firebase-config', {
-        method: 'POST',
+      const response = await fetch("/api/settings/firebase-config", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(config),
       });
 
       if (!response.ok) {
-        throw new Error(t('firebaseConfig.saveFailed'));
+        throw new Error(t("firebaseConfig.saveFailed"));
       }
 
-      setSuccessMessage(t('firebaseConfig.savedSuccessfully'));
-      toast.success(t('firebaseConfig.configurationSaved'));
-      
-      setTimeout(() => setSuccessMessage(''), 3000);
+      setSuccessMessage(t("firebaseConfig.savedSuccessfully"));
+      toast.success(t("firebaseConfig.configurationSaved"));
+
+      setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : t('firebaseConfig.saveFailed');
+      const errorMsg =
+        error instanceof Error ? error.message : t("firebaseConfig.saveFailed");
       toast.error(errorMsg);
-      console.error('Failed to save Firebase config:', error);
+      console.error("Failed to save Firebase config:", error);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleLoadFromJSON = () => {
-    const fileInput = document.createElement('input');
-    fileInput.type = 'file';
-    fileInput.accept = '.json';
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".json";
     fileInput.onchange = async (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
@@ -136,13 +140,15 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         setIsLoading(true);
         const text = await file.text();
         const jsonConfig = JSON.parse(text);
-        
+
         // Validate JSON structure
-        const requiredFields = ['projectId', 'apiKey', 'authDomain'];
-        const hasRequiredFields = requiredFields.every((field) => field in jsonConfig);
-        
+        const requiredFields = ["projectId", "apiKey", "authDomain"];
+        const hasRequiredFields = requiredFields.every(
+          (field) => field in jsonConfig,
+        );
+
         if (!hasRequiredFields) {
-          toast.error(t('firebaseConfig.invalidJsonStructure'));
+          toast.error(t("firebaseConfig.invalidJsonStructure"));
           return;
         }
 
@@ -150,9 +156,12 @@ export const FirebaseConfigurationEntry: React.FC = () => {
           ...prev,
           ...jsonConfig,
         }));
-        toast.success(t('firebaseConfig.jsonLoaded'));
+        toast.success(t("firebaseConfig.jsonLoaded"));
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : t('firebaseConfig.invalidJson');
+        const errorMsg =
+          error instanceof Error
+            ? error.message
+            : t("firebaseConfig.invalidJson");
         toast.error(errorMsg);
       } finally {
         setIsLoading(false);
@@ -163,22 +172,22 @@ export const FirebaseConfigurationEntry: React.FC = () => {
 
   const handleExportJSON = () => {
     if (!validateConfig()) {
-      toast.error(t('firebaseConfig.validationFailed'));
+      toast.error(t("firebaseConfig.validationFailed"));
       return;
     }
 
     try {
       const dataStr = JSON.stringify(config, null, 2);
-      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const dataBlob = new Blob([dataStr], { type: "application/json" });
       const url = URL.createObjectURL(dataBlob);
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
       link.download = `firebase-config-${new Date().toISOString().slice(0, 10)}.json`;
       link.click();
       URL.revokeObjectURL(url);
-      toast.success(t('firebaseConfig.jsonExported'));
+      toast.success(t("firebaseConfig.jsonExported"));
     } catch (error) {
-      toast.error(t('firebaseConfig.exportFailed'));
+      toast.error(t("firebaseConfig.exportFailed"));
     }
   };
 
@@ -199,11 +208,11 @@ export const FirebaseConfigurationEntry: React.FC = () => {
 
       // Filter out undefined values
       const filteredConfig = Object.fromEntries(
-        Object.entries(envConfig).filter(([, v]) => v !== undefined)
+        Object.entries(envConfig).filter(([, v]) => v !== undefined),
       );
 
       if (Object.keys(filteredConfig).length === 0) {
-        toast.error(t('firebaseConfig.noEnvVariables'));
+        toast.error(t("firebaseConfig.noEnvVariables"));
         return;
       }
 
@@ -211,29 +220,29 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         ...prev,
         ...filteredConfig,
       }));
-      toast.success(t('firebaseConfig.loadedFromEnv'));
+      toast.success(t("firebaseConfig.loadedFromEnv"));
     } catch (error) {
-      toast.error(t('firebaseConfig.loadFromEnvFailed'));
+      toast.error(t("firebaseConfig.loadFromEnvFailed"));
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleReset = () => {
-    if (confirm(t('firebaseConfig.confirmReset'))) {
+    if (confirm(t("firebaseConfig.confirmReset"))) {
       setConfig({
-        projectId: '',
-        apiKey: '',
-        authDomain: '',
-        databaseURL: '',
-        storageBucket: '',
-        messagingSenderId: '',
-        appId: '',
-        measurementId: '',
+        projectId: "",
+        apiKey: "",
+        authDomain: "",
+        databaseURL: "",
+        storageBucket: "",
+        messagingSenderId: "",
+        appId: "",
+        measurementId: "",
       });
       setErrors({});
-      setSuccessMessage('');
-      toast.info(t('firebaseConfig.resetComplete'));
+      setSuccessMessage("");
+      toast.info(t("firebaseConfig.resetComplete"));
     }
   };
 
@@ -242,10 +251,10 @@ export const FirebaseConfigurationEntry: React.FC = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          {t('firebaseConfig.title')}
+          {t("firebaseConfig.title")}
         </h3>
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          {t('firebaseConfig.description')}
+          {t("firebaseConfig.description")}
         </p>
       </div>
 
@@ -253,7 +262,9 @@ export const FirebaseConfigurationEntry: React.FC = () => {
       {successMessage && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
           <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
-          <p className="text-sm text-green-800 dark:text-green-200">{successMessage}</p>
+          <p className="text-sm text-green-800 dark:text-green-200">
+            {successMessage}
+          </p>
         </div>
       )}
 
@@ -264,21 +275,23 @@ export const FirebaseConfigurationEntry: React.FC = () => {
           disabled={isLoading || isSaving}
           className="px-4 py-2 bg-sky-600 hover:bg-sky-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
         >
-          {isLoading ? t('firebaseConfig.loading') : t('firebaseConfig.loadFromEnv')}
+          {isLoading
+            ? t("firebaseConfig.loading")
+            : t("firebaseConfig.loadFromEnv")}
         </button>
         <button
           onClick={handleLoadFromJSON}
           disabled={isLoading || isSaving}
           className="px-4 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
         >
-          {t('firebaseConfig.loadFromJSON')}
+          {t("firebaseConfig.loadFromJSON")}
         </button>
         <button
           onClick={handleExportJSON}
           disabled={isSaving}
           className="px-4 py-2 bg-rose-600 hover:bg-pink-600 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition"
         >
-          {t('firebaseConfig.exportJSON')}
+          {t("firebaseConfig.exportJSON")}
         </button>
       </div>
 
@@ -287,7 +300,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         {/* Project ID */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.projectId')} *
+            {t("firebaseConfig.projectId")} *
           </label>
           <input
             type="text"
@@ -297,8 +310,8 @@ export const FirebaseConfigurationEntry: React.FC = () => {
             placeholder="my-project-id"
             className={`w-full px-4 py-2 rounded-lg border ${
               errors.projectId
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
             } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition`}
           />
           {errors.projectId && (
@@ -308,26 +321,26 @@ export const FirebaseConfigurationEntry: React.FC = () => {
             </p>
           )}
           <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            {t('firebaseConfig.projectIdHint')}
+            {t("firebaseConfig.projectIdHint")}
           </p>
         </div>
 
         {/* API Key */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.apiKey')} *
+            {t("firebaseConfig.apiKey")} *
           </label>
           <div className="relative">
             <input
-              type={showKeys ? 'text' : 'password'}
+              type={showKeys ? "text" : "password"}
               name="apiKey"
               value={config.apiKey}
               onChange={handleInputChange}
               placeholder="AIzaSyD..."
               className={`w-full px-4 py-2 pr-10 rounded-lg border ${
                 errors.apiKey
-                  ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                  : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                  ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                  : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
               } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition`}
             />
             <button
@@ -335,7 +348,11 @@ export const FirebaseConfigurationEntry: React.FC = () => {
               onClick={() => setShowKeys(!showKeys)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
             >
-              {showKeys ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+              {showKeys ? (
+                <EyeSlashIcon className="w-5 h-5" />
+              ) : (
+                <EyeIcon className="w-5 h-5" />
+              )}
             </button>
           </div>
           {errors.apiKey && (
@@ -349,7 +366,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         {/* Auth Domain */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.authDomain')} *
+            {t("firebaseConfig.authDomain")} *
           </label>
           <input
             type="text"
@@ -359,8 +376,8 @@ export const FirebaseConfigurationEntry: React.FC = () => {
             placeholder="my-project.firebaseapp.com"
             className={`w-full px-4 py-2 rounded-lg border ${
               errors.authDomain
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
             } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition`}
           />
           {errors.authDomain && (
@@ -374,7 +391,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         {/* Database URL */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.databaseURL')}
+            {t("firebaseConfig.databaseURL")}
           </label>
           <input
             type="text"
@@ -389,7 +406,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         {/* Storage Bucket */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.storageBucket')}
+            {t("firebaseConfig.storageBucket")}
           </label>
           <input
             type="text"
@@ -399,19 +416,21 @@ export const FirebaseConfigurationEntry: React.FC = () => {
             placeholder="my-project.appspot.com"
             className={`w-full px-4 py-2 rounded-lg border ${
               errors.storageBucket
-                ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                ? "border-red-500 bg-red-50 dark:bg-red-900/20"
+                : "border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
             } text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition`}
           />
           {errors.storageBucket && (
-            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.storageBucket}</p>
+            <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+              {errors.storageBucket}
+            </p>
           )}
         </div>
 
         {/* Messaging Sender ID */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.messagingSenderId')}
+            {t("firebaseConfig.messagingSenderId")}
           </label>
           <input
             type="text"
@@ -426,7 +445,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         {/* App ID */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.appId')}
+            {t("firebaseConfig.appId")}
           </label>
           <input
             type="text"
@@ -441,7 +460,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
         {/* Measurement ID */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-            {t('firebaseConfig.measurementId')}
+            {t("firebaseConfig.measurementId")}
           </label>
           <input
             type="text"
@@ -461,27 +480,27 @@ export const FirebaseConfigurationEntry: React.FC = () => {
           disabled={isSaving}
           className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition"
         >
-          {isSaving ? t('firebaseConfig.saving') : t('firebaseConfig.save')}
+          {isSaving ? t("firebaseConfig.saving") : t("firebaseConfig.save")}
         </button>
         <button
           onClick={handleReset}
           disabled={isSaving}
           className="px-4 py-2 bg-gray-300 hover:bg-gray-400 dark:bg-gray-600 dark:hover:bg-gray-700 disabled:bg-gray-400 text-gray-900 dark:text-white rounded-lg font-medium transition"
         >
-          {t('firebaseConfig.reset')}
+          {t("firebaseConfig.reset")}
         </button>
       </div>
 
       {/* Help Section */}
       <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
         <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-          💡 {t('firebaseConfig.helpTitle')}
+          💡 {t("firebaseConfig.helpTitle")}
         </h4>
         <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
-          <li>• {t('firebaseConfig.helpStep1')}</li>
-          <li>• {t('firebaseConfig.helpStep2')}</li>
-          <li>• {t('firebaseConfig.helpStep3')}</li>
-          <li>• {t('firebaseConfig.helpStep4')}</li>
+          <li>• {t("firebaseConfig.helpStep1")}</li>
+          <li>• {t("firebaseConfig.helpStep2")}</li>
+          <li>• {t("firebaseConfig.helpStep3")}</li>
+          <li>• {t("firebaseConfig.helpStep4")}</li>
         </ul>
       </div>
     </div>

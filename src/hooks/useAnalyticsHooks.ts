@@ -119,12 +119,12 @@ export function useInsights(configId: string): InsightsData {
     insights: [],
     isLoading: true,
     error: null,
-    refresh: () => {},
+    refresh: () => { },
   });
 
   const loadInsights = useCallback(() => {
     try {
-      const insights = analyticsService.getInsights(configId);
+      const insights = analyticsService.getInsights(configId) as Insight[];
 
       setData({
         insights,
@@ -172,7 +172,7 @@ export function useComparison(initialConfigs: string[] = []): ComparisonData {
 
     try {
       setIsLoading(true);
-      const comparison = analyticsService.compareConfigurations(configs);
+      const comparison = (analyticsService as any).compareConfigurations(configs);
 
       setMetrics(comparison);
       setError(null);
@@ -294,7 +294,7 @@ export function useSyncStatistics(configId: string): SyncStatistics {
       const data = analyticsService.getSyncStatistics(configId);
 
       setStats({
-        ...data,
+        ...(data as any),
         isLoading: false,
       });
     } catch (error) {
@@ -370,7 +370,7 @@ export function useDataQuality(configId: string): DataQualityMetrics {
       const data = analyticsService.getDataQualityMetrics(configId);
 
       setQuality({
-        ...data,
+        ...(data as any),
         isLoading: false,
       });
     } catch (error) {

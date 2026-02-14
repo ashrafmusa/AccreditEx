@@ -1,0 +1,175 @@
+src/components/accreditation/ProgramImportWizardModal.tsx(370,43): error TS2554: Expected 1 arguments, but got 2.
+src/components/accreditation/ProgramImportWizardModal.tsx(374,47): error TS2554: Expected 1 arguments, but got 2.
+src/components/ai/AIAssistantDemo.tsx(12,32): error TS2307: Cannot find module '@/hooks/useAIAssistant' or its corresponding type declarations.
+src/components/audits/AuditLogComponent.tsx(107,11): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/dashboard/ProjectLeadDashboard.tsx(222,58): error TS2322: Type 'User[]' is not assignable to type 'string[] | (string[] & User[])'.
+  Type 'User[]' is not assignable to type 'string[]'.
+    Type 'User' is not assignable to type 'string'.
+src/components/departments/DepartmentTaskTable.tsx(141,13): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/departments/DepartmentUserList.tsx(38,13): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/documents/ControlledDocumentsTable.tsx(80,13): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/documents/DocumentEditorModal.tsx(66,11): error TS2322: Type '{ version: number; date: string; uploadedBy: string; content: LocalizedString; } | { version: number; date: string; uploadedBy: string; content: LocalizedString | null; }' is not assignable to type '{ version: number; date: string; uploadedBy: string; content: LocalizedString; }'.
+  Type '{ version: number; date: string; uploadedBy: string; content: LocalizedString | null; }' is not assignable to type '{ version: number; date: string; uploadedBy: string; content: LocalizedString; }'.
+    Types of property 'content' are incompatible.
+      Type 'LocalizedString | null' is not assignable to type 'LocalizedString'.
+        Type 'null' is not assignable to type 'LocalizedString'.
+src/components/documents/DocumentEditorModal.tsx(71,13): error TS2322: Type 'LocalizedString | null' is not assignable to type 'LocalizedString'.
+  Type 'null' is not assignable to type 'LocalizedString'.
+src/components/documents/DocumentEditorSidebar.tsx(87,9): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/documents/DocumentEditorSidebar.tsx(106,9): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/documents/ProcessMapEditor.tsx(1736,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1747,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1758,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1769,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1881,32): error TS2304: Cannot find name 'handleNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(1951,44): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | Node'.
+  Type 'null' is not assignable to type 'string | Node'.
+src/components/documents/ProcessMapEditor.tsx(1957,42): error TS2322: Type 'string | null' is not assignable to type 'BlobPart'.
+  Type 'null' is not assignable to type 'BlobPart'.
+src/components/documents/ProcessMapEditor.tsx(1997,13): error TS2322: Type 'RefObject<HTMLDivElement | null>' is not assignable to type 'RefObject<HTMLDivElement>'.
+  Type 'HTMLDivElement | null' is not assignable to type 'HTMLDivElement'.
+    Type 'null' is not assignable to type 'HTMLDivElement'.
+src/components/documents/RichTextEditorEnhanced.tsx(22,39): error TS2307: Cannot find module '../../extensions/SlashCommandExtension' or its corresponding type declarations.
+src/components/documents/RichTextEditorEnhanced.tsx(26,8): error TS2307: Cannot find module '../../services/aiWritingService' or its corresponding type declarations.
+src/components/documents/RichTextEditorEnhanced.tsx(177,34): error TS7031: Binding element 'searchQuery' implicitly has an 'any' type.
+src/components/documents/RichTextEditorEnhanced.tsx(632,53): error TS2339: Property 'toggleHighlight' does not exist on type 'ChainedCommands'.
+src/components/documents/TemplateGallery.tsx(2,24): error TS2307: Cannot find module '@headlessui/react' or its corresponding type declarations.
+src/components/documents/TemplateGallery.tsx(8,3): error TS2305: Module '"../../data/documentTemplates"' has no exported member 'getTemplatesByCategory'.
+src/components/documents/TemplateGallery.tsx(9,3): error TS2305: Module '"../../data/documentTemplates"' has no exported member 'searchTemplates'.
+src/components/documents/TemplateGallery.tsx(189,61): error TS2339: Property 'icon' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(202,33): error TS7053: Element implicitly has an 'any' type because expression of type '"form" | "report" | "checklist" | "policy" | "procedure"' can't be used to index type '{ policy: string; procedure: string; sop: string; manual: string; form: string; checklist: string; }'.
+  Property 'report' does not exist on type '{ policy: string; procedure: string; sop: string; manual: string; form: string; checklist: string; }'.
+src/components/documents/TemplateGallery.tsx(211,39): error TS2339: Property 'tags' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(211,61): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/components/documents/TemplateGallery.tsx(262,63): error TS2339: Property 'icon' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(285,64): error TS2339: Property 'content' does not exist on type 'DocumentTemplate'.
+src/components/feedback/FeedbackWidget.tsx(53,37): error TS2339: Property 'exportErrors' does not exist on type 'Logger'.
+src/components/feedback/FeedbackWidget.tsx(59,52): error TS2339: Property 'uploadTextFile' does not exist on type 'CloudinaryService'.
+src/components/feedback/FeedbackWidget.tsx(97,16): error TS2339: Property 'clearErrors' does not exist on type 'Logger'.
+src/components/his-integration/IntegrationDashboard.tsx(274,12): error TS2304: Cannot find name 'TableContainer'.
+src/components/his-integration/IntegrationDashboard.tsx(327,13): error TS2304: Cannot find name 'TableContainer'.
+src/components/his-integration/SyncProgressBar.tsx(49,15): error TS2352: Conversion of type 'SyncError' to type 'Error' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'SyncError' is missing the following properties from type 'Error': name, message
+src/components/his-integration/SyncProgressBar.tsx(75,47): error TS2339: Property 'message' does not exist on type 'SyncError'.
+src/components/his-integration/SyncProgressBar.tsx(155,59): error TS2339: Property 'message' does not exist on type 'SyncError'.
+src/components/monitoring/MonitoringDashboard.tsx(146,67): error TS2339: Property 'url' does not exist on type 'Request | URL'.
+  Property 'url' does not exist on type 'URL'.
+src/components/monitoring/MonitoringDashboard.tsx(231,62): error TS2339: Property 'navigationStart' does not exist on type 'PerformanceNavigationTiming'.
+src/components/projects/BulkActionsToolbar.tsx(54,83): error TS2554: Expected 1 arguments, but got 2.
+src/components/projects/ChecklistEvidence.tsx(82,9): error TS2353: Object literal may only specify known properties, and 'projectId' does not exist in type '{ name: { en: string; ar: string; }; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; fileUrl?: string | undefined; tags?: string[] | undefined; category?: string | undefined; departmentIds?: string[] | undefined; }'.
+src/components/projects/ChecklistEvidence.tsx(155,15): error TS2339: Property 'linkedFhirResources' does not exist on type 'ChecklistItem'.
+src/components/projects/ChecklistEvidence.tsx(155,41): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/components/projects/ChecklistEvidence.tsx(165,45): error TS2339: Property 'linkedFhirResources' does not exist on type 'ChecklistItem'.
+src/components/projects/ChecklistItemComponent.tsx(128,41): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string; team: string[]; currentStage: "Plan"; targetCompletionDate: string; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+  Type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string; team: string[]; currentStage: "Plan"; targetCompletionDate: string; improvementMetrics: { ...; }; }' is missing the following properties from type 'Omit<PDCACycle, "id">': stageHistory, createdAt
+src/components/projects/ChecklistItemComponent.tsx(166,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/ChecklistItemComponent.tsx(238,17): error TS7053: Element implicitly has an 'any' type because expression of type 'ComplianceStatus' can't be used to index type '{ Compliant: string; "Non-Compliant": string; "Partially Compliant": string; "Not Applicable": string; }'.
+  Property 'Not Started' does not exist on type '{ Compliant: string; "Non-Compliant": string; "Partially Compliant": string; "Not Applicable": string; }'.
+src/components/projects/DesignControlsComponent.tsx(72,11): error TS2741: Property 'standardId' is missing in type '{ id: string; requirement: string; policyProcess: string; implementationEvidence: string; auditFindings: string; outcomeKPI: string; status: "Not Applicable"; linkedDocumentIds: never[]; }' but required in type 'DesignControlItem'.
+src/components/projects/DesignControlsComponent.tsx(105,27): error TS2339: Property 'standard' does not exist on type 'Project'.
+src/components/projects/DesignControlsComponent.tsx(108,9): error TS2322: Type '(string | undefined)[]' is not assignable to type 'string[]'.
+  Type 'string | undefined' is not assignable to type 'string'.
+    Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(50,40): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string | undefined; team: never[]; currentStage: PDCAStage; targetCompletionDate: string | undefined; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+  Type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string | undefined; team: never[]; currentStage: PDCAStage; targetCompletionDate: string | undefined; improvementMetrics: { ...; }; }' is missing the following properties from type 'Omit<PDCACycle, "id">': stageHistory, createdAt
+src/components/projects/PDCACycleCard.tsx(83,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(109,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(110,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(186,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(204,15): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleDetailModal.tsx(56,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleManager.tsx(22,11): error TS2339: Property 'users' does not exist on type 'AppState'.
+src/components/projects/PDCACycleManager.tsx(23,11): error TS2339: Property 'updateCAPAPDCAStage' does not exist on type 'ProjectState'.
+src/components/projects/PDCACycleManager.tsx(71,14): error TS18048: 'title' is possibly 'undefined'.
+src/components/projects/PDCACycleManager.tsx(173,24): error TS18048: 'user' is possibly 'undefined'.
+src/components/projects/PDCACycleManager.tsx(437,53): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process" | "Quality" | "Safety" | "Efficiency" | "Other"; ... 5 more ...; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+  Type '{ projectId: string; title: string; description: string; category: "Process" | "Quality" | "Safety" | "Efficiency" | "Other"; priority: "High" | "Medium" | "Low"; owner: string; team: never[]; currentStage: "Plan"; targetCompletionDate: string; improvementMetrics: { ...; }; }' is missing the following properties from type 'Omit<PDCACycle, "id">': stageHistory, createdAt
+src/components/projects/PDCACycleManager.tsx(557,43): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/components/projects/ProjectCard.tsx(109,31): error TS2339: Property 'id' does not exist on type 'string'.
+src/components/projects/ProjectCard.tsx(110,19): error TS2322: Type 'string' is not assignable to type 'User'.
+src/components/projects/ProjectCard.tsx(112,37): error TS2339: Property 'name' does not exist on type 'string'.
+src/components/quality-insights/CompetencyGapReport.tsx(133,13): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/risk/EffectivenessChecksTab.tsx(84,23): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+src/components/risk/EffectivenessChecksTab.tsx(104,15): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/settings/BulkUserImport.tsx(56,45): error TS2345: Argument of type 'Partial<User>[]' is not assignable to parameter of type 'User[]'.
+  Type 'Partial<User>' is not assignable to type 'User'.
+    Types of property 'id' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/components/settings/BulkUserImport.tsx(88,33): error TS2554: Expected 3 arguments, but got 2.
+src/components/settings/BulkUserImport.tsx(94,25): error TS2339: Property 'successCount' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(95,24): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(96,24): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(99,18): error TS2339: Property 'successCount' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(100,55): error TS2339: Property 'successCount' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(102,18): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(103,48): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(27,32): error TS2554: Expected 0 arguments, but got 1.
+src/components/settings/QuickActionsPanel.tsx(15,10): error TS2724: '"@/hooks/useNavigation"' has no exported member named 'useNavigate'. Did you mean 'useNavigation'?
+src/components/settings/SettingsAuditLogViewer.tsx(45,9): error TS2554: Expected 0-1 arguments, but got 4.
+src/components/settings/SettingsAuditLogViewer.tsx(256,41): error TS2339: Property 'toDate' does not exist on type 'string'.
+src/components/settings/SettingsPresetsPanel.tsx(104,9): error TS2554: Expected 1 arguments, but got 6.
+src/components/settings/SettingsPresetsPanel.tsx(115,9): error TS2322: Type '"visual"' is not assignable to type '"theme" | "full" | "security" | "notifications" | "personal"'.
+src/components/settings/SettingsPresetsPanel.tsx(200,23): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "security" | "notifications" | "personal"' and '"visual"' have no overlap.
+src/components/settings/SettingsPresetsPanel.tsx(204,29): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "notifications" | "personal"' and '"performance"' have no overlap.
+src/components/settings/SettingsPresetsPanel.tsx(211,25): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "security" | "notifications" | "personal"' and '"visual"' have no overlap.
+src/components/settings/SettingsPresetsPanel.tsx(215,31): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "notifications" | "personal"' and '"performance"' have no overlap.
+src/components/settings/SettingsVersionHistory.tsx(49,48): error TS2554: Expected 0 arguments, but got 1.
+src/components/settings/SettingsVersionHistory.tsx(67,9): error TS2559: Type 'string' has no properties in common with type 'Partial<AppSettings>'.
+src/components/settings/SettingsVersionHistory.tsx(96,45): error TS2554: Expected 1 arguments, but got 2.
+src/components/settings/SettingsVersionHistory.tsx(97,22): error TS2345: Argument of type 'Partial<AppSettings>' is not assignable to parameter of type 'AppSettings'.
+  Types of property 'appName' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/components/settings/SettingsVersionHistory.tsx(212,43): error TS2339: Property 'toDate' does not exist on type 'string'.
+src/components/settings/VisualSettingsPage.tsx(197,17): error TS2554: Expected 7 arguments, but got 6.
+src/components/settings/VisualSettingsPage.tsx(202,13): error TS18047: 'appSettings' is possibly 'null'.
+src/components/settings/VisualSettingsPage.tsx(210,17): error TS2554: Expected 7 arguments, but got 6.
+src/components/settings/VisualSettingsPage.tsx(215,13): error TS18047: 'appSettings' is possibly 'null'.
+src/components/settings/VisualSettingsPage.tsx(227,11): error TS2559: Type 'string' has no properties in common with type 'Partial<AppSettings>'.
+src/components/users/UserCompetencies.tsx(299,13): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/users/UserProjectInvolvement.tsx(179,13): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/users/UserTrainingDashboard.tsx(135,17): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/components/users/UserTrainingDashboard.tsx(180,17): error TS2322: Type '{ icon: Element; title: string; message: string; }' is not assignable to type 'IntrinsicAttributes & EmptyStateProps'.
+  Property 'message' does not exist on type 'IntrinsicAttributes & EmptyStateProps'.
+src/utils/numberFormatter.ts(234,22): error TS2339: Property 'formatRange' does not exist on type 'NumberFormat'.
+src/utils/programDepartmentResolver.ts(51,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(69,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(78,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(95,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(113,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(130,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(148,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(172,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(189,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(206,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(223,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(240,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(264,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(281,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(298,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(314,25): error TS2353: Object literal may only specify known properties, and 'relatedSections' does not exist in type 'ProgramFormTemplate'.

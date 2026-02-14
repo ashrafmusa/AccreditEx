@@ -33,7 +33,7 @@ const DepartmentUserList: React.FC<DepartmentUserListProps> = ({ users }) => {
         ))}
         {users.length === 0 && (
           <EmptyState
-            icon={UserIcon}
+            icon={<UserIcon className="w-6 h-6" />}
             title={t("noUsersInDepartment")}
             message=""
           />

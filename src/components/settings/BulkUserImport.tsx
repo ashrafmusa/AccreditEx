@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
+import { User } from "@/types";
 import {
   exportUsersToExcel,
   importUsersFromExcel,
@@ -53,7 +54,7 @@ const BulkUserImport: React.FC = () => {
   const handleDownloadTemplate = async () => {
     try {
       const templateData = getUserImportTemplate();
-      const blob = await exportUsersToExcel(templateData);
+      const blob = await exportUsersToExcel(templateData as User[]);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -85,15 +86,19 @@ const BulkUserImport: React.FC = () => {
 
     try {
       // Create bulk operation record
-      const operationId = await createBulkOperation("import", currentUser!.id);
+      const operationId = await createBulkOperation(
+        "import",
+        0,
+        currentUser!.id,
+      );
 
       // Import users
-      const result = await importUsersFromExcel(file);
+      const result = (await importUsersFromExcel(file)) as any;
 
       setImportResults({
-        success: result.successCount,
-        failed: result.errors.length,
-        errors: result.errors,
+        success: result.successCount ?? 0,
+        failed: result.errors?.length ?? 0,
+        errors: result.errors ?? [],
       });
 
       if (result.successCount > 0) {

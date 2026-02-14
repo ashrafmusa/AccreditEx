@@ -2,8 +2,11 @@ export interface DocumentTemplate {
   id: string;
   name: string;
   description: string;
-  category: "policy" | "procedure" | "report" | "form" | "checklist";
+  category: "policy" | "procedure" | "report" | "form" | "checklist" | "sop" | "manual";
   structure: string[];
+  icon?: string;
+  tags?: string[];
+  content?: string;
 }
 
 export const documentTemplates: DocumentTemplate[] = [
@@ -83,3 +86,15 @@ export const documentTemplates: DocumentTemplate[] = [
     ]
   }
 ];
+
+export function getTemplatesByCategory(category: string): DocumentTemplate[] {
+  return documentTemplates.filter(t => t.category === category);
+}
+
+export function searchTemplates(query: string): DocumentTemplate[] {
+  const lower = query.toLowerCase();
+  return documentTemplates.filter(t =>
+    t.name.toLowerCase().includes(lower) ||
+    t.description.toLowerCase().includes(lower)
+  );
+}

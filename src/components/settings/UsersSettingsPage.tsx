@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
@@ -15,6 +17,8 @@ import {
 import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from "./index";
 
 const UsersSettingsPage: React.FC = () => {
+  const { isAdmin, AdminOnly } = useAdminGuard();
+  const { auditBatch } = useSettingsAudit();
   const { t } = useTranslation();
   const toast = useToast();
   const { appSettings, updateAppSettings } = useAppStore();
@@ -36,7 +40,7 @@ const UsersSettingsPage: React.FC = () => {
 
   const handleUsersSettingsChange = (
     field: keyof typeof usersSettings,
-    value: any
+    value: any,
   ) => {
     const newUsersSettings = {
       ...usersSettings,
@@ -45,7 +49,7 @@ const UsersSettingsPage: React.FC = () => {
     setUsersSettings(newUsersSettings);
     setHasChanges(
       JSON.stringify(newUsersSettings) !==
-        JSON.stringify(appSettings?.users || usersSettings)
+        JSON.stringify(appSettings?.users || usersSettings),
     );
   };
 
@@ -53,9 +57,31 @@ const UsersSettingsPage: React.FC = () => {
     setLoading(true);
     try {
       if (!appSettings) {
-        toast.error("Settings not loaded");
+        toast.error(t("settingsNotLoaded"));
         return;
       }
+      const oldUsers = appSettings.users || {};
+      const auditFields = [
+        "enableUserManagement",
+        "requireEmailVerification",
+        "autoDeactivateInactiveUsers",
+        "inactivityThresholdDays",
+        "sessionTimeoutMinutes",
+        "maxLoginAttempts",
+        "lockoutDurationMinutes",
+      ] as const;
+      const changes: { field: string; from: any; to: any }[] = [];
+      for (const field of auditFields) {
+        const oldVal = (oldUsers as any)[field];
+        const newVal = usersSettings[field];
+        if (oldVal !== newVal) {
+          changes.push({ field, from: oldVal, to: newVal });
+        }
+      }
+      if (changes.length > 0) {
+        auditBatch("users", changes);
+      }
+
       const updatedSettings = {
         ...appSettings,
         users: usersSettings,
@@ -88,249 +114,250 @@ const UsersSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {hasChanges && (
-        <SettingsAlert
-          type="warning"
-          icon={ExclamationTriangleIcon}
-          title={t("unsavedChanges")}
-          message="You have unsaved changes to your settings"
-          onDismiss={() => {}}
-        />
-      )}
+    <AdminOnly>
+      <div className="space-y-6">
+        {hasChanges && (
+          <SettingsAlert
+            type="warning"
+            icon={ExclamationTriangleIcon}
+            title={t("unsavedChanges")}
+            message={t("unsavedUserChanges")}
+            onDismiss={() => {}}
+          />
+        )}
 
-      <SettingsCard
-        title={t("userManagement") || "User Management"}
-        description={
-          t("configureUserAccountSettings") ||
-          "Configure user account settings and security policies"
-        }
-      >
-        <div className="space-y-8">
-          <SettingsSection
-            title={t("userAccounts") || "User Accounts"}
-            description={
-              t("manageUserAccountCreation") ||
-              "Manage user account creation and verification"
-            }
-          >
-            <ToggleSwitch
-              label={t("enableUserManagement") || "Enable User Management"}
+        <SettingsCard
+          title={t("userManagement") || "User Management"}
+          description={
+            t("configureUserAccountSettings") ||
+            "Configure user account settings and security policies"
+          }
+        >
+          <div className="space-y-8">
+            <SettingsSection
+              title={t("userAccounts") || "User Accounts"}
               description={
-                t("allowCreationOfUserAccounts") ||
-                "Allow creation and management of user accounts"
+                t("manageUserAccountCreation") ||
+                "Manage user account creation and verification"
               }
-              enabled={usersSettings.enableUserManagement}
-              setEnabled={(enabled) =>
-                handleUsersSettingsChange("enableUserManagement", enabled)
-              }
-            />
-            <ToggleSwitch
-              label={
-                t("requireEmailVerification") || "Require Email Verification"
-              }
-              description={
-                t("usersMustVerifyEmail") ||
-                "Users must verify their email address before accessing the application"
-              }
-              enabled={usersSettings.requireEmailVerification}
-              setEnabled={(enabled) =>
-                handleUsersSettingsChange("requireEmailVerification", enabled)
-              }
-            />
-          </SettingsSection>
+            >
+              <ToggleSwitch
+                label={t("enableUserManagement") || "Enable User Management"}
+                description={
+                  t("allowCreationOfUserAccounts") ||
+                  "Allow creation and management of user accounts"
+                }
+                enabled={usersSettings.enableUserManagement}
+                setEnabled={(enabled) =>
+                  handleUsersSettingsChange("enableUserManagement", enabled)
+                }
+              />
+              <ToggleSwitch
+                label={
+                  t("requireEmailVerification") || "Require Email Verification"
+                }
+                description={
+                  t("usersMustVerifyEmail") ||
+                  "Users must verify their email address before accessing the application"
+                }
+                enabled={usersSettings.requireEmailVerification}
+                setEnabled={(enabled) =>
+                  handleUsersSettingsChange("requireEmailVerification", enabled)
+                }
+              />
+            </SettingsSection>
 
-          <SettingsSection
-            title={t("inactivityManagement") || "Inactivity Management"}
-            description={
-              t("automaticallyManageInactiveUsers") ||
-              "Automatically manage inactive user accounts"
-            }
-          >
-            <ToggleSwitch
-              label={
-                t("autoDeactivateInactiveUsers") ||
-                "Auto-Deactivate Inactive Users"
-              }
+            <SettingsSection
+              title={t("inactivityManagement") || "Inactivity Management"}
               description={
-                t("automaticallyDeactivateInactiveUsers") ||
-                "Automatically deactivate user accounts that haven't been used for a specified period"
+                t("automaticallyManageInactiveUsers") ||
+                "Automatically manage inactive user accounts"
               }
-              enabled={usersSettings.autoDeactivateInactiveUsers}
-              setEnabled={(enabled) =>
-                handleUsersSettingsChange(
-                  "autoDeactivateInactiveUsers",
-                  enabled
-                )
+            >
+              <ToggleSwitch
+                label={
+                  t("autoDeactivateInactiveUsers") ||
+                  "Auto-Deactivate Inactive Users"
+                }
+                description={
+                  t("automaticallyDeactivateInactiveUsers") ||
+                  "Automatically deactivate user accounts that haven't been used for a specified period"
+                }
+                enabled={usersSettings.autoDeactivateInactiveUsers}
+                setEnabled={(enabled) =>
+                  handleUsersSettingsChange(
+                    "autoDeactivateInactiveUsers",
+                    enabled,
+                  )
+                }
+              />
+              {usersSettings.autoDeactivateInactiveUsers && (
+                <div className="ml-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                    {t("inactivityThresholdDays") ||
+                      "Inactivity Threshold (days)"}
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="7"
+                      max="365"
+                      step="1"
+                      value={usersSettings.inactivityThresholdDays}
+                      onChange={(e) =>
+                        handleUsersSettingsChange(
+                          "inactivityThresholdDays",
+                          parseInt(e.target.value),
+                        )
+                      }
+                      className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
+                    />
+                    <span className="text-lg font-bold text-gray-900 dark:text-white min-w-16 text-right">
+                      {usersSettings.inactivityThresholdDays}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                    {t("inactiveUsersDeactivated")}
+                  </p>
+                </div>
+              )}
+            </SettingsSection>
+
+            <SettingsSection
+              title={t("sessionSecurity") || "Session Security"}
+              description={
+                t("configureSessionTimeout") ||
+                "Configure session timeout and access security"
               }
-            />
-            {usersSettings.autoDeactivateInactiveUsers && (
-              <div className="ml-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            >
+              <div>
                 <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                  {t("inactivityThresholdDays") ||
-                    "Inactivity Threshold (days)"}
+                  {t("sessionTimeoutMinutes") || "Session Timeout (minutes)"}
                 </label>
                 <div className="flex items-center gap-4">
                   <input
                     type="range"
-                    min="7"
-                    max="365"
-                    step="1"
-                    value={usersSettings.inactivityThresholdDays}
+                    min="5"
+                    max="480"
+                    step="5"
+                    value={usersSettings.sessionTimeoutMinutes}
                     onChange={(e) =>
                       handleUsersSettingsChange(
-                        "inactivityThresholdDays",
-                        parseInt(e.target.value)
+                        "sessionTimeoutMinutes",
+                        parseInt(e.target.value),
                       )
                     }
                     className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
                   />
                   <span className="text-lg font-bold text-gray-900 dark:text-white min-w-16 text-right">
-                    {usersSettings.inactivityThresholdDays}
+                    {usersSettings.sessionTimeoutMinutes}
                   </span>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  Users inactive for more than this duration will be
-                  automatically deactivated
+                  {t("usersWillBeLoggedOut") ||
+                    "Users will be automatically logged out after this period of inactivity"}
                 </p>
               </div>
-            )}
-          </SettingsSection>
+            </SettingsSection>
 
-          <SettingsSection
-            title={t("sessionSecurity") || "Session Security"}
-            description={
-              t("configureSessionTimeout") ||
-              "Configure session timeout and access security"
-            }
+            <SettingsSection
+              title={t("loginSecurity") || "Login Security"}
+              description={
+                t("setLoginAttemptLimits") ||
+                "Set login attempt limits and lockout duration"
+              }
+            >
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                  {t("maxFailedLoginAttempts") ||
+                    "Maximum Failed Login Attempts"}
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="3"
+                    max="20"
+                    step="1"
+                    value={usersSettings.maxLoginAttempts}
+                    onChange={(e) =>
+                      handleUsersSettingsChange(
+                        "maxLoginAttempts",
+                        parseInt(e.target.value),
+                      )
+                    }
+                    className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
+                  />
+                  <span className="text-lg font-bold text-gray-900 dark:text-white min-w-8 text-right">
+                    {usersSettings.maxLoginAttempts}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  {t("accountWillBeLocked") ||
+                    "Account will be locked after this many failed login attempts"}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
+                  {t("accountLockoutDuration") ||
+                    "Account Lockout Duration (minutes)"}
+                </label>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="5"
+                    max="120"
+                    step="5"
+                    value={usersSettings.lockoutDurationMinutes}
+                    onChange={(e) =>
+                      handleUsersSettingsChange(
+                        "lockoutDurationMinutes",
+                        parseInt(e.target.value),
+                      )
+                    }
+                    className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
+                  />
+                  <span className="text-lg font-bold text-gray-900 dark:text-white min-w-16 text-right">
+                    {usersSettings.lockoutDurationMinutes}
+                  </span>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  {t("accountLockedDuration")}
+                </p>
+              </div>
+            </SettingsSection>
+
+            <SettingsAlert
+              type="warning"
+              title={t("securityNotice") || "Security Notice"}
+              message={
+                t("settingsAffectUserAccess") ||
+                "These settings affect user access and account security. Changes may impact existing user sessions and require users to re-authenticate."
+              }
+            />
+          </div>
+        </SettingsCard>
+
+        <div className="flex gap-3 justify-end">
+          <SettingsButton
+            variant="secondary"
+            onClick={handleCancel}
+            disabled={!hasChanges || loading}
           >
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                {t("sessionTimeoutMinutes") || "Session Timeout (minutes)"}
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="5"
-                  max="480"
-                  step="5"
-                  value={usersSettings.sessionTimeoutMinutes}
-                  onChange={(e) =>
-                    handleUsersSettingsChange(
-                      "sessionTimeoutMinutes",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
-                />
-                <span className="text-lg font-bold text-gray-900 dark:text-white min-w-16 text-right">
-                  {usersSettings.sessionTimeoutMinutes}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                {t("usersWillBeLoggedOut") ||
-                  "Users will be automatically logged out after this period of inactivity"}
-              </p>
-            </div>
-          </SettingsSection>
-
-          <SettingsSection
-            title={t("loginSecurity") || "Login Security"}
-            description={
-              t("setLoginAttemptLimits") ||
-              "Set login attempt limits and lockout duration"
-            }
+            {t("cancel")}
+          </SettingsButton>
+          <SettingsButton
+            variant="primary"
+            onClick={handleSave}
+            disabled={!hasChanges || loading}
+            loading={loading}
+            icon={!loading && hasChanges ? CheckIcon : undefined}
           >
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                {t("maxFailedLoginAttempts") || "Maximum Failed Login Attempts"}
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="3"
-                  max="20"
-                  step="1"
-                  value={usersSettings.maxLoginAttempts}
-                  onChange={(e) =>
-                    handleUsersSettingsChange(
-                      "maxLoginAttempts",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
-                />
-                <span className="text-lg font-bold text-gray-900 dark:text-white min-w-8 text-right">
-                  {usersSettings.maxLoginAttempts}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                {t("accountWillBeLocked") ||
-                  "Account will be locked after this many failed login attempts"}
-              </p>
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                {t("accountLockoutDuration") ||
-                  "Account Lockout Duration (minutes)"}
-              </label>
-              <div className="flex items-center gap-4">
-                <input
-                  type="range"
-                  min="5"
-                  max="120"
-                  step="5"
-                  value={usersSettings.lockoutDurationMinutes}
-                  onChange={(e) =>
-                    handleUsersSettingsChange(
-                      "lockoutDurationMinutes",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
-                />
-                <span className="text-lg font-bold text-gray-900 dark:text-white min-w-16 text-right">
-                  {usersSettings.lockoutDurationMinutes}
-                </span>
-              </div>
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Account will remain locked for this duration after exceeding
-                failed login attempts
-              </p>
-            </div>
-          </SettingsSection>
-
-          <SettingsAlert
-            type="warning"
-            title={t("securityNotice") || "Security Notice"}
-            message={
-              t("settingsAffectUserAccess") ||
-              "These settings affect user access and account security. Changes may impact existing user sessions and require users to re-authenticate."
-            }
-          />
+            {loading ? t("saving") : t("saveChanges")}
+          </SettingsButton>
         </div>
-      </SettingsCard>
-
-      <div className="flex gap-3 justify-end">
-        <SettingsButton
-          variant="secondary"
-          onClick={handleCancel}
-          disabled={!hasChanges || loading}
-        >
-          {t("cancel")}
-        </SettingsButton>
-        <SettingsButton
-          variant="primary"
-          onClick={handleSave}
-          disabled={!hasChanges || loading}
-          loading={loading}
-          icon={!loading && hasChanges ? CheckIcon : undefined}
-        >
-          {loading ? t("saving") : t("saveChanges")}
-        </SettingsButton>
       </div>
-    </div>
+    </AdminOnly>
   );
 };
 

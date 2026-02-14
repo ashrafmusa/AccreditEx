@@ -576,4 +576,91 @@ export const ar = {
     'categoryPerformance': 'أداء',
     'categoryAccessibility': 'إمكانية الوصول',
     'categoryCustom': 'مخصص',
+
+    // Settings UI - Common
+    'settingsNotLoaded': 'لم يتم تحميل الإعدادات',
+    'loadingSettingsSection': 'جارٍ تحميل قسم الإعدادات...',
+    'dismissAlert': 'إغلاق التنبيه',
+
+    // Visual Settings Page
+    'livePreviewActive': 'المعاينة المباشرة نشطة',
+    'livePreviewDescription': 'يتم معاينة تغييراتك في الوقت الفعلي. تُحدَّث الألوان وخيارات العرض فوراً.',
+    'brandingIdentity': 'العلامة التجارية والهوية',
+    'brandingIdentityDescription': 'تخصيص اسم التطبيق والشعار ولون العلامة التجارية الأساسي',
+    'basicBrandingDescription': 'إعدادات العلامة التجارية الأساسية لتطبيقك',
+    'logoPrimaryBrandColor': 'الشعار ولون العلامة التجارية الأساسي',
+    'themeAppearance': 'المظهر والسمة',
+    'themeAppearanceDescription': 'تخصيص المظهر المرئي وسلوك الواجهة',
+    'displayPreferences': 'تخصيص تفضيلات العرض',
+    'customColors': 'ألوان مخصصة',
+    'customColorsDescription': 'تخصيص نظام الألوان في جميع أنحاء التطبيق',
+    'changesAppliedInstantly': 'تُطبَّق التغييرات فوراً! جرّب تعديل الألوان لرؤية النتائج مباشرة.',
+    'globeVisualization': 'تصور الكرة الأرضية',
+    'globeVisualizationDescription': 'تخصيص مظهر وسلوك الكرة الأرضية ثلاثية الأبعاد',
+    'globeColorScheme': 'نظام ألوان الكرة الأرضية',
+    'animationEffects': 'الرسوم المتحركة والتأثيرات',
+    'globeBehaviorSettings': 'إعدادات سلوك الكرة الأرضية',
+    'userNotAuthenticated': 'المستخدم غير مصادق عليه',
+
+    // Profile Settings Page
+    'personalInfoDescription': 'تحديث الاسم والمسمى الوظيفي وتاريخ التوظيف',
+    'profilePhotoDescription': 'رفع صورة شخصية لتخصيص حسابك',
+    'securityDescription': 'إدارة كلمة المرور وإعدادات الأمان',
+    'unsavedProfileChanges': 'لديك تغييرات غير محفوظة في ملفك الشخصي',
+    'pleaseFixErrors': 'يرجى إصلاح الأخطاء قبل الحفظ',
+    'avatarUploadFailed': 'فشل رفع الصورة الشخصية. يرجى المحاولة مرة أخرى.',
+    'readOnly': 'للقراءة فقط',
+    'profileTip': 'حافظ على تحديث معلومات ملفك الشخصي لمساعدة فريقك في التعرف عليك والتواصل معك بسهولة.',
+    'passwordsMatch': 'كلمات المرور متطابقة',
+    'atLeast8Chars': '٨ أحرف على الأقل',
+    'mixUpperLowercase': 'مزيج من الأحرف الكبيرة والصغيرة',
+    'atLeastOneNumber': 'رقم واحد على الأقل',
+    'atLeastOneSpecialChar': 'حرف خاص واحد على الأقل',
+    'passwordMinLength': 'يجب أن تكون كلمة المرور ٨ أحرف على الأقل',
+    'passwordsDoNotMatch': 'كلمات المرور غير متطابقة',
+
+    // Notification Settings Page
+    'unsavedNotificationChanges': 'لديك تغييرات غير محفوظة في الإشعارات',
+    'total': 'الإجمالي',
+    'unread': 'غير مقروء',
+    'critical': 'حرج',
+    'archived': 'مؤرشف',
+    'configureDeliveryMethods': 'تكوين طرق تسليم الإشعارات',
+    'desktopNotifications': 'إشعارات سطح المكتب',
+    'desktopNotificationsDescription': 'عرض الإشعارات على سطح المكتب',
+    'startTime': 'وقت البدء',
+    'endTime': 'وقت الانتهاء',
+    'digestFrequency': 'تكرار الملخص',
+    'notificationTips': 'نصائح الإشعارات',
+    'notificationTipsMessage': 'فعّل إشعارات البريد الإلكتروني أو الإشعارات الفورية على الأقل للبقاء على اطلاع بالتحديثات المهمة.',
+    'markAllAsRead': 'تحديد الكل كمقروء',
+    'notificationsMarkedAsRead': 'تم تحديد جميع الإشعارات كمقروءة',
+
+    // Accessibility Settings Page
+    'unsavedAccessibilityChanges': 'لديك تغييرات غير محفوظة في إعدادات إمكانية الوصول',
+    'textDisplayDescription': 'ضبط حجم النص والمكونات لتحسين قابلية القراءة',
+    'visionContrast': 'الرؤية والتباين',
+    'visionContrastDescription': 'تحسين إمكانية الوصول البصرية مع خيارات تباين محسّنة',
+    'highContrastActive': 'وضع التباين العالي نشط. ستُعرض عناصر واجهة المستخدم بفروقات ألوان أقوى لرؤية أفضل.',
+    'motionAnimation': 'الحركة والرسوم المتحركة',
+    'motionAnimationDescription': 'التحكم في الرسوم المتحركة وتأثيرات الحركة للمشاهدة المريحة',
+    'reducedMotionActive': 'تم تمكين تقليل الحركة. سيتم تقليل الرسوم المتحركة والانتقالات في جميع أنحاء التطبيق.',
+    'screenReaderActive': 'تحسين قارئ الشاشة نشط. سيتم تحسين التنقل في المحتوى للتقنيات المساعدة.',
+    'accessibilityTipsMessage': 'استخدم اختصارات لوحة المفاتيح للتنقل. تعمل قارئات الشاشة بشكل أفضل مع HTML الدلالي. يحسّن التباين العالي القراءة. يساعد تقليل الحركة في منع الانزعاج.',
+
+    // Users Settings Page
+    'unsavedUserChanges': 'لديك تغييرات غير محفوظة في إعدادات المستخدمين',
+    'inactiveUsersDeactivated': 'سيتم إلغاء تنشيط المستخدمين غير النشطين لأكثر من هذه المدة تلقائياً',
+    'accountLockedDuration': 'سيظل الحساب مقفلاً لهذه المدة بعد تجاوز محاولات تسجيل الدخول الفاشلة',
+
+    // Usage Monitor Settings Page
+    'unsavedUsageChanges': 'لديك تغييرات غير محفوظة في إعدادات الاستخدام',
+    'usageDataAutoDeleted': 'سيتم حذف بيانات الاستخدام الأقدم من هذه المدة تلقائياً',
+
+    // About Settings Page
+    'aboutDescription': 'معلومات حول AccreditEx',
+    'appTagline': 'منصة إدارة الاعتماد الصحي',
+    'aboutParagraph': 'منصة مركزية لدعم المؤسسات الصحية طوال رحلة الاعتماد، وتبسيط إدارة المشاريع، وضمان التتبع، والحفاظ على الامتثال.',
+    'buildDate': 'تاريخ البناء',
+    'license': 'الترخيص',
 };

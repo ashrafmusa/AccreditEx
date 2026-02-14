@@ -88,18 +88,8 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
                   setNavigation({ view: "projects" });
                 }
               },
-              (error) => {
-                // Handle subscription errors
-                if (isSubscribed) {
-                  console.error("Subscription error:", error);
-                  toast.warning(
-                    "Failed to load real-time updates, showing cached data",
-                  );
-                  setLocalLoading(false);
-                }
-              },
             );
-          } catch (error) {
+          } catch (error: any) {
             console.error("Subscription setup failed:", error);
             if (isSubscribed) {
               toast.warning("Failed to set up real-time updates");
@@ -121,7 +111,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
           }
         };
       })
-      .catch((error) => {
+      .catch((error: any) => {
         console.error("Failed to load project service:", error);
         toast.error("Failed to load project service");
         setLocalLoading(false);
@@ -130,8 +120,8 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
 
   if (localLoading || loading) {
     return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-brand-primary"></div>
+      <div className="flex justify-center items-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
       </div>
     );
   }
@@ -226,14 +216,16 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
       case "overview":
         return <ProjectOverview project={project} />;
       case "checklist":
-        return <ProjectChecklist project={project} onUpdate={updateProject} />;
+        return (
+          <ProjectChecklist project={project} onUpdateProject={updateProject} />
+        );
       case "design_controls":
         return (
           <DesignControlsComponent
             project={project}
             documents={documents}
             isFinalized={false}
-            onSave={updateDesignControls}
+            onSave={(controls) => updateDesignControls(project.id, controls)}
           />
         );
       case "mock_surveys":
@@ -298,7 +290,7 @@ const ProjectDetailPageWrapper: React.FC<ProjectDetailPageProps> = (props) => {
   return (
     <ErrorBoundary
       fallback={(error, retry) => (
-        <div className="min-h-screen flex items-center justify-center bg-brand-background dark:bg-dark-brand-background p-4">
+        <div className="flex items-center justify-center p-4">
           <div className="max-w-md w-full bg-white dark:bg-gray-900 rounded-lg shadow-lg p-8">
             <div className="text-center">
               <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">

@@ -19,7 +19,7 @@ export const useUnifiedEvents = (): UnifiedEvent[] => {
     const { t, lang } = useTranslation();
 
     const projectEvents = useMemo((): UnifiedEvent[] => {
-        return projects.flatMap(p => 
+        return projects.flatMap(p =>
             p.endDate ? [{
                 id: `project-end-${p.id}`,
                 type: 'Project' as const,
@@ -46,12 +46,12 @@ export const useUnifiedEvents = (): UnifiedEvent[] => {
 
     const capaEvents = useMemo((): UnifiedEvent[] => {
         return projects.flatMap(p =>
-            p.capaReports.flatMap(c => 
+            (p.capaReports ?? []).flatMap(c =>
                 c.dueDate ? [{
                     id: `capa-due-${c.id}`,
                     type: 'CAPA' as const,
                     date: c.dueDate,
-                    title: `${t('capa')} ${t('dueDate')}: ${c.description.substring(0, 20)}...`,
+                    title: `${t('capa')} ${t('dueDate')}: ${(c.description ?? '').substring(0, 20)}...`,
                     color: eventColorMap.CAPA,
                     link: { view: 'projectDetail', projectId: p.id } as NavigationState,
                 }] : []
@@ -69,7 +69,7 @@ export const useUnifiedEvents = (): UnifiedEvent[] => {
             link: { view: 'calendar' } as NavigationState,
         }));
     }, [customEvents, lang]);
-    
+
     return useMemo(() => [
         ...projectEvents,
         ...documentEvents,

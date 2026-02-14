@@ -25,7 +25,7 @@ const EmptyState: FC<EmptyStateProps> = ({
 }) => {
   return (
     <div
-      className={`text-center py-16 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-800 animate-[fadeIn_0.5s_ease-in-out] ${className}`}
+      className={`text-center py-8 bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-800 animate-[fadeIn_0.5s_ease-in-out] ${className}`}
       role="status"
       aria-live="polite"
     >

@@ -9,13 +9,13 @@ import DOMPurify from 'dompurify';
  */
 export const useSanitizedHTML = (
     dirtyHTML: string,
-    config?: DOMPurify.Config
+    config?: Record<string, any>
 ): string => {
     return useMemo(() => {
         if (!dirtyHTML) return '';
 
         // Default configuration: Allow most HTML but strip script tags and event handlers
-        const defaultConfig: DOMPurify.Config = {
+        const defaultConfig: Record<string, any> = {
             ALLOWED_TAGS: [
                 'a', 'b', 'i', 'em', 'strong', 'u', 'span', 'p', 'br', 'div',
                 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
@@ -35,6 +35,6 @@ export const useSanitizedHTML = (
             ...config
         };
 
-        return DOMPurify.sanitize(dirtyHTML, defaultConfig);
+        return DOMPurify.sanitize(dirtyHTML, defaultConfig) as string;
     }, [dirtyHTML, config]);
 };

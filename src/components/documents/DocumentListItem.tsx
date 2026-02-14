@@ -42,7 +42,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
     ? getFileExtension(document.fileUrl)
     : null;
 
-  const statusColors: Record<AppDocument["status"], string> = {
+  const statusColors: Record<string, string> = {
     Draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
     "Pending Review":
       "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",

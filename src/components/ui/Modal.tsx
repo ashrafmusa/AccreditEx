@@ -27,7 +27,7 @@ const Modal: FC<ModalProps> = ({
   const { dir } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
 
-  useFocusTrap(modalRef, isOpen);
+  useFocusTrap(modalRef as React.RefObject<HTMLElement>, isOpen);
 
   useEffect(() => {
     if (!isOpen) return;

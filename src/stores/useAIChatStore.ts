@@ -49,10 +49,9 @@ export const useAIChatStore = create<AIChatState>((set, get) => ({
         });
 
         try {
-            const response = await aiAgentService.sendMessage(
+            const response = await aiAgentService.chat(
                 content,
-                get().threadId || undefined,
-                context
+                true
             );
 
             const assistantMessage: Message = {

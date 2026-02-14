@@ -9,16 +9,23 @@ interface KeyboardShortcut {
   description?: string;
 }
 
-export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[], enabled = true) => {
+type ShortcutMap = Record<string, () => void>;
+
+export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[] | ShortcutMap, enabled = true) => {
   useEffect(() => {
     if (!enabled) return;
 
+    // Normalize object shorthand to array format
+    const normalizedShortcuts: KeyboardShortcut[] = Array.isArray(shortcuts)
+      ? shortcuts
+      : Object.entries(shortcuts).map(([key, handler]) => ({ key, handler }));
+
     const handleKeyDown = (event: KeyboardEvent) => {
-      for (const shortcut of shortcuts) {
+      for (const shortcut of normalizedShortcuts) {
         const ctrlMatch = shortcut.ctrlKey === undefined || shortcut.ctrlKey === event.ctrlKey;
         const shiftMatch = shortcut.shiftKey === undefined || shortcut.shiftKey === event.shiftKey;
         const altMatch = shortcut.altKey === undefined || shortcut.altKey === event.altKey;
-        
+
         if (
           event.key === shortcut.key &&
           ctrlMatch &&

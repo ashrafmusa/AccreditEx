@@ -45,7 +45,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   const [viewingDOCX, setViewingDOCX] = useState<AppDocument | null>(null);
 
   const evidenceDocs = documents.filter((doc) =>
-    item.evidenceFiles.includes(doc.id)
+    item.evidenceFiles.includes(doc.id),
   );
 
   const handleFilesSelected = async (files: File[]) => {
@@ -68,7 +68,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
       const fileUrl = await cloudinaryService.uploadDocument(
         file,
         `projects/${project.id}/checklist/${item.id}`,
-        (progress) => setUploadProgress(progress.progress)
+        (progress) => setUploadProgress(progress.progress),
       );
 
       console.log("✅ Cloudinary upload successful:", fileUrl);
@@ -80,7 +80,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         type: "Evidence",
         fileUrl,
         projectId: project.id, // Link document to project for RBAC
-      });
+      } as any);
 
       console.log("✅ Firebase document created:", createdDoc.id);
 
@@ -103,7 +103,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
 
   const handleDocumentsSelected = (documentIds: string[]) => {
     const uniqueIds = documentIds.filter(
-      (id) => !item.evidenceFiles.includes(id)
+      (id) => !item.evidenceFiles.includes(id),
     );
     onUpdate({ evidenceFiles: [...item.evidenceFiles, ...uniqueIds] });
     setIsPickerOpen(false);
@@ -152,7 +152,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         ))}
 
         {/* Linked FHIR Resources */}
-        {item.linkedFhirResources?.map((res) => (
+        {(item as any).linkedFhirResources?.map((res: any) => (
           <div
             key={res.resourceId}
             className="flex items-center gap-2 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-md text-sm"
@@ -162,11 +162,12 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
           </div>
         ))}
 
-        {evidenceDocs.length === 0 && !item.linkedFhirResources?.length && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-            {t("noEvidenceAttached") || "No evidence attached"}
-          </p>
-        )}
+        {evidenceDocs.length === 0 &&
+          !(item as any).linkedFhirResources?.length && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+              {t("noEvidenceAttached") || "No evidence attached"}
+            </p>
+          )}
       </div>
 
       {/* Action Buttons */}

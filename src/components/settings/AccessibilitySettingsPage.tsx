@@ -43,13 +43,13 @@ const AccessibilitySettingsPage: React.FC = () => {
   }, [accessibility.fontSize]);
 
   const handleAccessibilityChange = (
-    updater: (prev: typeof accessibility) => typeof accessibility
+    updater: (prev: typeof accessibility) => typeof accessibility,
   ) => {
     const newAccessibility = updater(accessibility);
     setAccessibility(newAccessibility);
     setHasChanges(
       JSON.stringify(newAccessibility) !==
-        JSON.stringify(appSettings?.accessibility || accessibility)
+        JSON.stringify(appSettings?.accessibility || accessibility),
     );
   };
 
@@ -57,7 +57,7 @@ const AccessibilitySettingsPage: React.FC = () => {
     setLoading(true);
     try {
       if (!appSettings) {
-        toast.error("Settings not loaded");
+        toast.error(t("settingsNotLoaded"));
         return;
       }
       const updatedSettings = {
@@ -118,7 +118,7 @@ const AccessibilitySettingsPage: React.FC = () => {
         <SettingsAlert
           type="warning"
           title={t("unsavedChanges")}
-          message="You have unsaved accessibility settings changes"
+          message={t("unsavedAccessibilityChanges")}
           dismissible
         />
       )}
@@ -126,7 +126,7 @@ const AccessibilitySettingsPage: React.FC = () => {
       {/* Text & Display Settings Panel */}
       <SettingsPanel
         title={t("fontSize")}
-        description="Adjust text and component sizing for better readability"
+        description={t("textDisplayDescription")}
         collapsible={false}
         variant="default"
       >
@@ -156,7 +156,7 @@ const AccessibilitySettingsPage: React.FC = () => {
           {/* Live Preview */}
           <div className="mt-6 p-4 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-blue-50 dark:bg-blue-900/20">
             <h5 className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-2">
-              Preview
+              {t("preview")}
             </h5>
             <p
               className="text-gray-700 dark:text-gray-300 mb-2"
@@ -165,10 +165,10 @@ const AccessibilitySettingsPage: React.FC = () => {
                   accessibility.fontSize === "small"
                     ? "12px"
                     : accessibility.fontSize === "medium"
-                    ? "14px"
-                    : accessibility.fontSize === "large"
-                    ? "16px"
-                    : "18px",
+                      ? "14px"
+                      : accessibility.fontSize === "large"
+                        ? "16px"
+                        : "18px",
               }}
             >
               {t("previewText")}
@@ -180,10 +180,10 @@ const AccessibilitySettingsPage: React.FC = () => {
                   accessibility.fontSize === "small"
                     ? "11px"
                     : accessibility.fontSize === "medium"
-                    ? "13px"
-                    : accessibility.fontSize === "large"
-                    ? "15px"
-                    : "17px",
+                      ? "13px"
+                      : accessibility.fontSize === "large"
+                        ? "15px"
+                        : "17px",
               }}
             >
               {t("previewSecondaryText")}
@@ -194,8 +194,8 @@ const AccessibilitySettingsPage: React.FC = () => {
 
       {/* Vision & Contrast Panel */}
       <SettingsPanel
-        title="Vision & Contrast"
-        description="Improve visual accessibility with enhanced contrast options"
+        title={t("visionContrast")}
+        description={t("visionContrastDescription")}
         collapsible={false}
         variant="default"
       >
@@ -220,8 +220,7 @@ const AccessibilitySettingsPage: React.FC = () => {
         {accessibility.highContrast && (
           <div className="mt-4 p-3 rounded-lg bg-rose-50 dark:bg-pink-900/20 border border-rose-200 dark:border-pink-700">
             <p className="text-sm text-pink-600 dark:text-rose-300">
-              ✓ High contrast mode is active. UI elements will display with
-              stronger color differences for better visibility.
+              ✓ {t("highContrastActive")}
             </p>
           </div>
         )}
@@ -229,8 +228,8 @@ const AccessibilitySettingsPage: React.FC = () => {
 
       {/* Motion & Animation Panel */}
       <SettingsPanel
-        title="Motion & Animation"
-        description="Control animations and motion effects for comfortable viewing"
+        title={t("motionAnimation")}
+        description={t("motionAnimationDescription")}
         collapsible={false}
         variant="default"
       >
@@ -255,8 +254,7 @@ const AccessibilitySettingsPage: React.FC = () => {
         {accessibility.reduceMotion && (
           <div className="mt-4 p-3 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
             <p className="text-sm text-amber-700 dark:text-amber-300">
-              ✓ Reduced motion is enabled. Animations and transitions will be
-              minimized throughout the application.
+              ✓ {t("reducedMotionActive")}
             </p>
           </div>
         )}
@@ -264,8 +262,8 @@ const AccessibilitySettingsPage: React.FC = () => {
 
       {/* Assistive Technology Panel */}
       <SettingsPanel
-        title="Assistive Technology"
-        description="Support for screen readers and other assistive devices"
+        title={t("assistiveTechnology")}
+        description={t("assistiveTechnologyDescription")}
         collapsible={false}
         variant="default"
       >
@@ -290,8 +288,7 @@ const AccessibilitySettingsPage: React.FC = () => {
         {accessibility.screenReaderOptimized && (
           <div className="mt-4 p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
             <p className="text-sm text-green-700 dark:text-green-300">
-              ✓ Screen reader optimization is active. Content navigation will be
-              optimized for assistive technologies.
+              ✓ {t("screenReaderActive")}
             </p>
           </div>
         )}
@@ -300,11 +297,8 @@ const AccessibilitySettingsPage: React.FC = () => {
       {/* Accessibility Tips */}
       <SettingsAlert
         type="info"
-        title="Accessibility Tips"
-        message="• Use keyboard shortcuts: Tab to navigate, Enter to activate, Arrow keys to select
-• Screen readers work best with semantic HTML and proper ARIA labels
-• High contrast improves readability in bright or low-light conditions
-• Reduced motion helps prevent dizziness or discomfort from animations"
+        title={t("accessibilityTips")}
+        message={t("accessibilityTipsMessage")}
         dismissible={false}
       />
 

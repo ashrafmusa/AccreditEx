@@ -12,7 +12,8 @@ export { WebhookManagerService, webhookManagerService } from './WebhookManagerSe
 export { AnalyticsService, analyticsService } from './AnalyticsService';
 export { ReportingService, reportingService } from './ReportingService';
 export { useHISIntegrationStore } from '../../stores/useHISIntegrationStore';
-export * from './types';
+export { HISType, SyncStatus, AuthType } from './types';
+export type { HISConfig, FHIRResource, SyncStatusInfo, SyncError, DataMappingConfig, IntegrationLog, HISConnector, SyncResult, ApiResponse, HealthCheckResult } from './types';
 export * from './BaseHISConnector';
 export * from './integrations/ErrorHandler';
 export * from './integrations/ConnectorFactory';

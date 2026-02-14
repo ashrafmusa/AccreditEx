@@ -143,7 +143,8 @@ export default function MonitoringDashboard() {
 
     window.fetch = async (...args) => {
       const startTime = performance.now();
-      const url = typeof args[0] === "string" ? args[0] : args[0].url;
+      const url =
+        typeof args[0] === "string" ? args[0] : (args[0] as Request).url;
 
       try {
         const response = await originalFetch(...args);
@@ -228,7 +229,8 @@ export default function MonitoringDashboard() {
             timestamp: new Date(),
             type: "page-load",
             value:
-              navigationEntry.loadEventEnd - navigationEntry.navigationStart,
+              navigationEntry.loadEventEnd -
+              (navigationEntry as any).navigationStart,
             url: window.location.href,
             status:
               navigationEntry.loadEventEnd < 2000

@@ -18,7 +18,7 @@ import { programColorMap } from "../ui/constants";
 import UserAvatar from "../common/UserAvatar";
 
 interface ProjectCardProps {
-  project: Project & { programName: string; teamMembers: User[] };
+  project: Project & { programName: string; teamMembers: User[] | string[] };
   currentUser: User;
   onSelect: () => void;
   onEdit: () => void;
@@ -46,7 +46,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   const completedTasks = project.checklist.filter(
     (c) => c.status === ComplianceStatus.Compliant,
   ).length;
-  const openCapaCount = project.capaReports.filter(
+  const openCapaCount = (project.capaReports || []).filter(
     (c) => c.status === "Open",
   ).length;
 
@@ -104,12 +104,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               {t("teamMembers")}
             </p>
             <div className="flex -space-x-2 rtl:space-x-reverse">
-              {project.teamMembers.slice(0, 4).map((member) => (
+              {project.teamMembers.slice(0, 4).map((member: any) => (
                 <UserAvatar
-                  key={member.id}
+                  key={member.id || member}
                   user={member}
                   size="sm"
-                  ariaLabel={member.name}
+                  ariaLabel={member.name || member}
                 />
               ))}
               {project.teamMembers.length > 4 && (

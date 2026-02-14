@@ -4,7 +4,7 @@ export type Theme = 'light' | 'dark';
 
 export type SettingsSection = 'general' | 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport';
 
-export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'dataHub' | 'messaging' | 'aiDocumentGenerator';
+export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'accreditationHub' | 'dataHub' | 'messaging' | 'aiDocumentGenerator' | 'users' | 'competencies';
 
 export interface NavigationState {
   view: NavigationView;
@@ -16,6 +16,7 @@ export interface NavigationState {
   surveyId?: string;
   certificateId?: string;
   programId?: string;
+  filter?: string;
 }
 
 export type Notification = {
@@ -61,33 +62,41 @@ export interface LocalizedString {
   ar: string;
 }
 
-export enum UserRole {
-  Admin = 'Admin',
-  ProjectLead = 'ProjectLead',
-  TeamMember = 'TeamMember',
-  Auditor = 'Auditor',
-}
+export const UserRole = {
+  Admin: 'Admin',
+  ProjectLead: 'ProjectLead',
+  TeamMember: 'TeamMember',
+  Auditor: 'Auditor',
+  Viewer: 'Viewer',
+} as const;
+export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
-export enum ProjectStatus {
-  NotStarted = 'Not Started',
-  InProgress = 'In Progress',
-  OnHold = 'On Hold',
-  Completed = 'Completed',
-  Finalized = 'Finalized',
-}
+export const ProjectStatus = {
+  NotStarted: 'Not Started',
+  InProgress: 'In Progress',
+  OnHold: 'On Hold',
+  Completed: 'Completed',
+  Finalized: 'Finalized',
+  Open: 'Open',
+  Closed: 'Closed',
+} as const;
+export type ProjectStatus = (typeof ProjectStatus)[keyof typeof ProjectStatus];
 
-export enum ComplianceStatus {
-  Compliant = 'Compliant',
-  PartiallyCompliant = 'Partially Compliant',
-  NonCompliant = 'Non-Compliant',
-  NotApplicable = 'Not Applicable',
-}
+export const ComplianceStatus = {
+  Compliant: 'Compliant',
+  PartiallyCompliant: 'Partially Compliant',
+  NonCompliant: 'Non-Compliant',
+  NotApplicable: 'Not Applicable',
+  NotStarted: 'Not Started',
+} as const;
+export type ComplianceStatus = (typeof ComplianceStatus)[keyof typeof ComplianceStatus];
 
-export enum StandardCriticality {
-  High = 'High',
-  Medium = 'Medium',
-  Low = 'Low',
-}
+export const StandardCriticality = {
+  High: 'High',
+  Medium: 'Medium',
+  Low: 'Low',
+} as const;
+export type StandardCriticality = (typeof StandardCriticality)[keyof typeof StandardCriticality];
 
 export interface PasswordPolicy {
   minLength: number;
@@ -219,21 +228,28 @@ export interface Department {
   id: string;
   name: LocalizedString;
   requiredCompetencyIds?: string[];
+  head?: string;
+  members?: string[];
 }
 
 export interface User {
   id: string;
   name: string;
+  displayName?: string;
   email: string;
   role: UserRole;
   avatarUrl?: string;
   departmentId?: string;
+  department?: string;
   jobTitle?: string;
   hireDate?: string;
+  permissions?: string[];
+  readAndAcknowledge?: Record<string, boolean>;
   competencies?: {
     competencyId: string;
     issueDate: string;
     expiryDate: string;
+    evidenceDocumentIds?: string[];
   }[];
   trainingAssignments?: {
     trainingId: string;
@@ -242,6 +258,8 @@ export interface User {
     dueDate?: string;
   }[];
 }
+
+export type UserCompetency = User['competencies'] extends (infer T)[] | undefined ? T : never;
 
 export interface AccreditationProgram {
   id: string;
@@ -284,6 +302,8 @@ export interface AppDocument {
   departmentIds?: string[];  // Associated department IDs
   uploadedBy?: string;  // User who uploaded the document
   projectId?: string;  // Associated project ID for evidence documents
+  createdAt?: string;  // Creation timestamp
+  version?: number;  // Document version number
 }
 
 export interface TrainingProgram {
@@ -364,6 +384,7 @@ export interface Risk {
   description: string;
   likelihood: number;
   impact: number;
+  level?: string;
   ownerId: string | null;
   status: 'Open' | 'Mitigated' | 'Closed';
   mitigationPlan: string;
@@ -437,6 +458,7 @@ export interface AIQualityReport {
 export interface ChecklistItem {
   id: string;
   item: string;
+  requirement?: string;
   standardId: string;
   status: ComplianceStatus;
   assignedTo: string;
@@ -476,6 +498,7 @@ export interface MockSurveyResult {
 
 export interface MockSurvey {
   id: string;
+  type?: string;
   title?: string;
   description?: string;
   projectId?: string;
@@ -488,9 +511,12 @@ export interface MockSurvey {
   updatedAt: string;
 }
 
-export interface PDCAStage {
+export type PDCAStageName = 'Plan' | 'Do' | 'Check' | 'Act';
+export type PDCAStage = PDCAStageName | 'Completed';
+
+export interface PDCAStageRecord {
   id: string;
-  name: 'Plan' | 'Do' | 'Check' | 'Act';
+  name: PDCAStageName;
   description?: string;
   completedAt?: string;
   notes?: string;
@@ -505,7 +531,9 @@ export interface PDCACycle {
   priority?: 'High' | 'Medium' | 'Low';
   owner?: string;
   team?: string[];
-  currentStage: 'Plan' | 'Do' | 'Check' | 'Act' | 'Completed';
+  currentStage: PDCAStage;
+  status?: ProjectStatus;
+  actions?: string[];
   targetCompletionDate?: string;
   improvementMetrics?: {
     baseline: any[];
@@ -513,7 +541,7 @@ export interface PDCACycle {
     actual: any[];
   };
   stageHistory: Array<{
-    stage: 'Plan' | 'Do' | 'Check' | 'Act' | 'Completed';
+    stage: PDCAStage;
     enteredAt: string;
     completedAt?: string;
     completedBy?: string;
@@ -522,32 +550,42 @@ export interface PDCACycle {
   }>;
   createdAt: string;
   updatedAt?: string;
+  linkedCAPAIds?: string[];
+  linkedDocumentIds?: string[];
 }
 
 export interface CAPAReport {
   id: string;
+  type?: 'CAPA';
   title?: string;
   description?: string;
   checklistItemId: string;
   sourceProjectId?: string;
+  sourceStandardId?: string;
   assignedTo?: string;
   dueDate?: string;
   rootCause: string;
+  rootCauseAnalysis?: string;
+  rootCauseCategory?: string;
   correctiveAction: string;
   preventiveAction?: string;
+  actionPlan?: string;
+  linkedDocumentIds?: string[];
   status: ProjectStatus;
-  pdcaStage?: 'Plan' | 'Do' | 'Check' | 'Act';
-  pdcaHistory?: PDCAStage[];
+  pdcaStage?: PDCAStage;
+  pdcaHistory?: PDCAStageRecord[];
   createdAt: string;
   updatedAt: string;
   targetDate?: string;
   completionDate?: string;
   verifiedBy?: string;
+  projectName?: string;
   effectivenessCheck?: {
     required: boolean;
     completed: boolean;
     completionDate?: string;
     results?: string;
+    dueDate?: string;
   };
   closureException?: {
     reason: string;
@@ -598,7 +636,7 @@ export interface SettingsPreset {
   id: string;
   name: string;
   description: string;
-  category: 'personal' | 'theme' | 'security' | 'notifications' | 'full';
+  category: 'personal' | 'theme' | 'security' | 'notifications' | 'full' | 'visual' | 'performance';
   settings: Partial<AppSettings>;
   isPublic: boolean;
   createdBy: string;
@@ -681,4 +719,32 @@ export interface SettingsComparison {
   currentValue: any;
   comparedValue: any;
   isDifferent: boolean;
+}
+
+// Re-export supplementary types
+export type { ImprovementMetric, ImprovementMetrics, PDCAStageHistory } from './pdca';
+
+// Activity Log Item
+export interface ActivityLogItem {
+  id: string;
+  timestamp: string;
+  user: string;
+  action: string | LocalizedString;
+  details?: string;
+  type?: string;
+}
+
+// Keyboard shortcut map type (for useKeyboardShortcuts hook)
+export type KeyboardShortcutMap = Record<string, () => void>;
+
+// Document Template
+export interface DocumentTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;
+  icon?: string;
+  tags?: string[];
+  content?: string;
+  type?: string;
 }

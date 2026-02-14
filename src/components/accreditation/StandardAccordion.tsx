@@ -55,7 +55,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({
                 className="flex items-center text-sm text-brand-primary font-medium"
               >
                 <span>
-                  {t("subStandards")} ({standard.subStandards.length})
+                  {t("subStandards")} ({standard.subStandards?.length})
                 </span>
                 <ChevronDownIcon
                   className={`h-5 w-5 ltr:ml-1 rtl:mr-1 transition-transform ${isExpanded ? "rotate-180" : ""}`}
@@ -135,7 +135,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({
           className="px-5 pb-5 border-t border-gray-200 dark:border-dark-brand-border mt-2 pt-4"
         >
           <ul className="space-y-3 list-disc ltr:list-inside rtl:list-inside marker:text-brand-primary">
-            {standard.subStandards.map((sub) => (
+            {standard.subStandards?.map((sub) => (
               <li
                 key={sub.id}
                 className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary"

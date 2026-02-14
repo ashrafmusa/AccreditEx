@@ -32,7 +32,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
   const [aiModalContent, setAiModalContent] = useState("");
   const [aiModalTitle, setAiModalTitle] = useState("");
   const [aiModalType, setAiModalType] = useState<"root-cause" | "improvements">(
-    "improvements"
+    "improvements",
   );
 
   // Determine current stage
@@ -62,6 +62,8 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
         currentStage: capa.pdcaStage || "Plan",
         targetCompletionDate: capa.dueDate,
         improvementMetrics: { baseline: [], target: [], actual: [] },
+        stageHistory: [],
+        createdAt: new Date().toISOString(),
       });
       toast.success("🔗 CAPA converted to PDCA Cycle!");
     } catch (error) {
@@ -80,7 +82,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
       const suggestions = await aiAgentService.suggestPDCAImprovements({
         title: cycle.title,
         currentStage: cycle.currentStage,
-        description: cycle.description,
+        description: cycle.description || "",
         actions: cycle.actions,
       });
 
@@ -106,8 +108,8 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
 
     try {
       const rootCause = await aiAgentService.analyzeRootCause({
-        title: capa.description,
-        description: capa.description,
+        title: capa.description || "",
+        description: capa.description || "",
         findings: capa.rootCause,
       });
 
@@ -159,20 +161,21 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
   // Extract data based on type
   const title =
     type === "capa"
-      ? (item as CAPAReport).description
-      : (item as PDCACycle).title;
+      ? (item as CAPAReport).description || ""
+      : (item as PDCACycle).title || "";
 
   const owner =
     type === "capa"
-      ? (item as CAPAReport).assignedTo
-      : (item as PDCACycle).owner;
+      ? (item as CAPAReport).assignedTo || ""
+      : (item as PDCACycle).owner || "";
 
   const dueDate =
     type === "capa"
-      ? (item as CAPAReport).dueDate
-      : (item as PDCACycle).targetCompletionDate;
+      ? (item as CAPAReport).dueDate || ""
+      : (item as PDCACycle).targetCompletionDate || "";
 
-  const priority = type === "cycle" ? (item as PDCACycle).priority : "Medium"; // Default for CAPAs
+  const priority =
+    type === "cycle" ? (item as PDCACycle).priority || "Medium" : "Medium"; // Default for CAPAs
 
   // Calculate days until due
   const getDaysUntilDue = (date: string) => {
@@ -189,7 +192,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
   return (
     <div
       className={`${getStageColor(
-        currentStage
+        currentStage,
       )} border-l-4 rounded-lg p-4 mb-3 cursor-pointer hover:shadow-md transition-shadow duration-200`}
       onClick={onView}
     >
@@ -201,7 +204,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
         {type === "cycle" && (
           <span
             className={`${getPriorityColor(
-              priority
+              priority,
             )} text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0`}
           >
             {priority}
@@ -259,7 +262,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
               </span>
               <span className="text-brand-text-primary dark:text-dark-brand-text-primary font-semibold">
                 {Math.round(
-                  ((item as CAPAReport).pdcaHistory!.length / 4) * 100
+                  ((item as CAPAReport).pdcaHistory!.length / 4) * 100,
                 )}
                 %
               </span>
@@ -270,7 +273,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
                 style={{
                   width: `${Math.min(
                     ((item as CAPAReport).pdcaHistory!.length / 4) * 100,
-                    100
+                    100,
                   )}%`,
                 }}
               />

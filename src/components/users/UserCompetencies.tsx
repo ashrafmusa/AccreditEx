@@ -71,7 +71,7 @@ const UserCompetencies: React.FC<Props> = ({
 
   const handleSave = (competency: UserCompetency) => {
     const existingIndex = user.competencies?.findIndex(
-      (c) => c.competencyId === competency.competencyId
+      (c) => c.competencyId === competency.competencyId,
     );
     let newCompetencies = [...(user.competencies || [])];
     if (existingIndex !== undefined && existingIndex > -1) {
@@ -122,7 +122,7 @@ const UserCompetencies: React.FC<Props> = ({
       const fileUrl = await storageService.uploadDocument(
         file,
         documentId,
-        (progress) => setUploadProgress(progress.progress)
+        (progress) => setUploadProgress(progress.progress),
       );
 
       const newDoc: AppDocument = {
@@ -233,7 +233,7 @@ const UserCompetencies: React.FC<Props> = ({
                   {new Date(uc.issueDate).toLocaleDateString()}{" "}
                   {uc.expiryDate &&
                     `| ${t("expiryDate")}: ${new Date(
-                      uc.expiryDate
+                      uc.expiryDate,
                     ).toLocaleDateString()}`}
                 </p>
                 {/* Evidence Documents */}
@@ -293,7 +293,11 @@ const UserCompetencies: React.FC<Props> = ({
           );
         })}
         {(user.competencies || []).length === 0 && (
-          <EmptyState icon={PlusIcon} title={t("noCompetencies")} message="" />
+          <EmptyState
+            icon={<PlusIcon className="w-6 h-6" />}
+            title={t("noCompetencies")}
+            message=""
+          />
         )}
       </div>
       {isModalOpen && (

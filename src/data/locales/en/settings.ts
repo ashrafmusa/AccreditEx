@@ -574,4 +574,91 @@ export const en = {
     categoryPerformance: 'Performance',
     categoryAccessibility: 'Accessibility',
     categoryCustom: 'Custom',
+
+    // Settings UI - Common
+    settingsNotLoaded: 'Settings not loaded',
+    loadingSettingsSection: 'Loading settings section...',
+    dismissAlert: 'Dismiss alert',
+
+    // Visual Settings Page
+    livePreviewActive: 'Live Preview Active',
+    livePreviewDescription: 'Your changes are being previewed in real-time. Colors and display options update instantly.',
+    brandingIdentity: 'Branding & Identity',
+    brandingIdentityDescription: 'Customize your application name, logo, and primary brand color',
+    basicBrandingDescription: 'Basic branding settings for your application',
+    logoPrimaryBrandColor: 'Logo and primary brand color',
+    themeAppearance: 'Theme & Appearance',
+    themeAppearanceDescription: 'Customize the visual appearance and behavior of the interface',
+    displayPreferences: 'Customize display preferences',
+    customColors: 'Custom Colors',
+    customColorsDescription: 'Customize color scheme throughout the application',
+    changesAppliedInstantly: 'Changes are applied instantly! Try adjusting colors to see immediate results.',
+    globeVisualization: 'Globe Visualization',
+    globeVisualizationDescription: 'Customize the 3D globe appearance and behavior',
+    globeColorScheme: 'Globe color scheme',
+    animationEffects: 'Animation & Effects',
+    globeBehaviorSettings: 'Globe behavior settings',
+    userNotAuthenticated: 'User not authenticated',
+
+    // Profile Settings Page
+    personalInfoDescription: 'Update your name, job title, and hire date',
+    profilePhotoDescription: 'Upload a profile picture to personalize your account',
+    securityDescription: 'Manage your password and security settings',
+    unsavedProfileChanges: 'You have unsaved changes to your profile',
+    pleaseFixErrors: 'Please fix the errors before saving',
+    avatarUploadFailed: 'Failed to upload profile photo. Please try again.',
+    readOnly: 'Read-only',
+    profileTip: 'Keep your profile information up to date to help your team identify and reach out to you easily.',
+    passwordsMatch: 'Passwords match',
+    atLeast8Chars: 'At least 8 characters',
+    mixUpperLowercase: 'Mix of uppercase and lowercase',
+    atLeastOneNumber: 'At least one number',
+    atLeastOneSpecialChar: 'At least one special character',
+    passwordMinLength: 'Password must be at least 8 characters long',
+    passwordsDoNotMatch: 'Passwords do not match',
+
+    // Notification Settings Page
+    unsavedNotificationChanges: 'You have unsaved notification changes',
+    total: 'Total',
+    unread: 'Unread',
+    critical: 'Critical',
+    archived: 'Archived',
+    configureDeliveryMethods: 'Configure notification delivery methods',
+    desktopNotifications: 'Desktop Notifications',
+    desktopNotificationsDescription: 'Show notifications on your desktop',
+    startTime: 'Start Time',
+    endTime: 'End Time',
+    digestFrequency: 'Digest Frequency',
+    notificationTips: 'Notification Tips',
+    notificationTipsMessage: 'Enable at least email or push notifications to stay informed about important updates.',
+    markAllAsRead: 'Mark All as Read',
+    notificationsMarkedAsRead: 'All notifications marked as read',
+
+    // Accessibility Settings Page
+    unsavedAccessibilityChanges: 'You have unsaved accessibility settings changes',
+    textDisplayDescription: 'Adjust text and component sizing for better readability',
+    visionContrast: 'Vision & Contrast',
+    visionContrastDescription: 'Improve visual accessibility with enhanced contrast options',
+    highContrastActive: 'High contrast mode is active. UI elements will display with stronger color differences for better visibility.',
+    motionAnimation: 'Motion & Animation',
+    motionAnimationDescription: 'Control animations and motion effects for comfortable viewing',
+    reducedMotionActive: 'Reduced motion is enabled. Animations and transitions will be minimized throughout the application.',
+    screenReaderActive: 'Screen reader optimization is active. Content navigation will be optimized for assistive technologies.',
+    accessibilityTipsMessage: 'Use keyboard shortcuts for navigation. Screen readers work best with semantic HTML. High contrast improves readability. Reduced motion helps prevent discomfort.',
+
+    // Users Settings Page
+    unsavedUserChanges: 'You have unsaved changes to user settings',
+    inactiveUsersDeactivated: 'Users inactive for more than this duration will be automatically deactivated',
+    accountLockedDuration: 'Account will remain locked for this duration after exceeding failed login attempts',
+
+    // Usage Monitor Settings Page
+    unsavedUsageChanges: 'You have unsaved changes to usage settings',
+    usageDataAutoDeleted: 'Usage data older than this duration will be automatically deleted',
+
+    // About Settings Page
+    aboutDescription: 'Information about AccreditEx',
+    appTagline: 'Healthcare Accreditation Management Platform',
+    aboutParagraph: 'A centralized platform to support healthcare institutions throughout their accreditation journey, streamlining project management, ensuring traceability, and maintaining compliance.',
+    buildDate: 'Build Date',
+    license: 'License',
 };

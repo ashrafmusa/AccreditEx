@@ -3,8 +3,8 @@
  * Shows real-time progress of HIS data synchronization
  */
 
-import React, { useEffect, useState } from 'react';
-import { useSync } from '../../hooks/useHISIntegration';
+import React, { useEffect, useState } from "react";
+import { useSync } from "../../hooks/useHISIntegration";
 
 interface SyncProgressBarProps {
   configId: string;
@@ -21,9 +21,18 @@ export function SyncProgressBar({
   onError,
   showDetails = true,
 }: SyncProgressBarProps) {
-  const { isSyncing, syncProgress, lastSyncTime, syncError, startSync, stopSync } = useSync(configId);
+  const {
+    isSyncing,
+    syncProgress,
+    lastSyncTime,
+    syncError,
+    startSync,
+    stopSync,
+  } = useSync(configId);
   const [isAutoStarting, setIsAutoStarting] = useState(autoStart);
-  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<number | null>(null);
+  const [estimatedTimeRemaining, setEstimatedTimeRemaining] = useState<
+    number | null
+  >(null);
   const [syncStartTime, setSyncStartTime] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -46,7 +55,7 @@ export function SyncProgressBar({
 
   useEffect(() => {
     if (syncError && onError) {
-      onError(syncError as Error);
+      onError(syncError as unknown as Error);
     }
   }, [syncError, onError]);
 
@@ -65,17 +74,18 @@ export function SyncProgressBar({
   };
 
   const getStatusColor = () => {
-    if (syncError) return 'bg-red-500';
-    if (isSyncing) return 'bg-blue-500';
-    if (syncProgress === 100) return 'bg-green-500';
-    return 'bg-gray-300';
+    if (syncError) return "bg-red-500";
+    if (isSyncing) return "bg-blue-500";
+    if (syncProgress === 100) return "bg-green-500";
+    return "bg-gray-300";
   };
 
   const getStatusText = () => {
-    if (syncError) return `Error: ${syncError.message || 'Sync failed'}`;
+    if (syncError)
+      return `Error: ${(syncError as any).message || "Sync failed"}`;
     if (isSyncing) return `Syncing... ${syncProgress}%`;
     if (lastSyncTime) return `Last sync: ${lastSyncTime.toLocaleTimeString()}`;
-    return 'Ready to sync';
+    return "Ready to sync";
   };
 
   const getProgressWidth = () => {
@@ -87,8 +97,12 @@ export function SyncProgressBar({
       {/* Progress Bar */}
       <div>
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">Sync Progress</span>
-          <span className="text-xs font-semibold text-gray-600">{syncProgress}%</span>
+          <span className="text-sm font-medium text-gray-700">
+            Sync Progress
+          </span>
+          <span className="text-xs font-semibold text-gray-600">
+            {syncProgress}%
+          </span>
         </div>
         <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
           <div
@@ -102,7 +116,11 @@ export function SyncProgressBar({
       <div className="flex items-center justify-between">
         <span
           className={`text-sm font-medium ${
-            syncError ? 'text-red-600' : isSyncing ? 'text-blue-600' : 'text-green-600'
+            syncError
+              ? "text-red-600"
+              : isSyncing
+                ? "text-blue-600"
+                : "text-green-600"
           }`}
         >
           {getStatusText()}
@@ -122,11 +140,11 @@ export function SyncProgressBar({
           disabled={isSyncing}
           className={`px-3 py-1.5 text-sm font-medium rounded transition-colors ${
             isSyncing
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700'
+              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+              : "bg-blue-500 text-white hover:bg-blue-600 active:bg-blue-700"
           }`}
         >
-          {isSyncing ? 'Syncing...' : 'Start Sync'}
+          {isSyncing ? "Syncing..." : "Start Sync"}
         </button>
 
         {isSyncing && (
@@ -145,16 +163,20 @@ export function SyncProgressBar({
           {lastSyncTime && (
             <div className="flex justify-between">
               <span className="text-gray-600">Last Sync Time:</span>
-              <span className="text-gray-900 font-medium">{lastSyncTime.toLocaleString()}</span>
+              <span className="text-gray-900 font-medium">
+                {lastSyncTime.toLocaleString()}
+              </span>
             </div>
           )}
 
           {syncError && (
             <div className="bg-red-50 border border-red-200 rounded p-2">
               <p className="text-red-700 font-medium">Sync Error Details:</p>
-              <p className="text-red-600 mt-1">{syncError.message}</p>
+              <p className="text-red-600 mt-1">{(syncError as any).message}</p>
               {(syncError as any).code && (
-                <p className="text-red-500 text-xs mt-1">Code: {(syncError as any).code}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  Code: {(syncError as any).code}
+                </p>
               )}
             </div>
           )}
@@ -162,7 +184,9 @@ export function SyncProgressBar({
           {isSyncing && (
             <div className="bg-blue-50 border border-blue-200 rounded p-2">
               <p className="text-blue-700">
-                {syncProgress < 50 ? 'Fetching data...' : 'Processing changes...'}
+                {syncProgress < 50
+                  ? "Fetching data..."
+                  : "Processing changes..."}
               </p>
             </div>
           )}

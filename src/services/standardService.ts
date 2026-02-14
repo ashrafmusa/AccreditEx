@@ -19,10 +19,11 @@ export const getStandards = async (): Promise<Standard[]> => {
 
 export const addStandard = async (standard: Omit<Standard, 'id'>): Promise<Standard> => {
     const docRef = await addDoc(standardsCollection, standard);
+    const { standardId: stdId, ...restStandard } = standard;
     return {
-        id: standard.standardId || docRef.id,
-        standardId: standard.standardId || docRef.id,
-        ...standard
+        id: stdId || docRef.id,
+        standardId: stdId || docRef.id,
+        ...restStandard
     } as Standard;
 };
 

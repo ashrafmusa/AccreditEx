@@ -3,7 +3,7 @@
  * Handles bidirectional field mapping and transformations between local and HIS formats
  */
 
-import { DataMappingConfig, FHIRResource } from '../types';
+import { DataMappingConfig, FHIRResource } from './types';
 
 interface FieldMapping {
   id: string;

@@ -36,7 +36,7 @@ const Layout: React.FC<LayoutProps> = ({
   const documents = useAppStore((state) => state.documents);
   const standards = useAppStore((state) => state.standards);
   const accreditationPrograms = useAppStore(
-    (state) => state.accreditationPrograms
+    (state) => state.accreditationPrograms,
   );
 
   useEffect(() => {
@@ -63,7 +63,8 @@ const Layout: React.FC<LayoutProps> = ({
 
   const handleMarkAsRead = async (notificationId: string | "all") => {
     try {
-      const { markNotificationAsRead, markAllNotificationsAsRead } = await import("@/services/notificationServiceFirebase");
+      const { markNotificationAsRead, markAllNotificationsAsRead } =
+        await import("@/services/notificationServiceFirebase");
       if (notificationId === "all") {
         await markAllNotificationsAsRead(currentUser.id);
       } else {
@@ -139,7 +140,7 @@ const Layout: React.FC<LayoutProps> = ({
           />
           <main
             id="main-content"
-            className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 bg-brand-background dark:bg-dark-brand-background page-enter-active scroll-smooth overscroll-contain touch-pan-y"
+            className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6 bg-brand-background dark:bg-dark-brand-background page-enter-active scroll-smooth overscroll-contain touch-pan-y"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
             <div className="max-w-7xl mx-auto">{children}</div>

@@ -44,7 +44,7 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
                   src: `data:${image.contentType};base64,${imageBuffer}`,
                 };
               });
-            }),
+            }) as any,
           },
         );
 

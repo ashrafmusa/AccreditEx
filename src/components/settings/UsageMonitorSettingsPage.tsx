@@ -35,7 +35,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
 
   const handleUsageMonitorChange = (
     field: keyof typeof usageMonitor,
-    value: any
+    value: any,
   ) => {
     const newUsageMonitor = {
       ...usageMonitor,
@@ -44,7 +44,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
     setUsageMonitor(newUsageMonitor);
     setHasChanges(
       JSON.stringify(newUsageMonitor) !==
-        JSON.stringify(appSettings?.usageMonitor || usageMonitor)
+        JSON.stringify(appSettings?.usageMonitor || usageMonitor),
     );
   };
 
@@ -52,7 +52,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
     setLoading(true);
     try {
       if (!appSettings) {
-        toast.error("Settings not loaded");
+        toast.error(t("settingsNotLoaded"));
         return;
       }
       const updatedSettings = {
@@ -90,7 +90,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
           type="warning"
           icon={ExclamationTriangleIcon}
           title={t("unsavedChanges")}
-          message="You have unsaved changes to your settings"
+          message={t("unsavedUsageChanges")}
           onDismiss={() => setDismissedAlert(true)}
         />
       )}
@@ -168,7 +168,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
                   onChange={(e) =>
                     handleUsageMonitorChange(
                       "dataRetentionDays",
-                      parseInt(e.target.value)
+                      parseInt(e.target.value),
                     )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"
@@ -178,8 +178,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                Usage data older than this duration will be automatically
-                deleted
+                {t("usageDataAutoDeleted")}
               </p>
             </div>
 
@@ -216,7 +215,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
                   onChange={(e) =>
                     handleUsageMonitorChange(
                       "alertThreshold",
-                      parseInt(e.target.value)
+                      parseInt(e.target.value),
                     )
                   }
                   className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer accent-brand-primary"

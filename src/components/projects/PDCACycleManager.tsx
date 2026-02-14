@@ -19,9 +19,9 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser } = useUserStore();
-  const { users } = useAppStore();
+  const { users } = useAppStore() as any;
   const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle } =
-    useProjectStore();
+    useProjectStore() as any;
   const [selectedItem, setSelectedItem] = useState<{
     item: CAPAReport | PDCACycle;
     type: "capa" | "cycle";
@@ -68,7 +68,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
           type === "capa"
             ? (item as CAPAReport).description
             : (item as PDCACycle).title;
-        if (!title.toLowerCase().includes(searchQuery.toLowerCase())) {
+        if (!title?.toLowerCase().includes(searchQuery.toLowerCase())) {
           return false;
         }
       }
@@ -122,7 +122,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
   // Handle stage advancement
   const handleAdvanceStage = (
     item: CAPAReport | PDCACycle,
-    type: "capa" | "cycle"
+    type: "capa" | "cycle",
   ) => {
     setTransitioningItem({ item, type });
     setShowTransitionForm(true);
@@ -130,7 +130,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
 
   const handleConfirmTransition = async (
     notes: string,
-    attachments: string[]
+    attachments: string[],
   ) => {
     if (!transitioningItem) return;
 
@@ -155,7 +155,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
           item.id,
           nextStage,
           notes,
-          attachments
+          attachments,
         );
       } else {
         // Update PDCA cycle
@@ -167,10 +167,10 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
         const historyEntry = {
           stage: currentStage,
           enteredAt:
-            currentCycle.stageHistory[currentCycle.stageHistory.length - 1]
+            currentCycle.stageHistory?.[currentCycle.stageHistory.length - 1]
               ?.completedAt || currentCycle.createdAt,
           completedAt: new Date().toISOString(),
-          completedBy: user.id,
+          completedBy: user?.id,
           notes,
           attachments,
         };
@@ -290,12 +290,12 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
               stage === "Plan"
                 ? "planStage"
                 : stage === "Do"
-                ? "doStage"
-                : stage === "Check"
-                ? "checkStage"
-                : stage === "Act"
-                ? "actStage"
-                : "completedStage";
+                  ? "doStage"
+                  : stage === "Check"
+                    ? "checkStage"
+                    : stage === "Act"
+                      ? "actStage"
+                      : "completedStage";
 
             return (
               <div key={stage} className="flex-none w-80">
@@ -314,7 +314,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
 
                 <div
                   className={`min-h-[200px] rounded-lg p-2 space-y-3 ${getStageColor(
-                    stage
+                    stage,
                   )
                     .split(" ")
                     .slice(1)
@@ -338,7 +338,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                 </div>
               </div>
             );
-          }
+          },
         )}
       </div>
 
@@ -457,7 +457,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                       target: [],
                       actual: [],
                     },
-                  });
+                  } as any);
                   toast.success(t("pdcaCycleCreated"));
                   setFormErrors({});
                   setShowNewCycleModal(false);
@@ -554,7 +554,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                       <option value="" disabled>
                         Select owner...
                       </option>
-                      {(users || []).map((user) => (
+                      {(users || []).map((user: any) => (
                         <option key={user.id} value={user.id}>
                           {user.name}
                         </option>

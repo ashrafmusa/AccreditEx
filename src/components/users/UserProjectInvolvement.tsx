@@ -31,16 +31,16 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
       let completedTasks = 0;
       userProjectsArray.forEach((p) => {
         const assigned = p.checklist.filter(
-          (item) => item.assignedTo === user.id
+          (item) => item.assignedTo === user.id,
         );
         tasksCount += assigned.length;
         completedTasks += assigned.filter(
-          (item) => item.status === "Compliant"
+          (item) => item.status === "Compliant",
         ).length;
       });
 
       const leadingCount = userProjectsArray.filter(
-        (p) => p.projectLead?.id === user.id
+        (p) => p.projectLead?.id === user.id,
       ).length;
       const completionRate =
         tasksCount > 0 ? Math.round((completedTasks / tasksCount) * 100) : 0;
@@ -112,10 +112,10 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
       <div className="space-y-3 max-h-60 overflow-y-auto">
         {userProjects.map((p) => {
           const assigned = p.checklist.filter(
-            (item) => item.assignedTo === user.id
+            (item) => item.assignedTo === user.id,
           );
           const completed = assigned.filter(
-            (item) => item.status === "Compliant"
+            (item) => item.status === "Compliant",
           ).length;
           const assignmentRate =
             assigned.length > 0
@@ -174,7 +174,7 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
         })}
         {userProjects.length === 0 && (
           <EmptyState
-            icon={FolderIcon}
+            icon={<FolderIcon className="w-6 h-6" />}
             title={t("noProjectsAssigned")}
             message=""
           />

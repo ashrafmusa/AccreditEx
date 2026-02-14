@@ -98,6 +98,7 @@ export const BUILT_IN_PRESETS: SettingsPreset[] = [
         settings: {
             appearance: {
                 compactMode: true,
+                sidebarCollapsed: false,
                 showAnimations: false,
                 cardStyle: 'outlined' as const,
                 customColors: {
@@ -121,14 +122,22 @@ export const BUILT_IN_PRESETS: SettingsPreset[] = [
         category: 'theme',
         settings: {
             accessibility: {
-                highContrastMode: true,
-                largeText: true,
-                focusIndicators: true,
-                reducedMotion: true,
+                highContrast: true,
+                fontSize: 'large',
+                reduceMotion: true,
+                screenReaderOptimized: true,
             },
             appearance: {
+                compactMode: false,
+                sidebarCollapsed: false,
                 showAnimations: false,
                 cardStyle: 'elevated' as const,
+                customColors: {
+                    primary: '#4f46e5',
+                    success: '#22c55e',
+                    warning: '#f97316',
+                    danger: '#ef4444',
+                },
             },
         },
         isPublic: true,
@@ -150,7 +159,10 @@ export const BUILT_IN_PRESETS: SettingsPreset[] = [
                 requireSymbol: true,
             },
             users: {
+                enableUserManagement: true,
                 requireEmailVerification: true,
+                autoDeactivateInactiveUsers: true,
+                inactivityThresholdDays: 90,
                 sessionTimeoutMinutes: 15,
                 maxLoginAttempts: 3,
                 lockoutDurationMinutes: 30,
@@ -178,7 +190,15 @@ export const BUILT_IN_PRESETS: SettingsPreset[] = [
             },
             appearance: {
                 compactMode: true,
+                sidebarCollapsed: false,
                 showAnimations: false,
+                cardStyle: 'flat' as const,
+                customColors: {
+                    primary: '#4f46e5',
+                    success: '#22c55e',
+                    warning: '#f97316',
+                    danger: '#ef4444',
+                },
             },
         },
         isPublic: true,

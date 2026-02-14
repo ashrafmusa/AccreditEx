@@ -292,6 +292,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
                     });
                     setIsSidebarOpen(false);
                   }}
+                  aria-current={section === item.id ? "page" : undefined}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
                     section === item.id
                       ? "bg-brand-primary text-white shadow-sm"
@@ -347,18 +348,20 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
           isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
-        <div className="h-screen lg:h-[calc(100vh-8rem)] flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-4">
+        <div className="h-screen lg:h-auto lg:max-h-[calc(100vh-8rem)] flex flex-col bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden sticky top-4">
           <SidebarContent />
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="w-full lg:flex-1 min-h-[calc(100vh-8rem)]">
+      <main className="w-full lg:flex-1">
         <div className="animate-fadeIn">
           <Suspense
             fallback={
-              <div className="p-6 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Loading settings section...
+              <div className="p-6 space-y-4 animate-pulse">
+                <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-4 w-72 bg-gray-200 dark:bg-gray-700 rounded" />
+                <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-xl" />
               </div>
             }
           >

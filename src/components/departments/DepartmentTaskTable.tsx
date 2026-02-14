@@ -28,6 +28,11 @@ const DepartmentTaskTable: React.FC<DepartmentTaskTableProps> = ({
         color:
           "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
       },
+      [ComplianceStatus.NotStarted]: {
+        text: t("notStarted") || "Not Started",
+        color:
+          "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+      },
       [ComplianceStatus.NonCompliant]: {
         text: t("nonCompliant"),
         color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
@@ -131,7 +136,7 @@ const DepartmentTaskTable: React.FC<DepartmentTaskTableProps> = ({
         </table>
         {filteredTasks.length === 0 && (
           <EmptyState
-            icon={ClipboardDocumentListIcon}
+            icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
             title={t("noTasksForDepartment")}
             message=""
           />

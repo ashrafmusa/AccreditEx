@@ -110,7 +110,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
           <Button
             key={index}
             onClick={action.onClick}
-            variant={action.variant === "primary" ? "primary" : "outline"}
+            variant={action.variant === "primary" ? "primary" : "ghost"}
             size="sm"
           >
             {action.variant === "primary" && (

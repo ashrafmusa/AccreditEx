@@ -5,7 +5,7 @@ import { useTranslation } from "../../hooks/useTranslation";
 interface TrainingCardProps {
   program: TrainingProgram;
   status: UserTrainingStatus[string];
-  assignment?: User["trainingAssignments"][0];
+  assignment?: NonNullable<User["trainingAssignments"]>[number];
   onAction: () => void;
 }
 

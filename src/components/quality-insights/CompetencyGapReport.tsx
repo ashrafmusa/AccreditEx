@@ -39,8 +39,8 @@ const CompetencyGapReport: React.FC<CompetencyGapReportProps> = ({
               u.competencies?.some(
                 (c) =>
                   c.competencyId === reqCompId &&
-                  (!c.expiryDate || new Date(c.expiryDate) > new Date())
-              )
+                  (!c.expiryDate || new Date(c.expiryDate) > new Date()),
+              ),
             ).length;
 
             return {
@@ -128,7 +128,7 @@ const CompetencyGapReport: React.FC<CompetencyGapReportProps> = ({
         </table>
         {competencyGapData.length === 0 && (
           <EmptyState
-            icon={ChartBarIcon}
+            icon={<ChartBarIcon className="w-6 h-6" />}
             title={t("noDataAvailable")}
             message=""
           />

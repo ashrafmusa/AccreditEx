@@ -19,7 +19,9 @@ import { ReactRenderer } from "@tiptap/react";
 import tippy, { Instance as TippyInstance } from "tippy.js";
 import "tippy.js/dist/tippy.css";
 import { marked } from "marked";
+// @ts-ignore - extension module
 import { SlashCommandExtension } from "../../extensions/SlashCommandExtension";
+// @ts-ignore - service module
 import {
   aiWritingService,
   type AICommand,
@@ -59,7 +61,7 @@ const MentionList = React.forwardRef((props: any, ref) => {
     onKeyDown: ({ event }: any) => {
       if (event.key === "ArrowUp") {
         setSelectedIndex(
-          (selectedIndex + props.items.length - 1) % props.items.length
+          (selectedIndex + props.items.length - 1) % props.items.length,
         );
         return true;
       }
@@ -174,7 +176,7 @@ const RichTextEditorEnhanced: React.FC<RichTextEditorEnhancedProps> = ({
             "mention bg-brand-primary/10 text-brand-primary px-1 rounded font-medium",
         },
         suggestion: {
-          items: async ({ query: searchQuery }) => {
+          items: async ({ query: searchQuery }: { query: string }) => {
             try {
               // Fetch real users from Firebase
               const usersRef = collection(db, "users");
@@ -197,7 +199,7 @@ const RichTextEditorEnhanced: React.FC<RichTextEditorEnhancedProps> = ({
                         .includes(searchQuery.toLowerCase()) ||
                       user.email
                         ?.toLowerCase()
-                        .includes(searchQuery.toLowerCase())
+                        .includes(searchQuery.toLowerCase()),
                   )
                 : users;
 
@@ -629,7 +631,9 @@ const RichTextEditorEnhanced: React.FC<RichTextEditorEnhancedProps> = ({
               <CodeIcon className="w-4 h-4" />
             </MenuButton>
             <MenuButton
-              onClick={() => editor.chain().focus().toggleHighlight().run()}
+              onClick={() =>
+                (editor.chain().focus() as any).toggleHighlight().run()
+              }
               active={editor.isActive("highlight")}
               title="Highlight"
             >

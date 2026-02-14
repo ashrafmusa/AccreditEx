@@ -33,7 +33,7 @@ export function useSync(configId: string) {
     setSyncProgress(0);
 
     try {
-      const result = await syncServiceRef.current.startSync(configId);
+      const result = await (syncServiceRef.current as any).startSync(configId);
       setLastSyncTime(new Date());
       setSyncProgress(100);
 
@@ -51,7 +51,7 @@ export function useSync(configId: string) {
     if (!syncServiceRef.current || !configId) return;
 
     try {
-      await syncServiceRef.current.stopSync(configId);
+      await (syncServiceRef.current as any).stopSync(configId);
       setIsSyncing(false);
     } catch (error) {
       console.error('[useSync] Failed to stop sync:', error);
@@ -91,7 +91,7 @@ export function useSyncSchedule() {
         pattern,
       };
 
-      const jobId = schedulerRef.current.schedule(job, pattern);
+      const jobId = (schedulerRef.current as any).schedule(job, pattern);
       updateScheduledJobs();
 
       return jobId;
@@ -102,7 +102,7 @@ export function useSyncSchedule() {
   const unscheduleSync = useCallback((jobId: string) => {
     if (!schedulerRef.current) return false;
 
-    const result = schedulerRef.current.unschedule(jobId);
+    const result = (schedulerRef.current as any).unschedule(jobId);
     updateScheduledJobs();
 
     return result;
@@ -111,7 +111,7 @@ export function useSyncSchedule() {
   const pauseJob = useCallback((jobId: string) => {
     if (!schedulerRef.current) return false;
 
-    const result = schedulerRef.current.pauseJob(jobId);
+    const result = (schedulerRef.current as any).pauseJob(jobId);
     updateJobStatuses();
 
     return result;
@@ -120,7 +120,7 @@ export function useSyncSchedule() {
   const resumeJob = useCallback((jobId: string) => {
     if (!schedulerRef.current) return false;
 
-    const result = schedulerRef.current.resumeJob(jobId);
+    const result = (schedulerRef.current as any).resumeJob(jobId);
     updateJobStatuses();
 
     return result;
@@ -129,23 +129,23 @@ export function useSyncSchedule() {
   const getUpcomingRuns = useCallback((count: number = 10) => {
     if (!schedulerRef.current) return [];
 
-    return schedulerRef.current.getUpcomingRuns(count);
+    return (schedulerRef.current as any).getUpcomingRuns(count);
   }, []);
 
   const updateScheduledJobs = useCallback(() => {
     if (schedulerRef.current) {
-      const jobs = schedulerRef.current.getScheduledJobs();
+      const jobs = (schedulerRef.current as any).getScheduledJobs();
       setScheduledJobs(jobs);
     }
   }, []);
 
   const updateJobStatuses = useCallback(() => {
     if (schedulerRef.current) {
-      const jobs = schedulerRef.current.getScheduledJobs();
+      const jobs = (schedulerRef.current as any).getScheduledJobs();
       const statuses: Record<string, any> = {};
 
       for (const job of jobs) {
-        statuses[job.id] = schedulerRef.current.getJobStatus(job.id);
+        statuses[job.id] = (schedulerRef.current as any).getJobStatus(job.id);
       }
 
       setJobStatuses(statuses);
@@ -271,14 +271,14 @@ export function useSyncStatus(configId: string) {
   useEffect(() => {
     const config = store.configurations.find((c) => c.id === configId);
     if (config) {
-      setStatus(store.getSyncStatus(configId) as SyncStatusInfo);
+      setStatus((store as any).getSyncStatus(configId) as SyncStatusInfo);
     }
 
     // Poll for updates every 2 seconds
     const interval = setInterval(() => {
       const config = store.configurations.find((c) => c.id === configId);
       if (config) {
-        setStatus(store.getSyncStatus(configId) as SyncStatusInfo);
+        setStatus((store as any).getSyncStatus(configId) as SyncStatusInfo);
       }
     }, 2000);
 
@@ -309,7 +309,7 @@ export function useConflictResolution(configId: string) {
       setResolving(true);
 
       try {
-        const result = await syncServiceRef.current.resolveConflict(conflictId, strategy);
+        const result = await (syncServiceRef.current as any).resolveConflict(conflictId, strategy);
 
         // Remove resolved conflict
         setConflicts((prev) => prev.filter((c) => c.id !== conflictId));
@@ -392,7 +392,7 @@ export function useBulkSync() {
       let completed = 0;
 
       for (const config of configs) {
-        await syncServiceRef.current.startSync(config.id);
+        await (syncServiceRef.current as any).startSync(config.id);
         completed++;
         setBulkProgress(Math.round((completed / configs.length) * 100));
       }

@@ -61,7 +61,7 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
         .filter((item) => item.assignedTo && userIds.has(item.assignedTo));
 
       const applicableTasks = tasks.filter(
-        (t) => t.status !== ComplianceStatus.NotApplicable
+        (t) => t.status !== ComplianceStatus.NotApplicable,
       );
       let score = 0;
       applicableTasks.forEach((item) => {
@@ -90,14 +90,14 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
         showToast(
           t("departmentUpdatedSuccessfully") ||
             "Department updated successfully",
-          "success"
+          "success",
         );
       } else {
         await onCreateDepartment(deptData);
         showToast(
           t("departmentCreatedSuccessfully") ||
             "Department created successfully",
-          "success"
+          "success",
         );
       }
       setIsModalOpen(false);
@@ -127,7 +127,7 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
       await onDeleteDepartment(deptId);
       showToast(
         t("departmentDeletedSuccessfully") || "Department deleted successfully",
-        "success"
+        "success",
       );
     } catch (error) {
       const errorMsg =
@@ -173,7 +173,7 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
         <RestrictedFeatureIndicator featureName="Department Management" />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <StatCard
           title={t("totalDepartments")}
           value={departments.length}
@@ -199,8 +199,7 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
               setEditingDept(dept);
               setIsModalOpen(true);
             }}
-            onDelete={() => handleDelete(dept.id, dept.name)}
-            isDeleting={isDeleting}
+            onDelete={() => handleDelete(dept.id, dept.name.en)}
           />
         ))}
       </div>

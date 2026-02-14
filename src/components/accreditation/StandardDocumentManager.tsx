@@ -1,9 +1,18 @@
-import React, { useState, useRef } from 'react';
-import { StandardDocument } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useToast } from '@/hooks/useToast';
-import { uploadStandardDocument, deleteStandardDocument, updateStandardDocumentDescription } from '@/services/standardDocumentService';
-import { CloudUploadIcon, TrashIcon, DocumentDownloadIcon, PencilIcon } from '@/components/icons';
+import React, { useState, useRef } from "react";
+import { StandardDocument } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
+import {
+  uploadStandardDocument,
+  deleteStandardDocument,
+  updateStandardDocumentDescription,
+} from "@/services/standardDocumentService";
+import {
+  CloudUploadIcon,
+  TrashIcon,
+  DocumentDownloadIcon,
+  PencilIcon,
+} from "@/components/icons";
 
 interface StandardDocumentManagerProps {
   standardId: string;
@@ -32,7 +41,7 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
 
     // Validate file size (max 50MB)
     if (file.size > 50 * 1024 * 1024) {
-      toast.error(t('fileTooLarge') || 'File size exceeds 50MB limit');
+      toast.error(t("fileTooLarge") || "File size exceeds 50MB limit");
       return;
     }
 
@@ -40,24 +49,33 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
     setUploadProgress(0);
 
     try {
-      const description = prompt(t('enterDocumentDescription') || 'Enter document description (optional):', '');
-      
+      const description = prompt(
+        t("enterDocumentDescription") ||
+          "Enter document description (optional):",
+        "",
+      );
+
       const newDocument = await uploadStandardDocument(
         standardId,
         file,
         description || undefined,
         userId,
-        (progress) => setUploadProgress(progress)
+        (progress) => setUploadProgress(progress),
       );
 
       onDocumentsChange([...documents, newDocument]);
-      toast.success(t('documentUploadedSuccessfully') || 'Document uploaded successfully');
-      
+      toast.success(
+        t("documentUploadedSuccessfully") || "Document uploaded successfully",
+      );
+
       if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+        fileInputRef.current.value = "";
       }
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : t('failedToUploadDocument') || 'Failed to upload document';
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : t("failedToUploadDocument") || "Failed to upload document";
       toast.error(errorMsg);
     } finally {
       setIsUploading(false);
@@ -66,51 +84,72 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
   };
 
   const handleDelete = async (documentId: string) => {
-    if (!window.confirm(t('areYouSure') || 'Are you sure?')) {
+    if (!window.confirm(t("areYouSure") || "Are you sure?")) {
       return;
     }
 
     try {
       await deleteStandardDocument(standardId, documentId);
-      onDocumentsChange(documents.filter(d => d.id !== documentId));
-      toast.success(t('documentDeletedSuccessfully') || 'Document deleted successfully');
+      onDocumentsChange(documents.filter((d) => d.id !== documentId));
+      toast.success(
+        t("documentDeletedSuccessfully") || "Document deleted successfully",
+      );
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : t('failedToDeleteDocument') || 'Failed to delete document';
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : t("failedToDeleteDocument") || "Failed to delete document";
       toast.error(errorMsg);
     }
   };
 
   const handleDownload = (document: StandardDocument) => {
-    const link = document.createElement('a');
+    const link = globalThis.document.createElement("a");
     link.href = document.fileUrl;
     link.download = document.fileName;
-    link.target = '_blank';
+    link.target = "_blank";
     link.click();
   };
 
-  const handleEditDescription = async (documentId: string, currentDescription: string) => {
-    const newDescription = prompt(t('editDescription') || 'Edit description:', currentDescription);
+  const handleEditDescription = async (
+    documentId: string,
+    currentDescription: string,
+  ) => {
+    const newDescription = prompt(
+      t("editDescription") || "Edit description:",
+      currentDescription,
+    );
     if (newDescription === null) return;
 
     try {
-      await updateStandardDocumentDescription(standardId, documentId, newDescription);
-      const updatedDocuments = documents.map(d =>
-        d.id === documentId ? { ...d, description: newDescription } : d
+      await updateStandardDocumentDescription(
+        standardId,
+        documentId,
+        newDescription,
+      );
+      const updatedDocuments = documents.map((d) =>
+        d.id === documentId ? { ...d, description: newDescription } : d,
       );
       onDocumentsChange(updatedDocuments);
-      toast.success(t('descriptionUpdatedSuccessfully') || 'Description updated successfully');
+      toast.success(
+        t("descriptionUpdatedSuccessfully") ||
+          "Description updated successfully",
+      );
     } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : t('failedToUpdateDescription') || 'Failed to update description';
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : t("failedToUpdateDescription") || "Failed to update description";
       toast.error(errorMsg);
     }
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return "0 B";
     const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (
@@ -120,7 +159,9 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
           <label className="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-50 dark:border-blue-600 dark:hover:bg-blue-900/20 transition">
             <CloudUploadIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
             <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-              {isUploading ? `${t('uploading') || 'Uploading'} ${Math.round(uploadProgress)}%` : (t('uploadDocument') || 'Upload Document')}
+              {isUploading
+                ? `${t("uploading") || "Uploading"} ${Math.round(uploadProgress)}%`
+                : t("uploadDocument") || "Upload Document"}
             </span>
             <input
               ref={fileInputRef}
@@ -137,7 +178,7 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
       {documents.length > 0 ? (
         <div className="space-y-2">
           <h4 className="font-semibold text-gray-900 dark:text-white text-sm">
-            {t('guideDocuments') || 'Guide Documents'} ({documents.length})
+            {t("guideDocuments") || "Guide Documents"} ({documents.length})
           </h4>
           <div className="space-y-2">
             {documents.map((doc) => (
@@ -146,37 +187,45 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
                 className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition border border-blue-200 dark:border-blue-700"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 dark:text-white truncate text-sm">{doc.fileName}</p>
+                  <p className="font-medium text-gray-900 dark:text-white truncate text-sm">
+                    {doc.fileName}
+                  </p>
                   {doc.description && (
-                    <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">{doc.description}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-300 truncate mt-1">
+                      {doc.description}
+                    </p>
                   )}
                   <div className="flex gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
                     <span>{formatFileSize(doc.fileSize)}</span>
                     <span>•</span>
-                    <span>{new Date(doc.uploadedAt).toLocaleDateString(lang)}</span>
+                    <span>
+                      {new Date(doc.uploadedAt).toLocaleDateString(lang)}
+                    </span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 ml-2">
                   <button
                     onClick={() => handleDownload(doc)}
                     className="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800 rounded transition"
-                    title={t('download') || 'Download'}
+                    title={t("download") || "Download"}
                   >
                     <DocumentDownloadIcon className="w-4 h-4" />
                   </button>
                   {canModify && (
                     <>
                       <button
-                        onClick={() => handleEditDescription(doc.id, doc.description || '')}
+                        onClick={() =>
+                          handleEditDescription(doc.id, doc.description || "")
+                        }
                         className="p-2 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded transition"
-                        title={t('edit') || 'Edit'}
+                        title={t("edit") || "Edit"}
                       >
                         <PencilIcon className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(doc.id)}
                         className="p-2 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition"
-                        title={t('delete') || 'Delete'}
+                        title={t("delete") || "Delete"}
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>
@@ -190,7 +239,7 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
       ) : !canModify ? (
         <div className="text-center py-3">
           <p className="text-gray-500 dark:text-gray-400 text-xs">
-            {t('noGuideDocuments') || 'No guide documents available yet'}
+            {t("noGuideDocuments") || "No guide documents available yet"}
           </p>
         </div>
       ) : null}

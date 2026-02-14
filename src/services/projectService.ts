@@ -21,6 +21,7 @@ import {
   CAPAReport,
   PDCACycle,
   PDCAStage,
+  PDCAStageRecord,
   Comment,
   DesignControlItem,
   MockSurvey,
@@ -301,7 +302,7 @@ export const updateCapaPDCAStage = async (
   const capa = project?.capaReports?.find(c => c.id === capaId);
   if (!capa) throw new Error('CAPA not found');
 
-  const historyEntry: PDCAStage = {
+  const historyEntry: PDCAStageRecord = {
     id: `stage-${Date.now()}`,
     name: newStage,
     completedAt: new Date().toISOString(),
@@ -316,13 +317,11 @@ export const updateCapaPDCAStage = async (
         pdcaHistory: [...(c.pdcaHistory || []), historyEntry]
       }
       : c
-  );
+  ) as CAPAReport[];
 
   await updateProject(projectId, { capaReports: updatedCapas });
 };
 
-// ========================================
-// PDCA Cycle Operations
 // ========================================
 
 export const createPDCACycle = async (

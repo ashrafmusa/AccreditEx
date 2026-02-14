@@ -160,8 +160,8 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
           description,
           programId,
           projectLead: users.find((u) => u.id === leadId)!,
-          startDate: startDate.toISOString().split("T")[0],
-          endDate: endDate ? endDate.toISOString().split("T")[0] : null,
+          startDate: startDate!.toISOString().split("T")[0],
+          endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
         };
         await updateProject(updatedData);
         toast.success(
@@ -211,7 +211,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
           description: description || "",
           programId,
           projectLead: cleanProjectLead,
-          startDate: startDate.toISOString().split("T")[0],
+          startDate: startDate!.toISOString().split("T")[0],
           endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
           status: "Not Started" as ProjectStatus,
           archived: false,
@@ -228,21 +228,19 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
         };
 
         // Remove any undefined values recursively
-        const removeUndefined = <T extends Record<string, unknown>>(
-          obj: T,
-        ): T => {
+        const removeUndefined = (obj: any): any => {
           if (Array.isArray(obj)) {
-            return obj.map(removeUndefined) as T;
+            return obj.map(removeUndefined);
           } else if (obj !== null && typeof obj === "object") {
             return Object.entries(obj).reduce(
               (acc, [key, value]) => {
                 if (value !== undefined) {
-                  acc[key] = removeUndefined(value as Record<string, unknown>);
+                  acc[key] = removeUndefined(value);
                 }
                 return acc;
               },
               {} as Record<string, unknown>,
-            ) as T;
+            );
           }
           return obj;
         };
@@ -287,7 +285,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
           selectedTemplateId={selectedTemplate?.id || null}
           onSelectTemplate={(templateId) => {
             const template = templateId
-              ? projectTemplates.find((t) => t.id === templateId)
+              ? (projectTemplates.find((t) => t.id === templateId) ?? null)
               : null;
             handleTemplateSelect(template);
           }}

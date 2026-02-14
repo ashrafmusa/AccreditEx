@@ -122,12 +122,12 @@ const VisualSettingsPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!settings.appName.trim()) {
-      toast.error("App name is required");
+      toast.error(t("appNameRequired"));
       return;
     }
 
     if (!currentUser) {
-      toast.error("User not authenticated");
+      toast.error(t("userNotAuthenticated"));
       return;
     }
 
@@ -196,10 +196,11 @@ const VisualSettingsPage: React.FC = () => {
         if (appSettings?.appName !== settings.appName) {
           await logSettingsChange(
             currentUser.id,
+            currentUser.name || "",
             "update",
             "visual",
             "appName",
-            appSettings.appName,
+            appSettings?.appName,
             settings.appName,
           );
         }
@@ -209,10 +210,11 @@ const VisualSettingsPage: React.FC = () => {
         ) {
           await logSettingsChange(
             currentUser.id,
+            currentUser.name || "",
             "update",
             "visual",
             "primaryColor",
-            appSettings.appearance.customColors.primary,
+            appSettings?.appearance?.customColors?.primary,
             settings.appearance.customColors.primary,
           );
         }
@@ -224,8 +226,8 @@ const VisualSettingsPage: React.FC = () => {
       // Auto-create version snapshot
       try {
         await createSettingsVersion(
-          currentUser.id,
           newSettings,
+          currentUser.id,
           "Auto-saved version",
           ["auto", "visual"],
         );
@@ -285,17 +287,15 @@ const VisualSettingsPage: React.FC = () => {
     <div className="space-y-6">
       {/* Live Preview Info Banner */}
       {hasChanges && (
-        <div className="bg-gradient-to-r from-sky-50 to-pink-50 dark:from-sky-900/20 dark:to-pink-900/20 border-2 border-sky-200 dark:border-sky-800 rounded-lg p-4">
+        <div className="bg-linear-to-r from-sky-50 to-pink-50 dark:from-sky-900/20 dark:to-pink-900/20 border-2 border-sky-200 dark:border-sky-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <SparklesIcon className="w-6 h-6 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
+            <SparklesIcon className="w-6 h-6 text-sky-600 dark:text-sky-400 shrink-0 mt-0.5" />
             <div className="flex-1">
               <h4 className="font-semibold text-sky-900 dark:text-sky-100 mb-1">
-                Live Preview Active
+                {t("livePreviewActive")}
               </h4>
               <p className="text-sm text-sky-700 dark:text-sky-300">
-                Your changes are being previewed in real-time! Colors and
-                display options update instantly. Click{" "}
-                <strong>Save Changes</strong> below to make them permanent.
+                {t("livePreviewDescription")}
               </p>
             </div>
           </div>
@@ -304,15 +304,15 @@ const VisualSettingsPage: React.FC = () => {
 
       {/* Branding Section */}
       <SettingsCard
-        title="Branding & Identity"
-        description="Customize your application's name, logo, and primary brand color"
+        title={t("brandingIdentity")}
+        description={t("brandingIdentityDescription")}
         icon={Cog6ToothIcon}
         collapsible
         defaultExpanded
       >
         <SettingsSection
           title={t("applicationIdentity")}
-          description="Basic branding settings for your application"
+          description={t("basicBrandingDescription")}
           noBorder
         >
           <div>
@@ -334,7 +334,7 @@ const VisualSettingsPage: React.FC = () => {
 
         <SettingsSection
           title={t("visualAssets")}
-          description="Logo and primary brand color"
+          description={t("logoPrimaryBrandColor")}
           gridCols={1}
           noBorder
         >
@@ -352,15 +352,15 @@ const VisualSettingsPage: React.FC = () => {
 
       {/* Theme & Appearance Section */}
       <SettingsCard
-        title="Theme & Appearance"
-        description="Customize the visual appearance and behavior of the interface"
+        title={t("themeAppearance")}
+        description={t("themeAppearanceDescription")}
         icon={PaintBrushIcon}
         collapsible
         defaultExpanded
       >
         <SettingsSection
-          title="Theme Mode"
-          description="Choose between light and dark mode"
+          title={t("themeMode")}
+          description={t("themeModeDescription")}
           noBorder
         >
           <div className="flex items-center gap-4">
@@ -385,7 +385,7 @@ const VisualSettingsPage: React.FC = () => {
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  Light Mode
+                  {t("lightMode")}
                 </div>
               </div>
               {theme === "light" && (
@@ -414,7 +414,7 @@ const VisualSettingsPage: React.FC = () => {
                       : "text-gray-700 dark:text-gray-300"
                   }`}
                 >
-                  Dark Mode
+                  {t("darkMode")}
                 </div>
               </div>
               {theme === "dark" && (
@@ -425,13 +425,13 @@ const VisualSettingsPage: React.FC = () => {
         </SettingsSection>
 
         <SettingsSection
-          title="Display Options"
-          description="Customize display preferences"
+          title={t("displayOptions")}
+          description={t("displayPreferences")}
           noBorder
         >
           <ToggleSwitch
-            label="Compact Mode"
-            description="Reduce spacing and padding for denser layouts"
+            label={t("compactMode")}
+            description={t("compactModeDescription")}
             enabled={settings.appearance.compactMode}
             setEnabled={() =>
               handleChange((s) => ({
@@ -445,8 +445,8 @@ const VisualSettingsPage: React.FC = () => {
           />
 
           <ToggleSwitch
-            label="Collapse Sidebar"
-            description="Keep sidebar minimized by default"
+            label={t("collapseSidebar")}
+            description={t("collapseSidebarDescription")}
             enabled={settings.appearance.sidebarCollapsed}
             setEnabled={() =>
               handleChange((s) => ({
@@ -460,8 +460,8 @@ const VisualSettingsPage: React.FC = () => {
           />
 
           <ToggleSwitch
-            label="Show Animations"
-            description="Enable smooth transitions and animations"
+            label={t("showAnimations")}
+            description={t("showAnimationsDescription")}
             enabled={settings.appearance.showAnimations}
             setEnabled={() =>
               handleChange((s) => ({
@@ -476,10 +476,10 @@ const VisualSettingsPage: React.FC = () => {
 
           <div>
             <label htmlFor="cardStyle" className={labelClasses}>
-              Card Style
+              {t("cardStyle")}
             </label>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-              Choose how cards and panels are displayed
+              {t("cardStyleDescription")}
             </p>
             <select
               id="cardStyle"
@@ -506,8 +506,8 @@ const VisualSettingsPage: React.FC = () => {
         </SettingsSection>
 
         <SettingsSection
-          title="Custom Colors"
-          description="Customize color scheme throughout the application"
+          title={t("customColors")}
+          description={t("customColorsDescription")}
           gridCols={2}
           badge="Advanced"
           noBorder
@@ -675,8 +675,8 @@ const VisualSettingsPage: React.FC = () => {
 
         {/* Live Preview - Color Swatches */}
         <SettingsSection
-          title="Live Preview"
-          description="See your color changes in real-time"
+          title={t("livePreviewLabel")}
+          description={t("livePreviewDescription")}
           badge="Preview"
           noBorder
         >
@@ -738,8 +738,7 @@ const VisualSettingsPage: React.FC = () => {
             <div className="flex items-center gap-2">
               <SparklesIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               <p className="text-sm text-blue-900 dark:text-blue-200">
-                Changes are applied instantly! Try adjusting colors to see
-                immediate results.
+                {t("changesAppliedInstantly")}
               </p>
             </div>
           </div>
@@ -748,8 +747,8 @@ const VisualSettingsPage: React.FC = () => {
 
       {/* Globe Visualization Section */}
       <SettingsCard
-        title="Globe Visualization"
-        description="Customize the 3D globe appearance and behavior"
+        title={t("globeVisualization")}
+        description={t("globeVisualizationDescription")}
         icon={GlobeAltIcon}
         collapsible
         defaultExpanded={false}
@@ -758,8 +757,8 @@ const VisualSettingsPage: React.FC = () => {
           {/* Settings Panel */}
           <div className="space-y-6">
             <SettingsSection
-              title="Colors"
-              description="Globe color scheme"
+              title={t("colors")}
+              description={t("globeColorScheme")}
               noBorder
             >
               <div>
@@ -803,8 +802,8 @@ const VisualSettingsPage: React.FC = () => {
             </SettingsSection>
 
             <SettingsSection
-              title="Animation & Effects"
-              description="Globe behavior settings"
+              title={t("animationEffects")}
+              description={t("globeBehaviorSettings")}
               noBorder
             >
               <div>
@@ -836,7 +835,7 @@ const VisualSettingsPage: React.FC = () => {
               </div>
 
               <div>
-                <label className={labelClasses}>Scale</label>
+                <label className={labelClasses}>{t("scale")}</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -865,7 +864,7 @@ const VisualSettingsPage: React.FC = () => {
 
           {/* Live Preview */}
           <div>
-            <label className={labelClasses}>Live Preview</label>
+            <label className={labelClasses}>{t("livePreviewLabel")}</label>
             <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
               <Globe
                 width={400}
@@ -892,7 +891,7 @@ const VisualSettingsPage: React.FC = () => {
           disabled={!hasChanges || loading}
           fullWidth={false}
         >
-          Cancel
+          {t("cancel")}
         </SettingsButton>
         <SettingsButton
           variant="primary"
@@ -902,7 +901,7 @@ const VisualSettingsPage: React.FC = () => {
           icon={!loading ? CheckIcon : undefined}
           fullWidth={false}
         >
-          {loading ? "Saving..." : "Save All Changes"}
+          {loading ? t("saving") : t("saveChanges")}
         </SettingsButton>
       </div>
     </div>

@@ -45,14 +45,14 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
 
   const kpis = useMemo(() => {
     const pendingChecks = props.projects
-      .flatMap((p) => p.capaReports)
+      .flatMap((p) => p.capaReports || [])
       .filter(
         (c) =>
           c.effectivenessCheck?.required && !c.effectivenessCheck.completed,
       ).length;
     const pendingAcks = props.users
-      .flatMap((u) => u.readAndAcknowledge || [])
-      .filter((ack) => !ack.acknowledgedDate).length;
+      .flatMap((u) => (u as any).readAndAcknowledge || [])
+      .filter((ack: any) => !ack.acknowledgedDate).length;
 
     // Calculate Quality Score
     const totalProjects = props.projects.length || 1;
@@ -133,7 +133,7 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
   }, [kpis.qualityScore]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center space-x-3 rtl:space-x-reverse self-start">
         <LightBulbIcon className="h-8 w-8 text-brand-primary" />
