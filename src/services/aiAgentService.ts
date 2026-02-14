@@ -85,10 +85,12 @@ export class AIAgentService {
      */
     private getContext(): ChatRequest['context'] {
         const { currentUser, users } = useUserStore.getState();
-        const { appSettings, projects, departments, documents } = useAppStore.getState();
+        const appState = useAppStore.getState();
+        const { appSettings, departments, documents } = appState;
+        const projects = (appState as any).projects || [];
 
         const safeUsers = users || [];
-        const safeProjects = projects || [];
+        const safeProjects: any[] = projects || [];
         const safeDepartments = departments || [];
         const safeDocuments = documents || [];
 
@@ -106,7 +108,7 @@ export class AIAgentService {
         // Get user's department info
         const userDepartment = safeDepartments.find(d =>
             d.id === resolvedUser?.department ||
-            d.members?.some(m => m.userId === resolvedUser?.id)
+            d.members?.some((m: any) => m === resolvedUser?.id)
         );
 
         // Get recent documents user has access to

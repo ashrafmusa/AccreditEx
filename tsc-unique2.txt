@@ -1,0 +1,454 @@
+src/components/accreditation/ProgramDocumentManager.tsx(86,27): error TS2339: Property 'createElement' does not exist on type 'ProgramDocument'.
+src/components/accreditation/ProgramImportWizardModal.tsx(370,43): error TS2554: Expected 1 arguments, but got 2.
+src/components/accreditation/ProgramImportWizardModal.tsx(374,47): error TS2554: Expected 1 arguments, but got 2.
+src/components/accreditation/StandardAccordion.tsx(138,14): error TS18048: 'standard.subStandards' is possibly 'undefined'.
+src/components/accreditation/StandardAccordion.tsx(58,41): error TS18048: 'standard.subStandards' is possibly 'undefined'.
+src/components/accreditation/StandardDocumentManager.tsx(84,27): error TS2339: Property 'createElement' does not exist on type 'StandardDocument'.
+src/components/accreditation/StandardModal.tsx(2,41): error TS2724: '"@/types"' has no exported member named 'SubStandard'. Did you mean 'Standard'?
+src/components/ai/AIAssistantDemo.tsx(12,32): error TS2307: Cannot find module '@/hooks/useAIAssistant' or its corresponding type declarations.
+src/components/analytics/AnalyticsDashboard.tsx(8,31): error TS2724: '"lucide-react"' has no exported member named 'BarChart3'. Did you mean 'BarChart2'?
+src/components/analytics/CapaRootCauseChart.tsx(20,26): error TS18048: 'capa' is possibly 'undefined'.
+src/components/analytics/InsightsPanel.tsx(3,25): error TS2614: Module '"lucide-react"' has no exported member 'Lightbulb'. Did you mean to use 'import Lightbulb from "lucide-react"' instead?
+src/components/analytics/ReportBuilder.tsx(17,3): error TS2614: Module '"lucide-react"' has no exported member 'LayoutGrid'. Did you mean to use 'import LayoutGrid from "lucide-react"' instead?
+src/components/analytics/ReportBuilder.tsx(18,3): error TS2724: '"lucide-react"' has no exported member named 'BarChart3'. Did you mean 'BarChart2'?
+src/components/analytics/ReportBuilder.tsx(27,3): error TS2614: Module '"lucide-react"' has no exported member 'MousePointer2'. Did you mean to use 'import MousePointer2 from "lucide-react"' instead?
+src/components/audits/AuditLogComponent.tsx(105,16): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/calendar/EventModal.tsx(48,16): error TS2345: Argument of type '{ date: string; title: { en: string; ar: string; }; description: { en: string; ar: string; }; }' is not assignable to parameter of type 'Omit<CustomCalendarEvent, "id" | "type">'.
+src/components/common/__tests__/ContextualHelp.test.tsx(155,54): error TS2769: No overload matches this call.
+src/components/common/CommandPalette.tsx(111,46): error TS18048: 'p.capaReports' is possibly 'undefined'.
+src/components/common/CommandPalette.tsx(113,22): error TS18048: 'c.description' is possibly 'undefined'.
+src/components/common/CommandPalette.tsx(117,21): error TS18048: 'c.description' is possibly 'undefined'.
+src/components/common/ContextualHelp.tsx(113,13): error TS2322: Type '"primary" | "outline"' is not assignable to type '"secondary" | "primary" | "ghost" | "danger" | undefined'.
+src/components/common/LanguageSwitcher.tsx(23,11): error TS2339: Property 'setLang' does not exist on type 'LanguageContextType'.
+src/components/common/MainRouter.tsx(192,20): error TS18048: 'project.mockSurveys' is possibly 'undefined'.
+src/components/common/MainRouter.tsx(210,20): error TS18048: 'project.mockSurveys' is possibly 'undefined'.
+src/components/common/MainRouter.tsx(322,13): error TS2322: Type 'NavigationState' is not assignable to type '{ view: "projectDetail"; projectId: string; }'.
+src/components/common/MainRouter.tsx(329,13): error TS2322: Type 'NavigationState' is not assignable to type '{ view: "createProject"; } | { view: "editProject"; projectId: string; }'.
+src/components/common/MainRouter.tsx(336,13): error TS2322: Type 'NavigationState' is not assignable to type '{ view: "createProject"; } | { view: "editProject"; projectId: string; }'.
+src/components/common/MainRouter.tsx(71,18): error TS2322: Type '{ message: string; }' is not assignable to type 'IntrinsicAttributes'.
+src/components/common/NotificationCenter.tsx(20,32): error TS2339: Property 'link' does not exist on type 'Notification'.
+src/components/common/NotificationCenter.tsx(45,107): error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+src/components/competencies/UserCompetencyModal.tsx(31,52): error TS2551: Property 'evidenceDocumentId' does not exist on type '{ competencyId: string; issueDate: string; expiryDate: string; evidenceDocumentIds?: string[] | undefined; }'. Did you mean 'evidenceDocumentIds'?
+src/components/competencies/UserCompetencyModal.tsx(47,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/components/customization/CustomizationPanel.tsx(25,3): error TS2614: Module '"lucide-react"' has no exported member 'Check'. Did you mean to use 'import Check from "lucide-react"' instead?
+src/components/dashboard/AdminDashboard.tsx(104,16): error TS2339: Property 'payload' does not exist on type 'Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; includeHidden?: boolean | undefined; ... 17 more ...; axisId?: AxisId | undefined; } & { ...; }'.
+src/components/dashboard/AdminDashboard.tsx(88,16): error TS2339: Property 'payload' does not exist on type 'Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; includeHidden?: boolean | undefined; ... 17 more ...; axisId?: AxisId | undefined; } & { ...; }'.
+src/components/dashboard/AdminDashboard.tsx(88,25): error TS2339: Property 'label' does not exist on type 'Omit<Props<ValueType, NameType>, PropertiesReadFromContext> & { active?: boolean | undefined; includeHidden?: boolean | undefined; ... 17 more ...; axisId?: AxisId | undefined; } & { ...; }'.
+src/components/dashboard/PendingApprovalsWidget.tsx(59,21): error TS18048: 'p.capaReports' is possibly 'undefined'.
+src/components/dashboard/PendingApprovalsWidget.tsx(63,18): error TS18048: 'capa.description' is possibly 'undefined'.
+src/components/dashboard/ProjectLeadDashboard.tsx(222,58): error TS2322: Type 'User[]' is not assignable to type 'string[] & User[]'.
+src/components/dashboard/TeamMemberDashboard.tsx(32,11): error TS2741: Property '"Not Started"' is missing in type '{ Compliant: { text: string; color: string; }; "Partially Compliant": { text: string; color: string; }; "Non-Compliant": { text: string; color: string; }; "Not Applicable": { text: string; color: string; }; }' but required in type 'Record<ComplianceStatus, { text: string; color: string; }>'.
+src/components/departments/DepartmentTaskTable.tsx(134,18): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/departments/DepartmentTaskTable.tsx(19,9): error TS2741: Property '"Not Started"' is missing in type '{ Compliant: { text: string; color: string; }; "Partially Compliant": { text: string; color: string; }; "Non-Compliant": { text: string; color: string; }; "Not Applicable": { text: string; color: string; }; }' but required in type 'Record<ComplianceStatus, { text: string; color: string; }>'.
+src/components/departments/DepartmentUserList.tsx(36,18): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/documents/ControlledDocumentsTable.tsx(78,18): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/documents/DocumentEditorModal.tsx(123,32): error TS2304: Cannot find name 'setTemplateGalleryOpen'.
+src/components/documents/DocumentEditorModal.tsx(175,28): error TS18047: 'document.content' is possibly 'null'.
+src/components/documents/DocumentEditorModal.tsx(177,33): error TS2345: Argument of type '(d: AppDocument) => { content: { en?: string | undefined; ar?: string | undefined; }; id: string; name: LocalizedString; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; ... 19 more ...; version?: number | undefined; }' is not assignable to parameter of type 'SetStateAction<AppDocument>'.
+src/components/documents/DocumentEditorModal.tsx(187,45): error TS18047: 'currentContent' is possibly 'null'.
+src/components/documents/DocumentEditorModal.tsx(50,25): error TS18048: 'document.versionHistory' is possibly 'undefined'.
+src/components/documents/DocumentEditorModal.tsx(65,14): error TS2488: Type '{ version: number; date: string; uploadedBy: string; content: LocalizedString; }[] | undefined' must have a '[Symbol.iterator]()' method that returns an iterator.
+src/components/documents/DocumentEditorModal.tsx(90,26): error TS18047: 'currentContent' is possibly 'null'.
+src/components/documents/DocumentEditorSidebar.tsx(100,9): error TS18047: 'document.content' is possibly 'null'.
+src/components/documents/DocumentEditorSidebar.tsx(103,19): error TS2345: Argument of type '(d: AppDocument) => { content: { en?: string | undefined; ar?: string | undefined; }; id: string; name: LocalizedString; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; ... 19 more ...; version?: number | undefined; }' is not assignable to parameter of type 'SetStateAction<AppDocument>'.
+src/components/documents/DocumentEditorSidebar.tsx(274,12): error TS18048: 'document.versionHistory' is possibly 'undefined'.
+src/components/documents/DocumentEditorSidebar.tsx(71,19): error TS2345: Argument of type '(d: AppDocument) => { content: { en?: string | undefined; ar?: string | undefined; }; id: string; name: LocalizedString; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; ... 19 more ...; version?: number | undefined; }' is not assignable to parameter of type 'SetStateAction<AppDocument>'.
+src/components/documents/DocumentEditorSidebar.tsx(84,9): error TS18047: 'document.content' is possibly 'null'.
+src/components/documents/DocumentEditorSidebar.tsx(87,19): error TS2345: Argument of type '(d: AppDocument) => { content: { en?: string | undefined; ar?: string | undefined; }; id: string; name: LocalizedString; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; ... 19 more ...; version?: number | undefined; }' is not assignable to parameter of type 'SetStateAction<AppDocument>'.
+src/components/documents/DocumentListItem.tsx(51,5): error TS2353: Object literal may only specify known properties, and 'Rejected' does not exist in type 'Record<"Approved" | "Pending Review" | "Draft", string>'.
+src/components/documents/DocumentRow.tsx(24,9): error TS2353: Object literal may only specify known properties, and 'Rejected' does not exist in type 'Record<"Approved" | "Pending Review" | "Draft", string>'.
+src/components/documents/DocumentSearch.tsx(144,75): error TS2322: Type 'LocalizedString' is not assignable to type 'ReactNode'.
+src/components/documents/DOCXViewer.tsx(41,13): error TS2322: Type 'Promise<{ src: string; }>' is not assignable to type '(image: ImageConverter) => Promise<{ src: string; }>'.
+src/components/documents/ProcessMapEditor.tsx(1470,8): error TS2304: Cannot find name 'showAIGenerator'.
+src/components/documents/ProcessMapEditor.tsx(1473,26): error TS2304: Cannot find name 'setShowAIGenerator'.
+src/components/documents/ProcessMapEditor.tsx(1484,22): error TS2304: Cannot find name 'aiDescription'.
+src/components/documents/ProcessMapEditor.tsx(1485,32): error TS2304: Cannot find name 'setAiDescription'.
+src/components/documents/ProcessMapEditor.tsx(1491,32): error TS2304: Cannot find name 'setShowAIGenerator'.
+src/components/documents/ProcessMapEditor.tsx(1497,26): error TS2304: Cannot find name 'handleGenerateFromAI'.
+src/components/documents/ProcessMapEditor.tsx(1498,27): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(1498,46): error TS2304: Cannot find name 'aiDescription'.
+src/components/documents/ProcessMapEditor.tsx(1501,18): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(1509,8): error TS2304: Cannot find name 'aiSuggestions'.
+src/components/documents/ProcessMapEditor.tsx(1517,30): error TS2304: Cannot find name 'setAiSuggestions'.
+src/components/documents/ProcessMapEditor.tsx(1524,14): error TS2304: Cannot find name 'aiSuggestions'.
+src/components/documents/ProcessMapEditor.tsx(1524,33): error TS7006: Parameter 'suggestion' implicitly has an 'any' type.
+src/components/documents/ProcessMapEditor.tsx(1524,45): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/components/documents/ProcessMapEditor.tsx(1541,34): error TS2304: Cannot find name 'handleAddSuggestedNode'.
+src/components/documents/ProcessMapEditor.tsx(1553,8): error TS2304: Cannot find name 'showOptimizations'.
+src/components/documents/ProcessMapEditor.tsx(1556,26): error TS2304: Cannot find name 'setShowOptimizations'.
+src/components/documents/ProcessMapEditor.tsx(1566,14): error TS2304: Cannot find name 'optimizations'.
+src/components/documents/ProcessMapEditor.tsx(1572,18): error TS2304: Cannot find name 'optimizations'.
+src/components/documents/ProcessMapEditor.tsx(1572,37): error TS7006: Parameter 'opt' implicitly has an 'any' type.
+src/components/documents/ProcessMapEditor.tsx(1572,42): error TS7006: Parameter 'idx' implicitly has an 'any' type.
+src/components/documents/ProcessMapEditor.tsx(1618,32): error TS2304: Cannot find name 'setShowOptimizations'.
+src/components/documents/ProcessMapEditor.tsx(1629,8): error TS2304: Cannot find name 'showComplianceCheck'.
+src/components/documents/ProcessMapEditor.tsx(1632,26): error TS2304: Cannot find name 'setShowComplianceCheck'.
+src/components/documents/ProcessMapEditor.tsx(1642,15): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1649,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1660,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1671,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1682,36): error TS2304: Cannot find name 'handleCheckCompliance'.
+src/components/documents/ProcessMapEditor.tsx(1698,21): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1704,28): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1706,24): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1713,18): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1719,24): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1733,18): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1739,24): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1755,16): error TS2304: Cannot find name 'complianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1757,34): error TS2304: Cannot find name 'setComplianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1765,19): error TS2304: Cannot find name 'setShowComplianceCheck'.
+src/components/documents/ProcessMapEditor.tsx(1766,19): error TS2304: Cannot find name 'setComplianceResult'.
+src/components/documents/ProcessMapEditor.tsx(1778,8): error TS2304: Cannot find name 'showNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(1781,26): error TS2304: Cannot find name 'setShowNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(1793,22): error TS2304: Cannot find name 'searchTerm'.
+src/components/documents/ProcessMapEditor.tsx(1794,32): error TS2304: Cannot find name 'handleNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(1802,55): error TS2304: Cannot find name 'searchTerm'.
+src/components/documents/ProcessMapEditor.tsx(1817,23): error TS2304: Cannot find name 'setShowNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(1835,19): error TS2304: Cannot find name 'setShowNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(1836,19): error TS2304: Cannot find name 'setSearchTerm'.
+src/components/documents/ProcessMapEditor.tsx(1848,8): error TS2304: Cannot find name 'showExportDoc'.
+src/components/documents/ProcessMapEditor.tsx(1851,26): error TS2304: Cannot find name 'setShowExportDoc'.
+src/components/documents/ProcessMapEditor.tsx(1864,44): error TS2304: Cannot find name 'exportedDoc'.
+src/components/documents/ProcessMapEditor.tsx(1870,42): error TS2304: Cannot find name 'exportedDoc'.
+src/components/documents/ProcessMapEditor.tsx(1882,32): error TS2304: Cannot find name 'setShowExportDoc'.
+src/components/documents/ProcessMapEditor.tsx(1910,13): error TS2322: Type 'RefObject<HTMLDivElement | null>' is not assignable to type 'RefObject<HTMLDivElement>'.
+src/components/documents/ProcessMapEditor.tsx(712,26): error TS2304: Cannot find name 'setShowAIGenerator'.
+src/components/documents/ProcessMapEditor.tsx(713,21): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(719,20): error TS2304: Cannot find name 'handleGetSuggestions'.
+src/components/documents/ProcessMapEditor.tsx(720,21): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(726,20): error TS2304: Cannot find name 'handleOptimizeProcess'.
+src/components/documents/ProcessMapEditor.tsx(727,21): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(733,20): error TS2304: Cannot find name 'handleGenerateDocumentation'.
+src/components/documents/ProcessMapEditor.tsx(734,21): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(740,26): error TS2304: Cannot find name 'setShowComplianceCheck'.
+src/components/documents/ProcessMapEditor.tsx(741,21): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(749,28): error TS2304: Cannot find name 'setShowNodeSearch'.
+src/components/documents/ProcessMapEditor.tsx(755,28): error TS2304: Cannot find name 'setQuickAddMode'.
+src/components/documents/ProcessMapEditor.tsx(755,45): error TS2304: Cannot find name 'quickAddMode'.
+src/components/documents/ProcessMapEditor.tsx(757,15): error TS2304: Cannot find name 'quickAddMode'.
+src/components/documents/ProcessMapEditor.tsx(762,26): error TS2304: Cannot find name 'quickAddMode'.
+src/components/documents/ProcessMapEditor.tsx(765,28): error TS2304: Cannot find name 'setShowSwimlanes'.
+src/components/documents/ProcessMapEditor.tsx(765,46): error TS2304: Cannot find name 'showSwimlanes'.
+src/components/documents/ProcessMapEditor.tsx(771,28): error TS2304: Cannot find name 'setShowMetrics'.
+src/components/documents/ProcessMapEditor.tsx(771,44): error TS2304: Cannot find name 'showMetrics'.
+src/components/documents/ProcessMapEditor.tsx(778,10): error TS2304: Cannot find name 'isAIProcessing'.
+src/components/documents/ProcessMapEditor.tsx(875,17): error TS2322: Type 'ZoomInOut' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+src/components/documents/ProcessMapEditor.tsx(882,17): error TS2322: Type 'ZoomInOut' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+src/components/documents/RichTextEditorEnhanced.tsx(14,10): error TS2614: Module '"@tiptap/extension-highlight"' has no exported member 'Highlight'. Did you mean to use 'import Highlight from "@tiptap/extension-highlight"' instead?
+src/components/documents/RichTextEditorEnhanced.tsx(15,10): error TS2614: Module '"@tiptap/extension-color"' has no exported member 'Color'. Did you mean to use 'import Color from "@tiptap/extension-color"' instead?
+src/components/documents/RichTextEditorEnhanced.tsx(16,10): error TS2614: Module '"@tiptap/extension-text-style"' has no exported member 'TextStyle'. Did you mean to use 'import TextStyle from "@tiptap/extension-text-style"' instead?
+src/components/documents/RichTextEditorEnhanced.tsx(17,10): error TS2614: Module '"@tiptap/extension-mention"' has no exported member 'Mention'. Did you mean to use 'import Mention from "@tiptap/extension-mention"' instead?
+src/components/documents/RichTextEditorEnhanced.tsx(177,34): error TS7031: Binding element 'searchQuery' implicitly has an 'any' type.
+src/components/documents/RichTextEditorEnhanced.tsx(22,39): error TS2307: Cannot find module '../../extensions/SlashCommandExtension' or its corresponding type declarations.
+src/components/documents/RichTextEditorEnhanced.tsx(26,8): error TS2307: Cannot find module '../../services/aiWritingService' or its corresponding type declarations.
+src/components/documents/RichTextEditorEnhanced.tsx(290,14): error TS2339: Property 'setOptions' does not exist on type '(text: string, options?: any) => string'.
+src/components/documents/RichTextEditorEnhanced.tsx(295,27): error TS2339: Property 'parse' does not exist on type '(text: string, options?: any) => string'.
+src/components/documents/RichTextEditorEnhanced.tsx(632,53): error TS2339: Property 'toggleHighlight' does not exist on type 'ChainedCommands'.
+src/components/documents/TemplateGallery.tsx(189,61): error TS2339: Property 'icon' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(202,33): error TS7053: Element implicitly has an 'any' type because expression of type '"form" | "report" | "checklist" | "policy" | "procedure"' can't be used to index type '{ policy: string; procedure: string; sop: string; manual: string; form: string; checklist: string; }'.
+src/components/documents/TemplateGallery.tsx(211,39): error TS2339: Property 'tags' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(211,61): error TS7006: Parameter 'tag' implicitly has an 'any' type.
+src/components/documents/TemplateGallery.tsx(262,63): error TS2339: Property 'icon' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(285,64): error TS2339: Property 'content' does not exist on type 'DocumentTemplate'.
+src/components/documents/TemplateGallery.tsx(3,31): error TS2724: '"lucide-react"' has no exported member named 'CheckCircle2'. Did you mean 'CheckCircle'?
+src/components/documents/TemplateGallery.tsx(8,3): error TS2305: Module '"../../data/documentTemplates"' has no exported member 'getTemplatesByCategory'.
+src/components/documents/TemplateGallery.tsx(9,3): error TS2305: Module '"../../data/documentTemplates"' has no exported member 'searchTemplates'.
+src/components/feedback/FeedbackWidget.tsx(53,37): error TS2339: Property 'exportErrors' does not exist on type 'Logger'.
+src/components/feedback/FeedbackWidget.tsx(59,52): error TS2339: Property 'uploadTextFile' does not exist on type 'CloudinaryService'.
+src/components/feedback/FeedbackWidget.tsx(97,16): error TS2339: Property 'clearErrors' does not exist on type 'Logger'.
+src/components/his-integration/IntegrationDashboard.tsx(274,12): error TS2304: Cannot find name 'TableContainer'.
+src/components/his-integration/IntegrationDashboard.tsx(327,13): error TS2304: Cannot find name 'TableContainer'.
+src/components/his-integration/SyncProgressBar.tsx(155,59): error TS2339: Property 'message' does not exist on type 'SyncError'.
+src/components/his-integration/SyncProgressBar.tsx(49,15): error TS2352: Conversion of type 'SyncError' to type 'Error' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/components/his-integration/SyncProgressBar.tsx(75,47): error TS2339: Property 'message' does not exist on type 'SyncError'.
+src/components/monitoring/MonitoringDashboard.tsx(146,67): error TS2339: Property 'url' does not exist on type 'Request | URL'.
+src/components/monitoring/MonitoringDashboard.tsx(231,62): error TS2339: Property 'navigationStart' does not exist on type 'PerformanceNavigationTiming'.
+src/components/onboarding/OnboardingModal.tsx(259,17): error TS2322: Type '"outline"' is not assignable to type '"secondary" | "primary" | "ghost" | "danger" | undefined'.
+src/components/projects/BulkActionsToolbar.tsx(54,83): error TS2554: Expected 1 arguments, but got 2.
+src/components/projects/ChecklistEvidence.tsx(155,15): error TS2339: Property 'linkedFhirResources' does not exist on type 'ChecklistItem'.
+src/components/projects/ChecklistEvidence.tsx(155,41): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/components/projects/ChecklistEvidence.tsx(165,45): error TS2339: Property 'linkedFhirResources' does not exist on type 'ChecklistItem'.
+src/components/projects/ChecklistEvidence.tsx(82,9): error TS2353: Object literal may only specify known properties, and 'projectId' does not exist in type '{ name: { en: string; ar: string; }; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; fileUrl?: string | undefined; tags?: string[] | undefined; category?: string | undefined; departmentIds?: string[] | undefined; }'.
+src/components/projects/ChecklistItemComponent.tsx(128,41): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string; team: string[]; currentStage: "Plan"; targetCompletionDate: string; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+src/components/projects/ChecklistItemComponent.tsx(166,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/components/projects/ChecklistItemComponent.tsx(238,17): error TS7053: Element implicitly has an 'any' type because expression of type 'ComplianceStatus' can't be used to index type '{ Compliant: string; "Non-Compliant": string; "Partially Compliant": string; "Not Applicable": string; }'.
+src/components/projects/DesignControlsComponent.tsx(105,27): error TS2339: Property 'standard' does not exist on type 'Project'.
+src/components/projects/DesignControlsComponent.tsx(108,9): error TS2322: Type '(string | undefined)[]' is not assignable to type 'string[]'.
+src/components/projects/DesignControlsComponent.tsx(72,11): error TS2741: Property 'standardId' is missing in type '{ id: string; requirement: string; policyProcess: string; implementationEvidence: string; auditFindings: string; outcomeKPI: string; status: "Not Applicable"; linkedDocumentIds: never[]; }' but required in type 'DesignControlItem'.
+src/components/projects/PDCACycleCard.tsx(109,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(110,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(186,40): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/components/projects/PDCACycleCard.tsx(204,15): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+src/components/projects/PDCACycleCard.tsx(50,40): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string | undefined; team: never[]; currentStage: PDCAStage; targetCompletionDate: string | undefined; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+src/components/projects/PDCACycleCard.tsx(83,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleDetailModal.tsx(56,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleManager.tsx(173,24): error TS18048: 'user' is possibly 'undefined'.
+src/components/projects/PDCACycleManager.tsx(22,11): error TS2339: Property 'users' does not exist on type 'AppState'.
+src/components/projects/PDCACycleManager.tsx(23,11): error TS2339: Property 'updateCAPAPDCAStage' does not exist on type 'ProjectState'.
+src/components/projects/PDCACycleManager.tsx(437,53): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process" | "Quality" | "Safety" | "Efficiency" | "Other"; ... 5 more ...; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+src/components/projects/PDCACycleManager.tsx(557,43): error TS7006: Parameter 'user' implicitly has an 'any' type.
+src/components/projects/PDCACycleManager.tsx(71,14): error TS18048: 'title' is possibly 'undefined'.
+src/components/projects/ProjectCard.tsx(109,31): error TS2339: Property 'id' does not exist on type 'string'.
+src/components/projects/ProjectCard.tsx(110,19): error TS2322: Type 'string' is not assignable to type 'User'.
+src/components/projects/ProjectCard.tsx(112,37): error TS2339: Property 'name' does not exist on type 'string'.
+src/components/projects/ProjectCard.tsx(49,25): error TS18048: 'project.capaReports' is possibly 'undefined'.
+src/components/quality-insights/CompetencyGapReport.tsx(131,18): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/quality-insights/PDCACycleTracker.tsx(22,32): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(22,56): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(23,30): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(23,60): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(23,76): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(24,33): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(24,68): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/PDCACycleTracker.tsx(25,31): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/RootCauseAnalysis.tsx(18,32): error TS18048: 'p.capaReports' is possibly 'undefined'.
+src/components/quality-insights/TrainingEffectivenessChart.tsx(26,109): error TS18048: 'c' is possibly 'undefined'.
+src/components/quality-insights/TrainingEffectivenessChart.tsx(26,75): error TS18048: 'c' is possibly 'undefined'.
+src/components/risk/CapaModal.tsx(27,22): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string>'.
+src/components/risk/CapaModal.tsx(28,28): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string>'.
+src/components/risk/CapaModal.tsx(29,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string>'.
+src/components/risk/CapaModal.tsx(30,21): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string | null>'.
+src/components/risk/CapaModal.tsx(31,27): error TS2769: No overload matches this call.
+src/components/risk/CapaModal.tsx(32,17): error TS2345: Argument of type 'ProjectStatus' is not assignable to parameter of type 'SetStateAction<"Closed" | "Open">'.
+src/components/risk/CapaModal.tsx(50,12): error TS2345: Argument of type '{ description: string; rootCauseAnalysis: string; actionPlan: string; assignedTo: string | null; dueDate: string; status: "Closed" | "Open"; id: string; type?: "CAPA" | undefined; title?: string | undefined; ... 17 more ...; closureException?: { ...; } | undefined; }' is not assignable to parameter of type 'Omit<CAPAReport, "id">'.
+src/components/risk/CapaReportsTab.tsx(22,22): error TS18048: 'b' is possibly 'undefined'.
+src/components/risk/CapaReportsTab.tsx(22,56): error TS18048: 'a' is possibly 'undefined'.
+src/components/risk/CapaReportsTab.tsx(32,55): error TS18048: 'capa' is possibly 'undefined'.
+src/components/risk/CapaReportsTab.tsx(35,51): error TS18048: 'capa' is possibly 'undefined'.
+src/components/risk/CapaReportsTab.tsx(38,55): error TS18048: 'capa' is possibly 'undefined'.
+src/components/risk/CapaReportsTab.tsx(41,20): error TS18048: 'capa' is possibly 'undefined'.
+src/components/risk/CapaReportsTab.tsx(42,15): error TS2322: Type 'CAPAReport | undefined' is not assignable to type 'CAPAReport'.
+src/components/risk/EffectivenessChecksTab.tsx(102,20): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/risk/EffectivenessChecksTab.tsx(25,9): error TS18048: 'p.capaReports' is possibly 'undefined'.
+src/components/risk/EffectivenessChecksTab.tsx(84,23): error TS2769: No overload matches this call.
+src/components/risk/RiskRegisterTab.tsx(26,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/risk/RiskRegisterTab.tsx(32,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/risk/RiskRegisterTab.tsx(43,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/risk/RiskRegisterTab.tsx(66,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/risk/RiskRegisterTab.tsx(75,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/components/settings/BulkUserImport.tsx(100,55): error TS2339: Property 'successCount' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(102,18): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(103,48): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(56,45): error TS2345: Argument of type 'Partial<User>[]' is not assignable to parameter of type 'User[]'.
+src/components/settings/BulkUserImport.tsx(88,33): error TS2554: Expected 3 arguments, but got 2.
+src/components/settings/BulkUserImport.tsx(94,25): error TS2339: Property 'successCount' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(95,24): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(96,24): error TS2339: Property 'errors' does not exist on type 'Partial<User>[]'.
+src/components/settings/BulkUserImport.tsx(99,18): error TS2339: Property 'successCount' does not exist on type 'Partial<User>[]'.
+src/components/settings/firebase/BatchImportPanel.tsx(107,14): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(175,14): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(190,14): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(53,14): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(66,18): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(72,16): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(74,16): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(79,14): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/BatchImportPanel.tsx(87,14): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(111,15): error TS2339: Property 'info' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(111,9): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(114,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(114,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(132,13): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(132,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(134,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(134,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(140,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(140,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(146,13): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(146,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(151,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(151,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(160,13): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(160,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(163,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(163,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(173,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(173,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(93,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/EnhancedCollectionsManager.tsx(93,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(115,13): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(115,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(120,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(120,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(145,11): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(145,17): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(153,15): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(153,9): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(156,15): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(156,9): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(166,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(166,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(179,13): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(179,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(181,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(181,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(206,15): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(206,9): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(214,13): error TS2339: Property 'success' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(214,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(216,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(216,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(236,13): error TS2339: Property 'info' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(236,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(27,32): error TS2554: Expected 0 arguments, but got 1.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(92,13): error TS2339: Property 'error' does not exist on type '(message: string, type?: ToastType | undefined) => void'.
+src/components/settings/firebase/FirebaseConfigurationEntry.tsx(92,7): error TS18048: 'toast' is possibly 'undefined'.
+src/components/settings/QuickActionsPanel.tsx(15,10): error TS2724: '"@/hooks/useNavigation"' has no exported member named 'useNavigate'. Did you mean 'useNavigation'?
+src/components/settings/SettingsAuditLogViewer.tsx(256,41): error TS2339: Property 'toDate' does not exist on type 'string'.
+src/components/settings/SettingsAuditLogViewer.tsx(45,9): error TS2554: Expected 0-1 arguments, but got 4.
+src/components/settings/SettingsPresetsPanel.tsx(104,9): error TS2554: Expected 1 arguments, but got 6.
+src/components/settings/SettingsPresetsPanel.tsx(115,9): error TS2322: Type '"visual"' is not assignable to type '"theme" | "full" | "security" | "notifications" | "personal"'.
+src/components/settings/SettingsPresetsPanel.tsx(200,23): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "security" | "notifications" | "personal"' and '"visual"' have no overlap.
+src/components/settings/SettingsPresetsPanel.tsx(204,29): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "notifications" | "personal"' and '"performance"' have no overlap.
+src/components/settings/SettingsPresetsPanel.tsx(211,25): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "security" | "notifications" | "personal"' and '"visual"' have no overlap.
+src/components/settings/SettingsPresetsPanel.tsx(215,31): error TS2367: This comparison appears to be unintentional because the types '"theme" | "full" | "notifications" | "personal"' and '"performance"' have no overlap.
+src/components/settings/SettingsVersionHistory.tsx(212,43): error TS2339: Property 'toDate' does not exist on type 'string'.
+src/components/settings/SettingsVersionHistory.tsx(49,48): error TS2554: Expected 0 arguments, but got 1.
+src/components/settings/SettingsVersionHistory.tsx(67,9): error TS2559: Type 'string' has no properties in common with type 'Partial<AppSettings>'.
+src/components/settings/SettingsVersionHistory.tsx(96,45): error TS2554: Expected 1 arguments, but got 2.
+src/components/settings/SettingsVersionHistory.tsx(97,22): error TS2345: Argument of type 'Partial<AppSettings>' is not assignable to parameter of type 'AppSettings'.
+src/components/settings/VisualSettingsPage.tsx(197,17): error TS2554: Expected 7 arguments, but got 6.
+src/components/settings/VisualSettingsPage.tsx(202,13): error TS18047: 'appSettings' is possibly 'null'.
+src/components/settings/VisualSettingsPage.tsx(210,17): error TS2554: Expected 7 arguments, but got 6.
+src/components/settings/VisualSettingsPage.tsx(215,13): error TS18047: 'appSettings' is possibly 'null'.
+src/components/settings/VisualSettingsPage.tsx(227,11): error TS2559: Type 'string' has no properties in common with type 'Partial<AppSettings>'.
+src/components/training/TrainingCard.tsx(8,44): error TS2339: Property '0' does not exist on type '{ trainingId: string; assignedBy?: string | undefined; assignedDate: string; dueDate?: string | undefined; }[] | undefined'.
+src/components/ui/Modal.tsx(30,16): error TS2345: Argument of type 'RefObject<HTMLDivElement | null>' is not assignable to parameter of type 'RefObject<HTMLElement>'.
+src/components/users/UserCompetencies.tsx(296,28): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/users/UserProjectInvolvement.tsx(177,18): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/users/UserTrainingDashboard.tsx(133,22): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/components/users/UserTrainingDashboard.tsx(178,22): error TS2322: Type '(props: React.SVGProps<SVGSVGElement>) => JSX.Element' is not assignable to type 'ReactNode'.
+src/hooks/useAnalyticsHooks.ts(130,9): error TS2322: Type '{ type: "success" | "warning" | "info"; title: string; message: string; recommendation?: string | undefined; }[]' is not assignable to type 'Insight[]'.
+src/hooks/useAnalyticsHooks.ts(175,65): error TS2554: Expected 0 arguments, but got 1.
+src/hooks/useAnalyticsHooks.ts(296,16): error TS2345: Argument of type '{ isLoading: false; period: string; totalSyncs: number; byStatus: { success: number; failure: number; partial: number; }; successRate: number; statistics: { duration: { min: number; max: number; average: number; median: number; }; records: { ...; }; }; }' is not assignable to parameter of type 'SetStateAction<SyncStatistics>'.
+src/hooks/useAnalyticsHooks.ts(372,18): error TS2345: Argument of type '{ isLoading: false; totalRecords: number; validRecords: number; invalidRecords: number; duplicateRecords: number; missingFields: Record<string, number>; validationErrorRate: number; dataIntegrity: number; lastValidationTime: Date; }' is not assignable to parameter of type 'SetStateAction<DataQualityMetrics>'.
+src/hooks/useFirestoreQuery.ts(10,38): error TS2503: Cannot find namespace 'z'.
+src/hooks/useFirestoreQuery.ts(2,10): error TS2305: Module '"@/firebase/firebaseConfig"' has no exported member 'firestore'.
+src/hooks/useFirestoreQuery.ts(25,67): error TS2503: Cannot find namespace 'z'.
+src/hooks/useFirestoreQuery.ts(6,45): error TS2503: Cannot find namespace 'z'.
+src/hooks/useFirestoreQuery.ts(9,5): error TS2503: Cannot find namespace 'z'.
+src/hooks/useHISIntegration.ts(105,41): error TS2339: Property 'unschedule' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(114,41): error TS2339: Property 'pauseJob' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(123,41): error TS2339: Property 'resumeJob' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(132,33): error TS2339: Property 'getUpcomingRuns' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(137,41): error TS2339: Property 'getScheduledJobs' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(144,41): error TS2339: Property 'getScheduledJobs' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(148,49): error TS2339: Property 'getJobStatus' does not exist on type 'HISSyncScheduler'.
+src/hooks/useHISIntegration.ts(274,23): error TS2339: Property 'getSyncStatus' does not exist on type 'HISIntegrationState'.
+src/hooks/useHISIntegration.ts(281,25): error TS2339: Property 'getSyncStatus' does not exist on type 'HISIntegrationState'.
+src/hooks/useHISIntegration.ts(312,69): error TS2345: Argument of type 'string' is not assignable to parameter of type 'FHIRResource'.
+src/hooks/useHISIntegration.ts(36,51): error TS2554: Expected 2-4 arguments, but got 1.
+src/hooks/useHISIntegration.ts(395,38): error TS2554: Expected 2-4 arguments, but got 1.
+src/hooks/useHISIntegration.ts(54,36): error TS2339: Property 'stopSync' does not exist on type 'HISDataSyncService'.
+src/hooks/useHISIntegration.ts(94,42): error TS2339: Property 'schedule' does not exist on type 'HISSyncScheduler'.
+src/hooks/usePDCASuggestions.ts(12,11): error TS2339: Property 'askAgent' does not exist on type '{ chatHistory: ChatMessage[]; isLoading: boolean; error: string | null; sendMessage: (message: string, context?: AIAgentContext | undefined) => Promise<void>; clearHistory: () => void; }'.
+src/hooks/useSanitizedHTML.ts(12,14): error TS2503: Cannot find namespace 'DOMPurify'.
+src/hooks/useSanitizedHTML.ts(14,5): error TS2322: Type '"" | TrustedHTML' is not assignable to type 'string'.
+src/hooks/useSanitizedHTML.ts(18,30): error TS2503: Cannot find namespace 'DOMPurify'.
+src/hooks/useUnifiedEvents.ts(49,13): error TS18048: 'p.capaReports' is possibly 'undefined'.
+src/hooks/useUnifiedEvents.ts(54,61): error TS18048: 'c.description' is possibly 'undefined'.
+src/pages/AnalyticsPage.tsx(127,32): error TS2322: Type '{ kpis: { overdueTasks: number; activeProjects: number; complianceRate: number; capaResolutionRate: number; }; projectStatus: Record<string, number>; topRisks: (string | undefined)[]; }' is not assignable to type '{ kpis: { overdueTasks: number; activeProjects: number; complianceRate: number; capaResolutionRate: number; }; projectStatus: Record<string, number>; topRisks: string[]; }'.
+src/pages/AuditHubPage.tsx(239,35): error TS7006: Parameter 'log' implicitly has an 'any' type.
+src/pages/AuditHubPage.tsx(29,5): error TS2339: Property 'activityLog' does not exist on type 'AppState'.
+src/pages/AuditHubPage.tsx(62,40): error TS7006: Parameter 'log' implicitly has an 'any' type.
+src/pages/CalendarPage.tsx(107,9): error TS2322: Type '(eventData: Omit<UnifiedEvent, "id" | "type" | "color" | "link">, id?: string) => void' is not assignable to type '(event: Omit<CustomCalendarEvent, "id" | "type">, id?: string | undefined) => void'.
+src/pages/CalendarPage.tsx(65,25): error TS2345: Argument of type '{ id: string; type: "Custom"; title: string; description?: string | undefined; date: string; }' is not assignable to parameter of type 'CustomCalendarEvent'.
+src/pages/CalendarPage.tsx(67,22): error TS2345: Argument of type 'Omit<UnifiedEvent, "id" | "color" | "link" | "type">' is not assignable to parameter of type 'Omit<CustomCalendarEvent, "id" | "type">'.
+src/pages/CertificatePage.tsx(37,125): error TS7015: Element implicitly has an 'any' type because index expression is not of type 'number'.
+src/pages/CertificatePage.tsx(37,99): error TS18048: 'certificate.trainingTitle' is possibly 'undefined'.
+src/pages/CreateProjectPage.tsx(163,22): error TS18048: 'startDate' is possibly 'undefined'.
+src/pages/CreateProjectPage.tsx(164,11): error TS2322: Type 'string | null' is not assignable to type 'string | undefined'.
+src/pages/CreateProjectPage.tsx(214,22): error TS18048: 'startDate' is possibly 'undefined'.
+src/pages/CreateProjectPage.tsx(235,20): error TS2352: Conversion of type 'any[]' to type 'T' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/pages/CreateProjectPage.tsx(252,26): error TS2352: Conversion of type '{ name: string; description: string; programId: string; projectLead: { id: string; name: string; email: string; role: UserRole; departmentId: string | undefined; jobTitle: string | undefined; hireDate: string | undefined; competencies: { ...; }[]; trainingAssignments: { ...; }[]; readAndAcknowledge: never[] | Record...' to type 'Omit<Project, "id">' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+src/pages/CreateProjectPage.tsx(292,34): error TS2345: Argument of type 'ProjectTemplate | null | undefined' is not assignable to parameter of type 'ProjectTemplate | null'.
+src/pages/DepartmentsPage.tsx(109,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/pages/DepartmentsPage.tsx(128,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/pages/DepartmentsPage.tsx(137,7): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/pages/DepartmentsPage.tsx(202,51): error TS2345: Argument of type 'LocalizedString' is not assignable to parameter of type 'string'.
+src/pages/DepartmentsPage.tsx(203,13): error TS2322: Type '{ key: string; department: { userCount: number; taskCount: number; compliance: number; usersInDept: User[]; id: string; name: LocalizedString; requiredCompetencyIds?: string[] | undefined; head?: string | undefined; members?: string[] | undefined; }; ... 4 more ...; isDeleting: boolean; }' is not assignable to type 'IntrinsicAttributes & DepartmentCardProps'.
+src/pages/DepartmentsPage.tsx(90,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/pages/DepartmentsPage.tsx(97,9): error TS2722: Cannot invoke an object which is possibly 'undefined'.
+src/pages/DocumentControlHubPage.tsx(475,13): error TS2322: Type '{ documents: AppDocument[]; canModify: boolean; onApprove: (doc: AppDocument) => void; onDelete: (docId: string) => Promise<void>; onView: (doc: AppDocument) => void; isDeleting: boolean; }' is not assignable to type 'IntrinsicAttributes & ControlledDocumentsTableProps'.
+src/pages/DocumentControlHubPage.tsx(517,13): error TS2322: Type '{ isOpen: true; onClose: () => void; document: AppDocument; onSave: (doc: AppDocument) => Promise<void>; standards: Standard[]; isSaving: boolean; }' is not assignable to type 'IntrinsicAttributes & DocumentEditorModalProps'.
+src/pages/ProjectDetailPage.tsx(229,52): error TS2322: Type '{ project: Project; onUpdate: (project: Project) => Promise<void>; }' is not assignable to type 'IntrinsicAttributes & ProjectChecklistProps'.
+src/pages/ProjectDetailPage.tsx(236,13): error TS2322: Type '(projectId: string, designControls: DesignControlItem[]) => Promise<void>' is not assignable to type '(designControls: DesignControlItem[]) => void'.
+src/pages/ProjectDetailPage.tsx(91,15): error TS2554: Expected 2 arguments, but got 3.
+src/pages/ProjectDetailPage.tsx(91,16): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/pages/ProjectListPage.tsx(468,19): error TS2322: Type 'User[]' is not assignable to type 'string[] & User[]'.
+src/pages/ProjectListPage.tsx(66,30): error TS2820: Type '"create-project"' is not assignable to type 'NavigationView'. Did you mean '"createProject"'?
+src/pages/ProjectListPage.tsx(69,11): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/pages/ProjectListPage.tsx(69,5): error TS2322: Type '(e: any) => void' is not assignable to type '() => void'.
+src/pages/ProjectOverview.tsx(20,22): error TS18048: 'project.capaReports' is possibly 'undefined'.
+src/pages/ProjectOverview.tsx(59,14): error TS18048: 'project.activityLog' is possibly 'undefined'.
+src/pages/QualityInsightsPage.tsx(51,11): error TS18048: 'c' is possibly 'undefined'.
+src/pages/QualityInsightsPage.tsx(51,46): error TS18048: 'c' is possibly 'undefined'.
+src/pages/QualityInsightsPage.tsx(54,23): error TS2322: Type 'never[] | Record<string, boolean>' is not assignable to type 'boolean | readonly boolean[]'.
+src/pages/QualityInsightsPage.tsx(55,25): error TS18046: 'ack' is of type 'unknown'.
+src/pages/StandardsPage.tsx(89,11): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/pages/StandardsPage.tsx(89,5): error TS2322: Type '(e: any) => void' is not assignable to type '() => void'.
+src/pages/SurveyReportPage.tsx(59,11): error TS2322: Type 'string' is not assignable to type 'number'.
+src/pages/SurveyReportPage.tsx(61,11): error TS2820: Type '"open"' is not assignable to type '"Closed" | "Open" | "Mitigated"'. Did you mean '"Open"'?
+src/pages/SurveyReportPage.tsx(71,38): error TS2345: Argument of type '{ checklistItemId: string; description: string; rootCause: string; correctiveAction: string; preventiveAction: string; status: "Open"; assignedTo: string; dueDate: string; pdcaStage: "Plan"; pdcaHistory: never[]; }' is not assignable to parameter of type 'Omit<CAPAReport, "id">'.
+src/pages/UsersPage.tsx(205,21): error TS2322: Type '{ department: Department | undefined; id: string; name: string; displayName?: string; email: string; role: UserRole; avatarUrl?: string; departmentId?: string; jobTitle?: string; ... 4 more ...; trainingAssignments?: { trainingId: string; assignedBy?: string; assignedDate: string; dueDate?: string; }[]; }' is not assignable to type 'User & { department?: Department | undefined; }'.
+src/pages/UsersPage.tsx(211,38): error TS2345: Argument of type '{ department: Department | undefined; id: string; name: string; displayName?: string; email: string; role: UserRole; avatarUrl?: string; departmentId?: string; jobTitle?: string; ... 4 more ...; trainingAssignments?: { trainingId: string; assignedBy?: string; assignedDate: string; dueDate?: string; }[]; }' is not assignable to parameter of type 'SetStateAction<User | null>'.
+src/pages/UsersPage.tsx(38,11): error TS7006: Parameter 'e' implicitly has an 'any' type.
+src/pages/UsersPage.tsx(38,5): error TS2322: Type '(e: any) => void' is not assignable to type '() => void'.
+src/services/__tests__/appSettingsService.test.ts(257,44): error TS2345: Argument of type '{ defaultLanguage: string; appName: string; logoUrl: string; primaryColor: string; defaultUserRole: UserRole; passwordPolicy: PasswordPolicy; globeSettings: GlobeSettings; ... 4 more ...; users?: UsersSettings; }' is not assignable to parameter of type 'AppSettings'.
+src/services/__tests__/bulkUserService.test.ts(185,21): error TS2353: Object literal may only specify known properties, and 'createdAt' does not exist in type 'User'.
+src/services/__tests__/bulkUserService.test.ts(59,17): error TS2353: Object literal may only specify known properties, and 'createdAt' does not exist in type 'User'.
+src/services/__tests__/bulkUserService.test.ts(69,17): error TS2353: Object literal may only specify known properties, and 'createdAt' does not exist in type 'User'.
+src/services/aiAgentService.ts(101,50): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/services/aiAgentService.ts(109,36): error TS2339: Property 'userId' does not exist on type 'string'.
+src/services/aiAgentService.ts(138,53): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/services/aiAgentService.ts(145,60): error TS7006: Parameter 'p' implicitly has an 'any' type.
+src/services/aiAgentService.ts(88,30): error TS2339: Property 'projects' does not exist on type 'AppState'.
+src/services/aiDocumentGeneratorService.ts(144,34): error TS2339: Property 'content' does not exist on type 'DocumentTemplate'.
+src/services/aiDocumentGeneratorService.ts(174,34): error TS2339: Property 'content' does not exist on type 'DocumentTemplate'.
+src/services/BackendService.ts(338,17): error TS2783: 'createdAt' is specified more than once, so this usage will be overwritten.
+src/services/hisIntegration/ChangeDataCaptureService.ts(7,30): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+src/services/hisIntegration/DataMappingService.ts(6,49): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+src/services/hisIntegration/HISSyncScheduler.ts(200,18): error TS2339: Property 'success' does not exist on type 'SyncResult'.
+src/services/hisIntegration/HISSyncScheduler.ts(215,21): error TS2339: Property 'success' does not exist on type 'SyncResult'.
+src/services/hisIntegration/HISSyncScheduler.ts(7,27): error TS2307: Cannot find module '../types' or its corresponding type declarations.
+src/services/hisIntegration/index.ts(18,1): error TS2308: Module './types' has already exported a member named 'ConnectorFactory'. Consider explicitly re-exporting to resolve the ambiguity.
+src/services/hisIntegration/WebhookManagerService.ts(248,9): error TS2769: No overload matches this call.
+src/services/hisIntegration/WebhookManagerService.ts(331,9): error TS2769: No overload matches this call.
+src/services/programDocumentService.ts(174,26): error TS2339: Property 'createElement' does not exist on type 'ProgramDocument'.
+src/services/programDocumentService.ts(177,16): error TS2339: Property 'body' does not exist on type 'ProgramDocument'.
+src/services/projectService.ts(304,9): error TS2322: Type '{ id: string; name: "Plan" | "Do" | "Check" | "Act"; completedAt: string; notes: string; }' is not assignable to type 'PDCAStage'.
+src/services/projectService.ts(321,36): error TS2322: Type '(CAPAReport | { pdcaStage: "Plan" | "Do" | "Check" | "Act"; pdcaHistory: (PDCAStage | PDCAStageRecord)[]; id: string; type?: "CAPA" | undefined; ... 22 more ...; closureException?: { ...; } | undefined; })[]' is not assignable to type 'CAPAReport[]'.
+src/services/reportService.ts(279,9): error TS2741: Property '"Not Started"' is missing in type '{ Compliant: number; "Partially Compliant": number; "Non-Compliant": number; "Not Applicable": number; }' but required in type 'Record<ComplianceStatus, number>'.
+src/services/settingsPresetsService.ts(124,17): error TS2561: Object literal may only specify known properties, but 'highContrastMode' does not exist in type 'AccessibilitySettings'. Did you mean to write 'highContrast'?
+src/services/settingsPresetsService.ts(129,13): error TS2739: Type '{ showAnimations: false; cardStyle: "elevated"; }' is missing the following properties from type 'AppearanceSettings': compactMode, sidebarCollapsed, customColors
+src/services/settingsPresetsService.ts(152,13): error TS2739: Type '{ requireEmailVerification: true; sessionTimeoutMinutes: number; maxLoginAttempts: number; lockoutDurationMinutes: number; }' is missing the following properties from type 'UsersSettings': enableUserManagement, autoDeactivateInactiveUsers, inactivityThresholdDays
+src/services/settingsPresetsService.ts(179,13): error TS2739: Type '{ compactMode: true; showAnimations: false; }' is missing the following properties from type 'AppearanceSettings': sidebarCollapsed, cardStyle, customColors
+src/services/settingsPresetsService.ts(99,13): error TS2741: Property 'sidebarCollapsed' is missing in type '{ compactMode: true; showAnimations: false; cardStyle: "outlined"; customColors: { primary: string; success: string; warning: string; danger: string; }; }' but required in type 'AppearanceSettings'.
+src/services/settingsVersionService.ts(46,27): error TS2304: Cannot find name 'getDoc'.
+src/services/settingsVersionService.ts(62,9): error TS2304: Cannot find name 'limit'.
+src/services/settingsVersionService.ts(81,9): error TS2304: Cannot find name 'limit'.
+src/services/standardDocumentService.ts(174,26): error TS2339: Property 'createElement' does not exist on type 'StandardDocument'.
+src/services/standardDocumentService.ts(177,16): error TS2339: Property 'body' does not exist on type 'StandardDocument'.
+src/services/standardService.ts(24,9): error TS2783: 'standardId' is specified more than once, so this usage will be overwritten.
+src/stores/useAIChatStore.ts(52,51): error TS2339: Property 'sendMessage' does not exist on type 'AIAgentService'.
+src/stores/useProjectStore.ts(230,18): error TS18048: 'project.capaReports' is possibly 'undefined'.
+src/stores/useProjectStore.ts(253,21): error TS2322: Type 'PDCAStageRecord | { stage: PDCAStage; enteredAt: string; completedAt: string; completedBy: string; notes: string; attachments: string[]; }' is not assignable to type 'PDCAStageRecord'.
+src/stores/useProjectStore.ts(253,50): error TS2739: Type '{ stage: PDCAStage; enteredAt: string; completedAt: string; completedBy: string; notes: string; attachments: string[]; }' is missing the following properties from type 'PDCAStageRecord': id, name
+src/utils/numberFormatter.ts(234,22): error TS2339: Property 'formatRange' does not exist on type 'NumberFormat'.
+src/utils/programDepartmentResolver.ts(112,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(129,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(147,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(171,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(188,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(205,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(222,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(239,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(263,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(280,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(297,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(313,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(50,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(68,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(77,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(94,25): error TS2353: Object literal may only specify known properties, and 'category' does not exist in type 'ProgramFormTemplate'.

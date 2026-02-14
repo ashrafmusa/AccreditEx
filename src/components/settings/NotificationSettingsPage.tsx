@@ -62,7 +62,7 @@ const NotificationSettingsPage: React.FC = () => {
 
   const handleAdvancedChange = (
     field: keyof typeof advancedSettings,
-    value: any
+    value: any,
   ) => {
     const newAdvanced = {
       ...advancedSettings,
@@ -76,7 +76,7 @@ const NotificationSettingsPage: React.FC = () => {
     setLoading(true);
     try {
       if (!appSettings) {
-        toast.error("Settings not loaded");
+        toast.error(t("settingsNotLoaded"));
         return;
       }
       const updatedSettings = {
@@ -117,8 +117,8 @@ const NotificationSettingsPage: React.FC = () => {
   };
 
   const handleMarkAllAsRead = () => {
-    const count = markAllAsRead();
-    toast.success(`Marked ${count} notifications as read`);
+    markAllAsRead();
+    toast.success(t("notificationsMarkedAsRead"));
   };
 
   return (
@@ -127,7 +127,7 @@ const NotificationSettingsPage: React.FC = () => {
         <SettingsAlert
           type="warning"
           title={t("unsavedChanges")}
-          message="You have unseen changes"
+          message={t("unsavedNotificationChanges")}
           dismissible
         />
       )}
@@ -139,7 +139,7 @@ const NotificationSettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
-                  Total
+                  {t("total")}
                 </p>
                 <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
                   {stats.total}
@@ -152,7 +152,7 @@ const NotificationSettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase">
-                  Unread
+                  {t("unread")}
                 </p>
                 <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 mt-1">
                   {stats.unread}
@@ -165,7 +165,7 @@ const NotificationSettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase">
-                  Critical
+                  {t("critical")}
                 </p>
                 <p className="text-2xl font-bold text-pink-900 dark:text-rose-100 mt-1">
                   {stats.byPriority["critical"] || 0}
@@ -178,7 +178,7 @@ const NotificationSettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase">
-                  Archived
+                  {t("archived")}
                 </p>
                 <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
                   {stats.archived}
@@ -197,7 +197,7 @@ const NotificationSettingsPage: React.FC = () => {
         <div className="space-y-8">
           <SettingsSection
             title={t("generalNotifications")}
-            description="Configure notification delivery methods"
+            description={t("configureDeliveryMethods")}
           >
             <ToggleSwitch
               label={t("emailNotifications")}
@@ -212,8 +212,8 @@ const NotificationSettingsPage: React.FC = () => {
               setEnabled={() => handleNotificationChange("pushNotifications")}
             />
             <ToggleSwitch
-              label="Desktop Notifications"
-              description="Show notifications on your desktop"
+              label={t("desktopNotifications")}
+              description={t("desktopNotificationsDescription")}
               enabled={advancedSettings.desktopNotifications}
               setEnabled={(enabled) =>
                 handleAdvancedChange("desktopNotifications", enabled)
@@ -298,7 +298,7 @@ const NotificationSettingsPage: React.FC = () => {
               <div className="grid grid-cols-2 gap-4 ml-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    Start Time
+                    {t("startTime")}
                   </label>
                   <input
                     type="time"
@@ -311,7 +311,7 @@ const NotificationSettingsPage: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    End Time
+                    {t("endTime")}
                   </label>
                   <input
                     type="time"
@@ -326,7 +326,7 @@ const NotificationSettingsPage: React.FC = () => {
             )}
             <div>
               <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                Digest Frequency
+                {t("digestFrequency")}
               </label>
               <select
                 value={advancedSettings.digestFrequency}
@@ -350,8 +350,8 @@ const NotificationSettingsPage: React.FC = () => {
 
           <SettingsAlert
             type="info"
-            title="Notification Tips"
-            message="Enable at least email or push notifications to stay informed about important updates."
+            title={t("notificationTips")}
+            message={t("notificationTipsMessage")}
             dismissible={false}
           />
         </div>
@@ -363,7 +363,7 @@ const NotificationSettingsPage: React.FC = () => {
           onClick={handleMarkAllAsRead}
           size="sm"
         >
-          Mark All as Read
+          {t("markAllAsRead")}
         </SettingsButton>
         <div className="flex gap-3">
           <SettingsButton

@@ -40,12 +40,12 @@ const SettingsAuditLogViewer: React.FC = () => {
       const dateFrom = filter.dateFrom ? new Date(filter.dateFrom) : undefined;
       const dateTo = filter.dateTo ? new Date(filter.dateTo) : undefined;
 
-      const fetchedLogs = await getAuditLogs(
-        filter.userId || undefined,
-        filter.category || undefined,
-        dateFrom,
-        dateTo
-      );
+      const fetchedLogs = await getAuditLogs({
+        userId: filter.userId || undefined,
+        category: filter.category || undefined,
+        startDate: dateFrom,
+        endDate: dateTo,
+      });
 
       setLogs(fetchedLogs);
     } catch (error) {
@@ -253,7 +253,9 @@ const SettingsAuditLogViewer: React.FC = () => {
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white whitespace-nowrap">
                       <div className="flex items-center gap-2">
                         <ClockIcon className="w-4 h-4 text-gray-400" />
-                        {log.timestamp?.toDate().toLocaleString() || "N/A"}
+                        {log.timestamp
+                          ? new Date(log.timestamp).toLocaleString()
+                          : "N/A"}
                       </div>
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-900 dark:text-white">
@@ -268,8 +270,8 @@ const SettingsAuditLogViewer: React.FC = () => {
                           log.action === "update"
                             ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400"
                             : log.action === "create"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                            : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                              ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
                         }`}
                       >
                         {log.action}
@@ -326,13 +328,16 @@ const SettingsAuditLogViewer: React.FC = () => {
           <p className="text-sm font-medium text-gray-900 dark:text-white mt-1 truncate">
             {(() => {
               if (filteredLogs.length === 0) return "N/A";
-              const userCounts = filteredLogs.reduce((acc, log) => {
-                acc[log.userId] = (acc[log.userId] || 0) + 1;
-                return acc;
-              }, {} as Record<string, number>);
+              const userCounts = filteredLogs.reduce(
+                (acc, log) => {
+                  acc[log.userId] = (acc[log.userId] || 0) + 1;
+                  return acc;
+                },
+                {} as Record<string, number>,
+              );
               const topUserId =
                 Object.entries(userCounts).sort(
-                  (a, b) => b[1] - a[1]
+                  (a, b) => b[1] - a[1],
                 )[0]?.[0] || "";
               return getUserName(topUserId);
             })()}

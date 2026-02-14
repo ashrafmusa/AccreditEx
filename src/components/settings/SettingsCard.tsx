@@ -29,7 +29,7 @@ const SettingsCard: FC<SettingsCardProps> = ({
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface shadow-sm rounded-xl border border-brand-border dark:border-dark-brand-border overflow-hidden transition-all duration-300 hover:shadow-md hover:border-brand-primary/20 dark:hover:border-brand-primary/30">
       <div className="p-6 sm:p-8">
-        <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex items-start gap-3 flex-1">
             {Icon && (
               <div className="p-2.5 bg-brand-primary/10 rounded-lg">
@@ -58,7 +58,9 @@ const SettingsCard: FC<SettingsCardProps> = ({
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                aria-label={isExpanded ? "Collapse section" : "Expand section"}
+                aria-label={
+                  isExpanded ? `Collapse ${title}` : `Expand ${title}`
+                }
               >
                 <ChevronDownIcon
                   className={`w-5 h-5 text-gray-500 transition-transform duration-300 ${
@@ -70,7 +72,7 @@ const SettingsCard: FC<SettingsCardProps> = ({
           </div>
         </div>
         <div
-          className={`space-y-6 mt-6 transition-all duration-300 ${
+          className={`space-y-6 mt-4 transition-all duration-300 ${
             collapsible && !isExpanded ? "hidden opacity-0" : "opacity-100"
           }`}
         >

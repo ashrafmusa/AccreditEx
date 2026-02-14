@@ -29,3 +29,21 @@ export interface PDCACycleTemplate {
   priority: 'High' | 'Medium' | 'Low';
   estimatedDays: number;
 }
+
+export interface ProgramFormTemplate {
+  id: string;
+  name?: string;
+  title?: string;
+  description?: string;
+  programId?: string;
+  category?: string;
+  relatedSections?: string[];
+  relatedKeywords?: string[];
+  requiredCompetencyIds?: string[];
+  fields?: Array<{
+    name: string;
+    type: string;
+    required?: boolean;
+    label?: string;
+  }>;
+}

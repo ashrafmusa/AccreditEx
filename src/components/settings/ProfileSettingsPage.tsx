@@ -33,7 +33,7 @@ import {
 
 // Password strength calculator
 const calculatePasswordStrength = (
-  password: string
+  password: string,
 ): { score: number; label: string; color: string } => {
   if (!password) return { score: 0, label: "", color: "" };
 
@@ -76,7 +76,7 @@ const ProfileSettingsPage: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const userDepartment = departments.find(
-    (d) => d.id === currentUser!.departmentId
+    (d) => d.id === currentUser!.departmentId,
   );
 
   const labelClasses =
@@ -93,10 +93,10 @@ const ProfileSettingsPage: React.FC = () => {
 
     if (password) {
       if (password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters long";
+        newErrors.password = t("passwordMinLength");
       }
       if (password !== confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match";
+        newErrors.confirmPassword = t("passwordsDoNotMatch");
       }
     }
 
@@ -112,7 +112,7 @@ const ProfileSettingsPage: React.FC = () => {
         jobTitle !== (currentUser!.jobTitle || "") ||
         hireDate !== (currentUser!.hireDate || "") ||
         password !== "" ||
-        avatarUrl !== (currentUser!.avatarUrl || "")
+        avatarUrl !== (currentUser!.avatarUrl || ""),
     );
   };
 
@@ -123,7 +123,7 @@ const ProfileSettingsPage: React.FC = () => {
         newJobTitle !== (currentUser!.jobTitle || "") ||
         hireDate !== (currentUser!.hireDate || "") ||
         password !== "" ||
-        avatarUrl !== (currentUser!.avatarUrl || "")
+        avatarUrl !== (currentUser!.avatarUrl || ""),
     );
   };
 
@@ -134,7 +134,7 @@ const ProfileSettingsPage: React.FC = () => {
         jobTitle !== (currentUser!.jobTitle || "") ||
         newHireDate !== (currentUser!.hireDate || "") ||
         password !== "" ||
-        avatarUrl !== (currentUser!.avatarUrl || "")
+        avatarUrl !== (currentUser!.avatarUrl || ""),
     );
   };
 
@@ -146,7 +146,7 @@ const ProfileSettingsPage: React.FC = () => {
         jobTitle !== (currentUser!.jobTitle || "") ||
         hireDate !== (currentUser!.hireDate || "") ||
         newPassword !== "" ||
-        avatarUrl !== (currentUser!.avatarUrl || "")
+        avatarUrl !== (currentUser!.avatarUrl || ""),
     );
   };
 
@@ -159,7 +159,7 @@ const ProfileSettingsPage: React.FC = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Please fix the errors before saving");
+      toast.error(t("pleaseFixErrors"));
       return;
     }
 
@@ -176,11 +176,11 @@ const ProfileSettingsPage: React.FC = () => {
             (progress) => {
               console.log(`Upload progress: ${progress.progress}%`);
             },
-            { forceUpload: true }
+            { forceUpload: true },
           );
         } catch (uploadError) {
           console.error("Avatar upload error:", uploadError);
-          toast.error("Failed to upload profile photo. Please try again.");
+          toast.error(t("avatarUploadFailed"));
           setLoading(false);
           return;
         }
@@ -201,7 +201,7 @@ const ProfileSettingsPage: React.FC = () => {
       if (password) {
         // TODO: Implement password change via Firebase Auth updatePassword()
         console.warn(
-          "Password update not yet implemented - requires Firebase Auth integration"
+          "Password update not yet implemented - requires Firebase Auth integration",
         );
       }
 
@@ -244,7 +244,7 @@ const ProfileSettingsPage: React.FC = () => {
           type="warning"
           icon={ExclamationTriangleIcon}
           title={t("unsavedChanges")}
-          message="You have unsaved changes to your profile"
+          message={t("unsavedProfileChanges")}
           onDismiss={() => {}}
         />
       )}
@@ -256,9 +256,9 @@ const ProfileSettingsPage: React.FC = () => {
       >
         <div className="space-y-6">
           {/* User Info Summary */}
-          <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-blue-800">
+          <div className="bg-linear-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-4 md:p-6 border border-blue-200 dark:border-blue-800">
             <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
-              <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full flex-shrink-0">
+              <div className="p-2 md:p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full shrink-0">
                 <UserCircleIcon className="w-5 h-5 md:w-6 md:h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="flex-1 min-w-0">
@@ -272,7 +272,7 @@ const ProfileSettingsPage: React.FC = () => {
                   {currentUser.email}
                 </p>
               </div>
-              <div className="flex items-center gap-2 px-2 md:px-3 py-1 bg-green-100 dark:bg-green-900/20 rounded-full flex-shrink-0">
+              <div className="flex items-center gap-2 px-2 md:px-3 py-1 bg-green-100 dark:bg-green-900/20 rounded-full shrink-0">
                 <CheckCircleIcon className="w-3 h-3 md:w-4 md:h-4 text-green-600 dark:text-green-400" />
                 <span className="text-xs md:text-sm font-medium text-green-600 dark:text-green-400 whitespace-nowrap">
                   {t("verified") || "Verified"}
@@ -284,7 +284,7 @@ const ProfileSettingsPage: React.FC = () => {
           {/* Personal Information Section */}
           <SettingsSection
             title={t("personalInformation") || "Personal Information"}
-            description="Update your name, job title, and hire date"
+            description={t("personalInfoDescription")}
             icon={IdentificationIcon}
           >
             <div className="space-y-4">
@@ -356,10 +356,11 @@ const ProfileSettingsPage: React.FC = () => {
                       id="email"
                       value={currentUser.email}
                       readOnly
+                      aria-readonly="true"
                       className={`${inputClasses} bg-gray-100 dark:bg-gray-800/50 cursor-not-allowed opacity-75 text-xs md:text-sm`}
                     />
                     <span className="absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-700 px-2 py-1 rounded">
-                      Read-only
+                      {t("readOnly")}
                     </span>
                   </div>
                 </div>
@@ -387,7 +388,7 @@ const ProfileSettingsPage: React.FC = () => {
           {/* Profile Photo Section */}
           <SettingsSection
             title={t("profilePhoto") || "Profile Photo"}
-            description="Upload a profile picture to personalize your account"
+            description={t("profilePhotoDescription")}
             icon={PhotoIcon}
           >
             <ImageUpload
@@ -403,7 +404,7 @@ const ProfileSettingsPage: React.FC = () => {
           {/* Security Section */}
           <SettingsSection
             title={t("security") || "Security"}
-            description="Manage your password and security settings"
+            description={t("securityDescription")}
             icon={ShieldCheckIcon}
           >
             <div className="space-y-4">
@@ -459,15 +460,15 @@ const ProfileSettingsPage: React.FC = () => {
                             "text-red-600"
                               ? "bg-red-600 w-1/5"
                               : calculatePasswordStrength(password).color ===
-                                "text-orange-600"
-                              ? "bg-orange-600 w-2/5"
-                              : calculatePasswordStrength(password).color ===
-                                "text-yellow-600"
-                              ? "bg-yellow-600 w-3/5"
-                              : calculatePasswordStrength(password).color ===
-                                "text-green-600"
-                              ? "bg-green-600 w-4/5"
-                              : "bg-green-700 w-full"
+                                  "text-orange-600"
+                                ? "bg-orange-600 w-2/5"
+                                : calculatePasswordStrength(password).color ===
+                                    "text-yellow-600"
+                                  ? "bg-yellow-600 w-3/5"
+                                  : calculatePasswordStrength(password)
+                                        .color === "text-green-600"
+                                    ? "bg-green-600 w-4/5"
+                                    : "bg-green-700 w-full"
                           }`}
                         />
                       </div>
@@ -487,7 +488,7 @@ const ProfileSettingsPage: React.FC = () => {
                             : ""
                         }
                       >
-                        ✓ At least 8 characters
+                        ✓ {t("atLeast8Chars")}
                       </li>
                       <li
                         className={
@@ -496,7 +497,7 @@ const ProfileSettingsPage: React.FC = () => {
                             : ""
                         }
                       >
-                        ✓ Mix of uppercase and lowercase
+                        ✓ {t("mixUpperLowercase")}
                       </li>
                       <li
                         className={
@@ -505,7 +506,7 @@ const ProfileSettingsPage: React.FC = () => {
                             : ""
                         }
                       >
-                        ✓ At least one number
+                        ✓ {t("atLeastOneNumber")}
                       </li>
                       <li
                         className={
@@ -514,7 +515,7 @@ const ProfileSettingsPage: React.FC = () => {
                             : ""
                         }
                       >
-                        ✓ At least one special character
+                        ✓ {t("atLeastOneSpecialChar")}
                       </li>
                     </ul>
                   </div>
@@ -569,7 +570,7 @@ const ProfileSettingsPage: React.FC = () => {
                   {confirmPassword && password === confirmPassword && (
                     <p className="text-green-600 dark:text-green-400 text-sm mt-1 flex items-center gap-1">
                       <CheckCircleIcon className="w-4 h-4" />
-                      Passwords match
+                      {t("passwordsMatch")}
                     </p>
                   )}
                 </div>
@@ -591,13 +592,10 @@ const ProfileSettingsPage: React.FC = () => {
           {/* Additional Info */}
           <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 md:p-4 border border-blue-200 dark:border-blue-800/30">
             <div className="flex gap-2 md:gap-3">
-              <ClockIcon className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <ClockIcon className="w-4 h-4 md:w-5 md:h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
               <div className="text-xs md:text-sm text-blue-800 dark:text-blue-300">
                 <p className="font-medium">{t("tip") || "Tip"}</p>
-                <p>
-                  Keep your profile information up to date to help your team
-                  identify and reach out to you easily.
-                </p>
+                <p>{t("profileTip")}</p>
               </div>
             </div>
           </div>

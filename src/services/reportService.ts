@@ -47,7 +47,7 @@ export const generateAIComplianceReport = async (
     openCAPAs: project.capaReports?.filter(capa => capa.status !== 'Finalized').length || 0,
     completedCAPAs: project.capaReports?.filter(capa => capa.status === 'Finalized').length || 0,
     mockSurveysCompleted: project.mockSurveys?.length || 0,
-    criticalFindings: project.checklist?.filter(item => 
+    criticalFindings: project.checklist?.filter(item =>
       item.status === ComplianceStatus.NonCompliant && item.item.toLowerCase().includes('critical')
     ).length || 0,
     evidenceDocuments: project.checklist?.reduce((acc, item) => acc + (item.evidenceFiles?.length || 0), 0) || 0,
@@ -71,17 +71,17 @@ export const generateAIComplianceReport = async (
     generatedAt: new Date().toISOString()
   });
 
-    // Convert Blob to File for Cloudinary upload
+  // Convert Blob to File for Cloudinary upload
   const pdfFileName = `compliance_report_${Date.now()}.pdf`;
-    const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
-  
-    // Upload PDF to Cloudinary
-    const pdfUrl = await cloudinaryService.uploadDocument(
-        pdfFile,
-        `reports/${project.id}`,
-        (progress) => {
-            console.log(`Upload progress: ${progress.progress.toFixed(0)}%`);
-        }
+  const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
+
+  // Upload PDF to Cloudinary
+  const pdfUrl = await cloudinaryService.uploadDocument(
+    pdfFile,
+    `reports/${project.id}`,
+    (progress) => {
+      console.log(`Upload progress: ${progress.progress.toFixed(0)}%`);
+    }
   );
 
   // Create document object for Firebase
@@ -97,7 +97,7 @@ export const generateAIComplianceReport = async (
       en: aiResponse.content,
       ar: aiResponse.content // In production, translate to Arabic
     },
-      fileUrl: pdfUrl,
+    fileUrl: pdfUrl,
     currentVersion: 1,
     versionHistory: [{
       version: 1,
@@ -121,7 +121,7 @@ export const generateAIComplianceReport = async (
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now()
   });
-  
+
   freeTierMonitor.recordWrite(1);
 
   return {
@@ -176,8 +176,8 @@ async function callAIAgent(
     }
 
     // Parse AI response and extract sections
-    const summary = extractSection(fullContent, 'Executive Summary', 'Key Findings') || 
-                   fullContent.substring(0, 500);
+    const summary = extractSection(fullContent, 'Executive Summary', 'Key Findings') ||
+      fullContent.substring(0, 500);
     const recommendations = extractRecommendations(fullContent);
 
     return {
@@ -280,7 +280,8 @@ function calculateComplianceScore(project: Project): number {
     [ComplianceStatus.Compliant]: 1.0,
     [ComplianceStatus.PartiallyCompliant]: 0.5,
     [ComplianceStatus.NonCompliant]: 0.0,
-    [ComplianceStatus.NotApplicable]: 0.0 // Not counted
+    [ComplianceStatus.NotApplicable]: 0.0, // Not counted
+    [ComplianceStatus.NotStarted]: 0.0
   };
 
   const applicableItems = project.checklist.filter(
@@ -302,17 +303,17 @@ function calculateComplianceScore(project: Project): number {
 function extractSection(content: string, startMarker: string, endMarker: string): string | null {
   const startRegex = new RegExp(`#{1,3}\\s*${startMarker}`, 'i');
   const endRegex = new RegExp(`#{1,3}\\s*${endMarker}`, 'i');
-  
+
   const startMatch = content.search(startRegex);
   const endMatch = content.search(endRegex);
-  
+
   if (startMatch !== -1) {
     if (endMatch !== -1 && endMatch > startMatch) {
       return content.substring(startMatch, endMatch).trim();
     }
     return content.substring(startMatch).trim();
   }
-  
+
   return null;
 }
 
@@ -329,11 +330,11 @@ function extractRecommendations(content: string): string[] {
       inRecommendationsSection = true;
       continue;
     }
-    
+
     if (inRecommendationsSection && line.match(/^#{1,3}\s+/)) {
       break; // Next section started
     }
-    
+
     if (inRecommendationsSection) {
       const match = line.match(/^[\d\-\*•]\s*(.+)/);
       if (match && match[1].trim().length > 10) {
@@ -354,7 +355,7 @@ function generateFallbackReport(
   reportType: string
 ): AIReportResponse {
   const complianceScore = calculateComplianceScore(project);
-  
+
   const content = `
 # ${reportType === 'complianceSummary' ? 'Compliance Summary Report' : 'Compliance Report'}
 
@@ -381,21 +382,21 @@ This report provides a comprehensive overview of the compliance status for ${pro
 ## Key Findings
 
 ### Strengths
-${data.compliantStandards > data.totalStandards * 0.7 ? 
-  '- Strong overall compliance rate demonstrates effective quality management\n- Majority of standards are fully compliant' :
-  '- Progress is being made toward full compliance\n- Foundation for improvement is established'}
+${data.compliantStandards > data.totalStandards * 0.7 ?
+      '- Strong overall compliance rate demonstrates effective quality management\n- Majority of standards are fully compliant' :
+      '- Progress is being made toward full compliance\n- Foundation for improvement is established'}
 - ${data.evidenceDocuments} evidence documents uploaded
 - ${data.completedCAPAs} CAPA reports completed
 
 ### Areas for Improvement
-${data.nonCompliantStandards > 0 ? 
-  `- ${data.nonCompliantStandards} standards remain non-compliant and require immediate attention\n` : ''}
-${data.partiallyCompliantStandards > 0 ? 
-  `- ${data.partiallyCompliantStandards} standards are partially compliant and need completion\n` : ''}
-${data.openCAPAs > 0 ? 
-  `- ${data.openCAPAs} open CAPA reports require resolution\n` : ''}
+${data.nonCompliantStandards > 0 ?
+      `- ${data.nonCompliantStandards} standards remain non-compliant and require immediate attention\n` : ''}
+${data.partiallyCompliantStandards > 0 ?
+      `- ${data.partiallyCompliantStandards} standards are partially compliant and need completion\n` : ''}
+${data.openCAPAs > 0 ?
+      `- ${data.openCAPAs} open CAPA reports require resolution\n` : ''}
 ${data.criticalFindings > 0 ?
-  `- ${data.criticalFindings} critical findings identified\n` : ''}
+      `- ${data.criticalFindings} critical findings identified\n` : ''}
 
 ---
 
@@ -403,11 +404,11 @@ ${data.criticalFindings > 0 ?
 
 **Compliance Risk Level:** ${complianceScore >= 85 ? 'LOW' : complianceScore >= 70 ? 'MEDIUM' : 'HIGH'}
 
-${complianceScore < 70 ? 
-  '**Critical Risks:**\n- Current compliance level is below accreditation threshold\n- Immediate action required to address non-compliant standards\n- Risk of accreditation delay or failure\n' : 
-  complianceScore < 85 ?
-  '**Moderate Risks:**\n- Compliance level needs improvement to ensure accreditation success\n- Several standards require additional work\n- Timeline may be at risk without focused effort\n' :
-  '**Low Risk:**\n- Strong compliance position\n- Well-positioned for accreditation\n- Maintain current momentum\n'}
+${complianceScore < 70 ?
+      '**Critical Risks:**\n- Current compliance level is below accreditation threshold\n- Immediate action required to address non-compliant standards\n- Risk of accreditation delay or failure\n' :
+      complianceScore < 85 ?
+        '**Moderate Risks:**\n- Compliance level needs improvement to ensure accreditation success\n- Several standards require additional work\n- Timeline may be at risk without focused effort\n' :
+        '**Low Risk:**\n- Strong compliance position\n- Well-positioned for accreditation\n- Maintain current momentum\n'}
 
 ---
 
@@ -417,21 +418,21 @@ ${complianceScore < 70 ?
 - Completed: ${data.completedCAPAs}
 - In Progress: ${data.openCAPAs}
 
-${data.openCAPAs > 0 ? 
-  `\n**Action Required:** Focus on completing ${data.openCAPAs} outstanding CAPA reports to improve compliance status.\n` : 
-  '\n**Status:** All CAPA reports are completed. Maintain continuous improvement processes.\n'}
+${data.openCAPAs > 0 ?
+      `\n**Action Required:** Focus on completing ${data.openCAPAs} outstanding CAPA reports to improve compliance status.\n` :
+      '\n**Status:** All CAPA reports are completed. Maintain continuous improvement processes.\n'}
 
 ---
 
 ## Strategic Recommendations
 
 1. **Priority Actions:**
-   ${data.nonCompliantStandards > 0 ? 
-     `- Address ${data.nonCompliantStandards} non-compliant standards immediately\n   ` : ''}
-   ${data.openCAPAs > 0 ? 
-     `- Complete ${data.openCAPAs} open CAPA reports\n   ` : ''}
-   ${data.partiallyCompliantStandards > 0 ? 
-     `- Finish documentation for ${data.partiallyCompliantStandards} partially compliant standards\n   ` : ''}
+   ${data.nonCompliantStandards > 0 ?
+      `- Address ${data.nonCompliantStandards} non-compliant standards immediately\n   ` : ''}
+   ${data.openCAPAs > 0 ?
+      `- Complete ${data.openCAPAs} open CAPA reports\n   ` : ''}
+   ${data.partiallyCompliantStandards > 0 ?
+      `- Finish documentation for ${data.partiallyCompliantStandards} partially compliant standards\n   ` : ''}
 
 2. **Documentation Enhancement:**
    - Continue uploading evidence documents for all standards
@@ -444,9 +445,9 @@ ${data.openCAPAs > 0 ?
    - Establish regular compliance monitoring
 
 4. **Timeline Management:**
-   - ${complianceScore < 70 ? 'Accelerate compliance activities to meet accreditation deadline' : 
-       complianceScore < 85 ? 'Maintain steady progress to ensure timely completion' :
-       'Continue current pace while focusing on excellence'}
+   - ${complianceScore < 70 ? 'Accelerate compliance activities to meet accreditation deadline' :
+      complianceScore < 85 ? 'Maintain steady progress to ensure timely completion' :
+        'Continue current pace while focusing on excellence'}
 
 ---
 

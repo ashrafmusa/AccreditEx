@@ -251,7 +251,7 @@ describe('appSettingsService', () => {
         test('should validate defaultLanguage is required', async () => {
             const invalidSettings = {
                 ...mockAppSettings,
-                defaultLanguage: '', // Missing required field
+                defaultLanguage: '' as any, // Missing required field
             };
 
             await expect(updateAppSettings(invalidSettings)).rejects.toThrow(

@@ -60,7 +60,10 @@ const SettingsPresetsPanel: React.FC = () => {
       setPresets([...BUILT_IN_PRESETS, ...publicPresets, ...userPresets]);
     } catch (error) {
       // Firestore indexes may not exist yet — gracefully fall back to built-in presets
-      console.warn("Could not load Firestore presets, using built-in only:", error);
+      console.warn(
+        "Could not load Firestore presets, using built-in only:",
+        error,
+      );
       setPresets([...BUILT_IN_PRESETS]);
     } finally {
       setLoading(false);
@@ -99,14 +102,14 @@ const SettingsPresetsPanel: React.FC = () => {
     }
 
     try {
-      await createPreset(
-        newPreset.name,
-        newPreset.description,
-        newPreset.category,
-        appSettings,
-        currentUser.id,
-        newPreset.isPublic,
-      );
+      await createPreset({
+        name: newPreset.name,
+        description: newPreset.description,
+        category: newPreset.category as any,
+        settings: appSettings as any,
+        createdBy: currentUser.id,
+        isPublic: newPreset.isPublic,
+      });
       toast.success("Preset created successfully");
       setShowCreateModal(false);
       setNewPreset({

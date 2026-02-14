@@ -37,7 +37,7 @@ const UserTrainingDashboard: React.FC<Props> = ({
       .filter((item) => item.program);
 
     const overdue = pending.filter(
-      (p) => p.assignment.dueDate && new Date(p.assignment.dueDate) < now
+      (p) => p.assignment.dueDate && new Date(p.assignment.dueDate) < now,
     );
 
     const completed = Object.entries(userTrainingStatus)
@@ -122,7 +122,7 @@ const UserTrainingDashboard: React.FC<Props> = ({
                     {new Date(assignment.assignedDate).toLocaleDateString()}
                     {assignment.dueDate &&
                       ` | ${t("dueOn")}: ${new Date(
-                        assignment.dueDate
+                        assignment.dueDate,
                       ).toLocaleDateString()}`}
                   </p>
                 </div>
@@ -130,7 +130,7 @@ const UserTrainingDashboard: React.FC<Props> = ({
             })}
             {pending.length === 0 && (
               <EmptyState
-                icon={AcademicCapIcon}
+                icon={<AcademicCapIcon className="w-6 h-6" />}
                 title={t("noPendingTraining")}
                 message=""
               />
@@ -175,7 +175,7 @@ const UserTrainingDashboard: React.FC<Props> = ({
             ))}
             {completed.length === 0 && (
               <EmptyState
-                icon={AcademicCapIcon}
+                icon={<AcademicCapIcon className="w-6 h-6" />}
                 title={t("noCompletedTraining")}
                 message=""
               />

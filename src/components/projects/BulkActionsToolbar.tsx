@@ -1,7 +1,12 @@
-import React, { useState } from 'react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { TrashIcon, ArchiveBoxIcon, CheckIcon, XMarkIcon } from '@/components/icons';
-import { ProjectStatus } from '@/types';
+import React, { useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  TrashIcon,
+  ArchiveBoxIcon,
+  CheckIcon,
+  XMarkIcon,
+} from "@/components/icons";
+import { ProjectStatus } from "@/types";
 
 interface BulkActionsToolbarProps {
   selectedCount: number;
@@ -28,7 +33,7 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   onBulkDelete,
   onUpdateStatus,
   onBulkUpdateStatus,
-  showRestore = false
+  showRestore = false,
 }) => {
   const { t } = useTranslation();
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
@@ -51,7 +56,9 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
               {selectedCount}
             </div>
             <span className="text-sm font-medium dark:text-dark-brand-text-primary">
-              {selectedCount === 1 ? t('projectSelected') : t('projectsSelected', { count: selectedCount })}
+              {selectedCount === 1
+                ? t("projectSelected")
+                : t("projectsSelected")}
             </span>
           </div>
 
@@ -63,36 +70,36 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
             {showRestore && handleRestore ? (
               <button
                 onClick={handleRestore}
-                title={t('restore') || 'Restore'}
+                title={t("restore") || "Restore"}
                 className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <ArchiveBoxIcon className="w-4 h-4" />
-                {t('restore')}
+                {t("restore")}
               </button>
             ) : handleArchive ? (
               <button
                 onClick={handleArchive}
-                title={t('archive') || 'Archive'}
+                title={t("archive") || "Archive"}
                 className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <ArchiveBoxIcon className="w-4 h-4" />
-                {t('archive')}
+                {t("archive")}
               </button>
             ) : null}
 
             <div className="relative">
               <button
                 onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-                title={t('updateStatus') || 'Update Status'}
+                title={t("updateStatus") || "Update Status"}
                 className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <CheckIcon className="w-4 h-4" />
-                {t('updateStatus')}
+                {t("updateStatus")}
               </button>
-              
+
               {showStatusDropdown && (
                 <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-slate-200 dark:border-slate-600 z-10">
-                  {Object.values(ProjectStatus).map(status => (
+                  {Object.values(ProjectStatus).map((status) => (
                     <button
                       key={status}
                       onClick={() => {
@@ -103,7 +110,8 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
                       }}
                       className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 text-sm text-slate-700 dark:text-slate-300 first:rounded-t-lg last:rounded-b-lg transition-colors"
                     >
-                      {t(status.replace(/\s/g, '').toLowerCase() as any) || status}
+                      {t(status.replace(/\s/g, "").toLowerCase() as any) ||
+                        status}
                     </button>
                   ))}
                 </div>
@@ -113,11 +121,11 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
             {handleDelete && (
               <button
                 onClick={handleDelete}
-                title={t('delete') || 'Delete'}
+                title={t("delete") || "Delete"}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <TrashIcon className="w-4 h-4" />
-                {t('delete')}
+                {t("delete")}
               </button>
             )}
           </div>
@@ -129,7 +137,7 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
           <button
             onClick={onClearSelection}
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
-            title={t('clearSelection')}
+            title={t("clearSelection")}
           >
             <XMarkIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           </button>

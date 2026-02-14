@@ -35,8 +35,7 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
       setEditingUser(null);
       setIsModalOpen(true);
     },
-    "/": (e) => {
-      e.preventDefault();
+    "/": () => {
       document.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
     },
   });
@@ -202,13 +201,13 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
                 {usersWithDepartments.map((user) => (
                   <UserRow
                     key={user.id}
-                    user={user}
+                    user={user as any}
                     currentUser={currentUser}
                     onSelect={() =>
                       setNavigation({ view: "userProfile", userId: user.id })
                     }
                     onEdit={() => {
-                      setEditingUser(user);
+                      setEditingUser(user as User);
                       setIsModalOpen(true);
                     }}
                     onDelete={() => setDeletingUserId(user.id)}

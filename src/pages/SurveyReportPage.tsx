@@ -45,7 +45,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
     try {
       for (const result of failedItems) {
         const item = project.checklist.find(
-          (c) => c.id === result.checklistItemId
+          (c) => c.id === result.checklistItemId,
         );
         if (!item) continue;
 
@@ -53,7 +53,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
         await addRisk({
           title: `Survey Finding: ${item.standardId}`,
           description: `Failed during survey on ${new Date(
-            survey.date
+            survey.date,
           ).toLocaleDateString()}\n\n${result.notes}`,
           severity: "high",
           likelihood: "high",
@@ -62,9 +62,9 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
           owner: surveyor?.id || "",
           identifiedDate: survey.date,
           reviewDate: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
           ).toISOString(),
-        });
+        } as any);
         risksCreated++;
 
         // Create CAPA
@@ -77,16 +77,16 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
           status: "Open",
           assignedTo: item.assignedTo || surveyor?.id || "",
           dueDate: new Date(
-            Date.now() + 30 * 24 * 60 * 60 * 1000
+            Date.now() + 30 * 24 * 60 * 60 * 1000,
           ).toISOString(),
           pdcaStage: "Plan",
           pdcaHistory: [],
-        });
+        } as any);
         capasCreated++;
       }
 
       toast.success(
-        `✅ Created ${risksCreated} risks and ${capasCreated} CAPA reports from survey findings!`
+        `✅ Created ${risksCreated} risks and ${capasCreated} CAPA reports from survey findings!`,
       );
     } catch (error) {
       toast.error("Failed to auto-create items from survey");
@@ -102,7 +102,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
     try {
       const failedData = failedItems.map((result) => {
         const item = project.checklist.find(
-          (c) => c.id === result.checklistItemId
+          (c) => c.id === result.checklistItemId,
         );
         return {
           question: item?.item || "Unknown",
@@ -203,7 +203,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
         <div className="space-y-4">
           {failedItems.map((result) => {
             const item = project.checklist.find(
-              (c) => c.id === result.checklistItemId
+              (c) => c.id === result.checklistItemId,
             );
             if (!item) return null;
             return (

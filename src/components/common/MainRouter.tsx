@@ -67,9 +67,7 @@ const AIDocumentGeneratorPage = lazy(
 );
 
 // Loading component for lazy-loaded routes
-const RouteLoadingFallback: React.FC = () => (
-  <LoadingScreen message="Loading page..." />
-);
+const RouteLoadingFallback: React.FC = () => <LoadingScreen />;
 
 interface MainRouterProps {
   navigation: NavigationState;
@@ -114,7 +112,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
   useEffect(() => {
     // Robust check: Handle Case-Insensitivity (Admin vs admin)
     const isAdmin = currentUser?.role?.toLowerCase() === "admin";
-    
+
     if (currentUser && !isAdmin) {
       const adminOnlyViews: NavigationState["view"][] = [
         "departments",
@@ -141,9 +139,9 @@ const MainRouter: React.FC<MainRouterProps> = ({
           "firebaseUsage", // System metric
           "about",
         ];
-        
+
         const currentSection = navigation.section || "visual";
-        
+
         if (!userAllowedSections.includes(currentSection)) {
           isUnauthorized = true;
           message =
@@ -189,7 +187,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
   }
   if (navigation.view === "mockSurvey") {
     const project = projects.find((p) => p.id === navigation.projectId);
-    const survey = project?.mockSurveys.find(
+    const survey = project?.mockSurveys?.find(
       (s) => s.id === navigation.surveyId,
     );
     if (!project || !survey) return <div>Survey not found</div>;
@@ -207,7 +205,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
   }
   if (navigation.view === "surveyReport") {
     const project = projects.find((p) => p.id === navigation.projectId);
-    const survey = project?.mockSurveys.find(
+    const survey = project?.mockSurveys?.find(
       (s) => s.id === navigation.surveyId,
     );
     if (!project || !survey) return <div>Report not found</div>;
@@ -319,21 +317,21 @@ const MainRouter: React.FC<MainRouterProps> = ({
       case "projectDetail":
         return (
           <ProjectDetailPage
-            navigation={navigation}
+            navigation={navigation as any}
             setNavigation={setNavigation}
           />
         );
       case "createProject":
         return (
           <CreateProjectPage
-            navigation={navigation}
+            navigation={navigation as any}
             setNavigation={setNavigation}
           />
         );
       case "editProject":
         return (
           <CreateProjectPage
-            navigation={navigation}
+            navigation={navigation as any}
             setNavigation={setNavigation}
           />
         );

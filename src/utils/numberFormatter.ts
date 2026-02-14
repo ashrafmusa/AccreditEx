@@ -231,7 +231,7 @@ export function formatNumberRange(
     locale: SupportedLocale = 'en'
 ): string {
     const formatter = new Intl.NumberFormat(locale);
-    return formatter.formatRange(start, end);
+    return (formatter as any).formatRange(start, end);
 }
 
 /**

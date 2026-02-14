@@ -147,7 +147,7 @@ export const updateProgramDocumentDescription = async (
 
     const programData = programSnap.data() as AccreditationProgram;
     const documents = programData.documents || [];
-    
+
     const updatedDocuments = documents.map(d =>
       d.id === documentId ? { ...d, description } : d
     );
@@ -171,10 +171,10 @@ export const downloadProgramDocument = async (document: ProgramDocument): Promis
     xhr.responseType = 'blob';
     xhr.onload = () => {
       const url = window.URL.createObjectURL(xhr.response);
-      const a = document.createElement('a');
+      const a = globalThis.document.createElement('a');
       a.href = url;
       a.download = document.fileName;
-      document.body.appendChild(a);
+      globalThis.document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       a.remove();

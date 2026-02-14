@@ -4,6 +4,20 @@ import { Cloudinary } from '@cloudinary/url-gen';
 const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
 const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
 
+// Validate configuration on load
+if (!import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) {
+  console.warn(
+    '[Cloudinary] VITE_CLOUDINARY_CLOUD_NAME not set — using fallback "demo". ' +
+    'Create a .env file with your Cloudinary credentials. See .env.example'
+  );
+}
+if (!import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET) {
+  console.warn(
+    '[Cloudinary] VITE_CLOUDINARY_UPLOAD_PRESET not set — using fallback "ml_default". ' +
+    'Create a .env file with your Cloudinary credentials. See .env.example'
+  );
+}
+
 // Initialize Cloudinary instance
 export const cloudinary = new Cloudinary({
   cloud: {
@@ -692,6 +706,120 @@ class CloudinaryService {
       this.maxConcurrentUploads = max;
     }
   }
+
+  /**
+   * Upload a text/JSON string as a raw file to Cloudinary
+   * Used for uploading error logs, feedback data, etc.
+   * @param content - Text content to upload
+   * @param filename - Desired filename (e.g., "errors-2026.json")
+   * @param folder - Optional folder path
+   * @returns Promise with uploaded file URL
+   */
+  async uploadTextFile(
+    content: string,
+    filename: string,
+    folder: string = 'text-files'
+  ): Promise<string> {
+    // Convert text content to a File object
+    const blob = new Blob([content], { type: 'application/json' });
+    const file = new File([blob], filename, { type: 'application/json' });
+
+    // Use the raw upload endpoint for non-image/non-video files
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.uploadPreset);
+    if (folder) {
+      formData.append('folder', folder);
+    }
+    formData.append('tags', ['accreditex', folder].join(','));
+    formData.append('resource_type', 'raw');
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudName}/raw/upload`;
+
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Upload failed with status ${response.status}`;
+      try {
+        const errorData = await response.json();
+        if (errorData.error?.message) {
+          errorMessage = `Cloudinary error: ${errorData.error.message}`;
+        }
+      } catch {
+        // Use default error message
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data: CloudinaryUploadResponse = await response.json();
+    return data.secure_url;
+  }
+
+  /**
+   * Upload any raw file (non-image, non-video) to Cloudinary
+   * Useful for CSVs, ZIPs, text files, etc.
+   * @param file - File to upload
+   * @param folder - Optional folder path
+   * @param onProgress - Progress callback
+   * @returns Promise with uploaded file URL
+   */
+  async uploadRawFile(
+    file: File,
+    folder: string = 'raw-files',
+    onProgress?: (progress: UploadProgress) => void
+  ): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', this.uploadPreset);
+    if (folder) {
+      formData.append('folder', folder);
+    }
+    formData.append('tags', ['accreditex', folder].join(','));
+
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudName}/raw/upload`;
+
+    const xhr = new XMLHttpRequest();
+
+    return new Promise<string>((resolve, reject) => {
+      xhr.upload.addEventListener('progress', (e) => {
+        if (e.lengthComputable && onProgress) {
+          onProgress({
+            progress: (e.loaded / e.total) * 100,
+            loaded: e.loaded,
+            total: e.total,
+          });
+        }
+      });
+
+      xhr.addEventListener('load', () => {
+        if (xhr.status === 200) {
+          const response: CloudinaryUploadResponse = JSON.parse(xhr.responseText);
+          resolve(response.secure_url);
+        } else {
+          let errorMessage = `Upload failed with status ${xhr.status}`;
+          try {
+            const errorResponse = JSON.parse(xhr.responseText);
+            if (errorResponse.error?.message) {
+              errorMessage = `Cloudinary error: ${errorResponse.error.message}`;
+            }
+          } catch {
+            // Use default error message
+          }
+          reject(new Error(errorMessage));
+        }
+      });
+
+      xhr.addEventListener('error', () => reject(new Error('Upload failed due to network error')));
+      xhr.addEventListener('abort', () => reject(new Error('Upload was aborted')));
+
+      xhr.open('POST', uploadUrl);
+      xhr.send(formData);
+    });
+  }
 }
 
+export type { CloudinaryService };
 export const cloudinaryService = new CloudinaryService();

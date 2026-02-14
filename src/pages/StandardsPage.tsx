@@ -86,8 +86,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
     n: () => canModify && setIsModalOpen(true),
     i: () => canModify && setIsImportModalOpen(true),
     f: () => setShowFilters((prev) => !prev),
-    "/": (e) => {
-      e.preventDefault();
+    "/": () => {
       document.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
     },
   });

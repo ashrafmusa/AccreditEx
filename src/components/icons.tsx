@@ -1,37 +1,34 @@
 import React from "react";
 import { LogoIconComponent } from "./icons/LogoIconComponent";
-import { I } from "../../dist/assets/Globe-BTNIcnIg";
 
 export const LogoIcon: React.FC<React.SVGProps<SVGSVGElement>> =
   LogoIconComponent;
 
 const createIcon =
-  (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) =>
-    (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="currentColor"
-        {...props}
-      >
-        {path}
-      </svg>
-    );
+  (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      {...props}
+    >
+      {path}
+    </svg>
+  );
 
 const createOutlineIcon =
-  (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) =>
-    (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        strokeWidth={1.5}
-        stroke="currentColor"
-        {...props}
-      >
-        {path}
-      </svg>
-    );
+  (path: React.ReactNode) => (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      strokeWidth={1.5}
+      stroke="currentColor"
+      {...props}
+    >
+      {path}
+    </svg>
+  );
 
 // Centralized dictionary for all icon SVG path data
 const iconPaths = {
@@ -807,6 +804,62 @@ const iconPaths = {
       d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
     />
   ),
+  Squares2X2Icon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+    />
+  ),
+  DocumentPlusIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m3.75 9v6m3-3H9m1.5-12H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+    />
+  ),
+  CalendarIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5"
+    />
+  ),
+  ArrowTrendingUpIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"
+    />
+  ),
+  HomeIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+    />
+  ),
+  EllipsisVerticalIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z"
+    />
+  ),
+  PrinterIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18.25 7.034V3.375"
+    />
+  ),
+  ArrowRightIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
+    />
+  ),
 };
 // --- Outline Icons ---
 export const Bars3Icon = createOutlineIcon(iconPaths.Bars3Icon);
@@ -820,33 +873,33 @@ export const SlashCircleIcon = createOutlineIcon(iconPaths.SlashCircleIcon);
 export const SparklesIcon = createOutlineIcon(iconPaths.SparklesIcon);
 export const PaperClipIcon = createOutlineIcon(iconPaths.PaperClipIcon);
 export const ChatBubbleLeftEllipsisIcon = createOutlineIcon(
-  iconPaths.ChatBubbleLeftEllipsisIcon
+  iconPaths.ChatBubbleLeftEllipsisIcon,
 );
 export const CircleStackIcon = createOutlineIcon(iconPaths.CircleStackIcon);
 export const ChartPieIcon = createOutlineIcon(iconPaths.ChartPieIcon);
 export const ClipboardDocumentCheckIcon = createOutlineIcon(
-  iconPaths.ClipboardDocumentCheckIcon
+  iconPaths.ClipboardDocumentCheckIcon,
 );
 export const ClipboardDocumentListIcon = createOutlineIcon(
-  iconPaths.ClipboardDocumentListIcon
+  iconPaths.ClipboardDocumentListIcon,
 );
 export const ClipboardDocumentSearchIcon = createOutlineIcon(
-  iconPaths.ClipboardDocumentSearchIcon
+  iconPaths.ClipboardDocumentSearchIcon,
 );
 export const BeakerIcon = createOutlineIcon(iconPaths.BeakerIcon);
 export const LockClosedIcon = createOutlineIcon(iconPaths.LockClosedIcon);
 export const ExclamationTriangleIcon = createOutlineIcon(
-  iconPaths.ExclamationTriangleIcon
+  iconPaths.ExclamationTriangleIcon,
 );
 export const ExclamationCircleIcon = createOutlineIcon(
-  iconPaths.ExclamationCircleIcon
+  iconPaths.ExclamationCircleIcon,
 );
 export const ClockIcon = createOutlineIcon(iconPaths.ClockIcon);
 export const XMarkIcon = createOutlineIcon(iconPaths.XMarkIcon);
 export const Cog6ToothIcon = createOutlineIcon(iconPaths.Cog6ToothIcon);
 export const AcademicCapIcon = createOutlineIcon(iconPaths.AcademicCapIcon);
 export const ChartBarSquareIcon = createOutlineIcon(
-  iconPaths.ChartBarSquareIcon
+  iconPaths.ChartBarSquareIcon,
 );
 export const CalendarDaysIcon = createOutlineIcon(iconPaths.CalendarDaysIcon);
 export const UsersIcon = createOutlineIcon(iconPaths.UsersIcon);
@@ -854,14 +907,14 @@ export const LightBulbIcon = createOutlineIcon(iconPaths.LightBulbIcon);
 export const PencilIcon = createOutlineIcon(iconPaths.PencilIcon);
 export const TrashIcon = createOutlineIcon(iconPaths.TrashIcon);
 export const BuildingOffice2Icon = createOutlineIcon(
-  iconPaths.BuildingOffice2Icon
+  iconPaths.BuildingOffice2Icon,
 );
 export const CheckBadgeIcon = createOutlineIcon(iconPaths.CheckBadgeIcon);
 export const MagnifyingGlassIcon = createOutlineIcon(
-  iconPaths.MagnifyingGlassIcon
+  iconPaths.MagnifyingGlassIcon,
 );
 export const InformationCircleIcon = createOutlineIcon(
-  iconPaths.InformationCircleIcon
+  iconPaths.InformationCircleIcon,
 );
 export const MoonIcon = createOutlineIcon(iconPaths.MoonIcon);
 export const SunIcon = createOutlineIcon(iconPaths.SunIcon);
@@ -870,7 +923,7 @@ export const EyeIcon = createOutlineIcon(iconPaths.EyeIcon);
 export const EyeSlashIcon = createOutlineIcon(iconPaths.EyeSlashIcon);
 export const SpinnerIcon = createOutlineIcon(iconPaths.SpinnerIcon);
 export const IdentificationIcon = createOutlineIcon(
-  iconPaths.IdentificationIcon
+  iconPaths.IdentificationIcon,
 );
 export const ArrowPathIcon = createOutlineIcon(iconPaths.ArrowPathIcon);
 export const ChevronLeftIcon = createOutlineIcon(iconPaths.ChevronLeftIcon);
@@ -890,7 +943,7 @@ export const UploadIcon = createOutlineIcon(iconPaths.UploadIcon);
 export const DownloadIcon = createOutlineIcon(iconPaths.DownloadIcon);
 export const CloudUploadIcon = createOutlineIcon(iconPaths.CloudUploadIcon);
 export const DocumentDownloadIcon = createOutlineIcon(
-  iconPaths.DocumentDownloadIcon
+  iconPaths.DocumentDownloadIcon,
 );
 export const DocumentIcon = createOutlineIcon(iconPaths.DocumentIcon);
 export const CogIcon = createOutlineIcon(iconPaths.CogIcon);
@@ -919,30 +972,30 @@ export const CheckIcon = createOutlineIcon(iconPaths.CheckIcon);
 export const ArrowLeftIcon = createOutlineIcon(iconPaths.ArrowLeftIcon);
 export const BookmarkIcon = createOutlineIcon(iconPaths.BookmarkIcon);
 export const ComputerDesktopIcon = createOutlineIcon(
-  iconPaths.ComputerDesktopIcon
+  iconPaths.ComputerDesktopIcon,
 );
 export const DevicePhoneMobileIcon = createOutlineIcon(
-  iconPaths.DevicePhoneMobileIcon
+  iconPaths.DevicePhoneMobileIcon,
 );
 export const MapPinIcon = createOutlineIcon(iconPaths.MapPinIcon);
 export const ArrowUturnLeftIcon = createOutlineIcon(
-  iconPaths.ArrowUturnLeftIcon
+  iconPaths.ArrowUturnLeftIcon,
 );
 export const ArrowUturnRightIcon = createOutlineIcon(
-  iconPaths.ArrowUturnRightIcon
+  iconPaths.ArrowUturnRightIcon,
 );
 export const QuestionMarkCircleIcon = createOutlineIcon(
-  iconPaths.QuestionMarkCircleIcon
+  iconPaths.QuestionMarkCircleIcon,
 );
 export const MagnifyingGlassPlusIcon = createOutlineIcon(
-  iconPaths.MagnifyingGlassPlusIcon
+  iconPaths.MagnifyingGlassPlusIcon,
 );
 export const MagnifyingGlassMinusIcon = createOutlineIcon(
-  iconPaths.MagnifyingGlassMinusIcon
+  iconPaths.MagnifyingGlassMinusIcon,
 );
 export const UserGroupIcon = createOutlineIcon(iconPaths.UserGroupIcon);
 export const DocumentDuplicateIcon = createOutlineIcon(
-  iconPaths.DocumentDuplicateIcon
+  iconPaths.DocumentDuplicateIcon,
 );
 export const ArrowUpTrayIcon = createOutlineIcon(iconPaths.ArrowUpTrayIcon);
 export const StarIcon = createOutlineIcon(iconPaths.StarIcon);
@@ -951,5 +1004,21 @@ export const DocumentTextIcon = createOutlineIcon(iconPaths.DocumentTextIcon);
 export const BoltIcon = createOutlineIcon(iconPaths.BoltIcon);
 export const ShieldCheckIcon = createOutlineIcon(iconPaths.ShieldCheckIcon);
 export const ArrowDownTrayIcon = createOutlineIcon(iconPaths.ArrowDownTrayIcon);
+export const Squares2X2Icon = createOutlineIcon(iconPaths.Squares2X2Icon);
+export const DocumentPlusIcon = createOutlineIcon(iconPaths.DocumentPlusIcon);
+export const CalendarIcon = createOutlineIcon(iconPaths.CalendarIcon);
+export const ArrowTrendingUpIcon = createOutlineIcon(
+  iconPaths.ArrowTrendingUpIcon,
+);
+export const HomeIcon = createOutlineIcon(iconPaths.HomeIcon);
+export const EllipsisVerticalIcon = createOutlineIcon(
+  iconPaths.EllipsisVerticalIcon,
+);
+export const PrinterIcon = createOutlineIcon(iconPaths.PrinterIcon);
+export const ArrowRightIcon = createOutlineIcon(iconPaths.ArrowRightIcon);
+// --- Alias Icons ---
+export const InfoIcon = InformationCircleIcon;
+export const AlertIcon = ExclamationTriangleIcon;
+export const UserPlusIcon = UsersIcon;
 // --- Solid Icons (if any needed) ---
 // Example: export const SolidPlusIcon = createIcon(iconPaths.PlusIcon);

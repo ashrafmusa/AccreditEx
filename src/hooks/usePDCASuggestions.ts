@@ -9,21 +9,21 @@ interface Suggestion {
 }
 
 export const usePDCASuggestions = () => {
-  const { askAgent, isLoading } = useAIAgent();
+  const { sendMessage, isLoading } = useAIAgent();
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   const generateSuggestions = async (
-    stage: PDCAStage, 
+    stage: PDCAStage,
     context: { title: string; description: string; category?: string }
   ) => {
     // In a real implementation, we would call the AI agent with a specific prompt
     // For now, we'll simulate some suggestions based on the stage
-    
+
     // const response = await askAgent(`Generate suggestions for PDCA stage ${stage} for a project about ${context.title}`);
-    
+
     // Mock response
     const mockSuggestions: Suggestion[] = [];
-    
+
     if (stage === 'Plan') {
       mockSuggestions.push(
         { id: '1', content: 'Consider using the 5 Whys technique to identify the root cause.', category: 'Root Cause' },

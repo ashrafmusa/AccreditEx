@@ -9,6 +9,7 @@ import { useHISIntegrationStore } from "@/stores/useHISIntegrationStore";
 import HISConfigurationManager from "./HISConfigurationManager";
 import SyncStatusWidget from "./SyncStatusWidget";
 import { ServerStackIcon, ChartBarIcon, ClockIcon } from "@/components/icons";
+import { TableContainer } from "@/components/ui";
 
 type TabType = "configurations" | "status" | "logs";
 
@@ -96,7 +97,7 @@ export const IntegrationDashboard: React.FC = () => {
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
             {stats.totalSyncs > 0
               ? `${Math.round(
-                  (stats.successfulSyncs / stats.totalSyncs) * 100
+                  (stats.successfulSyncs / stats.totalSyncs) * 100,
                 )}% success rate`
               : "N/A"}
           </p>
@@ -124,7 +125,7 @@ export const IntegrationDashboard: React.FC = () => {
             {stats.lastSyncTime
               ? new Intl.RelativeTimeFormat("en", { numeric: "auto" }).format(
                   Math.ceil((stats.lastSyncTime.getTime() - Date.now()) / 1000),
-                  "second"
+                  "second",
                 )
               : "Never"}
           </p>
@@ -214,7 +215,7 @@ const ActivityLog: React.FC = () => {
   });
 
   const actions = Array.from(
-    new Set(store.integrationLogs.map((l) => l.action))
+    new Set(store.integrationLogs.map((l) => l.action)),
   );
   const statuses = ["success", "error", "warning", "info"];
 
@@ -307,7 +308,7 @@ const ActivityLog: React.FC = () => {
                     <td className="px-6 py-3 text-sm">
                       <span
                         className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
-                          log.status
+                          log.status,
                         )}`}
                       >
                         {log.status.charAt(0).toUpperCase() +

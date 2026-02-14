@@ -1,5 +1,5 @@
 import { SettingsVersion, AppSettings } from '@/types';
-import { collection, addDoc, getDocs, doc, deleteDoc, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
 const COLLECTION_NAME = 'settings_versions';

@@ -1,0 +1,75 @@
+src/components/accreditation/ProgramImportWizardModal.tsx(370,43): error TS2554: Expected 1 arguments, but got 2.
+src/components/accreditation/ProgramImportWizardModal.tsx(374,47): error TS2554: Expected 1 arguments, but got 2.
+src/components/ai/AIAssistantDemo.tsx(12,32): error TS2307: Cannot find module '@/hooks/useAIAssistant' or its corresponding type declarations.
+src/components/dashboard/ProjectLeadDashboard.tsx(222,58): error TS2322: Type 'User[]' is not assignable to type 'string[] | (string[] & User[])'.
+  Type 'User[]' is not assignable to type 'string[]'.
+    Type 'User' is not assignable to type 'string'.
+src/components/documents/RichTextEditorEnhanced.tsx(28,8): error TS2307: Cannot find module '../../services/aiWritingService' or its corresponding type declarations.
+src/components/documents/TemplateGallery.tsx(285,64): error TS2339: Property 'content' does not exist on type 'DocumentTemplate'.
+src/components/feedback/FeedbackWidget.tsx(53,37): error TS2339: Property 'exportErrors' does not exist on type 'Logger'.
+src/components/feedback/FeedbackWidget.tsx(59,52): error TS2339: Property 'uploadTextFile' does not exist on type 'CloudinaryService'.
+src/components/feedback/FeedbackWidget.tsx(97,16): error TS2339: Property 'clearErrors' does not exist on type 'Logger'.
+src/components/his-integration/IntegrationDashboard.tsx(274,12): error TS2304: Cannot find name 'TableContainer'.
+src/components/his-integration/IntegrationDashboard.tsx(327,13): error TS2304: Cannot find name 'TableContainer'.
+src/components/his-integration/SyncProgressBar.tsx(49,15): error TS2352: Conversion of type 'SyncError' to type 'Error' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type 'SyncError' is missing the following properties from type 'Error': name, message
+src/components/his-integration/SyncProgressBar.tsx(75,47): error TS2339: Property 'message' does not exist on type 'SyncError'.
+src/components/his-integration/SyncProgressBar.tsx(155,59): error TS2339: Property 'message' does not exist on type 'SyncError'.
+src/components/monitoring/MonitoringDashboard.tsx(146,67): error TS2339: Property 'url' does not exist on type 'Request | URL'.
+  Property 'url' does not exist on type 'URL'.
+src/components/monitoring/MonitoringDashboard.tsx(231,62): error TS2339: Property 'navigationStart' does not exist on type 'PerformanceNavigationTiming'.
+src/components/projects/BulkActionsToolbar.tsx(54,83): error TS2554: Expected 1 arguments, but got 2.
+src/components/projects/ChecklistEvidence.tsx(82,9): error TS2353: Object literal may only specify known properties, and 'projectId' does not exist in type '{ name: { en: string; ar: string; }; type: "Report" | "Evidence" | "Policy" | "Procedure" | "Process Map"; fileUrl?: string | undefined; tags?: string[] | undefined; category?: string | undefined; departmentIds?: string[] | undefined; }'.
+src/components/projects/ChecklistEvidence.tsx(155,15): error TS2339: Property 'linkedFhirResources' does not exist on type 'ChecklistItem'.
+src/components/projects/ChecklistEvidence.tsx(155,41): error TS7006: Parameter 'res' implicitly has an 'any' type.
+src/components/projects/ChecklistEvidence.tsx(165,45): error TS2339: Property 'linkedFhirResources' does not exist on type 'ChecklistItem'.
+src/components/projects/ChecklistItemComponent.tsx(171,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/DesignControlsComponent.tsx(72,11): error TS2741: Property 'standardId' is missing in type '{ id: string; requirement: string; policyProcess: string; implementationEvidence: string; auditFindings: string; outcomeKPI: string; status: "Not Applicable"; linkedDocumentIds: never[]; }' but required in type 'DesignControlItem'.
+src/components/projects/DesignControlsComponent.tsx(105,27): error TS2339: Property 'standard' does not exist on type 'Project'.
+src/components/projects/DesignControlsComponent.tsx(108,9): error TS2322: Type '(string | undefined)[]' is not assignable to type 'string[]'.
+  Type 'string | undefined' is not assignable to type 'string'.
+    Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(50,40): error TS2345: Argument of type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string | undefined; team: never[]; currentStage: PDCAStage; targetCompletionDate: string | undefined; improvementMetrics: { ...; }; }' is not assignable to parameter of type 'Omit<PDCACycle, "id">'.
+  Type '{ projectId: string; title: string; description: string; category: "Process"; priority: "High"; owner: string | undefined; team: never[]; currentStage: PDCAStage; targetCompletionDate: string | undefined; improvementMetrics: { ...; }; }' is missing the following properties from type 'Omit<PDCACycle, "id">': stageHistory, createdAt
+src/components/projects/PDCACycleCard.tsx(83,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(109,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleCard.tsx(110,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleDetailModal.tsx(56,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/components/projects/PDCACycleManager.tsx(173,24): error TS18048: 'user' is possibly 'undefined'.
+src/components/projects/ProjectCard.tsx(109,31): error TS2339: Property 'id' does not exist on type 'string'.
+src/components/projects/ProjectCard.tsx(110,19): error TS2322: Type 'string' is not assignable to type 'User'.
+src/components/projects/ProjectCard.tsx(112,37): error TS2339: Property 'name' does not exist on type 'string'.
+src/components/risk/EffectivenessChecksTab.tsx(84,23): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+src/components/settings/BulkUserImport.tsx(56,45): error TS2345: Argument of type 'Partial<User>[]' is not assignable to parameter of type 'User[]'.
+  Type 'Partial<User>' is not assignable to type 'User'.
+    Types of property 'id' are incompatible.
+      Type 'string | undefined' is not assignable to type 'string'.
+        Type 'undefined' is not assignable to type 'string'.
+src/utils/numberFormatter.ts(234,22): error TS2339: Property 'formatRange' does not exist on type 'NumberFormat'.
+src/utils/programDepartmentResolver.ts(52,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(70,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(79,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(96,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(114,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(131,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(149,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(173,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(190,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(207,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(224,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(241,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(265,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(282,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(299,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(315,25): error TS2353: Object literal may only specify known properties, and 'relatedKeywords' does not exist in type 'ProgramFormTemplate'.

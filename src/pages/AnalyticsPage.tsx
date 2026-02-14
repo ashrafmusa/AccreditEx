@@ -74,7 +74,8 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
       topRisks: allChecklistItems
         .filter((i) => i.status === "Non-Compliant")
         .slice(0, 5)
-        .map((i) => i.requirement),
+        .map((i) => i.requirement)
+        .filter((r): r is string => !!r),
     }),
     [kpis, filteredProjects, allChecklistItems],
   );

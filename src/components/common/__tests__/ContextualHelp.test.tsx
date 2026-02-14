@@ -153,7 +153,7 @@ describe("ContextualHelp", () => {
 
       // Check for numbered indicators by their specific styling/class
       const numberedIndicators = screen.getAllByText((content, element) => {
-        return (
+        return !!(
           element?.classList.contains("bg-brand-primary") &&
           element.classList.contains("rounded-full") &&
           /^[1-3]$/.test(content)

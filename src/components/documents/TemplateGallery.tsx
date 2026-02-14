@@ -15,7 +15,7 @@ interface TemplateGalleryProps {
   onSelectTemplate: (template: DocumentTemplate) => void;
 }
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
   policy: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   procedure: "bg-rose-100 text-pink-600 dark:bg-pink-900/30 dark:text-rose-300",
   sop: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
@@ -208,7 +208,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
 
                           {/* Tags */}
                           <div className="mt-3 flex flex-wrap gap-1">
-                            {template.tags.slice(0, 3).map((tag) => (
+                            {(template.tags || []).slice(0, 3).map((tag) => (
                               <span
                                 key={tag}
                                 className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded"
@@ -282,7 +282,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
                 <div
                   className="prose dark:prose-invert max-w-none"
                   dangerouslySetInnerHTML={{
-                    __html: DOMPurify.sanitize(previewTemplate.content),
+                    __html: DOMPurify.sanitize(previewTemplate.content || ""),
                   }}
                 />
               </div>

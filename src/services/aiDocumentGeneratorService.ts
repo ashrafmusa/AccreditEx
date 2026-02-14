@@ -99,7 +99,7 @@ export class AIDocumentGeneratorService {
    */
   async generateDocument(request: DocumentGenerationRequest): Promise<DocumentGenerationResponse> {
     const startTime = Date.now();
-    
+
     try {
       const template = documentTemplates.find(t => t.id === request.templateId);
       if (!template) {
@@ -108,7 +108,7 @@ export class AIDocumentGeneratorService {
 
       // Get AI suggestions for content generation
       const suggestions = await this.getContentSuggestions(template, request.context);
-      
+
       // Generate document content based on template and context
       const generatedContent = await this.generateContentFromTemplate(template, request.context, suggestions);
 
@@ -119,7 +119,7 @@ export class AIDocumentGeneratorService {
       const complianceIssues = await this.checkCompliance(generatedContent);
 
       const endTime = Date.now();
-      
+
       return {
         content: generatedContent,
         suggestions,
@@ -141,7 +141,7 @@ export class AIDocumentGeneratorService {
     const prompt = `I need to generate a document using the ${template.name} template. 
     Context: ${JSON.stringify(context)}
     Template description: ${template.description}
-    Template content: ${template.content.substring(0, 500)}...
+    Template content: ${template.structure.join('\n').substring(0, 500)}...
 
     Suggest 3-5 key content sections or specific details that should be included to make this document comprehensive and compliant.
     Focus on:
@@ -153,7 +153,7 @@ export class AIDocumentGeneratorService {
     Return just the list of suggestions.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    
+
     // Parse suggestions from response
     const suggestions = response.response
       .split(/\n+/)
@@ -171,7 +171,7 @@ export class AIDocumentGeneratorService {
 
     Template Name: ${template.name}
     Template Description: ${template.description}
-    Template Content: ${template.content}
+    Template Content: ${template.structure.join('\n')}
 
     Context: ${JSON.stringify(context)}
 
@@ -202,9 +202,9 @@ export class AIDocumentGeneratorService {
 
     Improvement Requirements:
     ${Object.entries(request.suggestions)
-      .filter(([_, value]) => value)
-      .map(([key]) => `- ${key.replace(/([A-Z])/g, ' $1').trim()}`)
-      .join('\n')}
+        .filter(([_, value]) => value)
+        .map(([key]) => `- ${key.replace(/([A-Z])/g, ' $1').trim()}`)
+        .join('\n')}
 
     Please provide:
     1. The improved content
@@ -221,7 +221,7 @@ export class AIDocumentGeneratorService {
     Return the improved content with change details.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    
+
     // Parse response to extract improved content and changes
     // This would be more sophisticated in production
     return {
@@ -264,7 +264,7 @@ export class AIDocumentGeneratorService {
     Focus on healthcare documentation best practices and standards compliance.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    
+
     return {
       contentScore: 88,
       readabilityScore: 75,
@@ -319,7 +319,7 @@ export class AIDocumentGeneratorService {
     Return just the list of compliance issues found.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    
+
     const complianceIssues = response.response
       .split(/\n+/)
       .map(line => line.trim())
@@ -344,7 +344,7 @@ export class AIDocumentGeneratorService {
     Return 5-7 key content suggestions.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    
+
     return response.response
       .split(/\n+/)
       .map(line => line.trim())
@@ -374,7 +374,7 @@ export class AIDocumentGeneratorService {
     Return a detailed outline with section descriptions.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    
+
     return response.response
       .split(/\n+/)
       .map(line => line.trim())

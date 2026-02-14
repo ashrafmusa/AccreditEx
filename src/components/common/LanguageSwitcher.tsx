@@ -20,13 +20,13 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   className = "",
 }) => {
   const { lang, t } = useTranslation();
-  const { setLang } = useContext(LanguageContext);
+  const { toggleLang } = useContext(LanguageContext);
 
   // Compact variant for Header
   if (variant === "compact") {
     return (
       <button
-        onClick={() => setLang(lang === "en" ? "ar" : "en")}
+        onClick={() => toggleLang()}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg 
           hover:bg-brand-surface/10 dark:hover:bg-white/5 
           transition-colors border border-brand-border/50 
@@ -49,7 +49,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   if (variant === "mobile") {
     return (
       <button
-        onClick={() => setLang(lang === "en" ? "ar" : "en")}
+        onClick={() => toggleLang()}
         className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg
           text-gray-300 hover:bg-white/10 hover:text-white
           transition-colors ${className}`}
@@ -86,7 +86,7 @@ export const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       </div>
       <select
         value={lang}
-        onChange={(e) => setLang(e.target.value as "en" | "ar")}
+        onChange={(e) => toggleLang()}
         className="px-4 py-2 rounded-lg border border-brand-border dark:border-dark-brand-border
           bg-brand-surface dark:bg-dark-brand-surface
           text-brand-text-primary dark:text-dark-brand-text-primary

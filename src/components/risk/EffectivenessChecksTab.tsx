@@ -22,14 +22,14 @@ const EffectivenessChecksTab: React.FC<Props> = ({
   const checks = useMemo(
     () =>
       projects.flatMap((p) =>
-        p.capaReports
+        (p.capaReports || [])
           .filter(
             (c) =>
-              c.effectivenessCheck?.required && !c.effectivenessCheck.completed
+              c.effectivenessCheck?.required && !c.effectivenessCheck.completed,
           )
-          .map((capa) => ({ ...capa, projectId: p.id }))
+          .map((capa) => ({ ...capa, projectId: p.id })),
       ),
-    [projects]
+    [projects],
   );
 
   const handleComplete = () => {
@@ -81,7 +81,7 @@ const EffectivenessChecksTab: React.FC<Props> = ({
                   <td className="px-6 py-4">{capa.sourceStandardId}</td>
                   <td className="px-6 py-4">
                     {new Date(
-                      capa.effectivenessCheck!.dueDate
+                      capa.effectivenessCheck!.dueDate!,
                     ).toLocaleDateString()}
                   </td>
                   <td className="px-6 py-4">
@@ -99,7 +99,7 @@ const EffectivenessChecksTab: React.FC<Props> = ({
           </table>
           {checks.length === 0 && (
             <EmptyState
-              icon={CheckCircleIcon}
+              icon={<CheckCircleIcon className="w-6 h-6" />}
               title={t("noEffectivenessChecks")}
               message=""
             />

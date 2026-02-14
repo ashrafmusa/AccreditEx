@@ -12,7 +12,7 @@ import {
   Cog6ToothIcon,
   XMarkIcon,
 } from "@/components/icons";
-import { useNavigate } from "@/hooks/useNavigation";
+import { useNavigate } from "react-router-dom";
 
 interface QuickActionsProps {
   isOpen: boolean;
@@ -26,7 +26,7 @@ const QuickActionsPanel: React.FC<QuickActionsProps> = ({
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
   const { appSettings } = useAppStore();
-  const navigate = useNavigate();
+  const navigate = useNavigate() as any;
   const [searchQuery, setSearchQuery] = useState("");
 
   const isAdmin = currentUser?.role === "Admin";

@@ -47,7 +47,7 @@ function createTestFile(buffer: Buffer | ArrayBuffer, filename: string, mimeType
 
 describe('bulkUserService', () => {
     describe('exportUsersToExcel', () => {
-        const sampleUsers: User[] = [
+        const sampleUsers = [
             {
                 id: '1',
                 name: 'John Doe',
@@ -56,7 +56,6 @@ describe('bulkUserService', () => {
                 jobTitle: 'Quality Manager',
                 hireDate: '2024-01-15',
                 departmentId: 'dept-001',
-                createdAt: '2024-01-01',
             },
             {
                 id: '2',
@@ -66,9 +65,8 @@ describe('bulkUserService', () => {
                 jobTitle: 'Specialist',
                 hireDate: '2024-02-20',
                 departmentId: 'dept-002',
-                createdAt: '2024-01-01',
             },
-        ];
+        ] as User[];
 
         test('should export users to Excel blob', async () => {
             const blob = await exportUsersToExcel(sampleUsers);
@@ -176,15 +174,14 @@ describe('bulkUserService', () => {
         });
 
         test('should handle users with missing optional fields', async () => {
-            const usersWithMissingFields: User[] = [
+            const usersWithMissingFields = [
                 {
                     id: '1',
                     name: 'Minimal User',
                     email: 'minimal@example.com',
                     role: 'Viewer' as UserRole,
-                    createdAt: '2024-01-01',
                 },
-            ];
+            ] as User[];
 
             const blob = await exportUsersToExcel(usersWithMissingFields);
             const arrayBuffer = await blob.arrayBuffer();

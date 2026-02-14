@@ -4,7 +4,7 @@
  * Supports one-time, recurring, and interval-based scheduling
  */
 
-import { HISConfig } from '../types';
+import { HISConfig, SyncStatus } from './types';
 import { hisDataSyncService } from './HISDataSyncService';
 
 interface ScheduledTask {
@@ -197,7 +197,7 @@ export class HISSyncScheduler {
       );
 
       task.lastRun = new Date();
-      if (result.success) {
+      if (result.status === SyncStatus.SUCCESS) {
         task.runsCompleted++;
       } else {
         task.runsFailed++;
@@ -212,7 +212,7 @@ export class HISSyncScheduler {
         this.scheduleTask(task);
       }
 
-      return result.success;
+      return result.status === SyncStatus.SUCCESS;
     } catch (error) {
       task.runsFailed++;
       this.saveScheduledTasks();

@@ -1,0 +1,16 @@
+src/utils/programDepartmentResolver.ts(53,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(71,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(73,21): error TS2741: Property 'name' is missing in type '{ id: string; title: string; description: string; category: string; relatedSections: string[]; relatedKeywords: string[]; }' but required in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(97,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(115,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(132,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(150,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(174,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(191,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(208,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(225,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(242,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(266,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(283,25): error TS2353: Object literal may only specify known properties, and 'requiredCompetencyIds' does not exist in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(293,21): error TS2741: Property 'name' is missing in type '{ id: string; title: string; description: string; category: string; relatedSections: string[]; relatedKeywords: string[]; }' but required in type 'ProgramFormTemplate'.
+src/utils/programDepartmentResolver.ts(309,21): error TS2741: Property 'name' is missing in type '{ id: string; title: string; description: string; category: string; relatedSections: string[]; relatedKeywords: string[]; }' but required in type 'ProgramFormTemplate'.

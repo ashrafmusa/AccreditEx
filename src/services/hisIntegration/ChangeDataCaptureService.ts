@@ -4,7 +4,7 @@
  * Improves sync efficiency by reducing data transfer
  */
 
-import { FHIRResource } from '../types';
+import { FHIRResource } from './types';
 
 interface ChangeRecord {
   id: string;

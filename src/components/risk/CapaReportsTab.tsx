@@ -16,12 +16,14 @@ const CapaReportsTab: React.FC = () => {
   const allCapas = useMemo(
     () =>
       projects
-        .flatMap((p) => p.capaReports)
+        .flatMap((p) => p.capaReports || [])
+        .filter((x): x is NonNullable<typeof x> => !!x)
         .sort(
           (a, b) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            new Date(b?.createdAt || 0).getTime() -
+            new Date(a?.createdAt || 0).getTime(),
         ),
-    [projects]
+    [projects],
   );
 
   return (
@@ -29,17 +31,17 @@ const CapaReportsTab: React.FC = () => {
       {allCapas.length > 0 ? (
         allCapas.map((capa) => {
           // First try sourceProjectId, then search through all projects
-          let project = projects.find((p) => p.id === capa.sourceProjectId);
+          let project = projects.find((p) => p.id === capa?.sourceProjectId);
           if (!project) {
             project = projects.find((p) =>
-              p.capaReports?.some((c) => c.id === capa.id)
+              p.capaReports?.some((c) => c.id === capa.id),
             );
           }
           const assignee = users.find((u) => u.id === capa.assignedTo);
           return (
             <CapaListItem
               key={capa.id}
-              capa={capa}
+              capa={capa!}
               project={project}
               assignee={assignee}
             />

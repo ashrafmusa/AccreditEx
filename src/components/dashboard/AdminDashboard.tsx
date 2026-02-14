@@ -85,7 +85,8 @@ const getDefaultDashboardData = () => ({
 
 const CustomTooltip: React.FC<
   TooltipProps<ValueType, NameType> & { t: (key: any) => string }
-> = ({ active, payload, label, t }) => {
+> = (props: any) => {
+  const { active, payload, label, t } = props;
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg">
@@ -101,7 +102,8 @@ const CustomTooltip: React.FC<
 
 const PieCustomTooltip: React.FC<
   TooltipProps<ValueType, NameType> & { t: (key: any) => string }
-> = ({ active, payload, t }) => {
+> = (props: any) => {
+  const { active, payload, t } = props;
   if (active && payload && payload.length) {
     return (
       <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg">
@@ -532,7 +534,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
 
   return (
     <ErrorBoundary>
-      <div className="space-y-8">
+      <div className="space-y-6">
         <DashboardHeader
           setNavigation={setNavigation}
           title={t("welcomeBack")}
@@ -541,7 +543,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
         />
 
         {/* Feature Discovery Widget - Added to top for visibility */}
-        <div className="mb-6">
+        <div>
           <FeatureDiscoveryWidget setNavigation={setNavigation} />
         </div>
 
@@ -797,7 +799,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
               <div className="lg:col-span-3 bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
                 <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
                   {t("projectComplianceRate")}

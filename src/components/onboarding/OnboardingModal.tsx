@@ -256,7 +256,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
             <div className="mt-4">
               <Button
                 onClick={steps[currentStep].action!.onClick}
-                variant="outline"
+                variant="ghost"
                 size="sm"
               >
                 {steps[currentStep].action!.label}

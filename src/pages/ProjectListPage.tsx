@@ -45,7 +45,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">(
-    "all"
+    "all",
   );
   const [programFilter, setProgramFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
@@ -58,23 +58,22 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showOnlyMyProjects, setShowOnlyMyProjects] = useState(
-    !currentUser || currentUser.role !== "Admin"
+    !currentUser || currentUser.role !== "Admin",
   );
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
-    n: () => setNavigation({ view: "create-project" }),
+    n: () => setNavigation({ view: "createProject" }),
     f: () => setShowFilters((prev) => !prev),
     a: () => setShowAnalytics((prev) => !prev),
-    "/": (e) => {
-      e.preventDefault();
+    "/": () => {
       document.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
     },
   });
 
   const programMap = useMemo(
     () => new Map(accreditationPrograms.map((p) => [p.id, p.name])),
-    [accreditationPrograms]
+    [accreditationPrograms],
   );
 
   const filteredProjects = useMemo(() => {
@@ -154,8 +153,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     if (
       !window.confirm(
         `${t("areYouSureArchive")} ${selectedProjects.length} ${t(
-          "project" + (selectedProjects.length > 1 ? "s" : "")
-        )}?`
+          "project" + (selectedProjects.length > 1 ? "s" : ""),
+        )}?`,
       )
     ) {
       return;
@@ -176,8 +175,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     if (
       !window.confirm(
         `${t("areYouSureRestore")} ${selectedProjects.length} ${t(
-          "project" + (selectedProjects.length > 1 ? "s" : "")
-        )}?`
+          "project" + (selectedProjects.length > 1 ? "s" : ""),
+        )}?`,
       )
     ) {
       return;
@@ -198,8 +197,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     if (
       !window.confirm(
         `${t("areYouSurePermanentlyDelete")} ${selectedProjects.length} ${t(
-          "project" + (selectedProjects.length > 1 ? "s" : "")
-        )}? ${t("thisActionCannotBeUndone")}`
+          "project" + (selectedProjects.length > 1 ? "s" : ""),
+        )}? ${t("thisActionCannotBeUndone")}`,
       )
     ) {
       return;
@@ -221,7 +220,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       !window.confirm(
         `${t("updateStatusTo")} ${
           t(status.replace(/\s/g, "").toLowerCase() as any) || status
-        } ${t("forProjects")} ${selectedProjects.length}?`
+        } ${t("forProjects")} ${selectedProjects.length}?`,
       )
     ) {
       return;
@@ -450,7 +449,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredProjects.map((p) => {
             const assignedUserIds = new Set(
-              p.checklist.map((item) => item.assignedTo).filter(Boolean)
+              p.checklist.map((item) => item.assignedTo).filter(Boolean),
             );
             if (p.projectLead?.id) {
               assignedUserIds.add(p.projectLead.id);
@@ -465,7 +464,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 project={{
                   ...p,
                   programName: programMap.get(p.programId) || "?",
-                  teamMembers,
+                  teamMembers: teamMembers as any,
                 }}
                 currentUser={currentUser!}
                 onSelect={() =>

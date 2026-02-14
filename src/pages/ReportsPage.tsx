@@ -67,77 +67,75 @@ const ReportsPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t("reports") || "Reports"}
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {t("reportsDescription") ||
-                "View and download generated compliance and incident reports"}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              {sortedReports.length} {t("reports") || "reports"}
-            </span>
-          </div>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
+            {t("reports") || "Reports"}
+          </h1>
+          <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+            {t("reportsDescription") ||
+              "View and download generated compliance and incident reports"}
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {sortedReports.length} {t("reports") || "reports"}
+          </span>
+        </div>
+      </div>
+
+      {/* Search and Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        {/* Search */}
+        <div className="flex-1 relative">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder={t("searchReports") || "Search reports..."}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border border-brand-border dark:border-dark-brand-border rounded-lg bg-brand-surface dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+          />
         </div>
 
-        {/* Search and Filters */}
-        <div className="mt-4 flex flex-col sm:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder={t("searchReports") || "Search reports..."}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent"
-            />
-          </div>
+        {/* Filter */}
+        <div className="flex gap-2">
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as any)}
+            className="px-4 py-2 border border-brand-border dark:border-dark-brand-border rounded-lg bg-brand-surface dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary focus:ring-2 focus:ring-brand-primary"
+          >
+            <option value="all">{t("allReports") || "All Reports"}</option>
+            <option value="compliance">
+              {t("complianceReports") || "Compliance Reports"}
+            </option>
+            <option value="incident">
+              {t("incidentReports") || "Incident Reports"}
+            </option>
+          </select>
 
-          {/* Filter */}
-          <div className="flex gap-2">
-            <select
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as any)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary"
-            >
-              <option value="all">{t("allReports") || "All Reports"}</option>
-              <option value="compliance">
-                {t("complianceReports") || "Compliance Reports"}
-              </option>
-              <option value="incident">
-                {t("incidentReports") || "Incident Reports"}
-              </option>
-            </select>
-
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-primary"
-            >
-              <option value="date">{t("sortByDate") || "Sort by Date"}</option>
-              <option value="name">{t("sortByName") || "Sort by Name"}</option>
-            </select>
-          </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+            className="px-4 py-2 border border-brand-border dark:border-dark-brand-border rounded-lg bg-brand-surface dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary focus:ring-2 focus:ring-brand-primary"
+          >
+            <option value="date">{t("sortByDate") || "Sort by Date"}</option>
+            <option value="name">{t("sortByName") || "Sort by Name"}</option>
+          </select>
         </div>
       </div>
 
       {/* Reports List */}
-      <div className="flex-1 overflow-auto p-6">
+      <div>
         {sortedReports.length === 0 ? (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+          <div className="text-center py-8">
+            <DocumentTextIcon className="w-12 h-12 mx-auto text-slate-400 dark:text-slate-500 mb-3" />
+            <h3 className="text-lg font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-1">
               {t("noReports") || "No reports found"}
             </h3>
-            <p className="text-gray-600 dark:text-gray-400">
+            <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
               {searchTerm
                 ? t("noReportsMatch") || "No reports match your search criteria"
                 : t("generateFirstReport") ||

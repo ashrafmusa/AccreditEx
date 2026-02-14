@@ -76,7 +76,7 @@ const SecurityDashboard: React.FC = () => {
     return (
       <div className="space-y-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
-          <div className="flex items-center justify-center h-64">
+          <div className="flex items-center justify-center h-32">
             <div className="text-gray-500">Loading security data...</div>
           </div>
         </div>
@@ -106,7 +106,7 @@ const SecurityDashboard: React.FC = () => {
       </div>
 
       {/* Security Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">

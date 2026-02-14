@@ -16,6 +16,10 @@ export interface ToastContextType {
   info: (message: string, options?: ToastOptions) => void;
   warning: (message: string, options?: ToastOptions) => void;
   custom: (type: ToastType, message: string, options?: ToastOptions) => void;
+  /** @deprecated Use success/error/info/warning directly */
+  showToast: (message: string, type?: ToastType) => void;
+  /** Self-reference for destructured usage: const { toast } = useToast() */
+  toast: ToastContextType;
 }
 
 export interface ToastOptions {

@@ -76,6 +76,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
       implementationEvidence: "",
       auditFindings: "",
       outcomeKPI: "",
+      standardId: "",
       status: ComplianceStatus.NotApplicable,
       linkedDocumentIds: [],
     };
@@ -98,11 +99,12 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
     try {
       const requirements = controls
         .filter((c) => c.requirement)
-        .map((c) => c.requirement);
+        .map((c) => c.requirement)
+        .filter(Boolean) as string[];
 
       const complianceCheck = await aiAgentService.checkDesignCompliance({
         designTitle: project.name,
-        standard: project.standard,
+        standard: (project as any).standard,
         phase: "Design Controls",
         description: `${controls.length} design control items`,
         requirements,

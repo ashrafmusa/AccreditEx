@@ -1,13 +1,17 @@
 import { useState, useEffect } from 'react';
-import { firestore } from '@/firebase/firebaseConfig';
+import { db } from '@/firebase/firebaseConfig';
 import { collection, onSnapshot, query, Query } from 'firebase/firestore';
-import { z } from 'zod';
 
-export const useFirestoreQuery = <T extends z.ZodType<any, any, any>>(
+// Zod type fallback — avoids hard dependency on zod package
+interface ZodLikeSchema<T = any> {
+    safeParse(data: unknown): { success: true; data: T } | { success: false; error: { flatten(): any } };
+}
+
+export const useFirestoreQuery = <T>(
     q: Query,
-    schema: T
-): [z.infer<T>[] | null, boolean] => {
-    const [data, setData] = useState<z.infer<T>[] | null>(null);
+    schema: ZodLikeSchema<T>
+): [T[] | null, boolean] => {
+    const [data, setData] = useState<T[] | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
@@ -22,7 +26,7 @@ export const useFirestoreQuery = <T extends z.ZodType<any, any, any>>(
                 }
             });
 
-            setData(parsedData.filter((item) => item !== null) as z.infer<T>[]);
+            setData(parsedData.filter((item): item is T => item !== null));
             setLoading(false);
         });
 

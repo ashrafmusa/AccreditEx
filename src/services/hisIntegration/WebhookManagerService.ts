@@ -245,7 +245,7 @@ export class WebhookManagerService {
         method: 'POST',
         headers,
         body: payload,
-        timeout: 30000,
+        signal: AbortSignal.timeout(30000),
       });
 
       const duration = Date.now() - startTime;
@@ -328,7 +328,7 @@ export class WebhookManagerService {
         method: 'POST',
         headers,
         body: JSON.stringify(testPayload),
-        timeout: 10000,
+        signal: AbortSignal.timeout(10000),
       });
 
       const responseTime = Date.now() - startTime;

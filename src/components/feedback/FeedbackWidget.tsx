@@ -50,7 +50,7 @@ export const FeedbackWidget: React.FC = () => {
       let errorLogsUrl = null;
       if (includeErrors && type === "bug") {
         try {
-          const fullErrors = logger.exportErrors();
+          const fullErrors = (logger as any).exportErrors();
           // Only upload if there are actual errors
           if (fullErrors && fullErrors.length > 50) {
             const filename = `feedback-errors-${
@@ -94,7 +94,7 @@ export const FeedbackWidget: React.FC = () => {
 
       // Clear errors after successful submission
       if (includeErrors) {
-        logger.clearErrors();
+        (logger as any).clearErrors();
       }
     } catch (error) {
       console.error("Failed to submit feedback:", error);

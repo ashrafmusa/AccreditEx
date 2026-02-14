@@ -334,9 +334,8 @@ class BackendService {
         if (project) {
             if (!project.pdcaCycles) project.pdcaCycles = [];
             const newCycle: PDCACycle = {
+                ...cycleData,
                 id: `pdca-${Date.now()}`,
-                createdAt: new Date().toISOString(),
-                ...cycleData
             };
             project.pdcaCycles.push(newCycle);
             this._saveAllData(data);

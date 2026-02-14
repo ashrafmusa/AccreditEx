@@ -26,8 +26,9 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
     updateAuditPlan,
     deleteAuditPlan,
     runAudit,
-    activityLog,
   } = useAppStore();
+  const activityLog: any[] =
+    useAppStore((state) => (state as any).activityLog) || [];
   const { users } = useUserStore();
   const { projects } = useProjectStore();
 
@@ -54,7 +55,7 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
   const formatAuditsText = (itemCount: number, frequency: string) => {
     const frequencyText = frequency === "weekly" ? t("weekly") : t("monthly");
     return `${t("auditLog")} ${itemCount} ${t(
-      "itemsToAudit"
+      "itemsToAudit",
     )} ${frequencyText}`;
   };
 
@@ -137,7 +138,7 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
             {auditPlans.map((plan) => {
               const project = projects.find((p) => p.id === plan.projectId);
               const auditor = users.find(
-                (u) => u.id === plan.assignedAuditorId
+                (u) => u.id === plan.assignedAuditorId,
               );
               return (
                 <div
@@ -244,7 +245,7 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                       {new Date(log.timestamp).toLocaleString(
                         lang === "ar" ? "ar-OM" : "en-US",
-                        { dateStyle: "medium", timeStyle: "short" }
+                        { dateStyle: "medium", timeStyle: "short" },
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">

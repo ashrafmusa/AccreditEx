@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { freeTierMonitor } from '@/services/freeTierMonitor';
-import { useTranslation } from '@/hooks/useTranslation';
-import SettingsCard from './SettingsCard';
-import SettingsButton from './SettingsButton';
-import SettingsAlert from './SettingsAlert';
-import SettingsSection from './SettingsSection';
-import { DownloadIcon } from '@/components/icons';
+import React, { useEffect, useState } from "react";
+import { freeTierMonitor } from "@/services/freeTierMonitor";
+import { useTranslation } from "@/hooks/useTranslation";
+import SettingsCard from "./SettingsCard";
+import SettingsButton from "./SettingsButton";
+import SettingsAlert from "./SettingsAlert";
+import SettingsSection from "./SettingsSection";
+import { DownloadIcon, ExclamationTriangleIcon } from "@/components/icons";
 
 interface UsageStats {
   monthly: { reads: number; writes: number; deletes: number };
@@ -46,13 +46,13 @@ const UsageMonitorPage: React.FC = () => {
   }
 
   const getProgressColor = (percentage: number) => {
-    if (percentage < 50) return 'bg-green-500';
-    if (percentage < 80) return 'bg-yellow-500';
-    return 'bg-red-500';
+    if (percentage < 50) return "bg-green-500";
+    if (percentage < 80) return "bg-yellow-500";
+    return "bg-red-500";
   };
 
   const parsePercentage = (pct: string): number => {
-    return parseFloat(pct.replace('%', ''));
+    return parseFloat(pct.replace("%", ""));
   };
 
   const readsPercentage = parsePercentage(stats.percentageUsed.reads);
@@ -61,11 +61,11 @@ const UsageMonitorPage: React.FC = () => {
 
   const handleExportStats = () => {
     const data = freeTierMonitor.exportStats();
-    const blob = new Blob([data], { type: 'application/json' });
+    const blob = new Blob([data], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `firebase-usage-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `firebase-usage-${new Date().toISOString().split("T")[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -75,28 +75,26 @@ const UsageMonitorPage: React.FC = () => {
       {warnings.length > 0 && (
         <SettingsAlert
           type="error"
-          icon
+          icon={ExclamationTriangleIcon}
           title={t("usageWarnings") || "Usage Warnings"}
+          message={warnings.join("; ")}
           dismissible
-        >
-          <ul className="space-y-1">
-            {warnings.map((warning, idx) => (
-              <li key={idx} className="text-sm">
-                {warning}
-              </li>
-            ))}
-          </ul>
-        </SettingsAlert>
+        />
       )}
 
       <SettingsCard
-        title={t('firebaseFreeTierUsage') || 'Firebase Free Tier Usage'}
-        description={t('monitorFirestoreUsage') || 'Monitor your daily and monthly Firestore usage'}
+        title={t("firebaseFreeTierUsage") || "Firebase Free Tier Usage"}
+        description={
+          t("monitorFirestoreUsage") ||
+          "Monitor your daily and monthly Firestore usage"
+        }
       >
         <div className="space-y-8">
           <SettingsSection
-            title={t('todaysActivity') || 'Today\'s Activity'}
-            description={t('realtimeOperationCounts') || 'Real-time operation counts'}
+            title={t("todaysActivity") || "Today's Activity"}
+            description={
+              t("realtimeOperationCounts") || "Real-time operation counts"
+            }
           >
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
@@ -136,8 +134,10 @@ const UsageMonitorPage: React.FC = () => {
           </SettingsSection>
 
           <SettingsSection
-            title={t('monthlyUsage') || 'Monthly Usage'}
-            description={t('progressTowardsLimits') || 'Progress towards monthly limits'}
+            title={t("monthlyUsage") || "Monthly Usage"}
+            description={
+              t("progressTowardsLimits") || "Progress towards monthly limits"
+            }
           >
             <div className="space-y-6">
               <div>
@@ -152,7 +152,7 @@ const UsageMonitorPage: React.FC = () => {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                   <div
                     className={`h-2.5 rounded-full transition-all ${getProgressColor(
-                      readsPercentage
+                      readsPercentage,
                     )}`}
                     style={{ width: `${Math.min(readsPercentage, 100)}%` }}
                   />
@@ -171,7 +171,7 @@ const UsageMonitorPage: React.FC = () => {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                   <div
                     className={`h-2.5 rounded-full transition-all ${getProgressColor(
-                      writesPercentage
+                      writesPercentage,
                     )}`}
                     style={{ width: `${Math.min(writesPercentage, 100)}%` }}
                   />
@@ -190,7 +190,7 @@ const UsageMonitorPage: React.FC = () => {
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
                   <div
                     className={`h-2.5 rounded-full transition-all ${getProgressColor(
-                      deletesPercentage
+                      deletesPercentage,
                     )}`}
                     style={{ width: `${Math.min(deletesPercentage, 100)}%` }}
                   />
@@ -200,8 +200,10 @@ const UsageMonitorPage: React.FC = () => {
           </SettingsSection>
 
           <SettingsSection
-            title={t('monthlyProjections') || 'Monthly Projections'}
-            description={t('basedOnCurrentUsage') || 'Based on current usage patterns'}
+            title={t("monthlyProjections") || "Monthly Projections"}
+            description={
+              t("basedOnCurrentUsage") || "Based on current usage patterns"
+            }
           >
             <div className="grid grid-cols-2 gap-4">
               <div>

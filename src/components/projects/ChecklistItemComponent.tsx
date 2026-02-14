@@ -42,6 +42,9 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
   const [editedItem, setEditedItem] = useState<Partial<ChecklistItem>>(item);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
+  // Safely get standardId with fallback
+  const itemStandardId = item.standardId || "";
+
   const reusableEvidenceSuggestions = useMemo(
     () =>
       suggestReusableEvidenceForChecklistItem({
@@ -74,7 +77,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
     [reusableEvidenceSuggestions],
   );
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     [ComplianceStatus.Compliant]:
       "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200",
     [ComplianceStatus.NonCompliant]:
@@ -83,6 +86,8 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
       "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200",
     [ComplianceStatus.NotApplicable]:
       "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200",
+    [ComplianceStatus.NotStarted]:
+      "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300",
   };
 
   const handleSave = () => {
@@ -146,7 +151,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
           target: [],
           actual: [],
         },
-      });
+      } as any);
       toast.success(
         "PDCA Cycle created successfully! View in PDCA Cycles tab.",
       );
@@ -163,7 +168,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
 
     try {
       await createCAPA(project.id, {
-        checklistItemId: currentData.id,
+        checklistItemId: currentData.id || "",
         description: `${currentData.standardId}: ${currentData.item}${
           suggestedCrossReferences.length > 0
             ? `\nCross-standard references: ${suggestedCrossReferences.join(", ")}`
@@ -179,6 +184,8 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
           new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
         pdcaStage: "Plan",
         pdcaHistory: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
       toast.success("CAPA Report created successfully!");
     } catch (error) {

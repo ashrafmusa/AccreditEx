@@ -1,7 +1,7 @@
 import React, { FC, ReactNode } from "react";
 
 interface SettingsButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
   disabled?: boolean;
   loading?: boolean;
   variant?: "primary" | "secondary" | "danger" | "success" | "outline";
@@ -10,6 +10,7 @@ interface SettingsButtonProps {
   icon?: FC<{ className: string }>;
   fullWidth?: boolean;
   tooltip?: string;
+  type?: "button" | "submit" | "reset";
 }
 
 const SettingsButton: FC<SettingsButtonProps> = ({
@@ -22,6 +23,7 @@ const SettingsButton: FC<SettingsButtonProps> = ({
   icon: Icon,
   fullWidth = false,
   tooltip,
+  type = "button",
 }) => {
   const sizeClasses = {
     sm: "py-1.5 px-4 text-xs",
@@ -50,6 +52,7 @@ const SettingsButton: FC<SettingsButtonProps> = ({
 
   return (
     <button
+      type={type}
       onClick={onClick}
       disabled={disabled || loading}
       title={tooltip}

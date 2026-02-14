@@ -227,7 +227,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   // PDCA actions
   updateCAPAPDCAStage: async (projectId: string, capaId: string, newStage: PDCAStage, notes: string, attachments: string[]) => {
     const project = get().projects.find(p => p.id === projectId);
-    const capa = project?.capaReports.find(c => c.id === capaId);
+    const capa = project?.capaReports?.find(c => c.id === capaId);
 
     if (!project || !capa) {
       throw new Error('Project or CAPA not found');
@@ -244,7 +244,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       completedBy: user.id,
       notes,
       attachments
-    };
+    } as any;
 
     // Update CAPA with new stage and history
     const updatedCapa: CAPAReport = {

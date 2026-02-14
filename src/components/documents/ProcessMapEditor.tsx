@@ -312,6 +312,37 @@ const ProcessMapEditorContent: React.FC<
   >(null);
   const [exportFormat, setExportFormat] = useState<"png" | "svg">("png");
 
+  // AI & advanced feature states
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [isAIProcessing, setIsAIProcessing] = useState(false);
+  const [aiDescription, setAiDescription] = useState("");
+  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
+  const [showOptimizations, setShowOptimizations] = useState(false);
+  const [optimizations, setOptimizations] = useState<any[]>([]);
+  const [showComplianceCheck, setShowComplianceCheck] = useState(false);
+  const [complianceResult, setComplianceResult] = useState<any>(null);
+  const [showNodeSearch, setShowNodeSearch] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showExportDoc, setShowExportDoc] = useState(false);
+  const [exportedDoc, setExportedDoc] = useState<string | null>(null);
+  const [quickAddMode, setQuickAddMode] = useState(false);
+  const [showSwimlanes, setShowSwimlanes] = useState(false);
+  const [showMetrics, setShowMetrics] = useState(false);
+
+  // Handler stubs for compliance check and node search
+  const handleCheckCompliance = async (standard: string) => {
+    setComplianceResult({
+      compliant: true,
+      standard,
+      issues: [],
+      recommendations: [],
+    });
+  };
+
+  const handleNodeSearch = (query: string) => {
+    setSearchTerm(query);
+  };
+
   // Undo/Redo history
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -392,6 +423,76 @@ const ProcessMapEditorContent: React.FC<
     setHasChanges(true);
     setTimeout(saveToHistory, 100);
   };
+
+  // AI & advanced handler stubs
+  const handleGetSuggestions = useCallback(async () => {
+    setIsAIProcessing(true);
+    try {
+      // AI suggestion logic placeholder
+      setAiSuggestions([]);
+    } finally {
+      setIsAIProcessing(false);
+    }
+  }, []);
+
+  const handleOptimizeProcess = useCallback(async () => {
+    setIsAIProcessing(true);
+    try {
+      // Optimization logic placeholder
+      setOptimizations([]);
+      setShowOptimizations(true);
+    } finally {
+      setIsAIProcessing(false);
+    }
+  }, []);
+
+  const handleGenerateDocumentation = useCallback(async () => {
+    setIsAIProcessing(true);
+    try {
+      // Documentation generation placeholder
+      setExportedDoc(null);
+      setShowExportDoc(true);
+    } finally {
+      setIsAIProcessing(false);
+    }
+  }, []);
+
+  const handleGenerateFromAI = useCallback(async () => {
+    if (!aiDescription.trim()) return;
+    setIsAIProcessing(true);
+    try {
+      // AI generation logic placeholder
+    } finally {
+      setIsAIProcessing(false);
+    }
+  }, [aiDescription]);
+
+  const handleAddSuggestedNode = useCallback(
+    (suggestion: any) => {
+      const newNode: Node = {
+        id: `${Date.now()}`,
+        type: suggestion.type || "process",
+        data: { label: suggestion.label || "New Node" },
+        position: {
+          x: Math.random() * 400 + 100,
+          y: Math.random() * 300 + 100,
+        },
+      };
+      setNodes((nds) => [...nds, newNode]);
+      setHasChanges(true);
+    },
+    [setNodes],
+  );
+
+  const handleApplyOptimization = useCallback((optimization: any) => {
+    // Apply optimization logic placeholder
+    setHasChanges(true);
+  }, []);
+
+  const handleExportDocumentation = useCallback(() => {
+    // Export documentation logic placeholder
+    setShowExportDoc(true);
+  }, []);
 
   const handleDeleteSelected = () => {
     const hasSelection =
@@ -872,14 +973,14 @@ const ProcessMapEditorContent: React.FC<
               </button>
               <div className="w-px bg-gray-300 dark:bg-gray-600"></div>
               <button
-                onClick={zoomIn}
+                onClick={() => zoomIn()}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                 title={t("zoomIn") || "Zoom In"}
               >
                 <MagnifyingGlassPlusIcon className="w-5 h-5" />
               </button>
               <button
-                onClick={zoomOut}
+                onClick={() => zoomOut()}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
                 title={t("zoomOut") || "Zoom Out"}
               >
@@ -1861,13 +1962,15 @@ const ProcessMapEditorContent: React.FC<
             <div
               className="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
               dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(exportedDoc),
+                __html: DOMPurify.sanitize(exportedDoc || ""),
               }}
             />
             <div className="mt-4 flex gap-2 justify-end">
               <button
                 onClick={() => {
-                  const blob = new Blob([exportedDoc], { type: "text/html" });
+                  const blob = new Blob([exportedDoc || ""], {
+                    type: "text/html",
+                  });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
@@ -1907,7 +2010,7 @@ const ProcessMapEditor: React.FC<ProcessMapEditorProps> = (props) => {
         <ReactFlowProvider>
           <ProcessMapEditorContent
             {...props}
-            reactFlowWrapper={reactFlowWrapper}
+            reactFlowWrapper={reactFlowWrapper as any}
           />
         </ReactFlowProvider>
       </div>

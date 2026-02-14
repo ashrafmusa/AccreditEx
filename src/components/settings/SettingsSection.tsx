@@ -30,7 +30,7 @@ const SettingsSection: FC<SettingsSectionProps> = ({
 
   return (
     <div
-      className={`space-y-4 py-6 ${
+      className={`space-y-4 py-4 ${
         !noBorder
           ? "border-b border-gray-200 dark:border-gray-700 last:border-b-0"
           : ""
@@ -61,9 +61,9 @@ const SettingsSection: FC<SettingsSectionProps> = ({
             )}
           </div>
         </div>
-        {action && <div className="flex-shrink-0">{action}</div>}
+        {action && <div className="shrink-0">{action}</div>}
       </div>
-      <div className={`grid ${gridClasses[gridCols]} gap-4 mt-5`}>
+      <div className={`grid ${gridClasses[gridCols]} gap-4 mt-3`}>
         {children}
       </div>
     </div>

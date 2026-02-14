@@ -84,7 +84,7 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {new Date(log.timestamp).toLocaleString(
                     lang === "ar" ? "ar-OM" : "en-US",
-                    { dateStyle: "medium", timeStyle: "short" }
+                    { dateStyle: "medium", timeStyle: "short" },
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
@@ -102,7 +102,7 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
       </TableContainer>
       {filteredLog.length === 0 && (
         <EmptyState
-          icon={ClipboardDocumentListIcon}
+          icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
           title={searchTerm ? t("noResults") : t("noActivity")}
           message=""
         />
