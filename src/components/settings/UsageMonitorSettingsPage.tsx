@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
@@ -17,6 +19,8 @@ import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from "./index";
 const UsageMonitorSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { isAdmin, AdminOnly } = useAdminGuard();
+  const { auditBatch } = useSettingsAudit();
   const { appSettings, updateAppSettings } = useAppStore();
 
   const [usageMonitor, setUsageMonitor] = useState({
@@ -55,6 +59,18 @@ const UsageMonitorSettingsPage: React.FC = () => {
         toast.error(t("settingsNotLoaded"));
         return;
       }
+      const oldValues = appSettings.usageMonitor || {};
+      const changes: Record<string, { old: any; new: any }> = {};
+      const auditFields = [
+        'trackPageViews', 'trackUserActions', 'trackPerformanceMetrics',
+        'dataRetentionDays', 'autoExportEnabled', 'alertThreshold',
+      ] as const;
+      for (const field of auditFields) {
+        if (oldValues[field] !== usageMonitor[field]) {
+          changes[field] = { old: oldValues[field], new: usageMonitor[field] };
+        }
+      }
+      auditBatch('usageMonitor', changes);
       const updatedSettings = {
         ...appSettings,
         usageMonitor,
@@ -84,6 +100,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
   };
 
   return (
+    <AdminOnly>
     <div className="space-y-6">
       {hasChanges && !dismissedAlert && (
         <SettingsAlert
@@ -261,6 +278,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
         </SettingsButton>
       </div>
     </div>
+    </AdminOnly>
   );
 };
 

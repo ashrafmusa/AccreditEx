@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
 import { useNotifications } from "@/hooks/useNotifications";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
@@ -25,6 +26,7 @@ import {
 const NotificationSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { auditBatch } = useSettingsAudit();
   const { appSettings, updateAppSettings } = useAppStore();
   const { getStats, markAllAsRead } = useNotifications({ autoCleanup: true });
 
@@ -38,13 +40,13 @@ const NotificationSettingsPage: React.FC = () => {
   });
 
   const [advancedSettings, setAdvancedSettings] = useState({
-    criticalAlertsOnly: false,
-    quietHoursEnabled: false,
-    quietHoursStart: "22:00",
-    quietHoursEnd: "08:00",
-    digestFrequency: "instant" as "instant" | "daily" | "weekly",
-    notificationSound: true,
-    desktopNotifications: true,
+    criticalAlertsOnly: appSettings?.notifications?.criticalAlertsOnly ?? false,
+    quietHoursEnabled: appSettings?.notifications?.quietHoursEnabled ?? false,
+    quietHoursStart: appSettings?.notifications?.quietHoursStart ?? "22:00",
+    quietHoursEnd: appSettings?.notifications?.quietHoursEnd ?? "08:00",
+    digestFrequency: (appSettings?.notifications?.digestFrequency ?? "instant") as "instant" | "daily" | "weekly",
+    notificationSound: appSettings?.notifications?.notificationSound ?? true,
+    desktopNotifications: appSettings?.notifications?.desktopNotifications ?? true,
   });
 
   const [loading, setLoading] = useState(false);
@@ -79,9 +81,22 @@ const NotificationSettingsPage: React.FC = () => {
         toast.error(t("settingsNotLoaded"));
         return;
       }
+      const oldNotif = appSettings.notifications || {};
+      const allNewValues = { ...notifications, ...advancedSettings };
+      const changes: Record<string, { old: any; new: any }> = {};
+      for (const [key, newVal] of Object.entries(allNewValues)) {
+        const oldVal = (oldNotif as any)[key];
+        if (oldVal !== newVal) {
+          changes[key] = { old: oldVal, new: newVal };
+        }
+      }
+      auditBatch('notifications', changes);
       const updatedSettings = {
         ...appSettings,
-        notifications,
+        notifications: {
+          ...notifications,
+          ...advancedSettings,
+        },
       };
       await updateAppSettings(updatedSettings);
       setHasChanges(false);
@@ -105,13 +120,13 @@ const NotificationSettingsPage: React.FC = () => {
       auditSchedules: appSettings?.notifications?.auditSchedules ?? true,
     });
     setAdvancedSettings({
-      criticalAlertsOnly: false,
-      quietHoursEnabled: false,
-      quietHoursStart: "22:00",
-      quietHoursEnd: "08:00",
-      digestFrequency: "instant",
-      notificationSound: true,
-      desktopNotifications: true,
+      criticalAlertsOnly: appSettings?.notifications?.criticalAlertsOnly ?? false,
+      quietHoursEnabled: appSettings?.notifications?.quietHoursEnabled ?? false,
+      quietHoursStart: appSettings?.notifications?.quietHoursStart ?? "22:00",
+      quietHoursEnd: appSettings?.notifications?.quietHoursEnd ?? "08:00",
+      digestFrequency: (appSettings?.notifications?.digestFrequency ?? "instant") as "instant" | "daily" | "weekly",
+      notificationSound: appSettings?.notifications?.notificationSound ?? true,
+      desktopNotifications: appSettings?.notifications?.desktopNotifications ?? true,
     });
     setHasChanges(false);
   };
