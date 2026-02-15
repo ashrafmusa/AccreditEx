@@ -6,7 +6,7 @@ const accreditationProgramsCollection = collection(db, 'accreditationPrograms');
 
 export const getAccreditationPrograms = async (): Promise<AccreditationProgram[]> => {
     const programSnapshot = await getDocs(accreditationProgramsCollection);
-    return programSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AccreditationProgram));
+    return programSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AccreditationProgram));
 };
 
 export const addAccreditationProgram = async (program: Omit<AccreditationProgram, 'id'>): Promise<AccreditationProgram> => {

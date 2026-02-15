@@ -12,7 +12,7 @@ const stripUndefined = (obj: Record<string, unknown>): Record<string, unknown> =
 export const getIncidentReports = async (): Promise<IncidentReport[]> => {
     try {
         const reportSnapshot = await getDocs(incidentReportsCollection);
-        return reportSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as IncidentReport));
+        return reportSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as IncidentReport));
     } catch (error) {
         console.error('Failed to fetch incident reports:', error);
         throw error;

@@ -74,19 +74,22 @@ service cloud.firestore {
     // Standards collection
     match /standards/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow delete: if isAdmin();
     }
     
     // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow delete: if isAdmin();
     }
     
     // Departments collection
     match /departments/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow delete: if isAdmin();
     }
     
     // Training Programs collection
@@ -100,7 +103,8 @@ service cloud.firestore {
     // Competencies collection
     match /competencies/{docId} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow delete: if isAdmin();
     }
     
     // Risks collection

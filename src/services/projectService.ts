@@ -52,7 +52,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
   freeTierMonitor.recordRead(1);
 
   if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Project;
+    return { ...docSnap.data(), id: docSnap.id } as Project;
   }
   return null;
 };
@@ -144,7 +144,7 @@ export const subscribeToProject = (
 
   const unsubscribe = onSnapshot(docRef, (doc) => {
     if (doc.exists()) {
-      callback({ id: doc.id, ...doc.data() } as Project);
+      callback({ ...doc.data(), id: doc.id } as Project);
     } else {
       callback(null);
     }

@@ -11,7 +11,7 @@ const stripUndefined = <T extends Record<string, any>>(obj: T): Partial<T> =>
 export const getRisks = async (): Promise<Risk[]> => {
     try {
         const riskSnapshot = await getDocs(risksCollection);
-        return riskSnapshot.docs.map(d => ({ id: d.id, ...d.data() } as Risk));
+        return riskSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Risk));
     } catch (error) {
         console.error('[riskService] getRisks failed:', error);
         throw error;

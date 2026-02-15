@@ -6,7 +6,7 @@ const customEventsCollection = collection(db, 'customEvents');
 
 export const getCustomEvents = async (): Promise<CustomCalendarEvent[]> => {
     const eventSnapshot = await getDocs(customEventsCollection);
-    return eventSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as CustomCalendarEvent));
+    return eventSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as CustomCalendarEvent));
 };
 
 export const addCustomEvent = async (event: Omit<CustomCalendarEvent, 'id'>): Promise<CustomCalendarEvent> => {

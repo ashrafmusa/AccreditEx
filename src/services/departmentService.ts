@@ -6,7 +6,7 @@ const departmentsCollection = collection(db, 'departments');
 
 export const getDepartments = async (): Promise<Department[]> => {
     const departmentSnapshot = await getDocs(departmentsCollection);
-    return departmentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Department));
+    return departmentSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Department));
 };
 
 export const addDepartment = async (department: Omit<Department, 'id'>): Promise<Department> => {

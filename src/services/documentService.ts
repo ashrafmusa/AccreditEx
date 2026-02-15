@@ -9,7 +9,7 @@ const documentsCollection = collection(db, 'documents');
 export const getDocuments = async (): Promise<AppDocument[]> => {
     const documentSnapshot = await getDocs(documentsCollection);
     freeTierMonitor.recordRead(1);
-    return documentSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AppDocument));
+    return documentSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AppDocument));
 };
 
 export const addDocument = async (document: Omit<AppDocument, 'id'>): Promise<AppDocument> => {

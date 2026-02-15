@@ -6,7 +6,7 @@ const auditPlansCollection = collection(db, 'auditPlans');
 
 export const getAuditPlans = async (): Promise<AuditPlan[]> => {
     const planSnapshot = await getDocs(auditPlansCollection);
-    return planSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as AuditPlan));
+    return planSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AuditPlan));
 };
 
 export const addAuditPlan = async (plan: Omit<AuditPlan, 'id'>): Promise<AuditPlan> => {

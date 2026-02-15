@@ -1,0 +1,4512 @@
+[
+  {
+    "id": "OHAS.SMCS.1",
+    "standardId": "OHAS.SMCS.1",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital displays information to patients and families on services provided",
+    "criticality": "Medium",
+    "totalMeasures": 3,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.1.A",
+        "description": "The hospital uses a variety of methods to display information, such as posters, brochures, media, MOH portals, or websites, with methods of how to access its services."
+      },
+      {
+        "id": "OHAS.SMCS.1.B",
+        "description": "All hospital staff are oriented to these services, mainly the staff in reception, outpatient department, and in-patient departments."
+      },
+      {
+        "id": "OHAS.SMCS.1.C",
+        "description": "The hospital uses appropriate language and format to provide information about its services to patients, families, and community."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.2",
+    "standardId": "OHAS.SMCS.2",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital implements a mechanism to ensure the provision of a unified standard of care to patients.",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.2.A",
+        "description": "Patient’s care is provided according to the policies, laws and regulations."
+      },
+      {
+        "id": "OHAS.SMCS.2.B",
+        "description": "Department leaders ensure that all patients receive the same standards of care throughout the hospital departments, all the time (during the morning, afternoon, or night, working hours, or off-hours, regardless of their race, gender, or religion and whether they can pay or not."
+      },
+      {
+        "id": "OHAS.SMCS.2.C",
+        "description": "Every patient has an individualized care plan based on their initial assessment and reassessment."
+      },
+      {
+        "id": "OHAS.SMCS.2.D",
+        "description": "Each patient attending in-patient or outpatient services receives awareness about their rights and responsibilities."
+      },
+      {
+        "id": "OHAS.SMCS.2.E",
+        "description": "The hospital designs and carries out processes to provide continuity of patient care services in the hospital and coordination among health care providers."
+      },
+      {
+        "id": "OHAS.SMCS.2.F",
+        "description": "The hospital has qualified professionals responsible for the patient’s care during all phases of in-patient care."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.3",
+    "standardId": "OHAS.SMCS.3",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a standardized method for registration and admission of patients within its scope of services that meet patients' health needs.",
+    "criticality": "High",
+    "totalMeasures": 14,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.3.A",
+        "description": "The hospital has clear policy and procedures describing the process used for admission in various departments, including but not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.3.B",
+        "description": "All staff are oriented about the standardized process of admission of patients to various hospital settings."
+      },
+      {
+        "id": "OHAS.SMCS.3.C",
+        "description": "Each patient has a unique registration identification number through the process of admission."
+      },
+      {
+        "id": "OHAS.SMCS.3.D",
+        "description": "Patients are accepted only if the hospital can provide the services."
+      },
+      {
+        "id": "OHAS.SMCS.3.E",
+        "description": "Hospital department leaders conduct monitoring audits to assess staff compliance to policies and procedures."
+      },
+      {
+        "id": "OHAS.SMCS.3.F",
+        "description": "The staff are oriented to the admission policy and procedure to ensure a consistent admission process in the hospital units/ department."
+      },
+      {
+        "id": "OHAS.SMCS.3.G",
+        "description": "Each department has an admission criterion designed for their scope of service."
+      },
+      {
+        "id": "OHAS.SMCS.3.H",
+        "description": "There is regular audit conducted to monitor compliance admission process by healthcare staff to ensure standardized practice."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.4",
+    "standardId": "OHAS.SMCS.4",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has clear mechanism for patients transfer.",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.4.A",
+        "description": "The hospital has a documented transfer policy of patients’ intra and inter hospital."
+      },
+      {
+        "id": "OHAS.SMCS.4.B",
+        "description": "The Hospital staff are oriented about the transfer process."
+      },
+      {
+        "id": "OHAS.SMCS.4.C",
+        "description": "The hospital leaders and staff are responsible to provide detailed information on patient medical and nursing assessments, the reason for the transfer, clinical findings, medication use, and all related information."
+      },
+      {
+        "id": "OHAS.SMCS.4.D",
+        "description": "There is a unified checklist is recommended to structure the transfer process and mitigate risks to the patients."
+      },
+      {
+        "id": "OHAS.SMCS.4.E",
+        "description": "The staff responsible to receive the patient in the receiving unit is responsible to assess the patient’s condition on arrival, to ensure patient safety and transfer to appropriate service."
+      },
+      {
+        "id": "OHAS.SMCS.4.F",
+        "description": "The hospital monitors the compliance of the healthcare staff with the transfer policy to ensure standardized practice."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.5",
+    "standardId": "OHAS.SMCS.5",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a clear process for assessment of patients throughout care process.",
+    "criticality": "High",
+    "totalMeasures": 16,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.5.A",
+        "description": "Hospital has clear policies and procedures for patients’ physical  assessment and re-assessment, time frame for completion of the initial assessment process and the frequency of reassessment, content of assessment in different care setting such as:"
+      },
+      {
+        "id": "OHAS.SMCS.5.B",
+        "description": "The policy and procedures define the scope and content of assessment by each discipline such as physicians, nurses, social services and dietitians, and other service providers."
+      },
+      {
+        "id": "OHAS.SMCS.5.C",
+        "description": "The hospital ensures training is conducted for the concerned staff to follow policies and procedures of proper assessment."
+      },
+      {
+        "id": "OHAS.SMCS.5.D",
+        "description": "The assessment includes discharge planning, the type of diagnostic testing required, and priorities of the level of care required."
+      },
+      {
+        "id": "OHAS.SMCS.5.E",
+        "description": "The is evidence to ensure all patients are reassessed at appropriate intervals as per the policy, to determine response to treatment, detect complications or adverse reactions, compliance to treatment, to plan the further continuation of treatment or change accordingly."
+      },
+      {
+        "id": "OHAS.SMCS.5.F",
+        "description": "The hospital uses standardized assessments tools:"
+      },
+      {
+        "id": "OHAS.SMCS.5.G",
+        "description": "Patients are being reassessed to confirm effectiveness of care plans, patient response to treatment, patient compliance with treatment, plan continuation of treatment etc."
+      },
+      {
+        "id": "OHAS.SMCS.5.H",
+        "description": "Documentation of patient’s care plan is maintained in electronic medical records."
+      },
+      {
+        "id": "OHAS.SMCS.5.I",
+        "description": "Each department head conducts regular monitoring to ensure staff compliance to their concerned policy and procedures."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.6",
+    "standardId": "OHAS.SMCS.6",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital uses evidence-based clinical practice guidelines to guide care for patients as applicable, in various clinical specialties.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.6.A",
+        "description": "The Hospital has clinical practice guidelines, protocols, pathways that are developed as per evidence- based medicine."
+      },
+      {
+        "id": "OHAS.SMCS.6.B",
+        "description": "These guidelines are used to guide healthcare providers in making appropriate clinical decisions."
+      },
+      {
+        "id": "OHAS.SMCS.6.C",
+        "description": "These guidelines are updated every 2-3 years or earlier as required."
+      },
+      {
+        "id": "OHAS.SMCS.6.D",
+        "description": "The department monitors compliance with guidelines to ensure the staff are following the clinical practice guidelines."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.7",
+    "standardId": "OHAS.SMCS.7",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a process to identify and deal with patients requiring urgent or emergent care.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.7.A",
+        "description": "Hospital has clear written guidelines/ pathways to identify and manage patients who are on need for urgent or emergent care.   This includes  but not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.7.B",
+        "description": "Staff are trained on process of determining the severity of patient’s condition and handling patients as per the written guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.7.C",
+        "description": "The hospital ensures appropriate timely care is provided for emergent cases."
+      },
+      {
+        "id": "OHAS.SMCS.7.D",
+        "description": "There is always regular process of monitoring the process to ensure proper implantation and follow up."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.8",
+    "standardId": "OHAS.SMCS.8",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a process to obtain informed consent before any procedure requiring informed consent.",
+    "criticality": "High",
+    "totalMeasures": 15,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.8.A",
+        "description": "The hospital has a policy for obtaining informed consent from a patient or his/ her legal representative before starting invasive or high-risk procedures or treatment. The policy includes explanations of the nature of the procedures/ treatment, benefits, or expected harms."
+      },
+      {
+        "id": "OHAS.SMCS.8.B",
+        "description": "The hospital identifies the list of procedures require informed consent, including, but are not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.8.C",
+        "description": "The Hospital has evidence of training records for staff on the informed consent policy."
+      },
+      {
+        "id": "OHAS.SMCS.8.D",
+        "description": "The informed consent is available and easily accessible to all staff."
+      },
+      {
+        "id": "OHAS.SMCS.8.E",
+        "description": "Informed consent can only be obtained by the physician conducting the procedure or/and surgery."
+      },
+      {
+        "id": "OHAS.SMCS.8.F",
+        "description": "There is evidence that if a patient is unable to give informed consent (e.g., minors or mentally incompetent patients), consent should is filled by patient’s next of kin or guardian."
+      },
+      {
+        "id": "OHAS.SMCS.8.G",
+        "description": "The Hospital has a regular process to measuring the compliance to the policy."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.9",
+    "standardId": "OHAS.SMCS.9",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a process to meet the needs of terminally ill patients and end of life care",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.9.A",
+        "description": "The hospital has clear guide on providing effective care for terminally ill patients such as pain management and other symptoms."
+      },
+      {
+        "id": "OHAS.SMCS.9.B",
+        "description": "The Hospital staff are well oriented on the end-of-life care guide."
+      },
+      {
+        "id": "OHAS.SMCS.9.C",
+        "description": "The hospital staff assesses and attend patients’ specific needs such as pain management, feeding, skin care, turning, etc."
+      },
+      {
+        "id": "OHAS.SMCS.9.D",
+        "description": "The hospital staff responds to the individual needs of terminally ill patients, such as physical, psychological, spiritual, and cultural needs."
+      },
+      {
+        "id": "OHAS.SMCS.9.E",
+        "description": "The hospital staff educates and involves family members on the care decision."
+      },
+      {
+        "id": "OHAS.SMCS.9.F",
+        "description": "The team follows right process to transfer patient to another hospital if hospital is unable to provide palliative care service to a patient."
+      },
+      {
+        "id": "OHAS.SMCS.9.G",
+        "description": "There is regular monitoring audit to assess staff compliance to the guide and to assess the effectiveness of the implemented process."
+      },
+      {
+        "id": "OHAS.SMCS.10.A",
+        "description": "The Hospital has clear policies to guide on identifying and assessing patients vulnerable to harm self, or others including patients with psychiatric issues such as:"
+      },
+      {
+        "id": "OHAS.SMCS.10.B",
+        "description": "The Hospital staff are oriented to these policies."
+      },
+      {
+        "id": "OHAS.SMCS.10.C",
+        "description": "Referral is made to the hospital providing specific management in case of unavailability of the services required."
+      },
+      {
+        "id": "OHAS.SMCS.10.D",
+        "description": "If patients are for transfer, patients and family are informed."
+      },
+      {
+        "id": "OHAS.SMCS.10.E",
+        "description": "There is regular audit performed to assess compliance to these policies."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.11",
+    "standardId": "OHAS.SMCS.11",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a process to coordinate patient care among healthcare teams.",
+    "criticality": "Medium",
+    "totalMeasures": 3,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.11.A",
+        "description": "The Hospital has a system to facilitate the continuity of a coordinated provision of care to patients."
+      },
+      {
+        "id": "OHAS.SMCS.11.B",
+        "description": "The system includes patient’s medical records that allow sharing information of patients’ care and treatment between authorized multidisciplinary team, including medical, nursing, and all other health care providers."
+      },
+      {
+        "id": "OHAS.SMCS.11.C",
+        "description": "Department leaders ensure that there is complete documentation of care progression of patients and length of stay, effectiveness, and evidence for improvement."
+      },
+      {
+        "id": "OHAS.SMCS.12.A",
+        "description": "The Hospital has clear policy and procedures of pain management, which clearly defines the need for comprehensive pain assessment, reassessment, and management."
+      },
+      {
+        "id": "OHAS.SMCS.12.B",
+        "description": "The hospital considers patient pain management as basic patient right."
+      },
+      {
+        "id": "OHAS.SMCS.12.C",
+        "description": "The policy includes process of assessing pain intensity, frequency, location, duration, and type."
+      },
+      {
+        "id": "OHAS.SMCS.12.D",
+        "description": "The Hospital’s staff are trained on their role in pain assessment, reassessment, and management."
+      },
+      {
+        "id": "OHAS.SMCS.12.E",
+        "description": "There is evidence of pain assessment based on validated pain assessment scale"
+      },
+      {
+        "id": "OHAS.SMCS.12.F",
+        "description": "The staff conducts pain assessment, and document it frequently as planned for patients, including pain history (site, radiation, intensity, character etc.)"
+      },
+      {
+        "id": "OHAS.SMCS.12.G",
+        "description": "The pain scoring  is done before giving pain medication, and at regular intervals post dosing (e.g., Pain scale-numeric rating system, Wong-Baker FACES pain rating scale)."
+      },
+      {
+        "id": "OHAS.SMCS.12.H",
+        "description": "Planning for pain management is done prior to surgery or any painful intervention/procedure."
+      },
+      {
+        "id": "OHAS.SMCS.12.I",
+        "description": "The pain management is based on patient’s condition, using different pharmacologic and non-therapeutic methods."
+      },
+      {
+        "id": "OHAS.SMCS.12.J",
+        "description": "Department leaders conduct regular audits to assess staff compliance to the policy."
+      },
+      {
+        "id": "OHAS.SMCS.13.A",
+        "description": "The Hospital has a documented discharge planning policy/guide"
+      },
+      {
+        "id": "OHAS.SMCS.13.B",
+        "description": "The Hospital ensures the staff are aware about the discharge planning policy."
+      },
+      {
+        "id": "OHAS.SMCS.13.C",
+        "description": "The patient discharge planning starts as early time as the admission time."
+      },
+      {
+        "id": "OHAS.SMCS.13.D",
+        "description": "Patients and the family are involved in the discharge process."
+      },
+      {
+        "id": "OHAS.SMCS.13.E",
+        "description": "The process includes at least one meeting between the patient, family, and discharge planner to help the patient to be prepared for discharge. The meeting addresses patients' needs after discharge to prevent possible risks at home"
+      },
+      {
+        "id": "OHAS.SMCS.13.F",
+        "description": "The staff coordinate with other health care institutions as appropriate to patients’ needs. Patients and their family are involved in this decision."
+      },
+      {
+        "id": "OHAS.SMCS.13.G",
+        "description": "There is a discharge summery prepared for all inpatients before they leave the hospital, with clear documentation"
+      },
+      {
+        "id": "OHAS.SMCS.13.H",
+        "description": "Department leaders conduct regular audit to assess compliance with the policy."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.14",
+    "standardId": "OHAS.SMCS.14",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Hospital identifies and manages patients at risk of developing venous thromboembolism (VTE). (CSS 7)",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.14.A",
+        "description": "Hospital has an updated written thrombo prophylaxis guideline or policy to screen patients for the risk of developing VTE."
+      },
+      {
+        "id": "OHAS.SMCS.14.B",
+        "description": "The guidelines are periodically updated as per evidence-based practice"
+      },
+      {
+        "id": "OHAS.SMCS.14.C",
+        "description": "The guidelines are made available and easily accessible in all departments and staff are well oriented to the guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.14.D",
+        "description": "The treating team follows the guideline to identify patients at risk to develop DVT, pulmonary embolism (PE), and implement applicable prophylaxis."
+      },
+      {
+        "id": "OHAS.SMCS.14.E",
+        "description": "The hospital implements measures to regularly audit implementations of appropriate thromboprophylaxis to ensure all at-risk patients, are identified and managed according to the current guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.14.F",
+        "description": "The concerned healthcare worker provides health education to patients about the risk of VTE  medication use measures to prevent it, and any relevant and needed information."
+      },
+      {
+        "id": "OHAS.SMCS.14.G",
+        "description": "The guidelines are made available and easily accessible in all departments and staff are well oriented to the guidelines."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.15",
+    "standardId": "OHAS.SMCS.15",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital implements a standardized process of patient identifiaction through out the hospital.(CSS.3)",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.15.A",
+        "description": "The hospital has a clear standardized policy of patient identification that covers main identifiers (full name, date of birth, unique hospital identification number), ID wrist band, patient photo identification."
+      },
+      {
+        "id": "OHAS.SMCS.15.B",
+        "description": "All hospital staff oriented on the policy and its procedures."
+      },
+      {
+        "id": "OHAS.SMCS.15.C",
+        "description": "Patient’s identification used before performing any procedure."
+      },
+      {
+        "id": "OHAS.SMCS.15.D",
+        "description": "Hospital staff actively involves patient in the confirmation process."
+      },
+      {
+        "id": "OHAS.SMCS.15.E",
+        "description": "The hospital conducts regular audit to ensure compliance to the policy."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.16",
+    "standardId": "OHAS.SMCS.16",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital implements an effective process for timely reporting of urgent critical diagnostic results.",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.16.A",
+        "description": "The hospital implements a policy for reporting abnormal critical diagnostic test results"
+      },
+      {
+        "id": "OHAS.SMCS.16.B",
+        "description": "The hospital describes the critical values for each diagnostic test."
+      },
+      {
+        "id": "OHAS.SMCS.16.C",
+        "description": "The hospital implements a standardized process to ensure immediate and accurate critical results reporting and receiving , describing precisely the first liners (the reporter and the receiver ) of the critical results and alternatives in case first liners are not available , aiming to immediate care management to given to the patients ."
+      },
+      {
+        "id": "OHAS.SMCS.16.D",
+        "description": "All concerned staff are oriented on the policy."
+      },
+      {
+        "id": "OHAS.SMCS.16.E",
+        "description": "The hospital monitors the implementation of reporting process, ensuring information are documented in patients’ medical records."
+      }
+    ],
+    "category": "Provision of Care"
+  },
+  {
+    "id": "OHAS.SMCS.17",
+    "standardId": "OHAS.SMCS.17",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has laboratory services that are applicable to national laws and regulations, to meet patient needs.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.17.A",
+        "description": "The hospital has laboratory services that are under national standards, laws, and regulations."
+      },
+      {
+        "id": "OHAS.SMCS.17.B",
+        "description": "The laboratory services unit has a clear scope of services to meet the needs related to the hospital mission and patient populations, emergency needs, covering twenty- four hours a day, seven days a week."
+      },
+      {
+        "id": "OHAS.SMCS.17.C",
+        "description": "Essential, simple laboratory services are available twenty- four hours a day, seven days a week. This includes hematology services, biochemistry, and blood bank)."
+      },
+      {
+        "id": "OHAS.SMCS.17.D",
+        "description": "When special diagnostic tests are not available, there is clear process for referral and follow up of diagnostic tests."
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.18",
+    "standardId": "OHAS.SMCS.18",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has qualified, competent staff to provide the defined scope of services.",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.18.A",
+        "description": "The director/head of the laboratory services is qualified by education, training and experience in the field"
+      },
+      {
+        "id": "OHAS.SMCS.18.B",
+        "description": "All laboratory staff are appropriately qualified (by education and training), and experienced to manage and perform tests and interpret results, according to the complexity of laboratory scope of services."
+      },
+      {
+        "id": "OHAS.SMCS.18.C",
+        "description": "Laboratory has clear job description for each staff category"
+      },
+      {
+        "id": "OHAS.SMCS.18.D",
+        "description": "Staff with experience in the area manage different laboratory sections."
+      },
+      {
+        "id": "OHAS.SMCS.18.E",
+        "description": "New laboratory personnel receive an orientation to the hospital and laboratory services."
+      },
+      {
+        "id": "OHAS.SMCS.18.F",
+        "description": "All laboratory staff have the required education, training, qualifications, and experience to administer and perform the tests and interpret the results."
+      },
+      {
+        "id": "OHAS.SMCS.18.G",
+        "description": "Laboratory uses appropriate competency assessment tools to assess staff performance."
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.19",
+    "standardId": "OHAS.SMCS.19",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has an established comprehensive quality management system (QMS).",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.19.A",
+        "description": "The laboratory management has an established, documented, implemented and monitored quality management system manual."
+      },
+      {
+        "id": "OHAS.SMCS.19.B",
+        "description": "The laboratory management has assigned a quality manger or a quality focal point with clear responsibilities and roles."
+      },
+      {
+        "id": "OHAS.SMCS.19.C",
+        "description": "The quality management system is fulfilling the integration of all processes, policies, and objectives in the testing cycle and meets the needs of the users."
+      },
+      {
+        "id": "OHAS.SMCS.19.D",
+        "description": "Laboratory quality indicators are established and monitored."
+      },
+      {
+        "id": "OHAS.SMCS.19.E",
+        "description": "All laboratory staff are oriented about the quality management system in the lab."
+      },
+      {
+        "id": "OHAS.SMCS.19.F",
+        "description": "There is periodic audit conducted to assess compliance to policies related to quality management in the lab."
+      },
+      {
+        "id": "OHAS.SMCS.19.G",
+        "description": "Non-conformance management system is followed with corrective action plan."
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.20",
+    "standardId": "OHAS.SMCS.20",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has an implemented, health safety program.",
+    "criticality": "High",
+    "totalMeasures": 28,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.20.A",
+        "description": "The laboratory has an approved health and safety program, and infection control policies and procedures manuals that comply with the national laws and regulations. This includes but is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.20.B",
+        "description": "The laboratory has a health and safety officer with clear job roles and responsibilities."
+      },
+      {
+        "id": "OHAS.SMCS.20.C",
+        "description": "The laboratory has a risk management plan which addresses potential safety risks in the lab and other areas outside the laboratory where laboratory services are provided"
+      },
+      {
+        "id": "OHAS.SMCS.20.D",
+        "description": "The laboratory has a safety and security training plan, documented."
+      },
+      {
+        "id": "OHAS.SMCS.20.E",
+        "description": "The laboratory has an internal and external disaster plan."
+      },
+      {
+        "id": "OHAS.SMCS.20.F",
+        "description": "The laboratory dress code policy is implemented and monitored"
+      },
+      {
+        "id": "OHAS.SMCS.20.G",
+        "description": "An updated detailed inventory of all hazardous material is available."
+      },
+      {
+        "id": "OHAS.SMCS.20.H",
+        "description": "Staff has received necessary vaccinations as per the requirement of performed tasks."
+      },
+      {
+        "id": "OHAS.SMCS.20.I",
+        "description": "Infectious and hazardous waste are handled, treated and disposed appropriately."
+      },
+      {
+        "id": "OHAS.SMCS.20.J",
+        "description": "All incident and injuries are addressed according to the protocols."
+      },
+      {
+        "id": "OHAS.SMCS.20.K",
+        "description": "There is regular audit plan to access compliance to the safety program guidelines."
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.21",
+    "standardId": "OHAS.SMCS.21",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has a suitable adequate workspace, services, to maintain a safe and appropriate working environment.",
+    "criticality": "High",
+    "totalMeasures": 13,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.21.A",
+        "description": "The laboratory has standard working environment guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.21.B",
+        "description": "Hospital ensures there is adequate space allocated for the laboratory, that provides:"
+      },
+      {
+        "id": "OHAS.SMCS.21.C",
+        "description": "Hospital laboratory management ensures the availability of"
+      },
+      {
+        "id": "OHAS.SMCS.21.D",
+        "description": "Hospital laboratory management ensures that access to laboratory areas is controlled"
+      },
+      {
+        "id": "OHAS.SMCS.21.E",
+        "description": "The laboratory controls, regularly audits and monitors the environmental conditions."
+      },
+      {
+        "id": "OHAS.SMCS.21.F",
+        "description": "The laboratory has a clear  procedure in the event of power failure"
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.22",
+    "standardId": "OHAS.SMCS.22",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has a defined system for supply and management of reagents and consumables.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.22",
+    "standardId": "OHAS.SMCS.22",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has assigned authorized personnel with defined job responsibilities for reagents and consumables.",
+    "criticality": "Medium",
+    "totalMeasures": 0,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.22.B",
+        "description": "The laboratory has implemented policies and procedures for the appropriate management and storage of reagents and consumables, according to the manufacturer’s recommendations under controlled settings."
+      },
+      {
+        "id": "OHAS.SMCS.22.C",
+        "description": "The laboratory management ensures that reagents and their consumables are monitored using an appropriate, standardized temperature monitoring system."
+      },
+      {
+        "id": "OHAS.SMCS.22.D",
+        "description": "The laboratory has an evaluation protocol for new reagents."
+      },
+      {
+        "id": "OHAS.SMCS.22.E",
+        "description": "The laboratory has an inventory system for reagents and consumables."
+      },
+      {
+        "id": "OHAS.SMCS.22.F",
+        "description": "The laboratory has procedures available for Malfunction/manufacturing defects of reagents and consumables."
+      },
+      {
+        "id": "OHAS.SMCS.22.G",
+        "description": "Safety Data Sheets are available for all applicable reagents."
+      },
+      {
+        "id": "OHAS.SMCS.22.H",
+        "description": "Laboratory has an implemented audit system to ensure safety and functions of the reagents"
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.23",
+    "standardId": "OHAS.SMCS.23",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has a system for introducing, validating, and the management of equipment.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.23.B",
+        "description": "Laboratory has a copy of all equipment maintenance contracts."
+      },
+      {
+        "id": "OHAS.SMCS.23.C",
+        "description": "Laboratory has an equipment’s S.O.P"
+      },
+      {
+        "id": "OHAS.SMCS.23.D",
+        "description": "There are clear procedures for the calibration of equipment with traceable certificates of calibrators."
+      },
+      {
+        "id": "OHAS.SMCS.23.E",
+        "description": "Laboratory has a procedure for the verification of equipment performance."
+      },
+      {
+        "id": "OHAS.SMCS.23.F",
+        "description": "Equipment is operated and maintained by trained and competent personnel."
+      },
+      {
+        "id": "OHAS.SMCS.23.G",
+        "description": "Equipment Log books are maintained."
+      },
+      {
+        "id": "OHAS.SMCS.23.H",
+        "description": "Laboratory management conducts regular audit to ensure compliance to policies and procedures to ensure safe equipment management."
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.24",
+    "standardId": "OHAS.SMCS.24",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital an established laboratory quality assurance program.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.24.A",
+        "description": "The laboratory implements policies and procedures on quality performance indicators and systems checks."
+      },
+      {
+        "id": "OHAS.SMCS.24.B",
+        "description": "The laboratory internal quality assurance program is established"
+      },
+      {
+        "id": "OHAS.SMCS.24.C",
+        "description": "The internal quality control results are reviewed and analyzed regularly with needed corrective action plans."
+      },
+      {
+        "id": "OHAS.SMCS.24.D",
+        "description": "The laboratory external quality assurance program is available"
+      },
+      {
+        "id": "OHAS.SMCS.24.F",
+        "description": "The program addresses surveillance of test results."
+      },
+      {
+        "id": "OHAS.SMCS.24.G",
+        "description": "The Laboratory has a documented procedure to identify, manage and control nonconformance."
+      },
+      {
+        "id": "OHAS.SMCS.24.H",
+        "description": "The program includes the documentation of corrective and preventive actions."
+      },
+      {
+        "id": "OHAS.SMCS.24.I",
+        "description": "All laboratory staff are well oriented on laboratory quality assurance program."
+      },
+      {
+        "id": "OHAS.SMCS.24.J",
+        "description": "There is constant audit to assess compliance to the QA program implementation"
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.25",
+    "standardId": "OHAS.SMCS.25",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Laboratory implements a total Testing Processes (TTP) system",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.25.A",
+        "description": "Laboratory has an updated user manual, reception and rejection standard operation procedures S.O.P."
+      },
+      {
+        "id": "OHAS.SMCS.25.B",
+        "description": "The laboratory has a standard operation procedure (SOP) that clearly explains the pre-examination, examination and post examination process (e.g., Examination, reporting, storage, retention and disposal of clinical samples) with authorized responsibilities including routine, urgent, and referral samples."
+      },
+      {
+        "id": "OHAS.SMCS.25.C",
+        "description": "The laboratory ensures the selection of approved and validated examination procedure before introducing the test into service."
+      },
+      {
+        "id": "OHAS.SMCS.25.D",
+        "description": "The internal and the external quality control systems are implemented, interpreted, data analyzed and corrective action performed and maintained."
+      },
+      {
+        "id": "OHAS.SMCS.25.E",
+        "description": "The laboratory defines the biological reference intervals and /or clinical decision limits."
+      },
+      {
+        "id": "OHAS.SMCS.25.F",
+        "description": "All staff laboratory staff are oriented and a ware about the SOP."
+      },
+      {
+        "id": "OHAS.SMCS.25.G",
+        "description": "The lab has a defined system for reporting method with an effective communication with the end-users by authorized person with a clear and accurate reporting format."
+      },
+      {
+        "id": "OHAS.SMCS.25.H",
+        "description": "There are clear procedures for the amendment of results."
+      },
+      {
+        "id": "OHAS.SMCS.25.I",
+        "description": "Laboratory monitors key quality indicators covering the pre-examination, examination and post examination process phases of the laboratory operations."
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.26",
+    "standardId": "OHAS.SMCS.26",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Hospital has a comprehensive system for effective management and use of point of care testing (PoCT ).",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.26.A",
+        "description": "The laboratory implements  PoCT policies and procedures, which describe responsibilities of managing the  PoCT to the lab, process of  PoCT, training requirement, quality control testing of  PoCT methods."
+      },
+      {
+        "id": "OHAS.SMCS.26.B",
+        "description": "Laboratory has PoCT committee members with rules and regulations and terms of references."
+      },
+      {
+        "id": "OHAS.SMCS.26.C",
+        "description": "There are clear guidelines describing the process of PoCT ."
+      },
+      {
+        "id": "OHAS.SMCS.26.D",
+        "description": "The staff are trained and assessed for competency for testing"
+      },
+      {
+        "id": "OHAS.SMCS.26.E",
+        "description": "The laboratory has assigned personnel as PoCT coordinator."
+      },
+      {
+        "id": "OHAS.SMCS.26.F",
+        "description": "There is regular audit to ensure, quality control testing is performed and recorded for PoCT ."
+      },
+      {
+        "id": "OHAS.SMCS.26.G",
+        "description": "Patients’ results are interpreted by trained personnel, and all abnormal results are confirmed by the laboratory if recommended"
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.27",
+    "standardId": "OHAS.SMCS.27",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The laboratory has a defined information and data management system.",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.27.A",
+        "description": "Laboratory has a defined system (manual/electronic) to identify and relate information to patients"
+      },
+      {
+        "id": "OHAS.SMCS.27.B",
+        "description": "Laboratory has a procedure for information and data management."
+      },
+      {
+        "id": "OHAS.SMCS.27.C",
+        "description": "Laboratory information are protected from/against unauthorized access, tempering and loss."
+      },
+      {
+        "id": "OHAS.SMCS.27.D",
+        "description": "Laboratory has a contingency plan system failure/breakdown"
+      },
+      {
+        "id": "OHAS.SMCS.27.E",
+        "description": "Laboratory has a system for sample tracking and data traceability."
+      },
+      {
+        "id": "OHAS.SMCS.27.F",
+        "description": "Laboratory ensures training of all staff in using data management system"
+      }
+    ],
+    "category": "Laboratory"
+  },
+  {
+    "id": "OHAS.SMCS.28",
+    "standardId": "OHAS.SMCS.28",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The radiology department is well staffed with qualified, trained, experienced staff.",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.28.A",
+        "description": "The director/ head of radiology department is qualified, trained, skilled and experienced radiologist."
+      },
+      {
+        "id": "OHAS.SMCS.28.B",
+        "description": "The radiology department staff have proper qualifications, training, and experience."
+      },
+      {
+        "id": "OHAS.SMCS.28.C",
+        "description": "Hospital has twenty-four-hour radiology service coverage"
+      },
+      {
+        "id": "OHAS.SMCS.28.D",
+        "description": "The radiology department has a mechanism on developing human resources."
+      },
+      {
+        "id": "OHAS.SMCS.28.E",
+        "description": "The radiology department have records of staff trained in Basic Life Support (BLS)."
+      }
+    ],
+    "category": "Diagnostic Imaging Services (RD)"
+  },
+  {
+    "id": "OHAS.SMCS.29",
+    "standardId": "OHAS.SMCS.29",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital radiology imaging services are provided as per the scope of the hospital, and National laws and regulations.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.29.A",
+        "description": "Radiology department services comply with legal and other requirements."
+      },
+      {
+        "id": "OHAS.SMCS.29.B",
+        "description": "Scope of the imaging services is commensurate to the services provided by the hospital."
+      },
+      {
+        "id": "OHAS.SMCS.29.C",
+        "description": "The infrastructure (physical and equipment) and manpower is adequate to provide for its defined scope of services."
+      },
+      {
+        "id": "OHAS.SMCS.29.D",
+        "description": "Adequately qualified and trained personnel perform, supervise and interpret the investigations."
+      },
+      {
+        "id": "OHAS.SMCS.29.E",
+        "description": "Documented and updated policies and procedures exist to ensure correct identification and safe and timely transportation of patients to and from the imaging services."
+      },
+      {
+        "id": "OHAS.SMCS.29.F",
+        "description": "The results are available within a defined timeframe"
+      },
+      {
+        "id": "OHAS.SMCS.29.G",
+        "description": "Critical results are intimated immediately to the personnel concerned"
+      },
+      {
+        "id": "OHAS.SMCS.29.H",
+        "description": "The results are reported in a standardized manner."
+      },
+      {
+        "id": "OHAS.SMCS.29.I",
+        "description": "There is a mechanism to address recall / amendment of reports whenever applicable."
+      },
+      {
+        "id": "OHAS.SMCS.29.J",
+        "description": "Imaging tests that are not available in the hospital are outsourced to other hospital(s) based on their quality assurance system"
+      }
+    ],
+    "category": "Diagnostic Imaging Services (RD)"
+  },
+  {
+    "id": "OHAS.SMCS.30",
+    "standardId": "OHAS.SMCS.30",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The radiology department has policy and procedures manual to guide all radiological procedures.",
+    "criticality": "Medium",
+    "totalMeasures": 3,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.30.A",
+        "description": "Hospital radiology department has policy and procedures address all important radiological investigations and procedures, including but is not limited to:  X-ray, ultrasounds, computed tomography (CT) scan, magnetic resonance imaging (MRI), angiogram, nuclear medicine imaging, portable radiology machines, mammography, etc."
+      },
+      {
+        "id": "OHAS.SMCS.30.B",
+        "description": "All radiology staff are trained and oriented to policies and procedures in their concerned areas."
+      },
+      {
+        "id": "OHAS.SMCS.30.C",
+        "description": "Department leaders conduct audit to assess compliance to policies and procedures safety measures in a regular predefined interval."
+      }
+    ],
+    "category": "Diagnostic Imaging Services (RD)"
+  },
+  {
+    "id": "OHAS.SMCS.31",
+    "standardId": "OHAS.SMCS.31",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The radiology department has a quality assurance program for radiology and diagnostic imaging services.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.31.A",
+        "description": "Hospital implements a quality assurance program for radiology and diagnostic testing."
+      },
+      {
+        "id": "OHAS.SMCS.31.B",
+        "description": "The program addresses periodic internal/external peer reviews of imaging protocols and results using appropriate sampling."
+      },
+      {
+        "id": "OHAS.SMCS.31.C",
+        "description": "The program addresses surveillance of imaging results in collaboration with referring clinicians for follow up wherever applicable."
+      },
+      {
+        "id": "OHAS.SMCS.31.D",
+        "description": "A system is in place to ensure the appropriateness of the investigations and procedures for the clinical indications."
+      },
+      {
+        "id": "OHAS.SMCS.31.E",
+        "description": "The program includes periodic calibration and maintenance of all equipment."
+      },
+      {
+        "id": "OHAS.SMCS.31.F",
+        "description": "The program includes the documentation of corrective and preventive actions."
+      },
+      {
+        "id": "OHAS.SMCS.31.G",
+        "description": "The program includes daily surveillance and documentation of imaging results."
+      },
+      {
+        "id": "OHAS.SMCS.31.H",
+        "description": "The program includes regular audit process for correction and improvement."
+      }
+    ],
+    "category": "Diagnostic Imaging Services (RD)"
+  },
+  {
+    "id": "OHAS.SMCS.32",
+    "standardId": "OHAS.SMCS.32",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The radiology department has an established documented safety program in the diagnostic imaging services. (CSS 11)",
+    "criticality": "High",
+    "totalMeasures": 14,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.32.A",
+        "description": "The department has documented radiation-safety program, which aligns with the hospital’s safety program."
+      },
+      {
+        "id": "OHAS.SMCS.32.B",
+        "description": "The program includes the management (Handling, usage and disposal, storing and transportation) of radioactive materials and hazardous materials used for therapeutic and diagnostic purposes."
+      },
+      {
+        "id": "OHAS.SMCS.32.C",
+        "description": "The program includes checking/screening patients for safety risks before exposure to any imaging procedures, e.g., checking female patients for pregnancy."
+      },
+      {
+        "id": "OHAS.SMCS.32.D",
+        "description": "The program includes guidelines and procedures that governs the use of  contrast media."
+      },
+      {
+        "id": "OHAS.SMCS.32.E",
+        "description": "The program includes guidelines and procedures for non- radiation hazards. E.g., infection control, electrical hazards and immobilization."
+      },
+      {
+        "id": "OHAS.SMCS.32.F",
+        "description": "The program guides monitoring of the staff for radiation exposure, periodically."
+      },
+      {
+        "id": "OHAS.SMCS.32.G",
+        "description": "Imaging signage is prominently displayed in all appropriate locations."
+      },
+      {
+        "id": "OHAS.SMCS.32.H",
+        "description": "The program includes regular testing of radiation protecting aprons, thyroid, and gonad shield for patients and staff."
+      },
+      {
+        "id": "OHAS.SMCS.32.I",
+        "description": "The department’s leaders maintain records on staff radiation exposure for the last year."
+      },
+      {
+        "id": "OHAS.SMCS.32.J",
+        "description": "The program includes regular testing of radiation protecting aprons, thyroid, and gonad shield for patients and staff"
+      },
+      {
+        "id": "OHAS.SMCS.32.K",
+        "description": "The program includes regular testing of radiation protecting aprons, thyroid, and gonad shield for patients and staff"
+      },
+      {
+        "id": "OHAS.SMCS.32.L",
+        "description": "Radiology department leaders maintain records on staff radiation exposure for the last year."
+      },
+      {
+        "id": "OHAS.SMCS.32.M",
+        "description": "Radiology department leaders ensure that all staff are aware about the safety program."
+      },
+      {
+        "id": "OHAS.SMCS.32.N",
+        "description": "There is a regular audit to monitor the implementation of the safety program."
+      }
+    ],
+    "category": "Diagnostic Imaging Services (RD)"
+  },
+  {
+    "id": "OHAS.SMCS.33",
+    "standardId": "OHAS.SMCS.33",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Emergency Department has documented scope of services.",
+    "criticality": "Medium",
+    "totalMeasures": 3,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.33.A",
+        "description": "The Emergency Department has clearly written scope of service."
+      },
+      {
+        "id": "OHAS.SMCS.33.B",
+        "description": "The emergency staff are well oriented to the scope of service"
+      },
+      {
+        "id": "OHAS.SMCS.33.C",
+        "description": "Emergency care is provided to all patients seeking treatment at the ED regardless of their gender, religion, nationality or socioeconomic status."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.34",
+    "standardId": "OHAS.SMCS.34",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Emergency Department is well equipped with qualified medical and nursing staff.",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.34.A",
+        "description": "Emergency Department is directed by a physician who is qualified by education, training, and experience in managing emergency patients."
+      },
+      {
+        "id": "OHAS.SMCS.34.B",
+        "description": "The Emergency Department is covered by registered physicians, who are qualified to manage emergency cases, twenty-four hours a day seven days a week."
+      },
+      {
+        "id": "OHAS.SMCS.34.C",
+        "description": "Emergency Department nurse manager is qualified by education, training and experience in emergency."
+      },
+      {
+        "id": "OHAS.SMCS.34.D",
+        "description": "Emergency Department staff receive training, and education as per relevant scope of services."
+      },
+      {
+        "id": "OHAS.SMCS.34.E",
+        "description": "Emergency Department medical and nursing staff are certified in BLS, ACLS."
+      },
+      {
+        "id": "OHAS.SMCS.34.F",
+        "description": "There is documented ongoing competency assessment for all medical and nursing team in the department."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.35",
+    "standardId": "OHAS.SMCS.35",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The emergency department is well established and easily accessible to receive and manage emergency patients",
+    "criticality": "High",
+    "totalMeasures": 22,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.35.A",
+        "description": "The Emergency Department is identified through clear signage from outside and inside the hospital."
+      },
+      {
+        "id": "OHAS.SMCS.35.B",
+        "description": "The emergency department has separate identified entrance (s)."
+      },
+      {
+        "id": "OHAS.SMCS.35.C",
+        "description": "ED entrance is controlled and only limited for clinical staff;  and not allowed for the by non-clinical staff and off-hours visitors."
+      },
+      {
+        "id": "OHAS.SMCS.35.D",
+        "description": "The ED triage area is directly visible and accessible from the department entrance"
+      },
+      {
+        "id": "OHAS.SMCS.35.E",
+        "description": "The ED triage area is properly equipped with:"
+      },
+      {
+        "id": "OHAS.SMCS.35.F",
+        "description": "The ED triage area has easy access to 12 leads ECG"
+      },
+      {
+        "id": "OHAS.SMCS.35.G",
+        "description": "The ED triage room has a glass window or alternatives (e.g., CCTV) that allows visual access of patients in the waiting room."
+      },
+      {
+        "id": "OHAS.SMCS.35.H",
+        "description": "The triage area maintains patient privacy"
+      },
+      {
+        "id": "OHAS.SMCS.35.I",
+        "description": "There is an existing or provisional area to be utilized as a secondary triage post to support the main triage area when needed"
+      },
+      {
+        "id": "OHAS.SMCS.35.J",
+        "description": "There is a utilization plan that describes when to operate the additional triage."
+      },
+      {
+        "id": "OHAS.SMCS.35.K",
+        "description": "The waiting area allows maximum comfort by providing"
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.36",
+    "standardId": "OHAS.SMCS.36",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Emergency department has documented policies, procedures, pathways, and guidelines, and applicable laws and regulations to guide the care of patients.",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.36.A",
+        "description": "ED has clearly documented policies and procedures that are consistent with the hospital and emergency department scope of services."
+      },
+      {
+        "id": "OHAS.SMCS.36.B",
+        "description": "The ED policies, procedures, and guidelines are prepared by the emergency department multidisciplinary team including the ED head, nurse leader."
+      },
+      {
+        "id": "OHAS.SMCS.36.C",
+        "description": "The policies address the handling of medico-legal cases, such as cases such as alcohol and narcotic abuse and criminal acts."
+      },
+      {
+        "id": "OHAS.SMCS.36.D",
+        "description": "The policies address the management of suspected victims of abuse, neglect, and domestic violence."
+      },
+      {
+        "id": "OHAS.SMCS.36.E",
+        "description": "The policies address the management of poisoning, multi-trauma, acute coronary syndrome, VTE, stroke, sepsis, acute pain, etc."
+      },
+      {
+        "id": "OHAS.SMCS.36.F",
+        "description": "The policies guide the triage of patients."
+      },
+      {
+        "id": "OHAS.SMCS.36.G",
+        "description": "The ED documented policies and procedures guide the management of patients found dead on arrival at the hospital."
+      },
+      {
+        "id": "OHAS.SMCS.36.H",
+        "description": "ED staff are all familiar and trained with policies and procedures."
+      },
+      {
+        "id": "OHAS.SMCS.36.I",
+        "description": "The department/ unit conducts a regular audit to assess compliance and well implantation of the guidelines and policies."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.37",
+    "standardId": "OHAS.SMCS.37",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The ED has effective ambulance services.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.37.A",
+        "description": "ED has adequate access and space for the ambulance(s)."
+      },
+      {
+        "id": "OHAS.SMCS.37.B",
+        "description": "ED has full supervision and responsibility for the ambulance services."
+      },
+      {
+        "id": "OHAS.SMCS.37.C",
+        "description": "The ambulance adheres to the national rules and regulations"
+      },
+      {
+        "id": "OHAS.SMCS.37.D",
+        "description": "The ambulance is operated by trained personnel in BLS."
+      },
+      {
+        "id": "OHAS.SMCS.37.E",
+        "description": "The ED has a clear written protocol for communication between ambulance and the hospital, for receiving or transferring patients."
+      },
+      {
+        "id": "OHAS.SMCS.37.F",
+        "description": "The ambulance is fully equipped and has enough supply, to be ready for transfer of patients all the time."
+      },
+      {
+        "id": "OHAS.SMCS.37.G",
+        "description": "Ambulance is equipped with basic life support equipment for both adult and pediatric patients, and medications."
+      },
+      {
+        "id": "OHAS.SMCS.37.H",
+        "description": "Ambulance equipment and medications are checked on a daily basis using standardized checklist."
+      },
+      {
+        "id": "OHAS.SMCS.37.I",
+        "description": "Ambulances maintenance is conducted on regular predefined schedule, and documented."
+      },
+      {
+        "id": "OHAS.SMCS.37.J",
+        "description": "Emergency department leader ensures there is adherence to infection control policy, in running vehicle and maintaining equipment cleaning, ensuring there is a regular schedule for cleaning with assigned personnel."
+      },
+      {
+        "id": "OHAS.SMCS.38.A",
+        "description": "The ED is equipped with all necessary equipment, resources and medications suitable to types of services provided."
+      },
+      {
+        "id": "OHAS.SMCS.38.B",
+        "description": "The ED resuscitation room that is easily accessible from the ED entrance and physically located in close proximity to OT, ICU and radiology"
+      },
+      {
+        "id": "OHAS.SMCS.38.C",
+        "description": "Resuscitation/trauma rooms have sufficient space to perform resuscitation"
+      },
+      {
+        "id": "OHAS.SMCS.38.D",
+        "description": "The ED has treatment area assigned for high acuity patients."
+      },
+      {
+        "id": "OHAS.SMCS.38.E",
+        "description": "The ED has a treatment area assigned for low acuity patients."
+      },
+      {
+        "id": "OHAS.SMCS.38.F",
+        "description": "The ED has a treatment area assigned for pediatric patients."
+      },
+      {
+        "id": "OHAS.SMCS.38.G",
+        "description": "The ED has a treatment area assigned for GYN assessment."
+      },
+      {
+        "id": "OHAS.SMCS.38.H",
+        "description": "The resuscitation trolley is located in the center of the resuscitation area and has even spaces around it and the surrounding space that ensures 360° access to all parts of the patient for procedures."
+      },
+      {
+        "id": "OHAS.SMCS.38.I",
+        "description": "There is specialized equipment necessary for management of ophthalmology, ENT, and dental emergency cases."
+      },
+      {
+        "id": "OHAS.SMCS.38.J",
+        "description": "ED has specific facility to ensure patient privacy and safety are maintained in all locations."
+      },
+      {
+        "id": "OHAS.SMCS.38.K",
+        "description": "All bed locations have direct access and easily observed by ED staff."
+      },
+      {
+        "id": "OHAS.SMCS.38.L",
+        "description": "ED has regular process of checking supply stock and equipment."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.39",
+    "standardId": "OHAS.SMCS.39",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Emergency department implements standardized effective triage system to prioritize patients.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.39.A",
+        "description": "The ED has a clear written guide on triage system to categorize patients and identify those with emergent care needs."
+      },
+      {
+        "id": "OHAS.SMCS.39.B",
+        "description": "ED has a structured training program to ensure all staff are aware about the system"
+      },
+      {
+        "id": "OHAS.SMCS.39.C",
+        "description": "ED staff ensure patients with urgent needs are provided with appropriate care on timely manner."
+      },
+      {
+        "id": "OHAS.SMCS.39.D",
+        "description": "There is a  regular quality audit system to  monitor the right implementation of triaging system, such as under triage and over triage are promptly addressed and corrected."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.40",
+    "standardId": "OHAS.SMCS.40",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Emergency department laboratory and imaging tests are completed and results are communicated on a timely manner.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.40.A",
+        "description": "ED has laboratory and radiology diagnostic services available all days and times."
+      },
+      {
+        "id": "OHAS.SMCS.40.B",
+        "description": "Laboratory and diagnostic imaging results are available to the ED staff within identified timeframe."
+      },
+      {
+        "id": "OHAS.SMCS.40.C",
+        "description": "There is regular scheduled audit to ensure investigation results are communicated on time to ensure appropriate, timely patient management."
+      },
+      {
+        "id": "OHAS.SMCS.41.A",
+        "description": "There is a clear written guide for the Redirection process"
+      },
+      {
+        "id": "OHAS.SMCS.41.B",
+        "description": "Staff are educated on patient Redirection"
+      },
+      {
+        "id": "OHAS.SMCS.41.C",
+        "description": "Redirection is done for low acuity patients (triage levels 4 and 5 only)"
+      },
+      {
+        "id": "OHAS.SMCS.41.D",
+        "description": "There is a process to regularly review patient redirection"
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.42",
+    "standardId": "OHAS.SMCS.42",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "ED has written scheduling guide for emergency physicians and nurses.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.42.A",
+        "description": "ED has duty roster for clinical staff (doctors and nurses), as per the institution policy for each team, covering number of hours, number of shifts, on-call, annual leave plan, training activities schedule, approved by head of department."
+      },
+      {
+        "id": "OHAS.SMCS.42.B",
+        "description": "There are clockwise shift rotation patterns (mornings, afternoons, nights)."
+      },
+      {
+        "id": "OHAS.SMCS.42.C",
+        "description": "The staff schedule is easily accessible to all ED staff"
+      },
+      {
+        "id": "OHAS.SMCS.42.D",
+        "description": "There is a minimum of 10 hours between finishing and resuming clinical duties."
+      },
+      {
+        "id": "OHAS.SMCS.42.E",
+        "description": "Leadership conducts regular random audit to assess compliance with the duty roster guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.42.F",
+        "description": "There are regular 48-hour minimum periods off work with no less than a total of 60 hours per fortnight."
+      },
+      {
+        "id": "OHAS.SMCS.42.G",
+        "description": "On-call is limited to no more than two overnight on-calls per seven days with neither being consecutive."
+      },
+      {
+        "id": "OHAS.SMCS.42.H",
+        "description": "There is a proper skill mix staffing for each shift as per ED needs."
+      },
+      {
+        "id": "OHAS.SMCS.42.I",
+        "description": "There is provision for adequate annual leave, conference leave and professional development leave."
+      },
+      {
+        "id": "OHAS.SMCS.42.J",
+        "description": "There is a regular predefined schedule to monitor the compliance to the policy."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.43",
+    "standardId": "OHAS.SMCS.43",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a Clinical Pharmacist available to attend the ED during each shift.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.43.A",
+        "description": "The hospital has a qualified (by education, and experience) clinical pharmacist to cover the ED."
+      },
+      {
+        "id": "OHAS.SMCS.43.B",
+        "description": "The clinical pharmacist is available to respond to calls from the ED during peak volume hours, 24 hours a day."
+      },
+      {
+        "id": "OHAS.SMCS.43.C",
+        "description": "The clinical pharmacist has a clear job description in the ED"
+      },
+      {
+        "id": "OHAS.SMCS.43.D",
+        "description": "The clinical pharmacist is part of a multidisciplinary team."
+      },
+      {
+        "id": "OHAS.SMCS.44.A",
+        "description": "The ED has a set of key quality indicators to monitor and report on regular basis, including but is not limited to: ER Triage to physician time, average length of stay of patients, etc."
+      },
+      {
+        "id": "OHAS.SMCS.44.B",
+        "description": "These quality indicators are well known by all ED staff."
+      },
+      {
+        "id": "OHAS.SMCS.43.C",
+        "description": "ED conducts audit to assess performance on a regular predetermined interval, and set plan of actions accordingly."
+      }
+    ],
+    "category": "Emergency Department"
+  },
+  {
+    "id": "OHAS.SMCS.45",
+    "standardId": "OHAS.SMCS.45",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Nursing department maintains a current scope of practice for the Nursing department.",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.45.A",
+        "description": "There is a written scope of practice for each nursing specialty that is approved and signed by the director/ head of nursing and directorate of nursing Affairs."
+      },
+      {
+        "id": "OHAS.SMCS.45.B",
+        "description": "Each nursing specialty desired education, skills, knowledge and other requirement is defined in the scope of practice document."
+      },
+      {
+        "id": "OHAS.SMCS.45.C",
+        "description": "Each unit has a head nurse/nurse manager with the required nursing and managerial experience, and a clear scope of practice"
+      },
+      {
+        "id": "OHAS.SMCS.45.D",
+        "description": "Each staff nurse’s specific responsibilities are defined in the current scope of practice."
+      },
+      {
+        "id": "OHAS.SMCS.45.E",
+        "description": "All nurses are aware about their scope of practice."
+      },
+      {
+        "id": "OHAS.SMCS.45.F",
+        "description": "Nursing staff are allocated according to skill level and appropriate qualifications and specialties."
+      },
+      {
+        "id": "OHAS.SMCS.45.G",
+        "description": "Nurse leaders conduct periodic review to ensure that nursing services are provided by registered nurses in accordance with their license and scope of practice."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.46",
+    "standardId": "OHAS.SMCS.46",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The nursing department has essential policies and procedures available, to guide the nursing practice.",
+    "criticality": "High",
+    "totalMeasures": 20,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.46.A",
+        "description": "The nursing department has documented policies and procedures manuals for all activities of the nursing services that are approved and signed by nursing directors/ head of nursing, updated every three years.  These policies include but not limited to the following"
+      },
+      {
+        "id": "OHAS.SMCS.46.B",
+        "description": "Department nurse leaders ensure that the policies are available and current (updated within 3 years and approved by nursing director), and accessible to all nursing unit."
+      },
+      {
+        "id": "OHAS.SMCS.46.C",
+        "description": "All nurses are aware and oriented about the above listed policies."
+      },
+      {
+        "id": "OHAS.SMCS.46.D",
+        "description": "The nursing department performs essential monitoring to assess compliance to the nursing policies."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.47",
+    "standardId": "OHAS.SMCS.47",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The nursing department maintains effective communication process among all levels of nursing.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.47.A",
+        "description": "Nursing department has clear process directing nursing team on channels of communication among all levels. These guidelines are in alignments with the hospital communication processes."
+      },
+      {
+        "id": "OHAS.SMCS.47.B",
+        "description": "There is a regular nursing leaders/management meeting with meeting minutes."
+      },
+      {
+        "id": "OHAS.SMCS.47.C",
+        "description": "There is evidence of regular nursing department meetings, and it is reflected in the meeting minutes. The meeting minutes are shared with all nursing staff."
+      },
+      {
+        "id": "OHAS.SMCS.47.D",
+        "description": "The nursing team has a system to monitor and review the implementation of effective communication. This could be done through staff feedback, satisfaction survey etc."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.48",
+    "standardId": "OHAS.SMCS.48",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The nursing department has updated Staff work schedule (roster) system.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.48.A",
+        "description": "There is a detailed nursing scheduling policy that covers including"
+      },
+      {
+        "id": "OHAS.SMCS.48.B",
+        "description": "All nursing units have work schedule updated as per the institution policy, displayed to all unit staff"
+      },
+      {
+        "id": "OHAS.SMCS.48.C",
+        "description": "There is a proper skill mix staffing for each shift as per unit needs."
+      },
+      {
+        "id": "OHAS.SMCS.48.D",
+        "description": "The nursing department leaders conduct regular audit to monitor the compliance to the policy."
+      },
+      {
+        "id": "OHAS.SMCS.49.A",
+        "description": "The nursing department has clear written policy to guide the nursing care plan process."
+      },
+      {
+        "id": "OHAS.SMCS.49.B",
+        "description": "There is comprehensive nursing assessment conducted for each patient upon admission, which identifies nursing care needs for each patient using standardized assessments tools, includes:"
+      },
+      {
+        "id": "OHAS.SMCS.49.C",
+        "description": "There is an individualized documented nursing care plan developed for each patient according to nursing assessment, which is consistent with the medical plan."
+      },
+      {
+        "id": "OHAS.SMCS.49.D",
+        "description": "Patients with specific needs (elderly, bedridden, handicapped, etc.) are assessed for level of activity/ dependency."
+      },
+      {
+        "id": "OHAS.SMCS.49.E",
+        "description": "Patient fundamental of care needs is planned, and provided according to their needs.  E.g., feeding, drinking, mobilization, pain, skincare, hygiene."
+      },
+      {
+        "id": "OHAS.SMCS.49.F",
+        "description": "The nursing staff perform reassessment and review the nursing care plan every shift, or upon any changes in patients’ condition and change in treatment."
+      },
+      {
+        "id": "OHAS.SMCS.49.G",
+        "description": "The nursing assessment and plan of care is documented in patients’ medical file."
+      },
+      {
+        "id": "OHAS.SMCS.49.H",
+        "description": "There is a regular monitoring process to ensure patients’ care plans are implemented and documented as per the policy."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.50",
+    "standardId": "OHAS.SMCS.50",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital implements a process for effective identification, and management of patients who are at falling risk (CSS).",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.50.A",
+        "description": "The hospital has a clear policy for effective identification, assessment, and management of  patient at risk of fall, and management of patients after fall incidence."
+      },
+      {
+        "id": "OHAS.SMCS.50.B",
+        "description": "All concerned staff are oriented on the fall prevention policy and the assessment tool ."
+      },
+      {
+        "id": "OHAS.SMCS.50.C",
+        "description": "Hospital leaders ensure that resources are available for implementation of fall prevention policy."
+      },
+      {
+        "id": "OHAS.SMCS.50.D",
+        "description": "Nursing team follow fall risk assessment for all patients at the point of access to determine their risk for falling across the hospital premises, when patient move from one unit to another, when patients’ condition changes, using validated fall risk assessment tool ."
+      },
+      {
+        "id": "OHAS.SMCS.50.E",
+        "description": "Interventions for fall prevention are implemented based on assessment score."
+      },
+      {
+        "id": "OHAS.SMCS.50.F",
+        "description": "Patient assessment and interventions, patient and family teaching are documented on patient electronic record and communicated among nursing team and other healthcare providers."
+      },
+      {
+        "id": "OHAS.SMCS.50.G",
+        "description": "Departments’ heads conduct regular audits to assess compliance to the fall prevention policy and related scales."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.51",
+    "standardId": "OHAS.SMCS.51",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital implements a process for effective identification and management of patients who are at risk for pressure ulcers (CSS).",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.51.A",
+        "description": "The hospital has written policies and procedures to guide proper identification, assessment, and management of patients at risk develop a pressure ulcer."
+      },
+      {
+        "id": "OHAS.SMCS.51.F",
+        "description": "Patient assessment and interventions, patient and family teaching are documented on patient electronic record and communicated among nursing team and other healthcare providers."
+      },
+      {
+        "id": "OHAS.SMCS.51.G",
+        "description": "The is regular audit to assess compliance with the pressure ulcer prevention and management policy and related scales."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.52",
+    "standardId": "OHAS.SMCS.52",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Nursing team implements and maintains a standrdized nursing documentation process for every patient.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.52.A",
+        "description": "The nursing department has a comprehensive nursing documentation policy (assessment, treatment and response to treatment, the use of one approved language for documentation, etc."
+      },
+      {
+        "id": "OHAS.SMCS.52.B",
+        "description": "The nursing department conducts structured training program on nursing documentation."
+      },
+      {
+        "id": "OHAS.SMCS.52.C",
+        "description": "All nurses are oriented about any updates on nursing documentation."
+      },
+      {
+        "id": "OHAS.SMCS.52.D",
+        "description": "The hospital follows a regular system to monitor the implementation of the nursing documentation. The audit focuses on the timeliness, completeness, and legibility of nurses’ documentation."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.53",
+    "standardId": "OHAS.SMCS.53",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Hospital has a process in using restraints safely.",
+    "criticality": "High",
+    "totalMeasures": 16,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.53.A",
+        "description": "The hospital implements policies and procedures that guide the care of patients on restraints, which clearly explains:"
+      },
+      {
+        "id": "OHAS.SMCS.53.B",
+        "description": "Nursing department leaders ensure that nursing staff are trained and competent on the use of restraints."
+      },
+      {
+        "id": "OHAS.SMCS.53.C",
+        "description": "The restraints are only applied with an order by treating physician who clearly orders with restrain type to use, the time limits the restraints will be used."
+      },
+      {
+        "id": "OHAS.SMCS.53.D",
+        "description": "The restraints order is renewed every 24 hours."
+      },
+      {
+        "id": "OHAS.SMCS.53.E",
+        "description": "The nurses preserve and protect patient’s dignity during the use of restraints."
+      },
+      {
+        "id": "OHAS.SMCS.53.F",
+        "description": "Nurses conduct assessment prior restraints application, reassessment during the restraints usage until restraints is removed. Patient is assessed frequently (at least hourly and as required)."
+      },
+      {
+        "id": "OHAS.SMCS.53.G",
+        "description": "The team ensures to inform and involve the patient/ or family the decision of applying restraints."
+      },
+      {
+        "id": "OHAS.SMCS.53.H",
+        "description": "Nurses documents all assessment, reassessment, orders, actions and interventions appropriately in patient electronic records.  Nursing documentation include the following"
+      },
+      {
+        "id": "OHAS.SMCS.53.I",
+        "description": "The nurse leaders conduct audits to monitor the safe implementation of and compliance toward the restrains policy."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.54",
+    "standardId": "OHAS.SMCS.54",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The nursing department implements various approaches to enhance Rest and Comfort to patients while receiving the health care service",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.54.A",
+        "description": "The nursing department implements and maintains various mechanisms to enhance rest and comfort for the patient."
+      },
+      {
+        "id": "OHAS.SMCS.54.B",
+        "description": "Each department nurse leader ensures that nurses are oriented on the best strategies to maintain patient rest and comfort."
+      },
+      {
+        "id": "OHAS.SMCS.54.C",
+        "description": "Patients with specific needs are assessed regularly to meet their needs."
+      },
+      {
+        "id": "OHAS.SMCS.54.D",
+        "description": "There is a process to monitor the application of patient rest and comfort measures, and patients are assessed regularly."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.55",
+    "standardId": "OHAS.SMCS.55",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The nursing department leaders implement various approaches to maintain  competency of nursing staff.",
+    "criticality": "High",
+    "totalMeasures": 22,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.55.A",
+        "description": "The nursing department has a structured orientation program for all new nursing staff that is in alignment with the hospital orientation program, with a general orientation checklist."
+      },
+      {
+        "id": "OHAS.SMCS.55.B",
+        "description": "The nursing department follow a structured approach to promote the competency of nursing staff in various specialties, including nursing clinical education and update programs for each specialty, mandatory training as per specialty, continuous monitoring, through clinical competency, etc."
+      },
+      {
+        "id": "OHAS.SMCS.55.F",
+        "description": "Each Nursing unit has specific competency assessment tools to monitor staff performance in the unit procedures."
+      },
+      {
+        "id": "OHAS.SMCS.55.G",
+        "description": "Nursing competencies are assessed and monitored regularly as per specialty and institutional needs, using different methods such as competency checklist, demonstration, written tests, feedback form supervisors and peers, etc."
+      },
+      {
+        "id": "OHAS.SMCS.55.H",
+        "description": "Assessment of nursing competencies includes but not is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.55.I",
+        "description": "The staff progress report and any actions taken are documented in the staff files."
+      },
+      {
+        "id": "OHAS.SMCS.55.J",
+        "description": "There is a regular follow up from nursing leadership to assess effective monitoring of staff competence."
+      }
+    ],
+    "category": "Nursing"
+  },
+  {
+    "id": "OHAS.SMCS.56",
+    "standardId": "OHAS.SMCS.56",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital a system to guide patient acceptance into the operation room",
+    "criticality": "High",
+    "totalMeasures": 18,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.56.A",
+        "description": "The hospital has policies and procedures to guide acceptance of patients into operation rooms, including but is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.56.B",
+        "description": "The polices are developed by OT multidisciplinary teams including surgeons, nurses, anesthesia, and approved by head of the department."
+      },
+      {
+        "id": "OHAS.SMCS.56.C",
+        "description": "There is regular quality audit to ensure compliance to the policy."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.57",
+    "standardId": "OHAS.SMCS.57",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Operation Theater has standardized pre-operative Checklist for safe surgery.",
+    "criticality": "High",
+    "totalMeasures": 16,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.57.A",
+        "description": "The hospital has a pre-operative checklist that is completed and singed by a nurse, which includes:  pre-operative checklist at least includes:"
+      },
+      {
+        "id": "OHAS.SMCS.57.B",
+        "description": "All department concerned staff are oriented and trained on their responsibilities toward the pre-operative procedures and checklist."
+      },
+      {
+        "id": "OHAS.SMCS.57.C",
+        "description": "A standardized communication process is used for handing over patient to Operation Theatre."
+      },
+      {
+        "id": "OHAS.SMCS.57.D",
+        "description": "Department leaders ensure that all staff are oriented and competent on using the per-op checklist."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.58",
+    "standardId": "OHAS.SMCS.58",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Operation Theatre has a guideline for surgical list management.",
+    "criticality": "High",
+    "totalMeasures": 17,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.58.A",
+        "description": "The hospital has clear guidelines for scheduling and cancellation of elective, day care and emergency cases."
+      },
+      {
+        "id": "OHAS.SMCS.58.B",
+        "description": "All concerned staff are aware of these guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.58.C",
+        "description": "Required information for scheduling a surgical procedure include the following"
+      },
+      {
+        "id": "OHAS.SMCS.58.D",
+        "description": "Surgical waiting lists are regularly monitored and updated, and clients are kept informed about the anticipated date of their scheduled procedure."
+      },
+      {
+        "id": "OHAS.SMCS.58.E",
+        "description": "The operation Theatre follows performance indicators to monitor Theatre utilization at least include:"
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.59",
+    "standardId": "OHAS.SMCS.59",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "All operating Theatres apply evidenced-based surgical safety checklist for all the patients.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.59.A",
+        "description": "The hospital has a standardized surgical safety checklist strategy."
+      },
+      {
+        "id": "OHAS.SMCS.59.B",
+        "description": "Hospital staffs are trained on implementing surgical safety checklist."
+      },
+      {
+        "id": "OHAS.SMCS.59.C",
+        "description": "Surgical safety checklist is used for every patient undergoing surgical procedure"
+      },
+      {
+        "id": "OHAS.SMCS.59.D",
+        "description": "There is regular audit conducted to ensure proper implementation"
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.60",
+    "standardId": "OHAS.SMCS.60",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a process to prevent Wrong-patient, Wrong surgery/ procedure, and Wrong-site.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.60.A",
+        "description": "The hospital implements a clear standardized process to prevent wrong patients, wrong sites, and wrong surgery/ procedure for all invasive procedures performed in any operating/ procedure rooms. The process covers three phases: verification, site marking, and time out."
+      },
+      {
+        "id": "OHAS.SMCS.60.B",
+        "description": "The verification of patient information as per the pre-operative checklist includes checking the identity of the patient, completing a consent form appropriate to the type of the procedure, description for the surgical procedure, laboratory or radiology image results."
+      },
+      {
+        "id": "OHAS.SMCS.60.C",
+        "description": "The team use consistent marking process for all invasive and surgical procedure sites throughout the hospital."
+      },
+      {
+        "id": "OHAS.SMCS.60.D",
+        "description": "The procedure/ surgical site is marked by the healthcare staff that will perform the procedure."
+      },
+      {
+        "id": "OHAS.SMCS.60.E",
+        "description": "The patient is involved in the marking process."
+      },
+      {
+        "id": "OHAS.SMCS.60.F",
+        "description": "The time-out process is implemented is just before the procedure/surgery is initiated, to ensure the correct site, correct procedure/ surgery, and correct patient surgery."
+      },
+      {
+        "id": "OHAS.SMCS.60.G",
+        "description": "All the surgical/ procedure teams use active communication process during the time out, to agree on the correct patient identity, correct procedure/surgery to be performed, correct site."
+      },
+      {
+        "id": "OHAS.SMCS.60.H",
+        "description": "All the process is documented in patient medical records."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.61",
+    "standardId": "OHAS.SMCS.61",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Hospital has clear documented policies and procedures to direct the care in the operating Theatre.",
+    "criticality": "High",
+    "totalMeasures": 18,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.61.A",
+        "description": "Hospital operating room has policies and procedures that guide the care of patients that include, but is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.61.D",
+        "description": "There is regular audit and monitor the compliance to the policies."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.62",
+    "standardId": "OHAS.SMCS.62",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Operation Theatre has a standardized process to prevent accidental retention of instruments and sponges in the surgical wound.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.62.A",
+        "description": "The hospital implements clear guidelines for surgical count."
+      },
+      {
+        "id": "OHAS.SMCS.62.B",
+        "description": "The hospital had a develop process and implements to prevent inattentive retention of instrument or sponges in surgical wound."
+      },
+      {
+        "id": "OHAS.SMCS.62.C",
+        "description": "The count process includes items used during surgery such as instrument, sponges, sharps, and other as applicable."
+      },
+      {
+        "id": "OHAS.SMCS.62.D",
+        "description": "The policy addresses the procedure to follow in case of a count inconsistency."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.62",
+    "standardId": "OHAS.SMCS.62",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The count process is standardized.",
+    "criticality": "Medium",
+    "totalMeasures": 0,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.62.F",
+        "description": "The count process is clearly documented in the count sheet."
+      },
+      {
+        "id": "OHAS.SMCS.62.G",
+        "description": "All staff in OT are trained on the guidelines for surgical count."
+      },
+      {
+        "id": "OHAS.SMCS.62.H",
+        "description": "There is regular audit and monitor the compliance"
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.63",
+    "standardId": "OHAS.SMCS.63",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Operation Theatre implements process for collecting, safe handling, and dispatch of specimens.",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.63.A",
+        "description": "The OT has clear written guidelines that guide proper, safe handling of specimens."
+      },
+      {
+        "id": "OHAS.SMCS.63.B",
+        "description": "All staff are oriented with the guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.63.C",
+        "description": "The hospital has a protocol to deal with mislabeling errors or loss of specimens."
+      },
+      {
+        "id": "OHAS.SMCS.63.D",
+        "description": "There is recipient notification when the specimen reaches the intended study lab."
+      },
+      {
+        "id": "OHAS.SMCS.63.E",
+        "description": "There is regular audit conducted to monitor compliance to the guideline."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.64",
+    "standardId": "OHAS.SMCS.64",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Post-operative report is documented immediately after surgery.",
+    "criticality": "High",
+    "totalMeasures": 11,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.64.A",
+        "description": "There is always documented operative report about the surgery that covers the following:"
+      },
+      {
+        "id": "OHAS.SMCS.64.B",
+        "description": "The operative report is completed by responsible surgeon before patient leaves the recovery room to facilitate continuity for patient care"
+      },
+      {
+        "id": "OHAS.SMCS.64.C",
+        "description": "The report is signed by the surgeon who performed the surgery."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.65",
+    "standardId": "OHAS.SMCS.65",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Each patient has individual post-operative care plan, and continuously monitored and managed.",
+    "criticality": "High",
+    "totalMeasures": 15,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.65.A",
+        "description": "Operation Theatre has implemented guidelines for post-operative care starting from recovery room, to the ward"
+      },
+      {
+        "id": "OHAS.SMCS.65.B",
+        "description": "Patient has clear post-operative plan, written by the surgeon responsible. The plan may include:"
+      },
+      {
+        "id": "OHAS.SMCS.65.C",
+        "description": "In recovery room, patient is properly monitored for sedation, bleeding, any other complications, before moving to recommended unit."
+      },
+      {
+        "id": "OHAS.SMCS.65.D",
+        "description": "Patient is assessed for pain is assessed by the most responsible physician, and provided with adequate pain relief"
+      },
+      {
+        "id": "OHAS.SMCS.65.E",
+        "description": "Patient is assessed and reassessed at agreed intervals applicable to patient’s condition"
+      },
+      {
+        "id": "OHAS.SMCS.65.F",
+        "description": "The treating team documents all information, interventions and recommendation in the patient’s medical record"
+      },
+      {
+        "id": "OHAS.SMCS.65.G",
+        "description": "Regular audit is conducted to compliance to the guideline, and documentations."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.66",
+    "standardId": "OHAS.SMCS.66",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Operation Theatre has clear process to ensure patient is discharged safely from operation room.",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.66.A",
+        "description": "The OT has written guideline with clear criteria for the discharge or transfer of patients from recovery room or post-anaesthesia unit."
+      },
+      {
+        "id": "OHAS.SMCS.66.B",
+        "description": "All the recovery room or PACU staff are familiar with the guide"
+      },
+      {
+        "id": "OHAS.SMCS.66.C",
+        "description": "Patients are discharged when they meet discharge criteria"
+      },
+      {
+        "id": "OHAS.SMCS.66.D",
+        "description": "Patients are discharged by qualified anesthesiologists."
+      },
+      {
+        "id": "OHAS.SMCS.66.E",
+        "description": "Patient's  condition is communicated with receiving area before transferring the patient"
+      },
+      {
+        "id": "OHAS.SMCS.66.F",
+        "description": "OT nurses prepare all equipment and devices required for patient transfer."
+      },
+      {
+        "id": "OHAS.SMCS.66.G",
+        "description": "A summary of the patient’s care and follow up is documented in the patient’s record"
+      },
+      {
+        "id": "OHAS.SMCS.67.A",
+        "description": "The operation Theatre has a specific orientation program and training for all newly joining nursing staff, with a written orientation checklist. The program alligns with the hospital generic orientation program."
+      },
+      {
+        "id": "OHAS.SMCS.67.B",
+        "description": "All unit nursing staff receive required training and education on operation theatre, including but not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.67.C",
+        "description": "The unit has an annual training plan to ensure proper coverage of the staff in different courses."
+      },
+      {
+        "id": "OHAS.SMCS.67.D",
+        "description": "The staff performance is monitored through a competency checklist."
+      },
+      {
+        "id": "OHAS.SMCS.67.E",
+        "description": "The staff competency assessment is documented and kept in the staff's file."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.68",
+    "standardId": "OHAS.SMCS.68",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a standardized operating theatre design.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.68.A",
+        "description": "The operation Theatre has a standardized design that includes a reception area, operation Theatre suites according to the scope of service and needs for the hospital), a recovery bay for post-operative patients, with provisions for other special rooms required."
+      },
+      {
+        "id": "OHAS.SMCS.68.B",
+        "description": "The department has three levels of access that include unrestricted, restricted and semi restricted area."
+      },
+      {
+        "id": "OHAS.SMCS.68.C",
+        "description": "The department has standardized operating rooms that include standardized ventilation system and basic equipment / machines."
+      },
+      {
+        "id": "OHAS.SMCS.68.D",
+        "description": "All corridors are kept free of any materials to ensure free patient flow at all times."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.69",
+    "standardId": "OHAS.SMCS.69",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Operation Theatre strictly follows and supervises infection control and prevention standards.",
+    "criticality": "High",
+    "totalMeasures": 11,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.69.A",
+        "description": "The Operation Theatre follows hospital infection control and prevention guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.69.B",
+        "description": "All OT staff are well trained and oriented to the infection control guidelines applied to OT."
+      },
+      {
+        "id": "OHAS.SMCS.69.C",
+        "description": "The operation Theatre is always maintained clean all the time"
+      },
+      {
+        "id": "OHAS.SMCS.69.D",
+        "description": "Standard precautions are strictly followed in the operating rooms with  a strict emphasis on the hand hygiene and appropriate PPEs and other barriers."
+      },
+      {
+        "id": "OHAS.SMCS.69.E",
+        "description": "There is clear guide to control traffic and movement in the operating room."
+      },
+      {
+        "id": "OHAS.SMCS.69.F",
+        "description": "The OT has positive pressure with respect to corridors."
+      },
+      {
+        "id": "OHAS.SMCS.69.G",
+        "description": "Operating room scrubs suits are only allowed inside the restricted areas of the OT."
+      },
+      {
+        "id": "OHAS.SMCS.69.H",
+        "description": "There are clear guidelines for cleaning and disinfecting operating rooms by cleaners, after each surgical procedure."
+      },
+      {
+        "id": "OHAS.SMCS.69.I",
+        "description": "There is clear guideline for cleaning and disinfecting equipment."
+      },
+      {
+        "id": "OHAS.SMCS.69.J",
+        "description": "Patients with infectious diseases are handled properly inside the operating rooms."
+      },
+      {
+        "id": "OHAS.SMCS.69.K",
+        "description": "There is regular audit to assess compliance to those guidelines."
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.70",
+    "standardId": "OHAS.SMCS.70",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Operation Theatre strictly follows hospital fire safety plan",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.70.A",
+        "description": "The OT follows hospital operating fire safety plan"
+      },
+      {
+        "id": "OHAS.SMCS.70.B",
+        "description": "All OT staff are periodically trained and oriented on the fire safety plan"
+      },
+      {
+        "id": "OHAS.SMCS.70.C",
+        "description": "The team follows proper methods or rescue and escape"
+      },
+      {
+        "id": "OHAS.SMCS.70.D",
+        "description": "There is regular fire drill where the OT staff participate"
+      },
+      {
+        "id": "OHAS.SMCS.70.E",
+        "description": "Fire-fighting equipment are available and staff trained on using it."
+      },
+      {
+        "id": "OHAS.SMCS.70.F",
+        "description": "All equipment or instruments that may cause fire or harm to patients are stored in places away from patients when are on active use"
+      }
+    ],
+    "category": "Operation Theatre"
+  },
+  {
+    "id": "OHAS.SMCS.71",
+    "standardId": "OHAS.SMCS.71",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a qualified anesthesiologists managing anaesthesia and sedation service.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.71.A",
+        "description": "The department is directed by an anesthetist who is qualified by education, training, and experience in the field of anesthesia e.g., pediatric anesthesia, cardiothoracic anesthesia, neuro anesthesia, and transplant anesthesia."
+      },
+      {
+        "id": "OHAS.SMCS.71.B",
+        "description": "There is clear job description for the head of department with clear responsibilities."
+      },
+      {
+        "id": "OHAS.SMCS.71.C",
+        "description": "The head of the anaesthesia department supervises the development and implementation of policies and procedures related to sedation and anaesthesia practice throughout the hospital."
+      },
+      {
+        "id": "OHAS.SMCS.71.D",
+        "description": "The head of the department enforces continuous quality management and risk management activities, and infection control guidelines"
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.72",
+    "standardId": "OHAS.SMCS.72",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "All anesthesia staff are qualified with appropriate qualification",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.72.A",
+        "description": "All anaesthesia team members providing anesthesia service are certified with appropriate qualifications."
+      },
+      {
+        "id": "OHAS.SMCS.72.B",
+        "description": "All major surgeries/ procedures such as paediatric surgery, cardiac, transplant, neurosurgery operations are supervised by the anesthesia consultant."
+      },
+      {
+        "id": "OHAS.SMCS.72.C",
+        "description": "Operation room has anesthetist available throughout the operation."
+      },
+      {
+        "id": "OHAS.SMCS.72.D",
+        "description": "All Medical and Nursing staff working in the anesthesia unit have essential cardiac life support certificates concerning the age group they serve including basic life support, adult cardiac life support, pediatric cardiac life support (PCLS), and Neonatal resuscitation program for pediatric anesthesia."
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.73",
+    "standardId": "OHAS.SMCS.73",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The anesthesia department has clear policies to guide the provision of anesthesia care.",
+    "criticality": "High",
+    "totalMeasures": 13,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.73.A",
+        "description": "The department has written policies and procedures that are approved by hospital management, covering but is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.73.B",
+        "description": "The department leader ensures all staff are well trained and oriented on the policies."
+      },
+      {
+        "id": "OHAS.SMCS.73.C",
+        "description": "The unit conduct audit and develops an action plan to improve the care depending on information from KPI"
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.74",
+    "standardId": "OHAS.SMCS.74",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The department has all required equipment and supplies for the provision of anaesthesia care.",
+    "criticality": "High",
+    "totalMeasures": 26,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.74.A",
+        "description": "The unit has essential a multifunctional anaesthesia machines and equipment and supplies required for anaesthesia, including"
+      },
+      {
+        "id": "OHAS.SMCS.74.B",
+        "description": "The equipment complies with the National Standards."
+      },
+      {
+        "id": "OHAS.SMCS.74.C",
+        "description": "All anesthesia machine and equipment are checked and undergo preventative maintenance regularly, with evidence of records."
+      },
+      {
+        "id": "OHAS.SMCS.74.D",
+        "description": "The unit has an access to maintain, replace and clean the equipment."
+      },
+      {
+        "id": "OHAS.SMCS.74.E",
+        "description": "The unit has designated storage area for this equipment."
+      },
+      {
+        "id": "OHAS.SMCS.74.F",
+        "description": "The unit has an access to emergency equipment."
+      },
+      {
+        "id": "OHAS.SMCS.74.G",
+        "description": "The unit has an access to indent consumables."
+      },
+      {
+        "id": "OHAS.SMCS.74.H",
+        "description": "All staff are trained on the use of the equipment, with records."
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.75",
+    "standardId": "OHAS.SMCS.75",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Patient’s anaesthesia care is planned and documented in the patient’s record",
+    "criticality": "High",
+    "totalMeasures": 17,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.75.A",
+        "description": "There is clear policy and procedures for the provision of anaesthesia care, covering, monitoring of patients during anaesthesia, post-anaesthesia care in the recovery room."
+      },
+      {
+        "id": "OHAS.SMCS.75.B",
+        "description": "Assessment is conducted before anaesthesia"
+      },
+      {
+        "id": "OHAS.SMCS.75.C",
+        "description": "The planned anaesthesia care is documented in patient’s anaesthesia record during anaesthesia covering"
+      },
+      {
+        "id": "OHAS.SMCS.75.D",
+        "description": "Qualified anaesthesiologist evaluates the patients before all electives and emergency procedures under general anaesthesia, regional anaesthesia"
+      },
+      {
+        "id": "OHAS.SMCS.75.E",
+        "description": "Each patient anaesthesia care is planned and documented in patients’ records."
+      },
+      {
+        "id": "OHAS.SMCS.75.F",
+        "description": "Patient’s physical status is continuously monitored and documented during anaesthesia."
+      },
+      {
+        "id": "OHAS.SMCS.75.G",
+        "description": "Patient assessment and monitoring finding is clearly documented."
+      },
+      {
+        "id": "OHAS.SMCS.75.H",
+        "description": "Person who administers and person monitors patients’ condition signature is maintained."
+      },
+      {
+        "id": "OHAS.SMCS.75.I",
+        "description": "When patient is transferred to recovery room, he is handed over and evaluated, and his condition status and time are documented."
+      },
+      {
+        "id": "OHAS.SMCS.75.J",
+        "description": "Post-anaesthesia patients are continuously monitored and managed in the recovery room."
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.76",
+    "standardId": "OHAS.SMCS.76",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "There is clear process to guide the care of patient going for moderate and deep sedation/ analgesia",
+    "criticality": "High",
+    "totalMeasures": 16,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.76.A",
+        "description": "The unit has clear written policies and procedures for moderate and deep anaesthesia care."
+      },
+      {
+        "id": "OHAS.SMCS.76.B",
+        "description": "All patients are evaluated and monitored before receiving any general anaesthesia, regional anesthesia, and post anaesthesia care."
+      },
+      {
+        "id": "OHAS.SMCS.76.C",
+        "description": "The physician obtains informed consent from the patient after a detailed explanation about the benefits and expected risks. Consent is signed by the patient/ or guardian."
+      },
+      {
+        "id": "OHAS.SMCS.76.D",
+        "description": "Patients undergoing surgeries/procedures under moderate and deep sedation are prepared properly."
+      },
+      {
+        "id": "OHAS.SMCS.76.E",
+        "description": "The pre-sedation assessment is done by an anaesthetist covering"
+      },
+      {
+        "id": "OHAS.SMCS.76.F",
+        "description": "Preoperative evaluation is valid for three months, unless there were changes in the clinical status of the patient."
+      },
+      {
+        "id": "OHAS.SMCS.76.G",
+        "description": "Preoperative evaluation is recorded at the patient’s chart."
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.77",
+    "standardId": "OHAS.SMCS.77",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Patient is continuously monitored during and after anaesthesia (general, moderate and deep).",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.77.A",
+        "description": "The unit has clear guide of monitoring patient during anaesthesia process (including moderate and deep anaesthesia)."
+      },
+      {
+        "id": "OHAS.SMCS.77.B",
+        "description": "The unit ensures continuous clinical monitoring of the patient by a qualified anesthesiologist throughout the conduct of general anaesthesia, regional anaesthesia until the patient until discharged from anaesthesia care."
+      },
+      {
+        "id": "OHAS.SMCS.77.C",
+        "description": "Patient with sedation is monitored in the Operation Room and in recovery covering, Vital signs, Oxygen saturation, level of consciousness, skin colour."
+      },
+      {
+        "id": "OHAS.SMCS.77.D",
+        "description": "Patient’s monitoring continues after transfer to recovery room until the patient is stable."
+      },
+      {
+        "id": "OHAS.SMCS.77.E",
+        "description": "All monitoring findings are documented in patient electronic record"
+      },
+      {
+        "id": "OHAS.SMCS.77.F",
+        "description": "Monitoring records are charted at the anaesthesia record at least every 5 minutes."
+      },
+      {
+        "id": "OHAS.SMCS.77.G",
+        "description": "The unit conducts audit to monitor the efficacy of patient care"
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.78",
+    "standardId": "OHAS.SMCS.78",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "There is a clear process to monitor and manage patients post anaesthesia",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.78.A",
+        "description": "The unit has a clear policy and procedure guiding monitoring of patient during post-aesthesia phase."
+      },
+      {
+        "id": "OHAS.SMCS.78.B",
+        "description": "All staff are oriented on the policy."
+      },
+      {
+        "id": "OHAS.SMCS.78.C",
+        "description": "Patients are transferred safely to Post Anaesthesia Care Unit (recovery room)."
+      },
+      {
+        "id": "OHAS.SMCS.78.D",
+        "description": "The patient is continuously evaluated, and managed during the transport."
+      },
+      {
+        "id": "OHAS.SMCS.78.E",
+        "description": "Patients are continuously evaluated at Post Anaesthesia Care Unit (PACU)."
+      },
+      {
+        "id": "OHAS.SMCS.78.F",
+        "description": "An ACLS Qualified nurse provides post anaesthesia care"
+      },
+      {
+        "id": "OHAS.SMCS.78.G",
+        "description": "All monitoring finding and service provided in the recovery room are documented patients’ records."
+      },
+      {
+        "id": "OHAS.SMCS.78.H",
+        "description": "Patients are discharged for PACU when discharge criteria are met."
+      },
+      {
+        "id": "OHAS.SMCS.78.I",
+        "description": "Discharge order from PACU is signed by the anaesthesiologist."
+      }
+    ],
+    "category": "Anaesthesia Care (AN)"
+  },
+  {
+    "id": "OHAS.SMCS.79",
+    "standardId": "OHAS.SMCS.79",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The ICU is well structured, and designed for the care critically ill patients..",
+    "criticality": "High",
+    "totalMeasures": 18,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.79.A",
+        "description": "The intensive care unit is controlled area with restricted access."
+      },
+      {
+        "id": "OHAS.SMCS.79.B",
+        "description": "The patients’ area is sufficient to deliver care (20 meters of floor area)."
+      },
+      {
+        "id": "OHAS.SMCS.79.C",
+        "description": "The unit has hand hygiene facilities available near each patients’ care, all access areas."
+      },
+      {
+        "id": "OHAS.SMCS.79.D",
+        "description": "The unit has facility for isolation measures."
+      },
+      {
+        "id": "OHAS.SMCS.79.E",
+        "description": "The structure of the unit ensures the availability of the followings:"
+      },
+      {
+        "id": "OHAS.SMCS.79.F",
+        "description": "The unit follows hospital infection control measures."
+      },
+      {
+        "id": "OHAS.SMCS.79.G",
+        "description": "The unit ensures the presences of natural light and window views."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.80",
+    "standardId": "OHAS.SMCS.80",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "A senior qualified consultant is assigned to supervise the intensive care unit (ICU).",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.80.A",
+        "description": "The intensive care unit is directed by qualified critical care consultant, who is qualified by education, experience and training."
+      },
+      {
+        "id": "OHAS.SMCS.80.B",
+        "description": "A consultant has minimum of 2 years’ experience as a full time intensivist."
+      },
+      {
+        "id": "OHAS.SMCS.80.C",
+        "description": "The head of ICU oversees, approves, and evaluate quality management activities in the unit."
+      },
+      {
+        "id": "OHAS.SMCS.80.D",
+        "description": "The head of ICU approves local critical care policies and protocols."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.81",
+    "standardId": "OHAS.SMCS.81",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The ICU has well trained and qualified intensive care medical and nursing staff.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.81.A",
+        "description": "The intensive care unit is covered by registered physicians, who are qualified to manage critically ill patients 24/7. These Physicians have training in intensive care (completed membership), or a senior specialist and above, or  registered Specialist who has worked under supervision of responsible physician. SMCS.78.a"
+      },
+      {
+        "id": "OHAS.SMCS.81.B",
+        "description": "The intensive care unit nurse manager is a registered nurse, who is qualified by education, training and experience in critical care practice, and undertaken leadership management training."
+      },
+      {
+        "id": "OHAS.SMCS.81.C",
+        "description": "The ICU bedside nurses are qualified and experienced in managing critically ill patients."
+      },
+      {
+        "id": "OHAS.SMCS.81.D",
+        "description": "Medical and nursing staff working in the adult intensive care unit are certified in Basic Life Support (BLS), advanced cardiac life support (ACLS), Pediatric Cardiac Life Support (PCLS)."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.82",
+    "standardId": "OHAS.SMCS.82",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The ICU implements various approaches to maintain the competency of the unit staff.",
+    "criticality": "High",
+    "totalMeasures": 11,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.82.A",
+        "description": "The unit has an orientation program and training for all newly joining nursing staff, with a written orientation checklist."
+      },
+      {
+        "id": "OHAS.SMCS.82.B",
+        "description": "All unit nursing staff receive required training and education on intensive care related cases and procedures, covering"
+      },
+      {
+        "id": "OHAS.SMCS.82.C",
+        "description": "The unit has a clinical nurse educator/ instructor, who is responsible for staff training and monitoring competency."
+      },
+      {
+        "id": "OHAS.SMCS.82.D",
+        "description": "The unit has an annual training plan to ensure a proper coverage of the staff into different courses."
+      },
+      {
+        "id": "OHAS.SMCS.82.E",
+        "description": "The staff performance is monitored using competency checklist."
+      },
+      {
+        "id": "OHAS.SMCS.82.F",
+        "description": "The staff competency assessment is documented and kept in staff’s file."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.83",
+    "standardId": "OHAS.SMCS.83",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The intensive care unit has written polices and guidelines to guide the provision of care to critically ill patients.",
+    "criticality": "High",
+    "totalMeasures": 23,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.83.A",
+        "description": "The unit has policies and procedures/ guidelines that guide the care of critical care patients including but is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.83.B",
+        "description": "All ICU medical and nursing staff are trained with policies and procedures."
+      },
+      {
+        "id": "OHAS.SMCS.83.C",
+        "description": "The ICU sets number of Key Performance Indicators (KPIs) that includes but is not limited to the followings:"
+      },
+      {
+        "id": "OHAS.SMCS.83.D",
+        "description": "The ICU conducts regular to assess compliance to policies and guidelines, and monitor KPIs."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.84",
+    "standardId": "OHAS.SMCS.84",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The unit has adequate equipment and supplies to run critical care service",
+    "criticality": "High",
+    "totalMeasures": 24,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.84.A",
+        "description": "The unit has the following equipment are available and accessible"
+      },
+      {
+        "id": "OHAS.SMCS.84.B",
+        "description": "The unit has enough isolation rooms with a negative pressure room."
+      },
+      {
+        "id": "OHAS.SMCS.84.C",
+        "description": "The unit has a system that ensures maintenance, safety and function of the equipment."
+      },
+      {
+        "id": "OHAS.SMCS.84.D",
+        "description": "The unit has designated storage area for this equipment."
+      },
+      {
+        "id": "OHAS.SMCS.84.E",
+        "description": "The unit has an access to emergency equipment."
+      },
+      {
+        "id": "OHAS.SMCS.84.F",
+        "description": "All staff are trained on the use of the equipment."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.85",
+    "standardId": "OHAS.SMCS.85",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The intensive care unit has implemented process of admission and discharge of patients.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.85.A",
+        "description": "The unit has clear written guideline with criteria of admission and discharge of patients."
+      },
+      {
+        "id": "OHAS.SMCS.85.B",
+        "description": "The written criteria for admission and discharge are collaboratively written between relevant teams and are based on patients’ physical parameters."
+      },
+      {
+        "id": "OHAS.SMCS.85.C",
+        "description": "The admission and discharge process in the ICU is coordinated between the ICU physician and the primary treating physician"
+      },
+      {
+        "id": "OHAS.SMCS.85.D",
+        "description": "There is documented handover between the unit physician and the intensive care physician"
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.86",
+    "standardId": "OHAS.SMCS.86",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Patients care in adult intensive care unit is provided by multidisciplinary team",
+    "criticality": "High",
+    "totalMeasures": 12,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.86.A",
+        "description": "The intensive care is coordinated with  different disciplines participating in the plan of care  including:"
+      },
+      {
+        "id": "OHAS.SMCS.86.B",
+        "description": "The care provided to all critical ill patients is fair and equal in ICU and outside ICU (e.g., patient on ventilator in ED)."
+      },
+      {
+        "id": "OHAS.SMCS.86.C",
+        "description": "The team communicates with the admitting and referring services"
+      },
+      {
+        "id": "OHAS.SMCS.86.D",
+        "description": "The coordinated care is between the multidisciplinary team and documented in patient medical records."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.87",
+    "standardId": "OHAS.SMCS.87",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The intensive care unit has an active Early Warning System (EWS).",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.87.A",
+        "description": "The unit has a guideline for implementing EWS process with term of reference for the team."
+      },
+      {
+        "id": "OHAS.SMCS.87.B",
+        "description": "The hospital adapts clinical guidelines that ensure implementation of the system"
+      },
+      {
+        "id": "OHAS.SMCS.87.C",
+        "description": "All staff are trained on the importance of adherence to the guide of the system and are familiar on their roles and responsibilities."
+      },
+      {
+        "id": "OHAS.SMCS.87.D",
+        "description": "The hospital provides all resources for the right implementation, EWS monitoring, and documentation of the EWS process."
+      },
+      {
+        "id": "OHAS.SMCS.87.E",
+        "description": "When patient EWS score requires an action, all steps of action done as per the guide and treatment plans are documented in patient's records."
+      },
+      {
+        "id": "OHAS.SMCS.87.F",
+        "description": "There is regular audit conducted to ensure the compliance to the guideline and its procedures."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.88",
+    "standardId": "OHAS.SMCS.88",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The intensive Care unit strictly follows and supervises infection control and prevention standards.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.88.A",
+        "description": "The intensive Care unit follows hospital infection control and prevention guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.88.B",
+        "description": "All intensive Care unit staff are well trained and oriented to the infection control guidelines applied to the unit. The unit allocate champion to monitor infection within the unit."
+      },
+      {
+        "id": "OHAS.SMCS.88.C",
+        "description": "The intensive Care unit is maintained clean and disinfected."
+      },
+      {
+        "id": "OHAS.SMCS.88.D",
+        "description": "Standard precautions are strictly followed in the intensive Care unit with strict emphasis on the hand hygiene and appropriate PPEs and other barriers."
+      },
+      {
+        "id": "OHAS.SMCS.88.E",
+        "description": "All intensive care unit equipment and rooms are clean and disinfected as per the guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.88.F",
+        "description": "Intensive Care unit scrub suits are only allowed inside the restricted areas of the unit."
+      },
+      {
+        "id": "OHAS.SMCS.88.G",
+        "description": "There is clear guideline on management, and proper handling of patients with infectious diseases."
+      },
+      {
+        "id": "OHAS.SMCS.88.H",
+        "description": "There is regular audit to assess compliance to those policies."
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.89",
+    "standardId": "OHAS.SMCS.89",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The unit has a system in place that ensures safe medication practice",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.89.A",
+        "description": "The unit follows hospital policy of safe medication management (obtaining, prescribing, preparing, recording, handling, storing, securing, dispensing, safe administration and disposal of drug"
+      },
+      {
+        "id": "OHAS.SMCS.89.B",
+        "description": "The unit has safe place for medication preparation."
+      },
+      {
+        "id": "OHAS.SMCS.89.C",
+        "description": "The unit   staff are oriented and updated and trained about their roles in medication practice"
+      },
+      {
+        "id": "OHAS.SMCS.89.D",
+        "description": "The unit follows high alert  and LASA medications policy."
+      },
+      {
+        "id": "OHAS.SMCS.89.E",
+        "description": "The unit has a clinical pharmacist."
+      },
+      {
+        "id": "OHAS.SMCS.89.F",
+        "description": "The unit audits staff compliance to the policy to ensure safe medication practice"
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.90",
+    "standardId": "OHAS.SMCS.90",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The unit ensures provision of proper and adequate nutritional support for critically ill patients.",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.90.A",
+        "description": "The unit has access to clinical dietitian who is experienced in critical care nutritional support"
+      },
+      {
+        "id": "OHAS.SMCS.87.B",
+        "description": "There is a guideline for initiation of feeding (oral, enteral or parenteral)."
+      },
+      {
+        "id": "OHAS.SMCS.90.C",
+        "description": "The unit has access for parenteral nutrition 24/7."
+      },
+      {
+        "id": "OHAS.SMCS.90.D",
+        "description": "Patients’ nutritional needs are daily evaluated"
+      },
+      {
+        "id": "OHAS.SMCS.90.E",
+        "description": "Nurses attend training of Enteral Nutrition infusion"
+      }
+    ],
+    "category": "Critical Care"
+  },
+  {
+    "id": "OHAS.SMCS.91",
+    "standardId": "OHAS.SMCS.91",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "A senior qualified physician (Neonatologist/pediatrician) is assigned to manage the Neonatal Intensive Care Unit (NICU).",
+    "criticality": "Medium",
+    "totalMeasures": 3,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.91.A",
+        "description": "A consultant neonatologist/pediatrician is assigned to lead the NICU, who is qualified by education, experience and training."
+      },
+      {
+        "id": "OHAS.SMCS.91.B",
+        "description": "The unit leader takes the responsibility for the management overall care of the unit."
+      },
+      {
+        "id": "OHAS.SMCS.91.C",
+        "description": "The hospital ensures that senior competent staff (neonatologist/pediatrician) is on call all times to be approached for any concerns related to the NICU."
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.92",
+    "standardId": "OHAS.SMCS.92",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The NICU has well trained, qualified, and competent medical, nursing staff, and supportive staff.",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.92.A",
+        "description": "The NICU is covered by a registered qualified pediatrician/ Neonatal intensive care physician twenty-four hours a day, seven days a week (24hrs/7days)."
+      },
+      {
+        "id": "OHAS.SMCS.92.B",
+        "description": "The NICU nurse manager is qualified by education, experience in the intensive care."
+      },
+      {
+        "id": "OHAS.SMCS.92.C",
+        "description": "The unit bedside nurses are qualified and experienced in managing neonatal intensive care babies."
+      },
+      {
+        "id": "OHAS.SMCS.92.D",
+        "description": "Medical and nursing staff working in the NICU unit are certified in Pediatric Cardiac Life Support (PCLS), and neonatal resuscitation program (NRP)."
+      },
+      {
+        "id": "OHAS.SMCS.92.E",
+        "description": "The unit ensures the availability of multidisciplinary services with skilled and trained staff in different areas such clinical dietitians, occupational therapists, physiotherapists, speech and language therapists, respiratory therapist, and pharmacists."
+      },
+      {
+        "id": "OHAS.SMCS.92.E",
+        "description": "The hospital ensures that NICU monitors and maintains an appropriate number of staff of all levels."
+      },
+      {
+        "id": "OHAS.SMCS.92.F",
+        "description": "NICU leadership monitors competency levels of the staff (doctors, nurses and respiratory therapists), using competency checklist for each team."
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.93",
+    "standardId": "OHAS.SMCS.93",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Neonatal ICU has evidence-based clinical policies, procedures, and guidelines to guide the provision of care for new-born.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.93.A",
+        "description": "The unit has current/updated written policies and procedure, written by qualified NICU team, and approved by head of department.  These policies and procedures include but are not limited tothe following:"
+      },
+      {
+        "id": "OHAS.SMCS.93.B",
+        "description": "The NICU has current evidence based clinical guidelines to deal with and manage different and specific conditions."
+      },
+      {
+        "id": "OHAS.SMCS.93.C",
+        "description": "All unit staff are oriented and trained on the guidelines and polices."
+      },
+      {
+        "id": "OHAS.SMCS.93.D",
+        "description": "Unit leadership conducts audits, reviews, and updates the guidelines regularly."
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.94",
+    "standardId": "OHAS.SMCS.94",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The NICU has adequate supplies equipment, and structure to run critical care service for new-born.",
+    "criticality": "High",
+    "totalMeasures": 13,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.94.A",
+        "description": "The NICU has the following equipment are available and accessible  including"
+      },
+      {
+        "id": "OHAS.SMCS.94.B",
+        "description": "The unit has enough isolation rooms with all required supply, and negative pressure."
+      },
+      {
+        "id": "OHAS.SMCS.94.C",
+        "description": "The unit has designated storage area for equipment."
+      },
+      {
+        "id": "OHAS.SMCS.94.D",
+        "description": "The unit has an access to emergency equipment"
+      },
+      {
+        "id": "OHAS.SMCS.94.E",
+        "description": "All staff are trained on the use of the equipment"
+      },
+      {
+        "id": "OHAS.SMCS.94.F",
+        "description": "Equipment is disinfected and cleaned on daily based as required"
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.95",
+    "standardId": "OHAS.SMCS.95",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The NICU strictly implements and maintains and supervises infection control prevention practice.",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.95.A",
+        "description": "The NICU strictly follows and implements hospital infection control and prevention guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.95.B",
+        "description": "The NICU environment is maintained clean and disinfected all times."
+      },
+      {
+        "id": "OHAS.SMCS.95.C",
+        "description": "All unit staff are well trained and oriented to the infection control guidelines applied to the unit. The unit allocates champion to monitor infection control practice."
+      },
+      {
+        "id": "OHAS.SMCS.95.D",
+        "description": "Standard precautions are strictly followed in the NICU, with strict emphasis on the hand hygiene and appropriate PPEs and other barriers."
+      },
+      {
+        "id": "OHAS.SMCS.95.E",
+        "description": "There is regular audit to assess compliance to ICP guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.95.F",
+        "description": "Unit rooms, equipment, and ventilators is cleaned and disinfected as per the ICP guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.95.G",
+        "description": "The unit scrubs suits are only allowed inside the restricted areas of the unit."
+      },
+      {
+        "id": "OHAS.SMCS.95.H",
+        "description": "There is clear guideline on management, and proper handling of patients with infectious diseases."
+      },
+      {
+        "id": "OHAS.SMCS.95.I",
+        "description": "Patients with infectious diseases are isolated in rooms with appropriate pressure."
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.96",
+    "standardId": "OHAS.SMCS.96",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The NICU implements various approaches to maintain competency of the unit staff.",
+    "criticality": "High",
+    "totalMeasures": 15,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.96.A",
+        "description": "The unit has a structured orientation program and training for all newly joining nursing staff, with a written orientation checklist."
+      },
+      {
+        "id": "OHAS.SMCS.96.B",
+        "description": "All unit nursing staff receive required training and education on intensive care related cases and procedures, covering:"
+      },
+      {
+        "id": "OHAS.SMCS.96.C",
+        "description": "The unit has a clinical nurse educator/ instructor, responsible about staff training and competency."
+      },
+      {
+        "id": "OHAS.SMCS.96.D",
+        "description": "The unit has an annual training plan to ensure a proper coverage of the staff into different courses."
+      },
+      {
+        "id": "OHAS.SMCS.96.E",
+        "description": "The staff performance is monitored through competency checklist"
+      },
+      {
+        "id": "OHAS.SMCS.96.F",
+        "description": "The staff competency assessment is documented and kept in staff personal file"
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.97",
+    "standardId": "OHAS.SMCS.97",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The care in NICU is coordinated with other multidisciplinary team, to provide and monitor the quality of care provided to new-born.",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.97.A",
+        "description": "The unit has multidisciplinary team includes but not limited to: \nNICU physicians, NICU nurse, respiratory therapist, clinical pharmacist, dietitian, infection control team, and other specialties that affect the practice in the NICU,"
+      },
+      {
+        "id": "OHAS.SMCS.97.B",
+        "description": "The unit has a written, structured program for quality management in the NICU"
+      },
+      {
+        "id": "OHAS.SMCS.97.C",
+        "description": "Regular joint meetings are conducted with Obstetrics department (and other departments when indicated) to review shared cases, and to improve service provided."
+      },
+      {
+        "id": "OHAS.SMCS.97.D",
+        "description": "Unit leadership reviews cases of perinatal mortalities regularly"
+      },
+      {
+        "id": "OHAS.SMCS.97.E",
+        "description": "Morbidities are reviewed regularly with recommendations to reduce them."
+      },
+      {
+        "id": "OHAS.SMCS.97.F",
+        "description": "NICU team monitors the outcomes of their extreme preterm new-born."
+      },
+      {
+        "id": "OHAS.SMCS.97.G",
+        "description": "The unit leadership review reported incidents, with analysis and disseminate learning lessons."
+      },
+      {
+        "id": "OHAS.SMCS.97.H",
+        "description": "Unit has a set of key performance indicators, which are reported regularly, with improvement action plans."
+      },
+      {
+        "id": "OHAS.SMCS.97.I",
+        "description": "Training is conducted for both NICU doctors and nurses on patient safety and quality."
+      }
+    ],
+    "category": "Neonatal Intensive Care Unit (NICU)"
+  },
+  {
+    "id": "OHAS.SMCS.98",
+    "standardId": "OHAS.SMCS.98",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The burn care unit is covered by qualified, well-trained medical, nursing, and supportive staff.",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.98.A",
+        "description": "The director of burn care unit is a plastic surgeon (consultant), who is qualified by education, training and experience in burn care and plastic surgery."
+      },
+      {
+        "id": "OHAS.SMCS.98.B",
+        "description": "The burn care unit is covered by registered burn consultants/ qualified plastic surgeons, twenty-four hours a day, seven days a week."
+      },
+      {
+        "id": "OHAS.SMCS.98.C",
+        "description": "The burn unit nurse manager is a registered nurse, who is qualified by education, training and experience n burn care."
+      },
+      {
+        "id": "OHAS.SMCS.98.D",
+        "description": "The burn unit bedside nurses are qualified and experienced in managing burn patients."
+      },
+      {
+        "id": "OHAS.SMCS.98.E",
+        "description": "Medical and nursing staffing plan is based on patient acuity and volume to ensure there is adequate coverage for twenty-four hours a day, seven days a week."
+      },
+      {
+        "id": "OHAS.SMCS.98.F",
+        "description": "All medical and nursing staff providing care for burn patients are certified in advanced life support for different patient age group."
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.99",
+    "standardId": "OHAS.SMCS.99",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The burn care unit has a process of admission, discharge, and referral of patients.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.99.A",
+        "description": "The burn care unit has updated admission, discharge, and referral policies and procedures with specific criteria as per evidence-based practice."
+      },
+      {
+        "id": "OHAS.SMCS.99.B",
+        "description": "The admission, discharge, and referral criteria are collaboratively developed by senior medical and nursing staff."
+      },
+      {
+        "id": "OHAS.SMCS.99.C",
+        "description": "All staff are trained and oriented on the admission and discharge criteria."
+      },
+      {
+        "id": "OHAS.SMCS.99.D",
+        "description": "The unit leaders implement regular audit to assess the implementation of the criteria"
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.100",
+    "standardId": "OHAS.SMCS.100",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The burn care unit has written polices and guidelines to guide the provision of care to burn patients.",
+    "criticality": "High",
+    "totalMeasures": 14,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.100.A",
+        "description": "The burn unit has policies and procedures/ guidelines that guide the care of burn  patients including but are not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.100.B",
+        "description": "All staff are trained and oriented on the policies."
+      },
+      {
+        "id": "OHAS.SMCS.100.C",
+        "description": "There is regular audit conducted to assess compliance to policies,"
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.101",
+    "standardId": "OHAS.SMCS.101",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The burn Care unit strictly implements and supervises infection control and prevention practice.",
+    "criticality": "High",
+    "totalMeasures": 10,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.101.A",
+        "description": "The burn unit strictly implements infection control and prevention guidelines to guide all practices in the unit."
+      },
+      {
+        "id": "OHAS.SMCS.101.B",
+        "description": "The unit environment is always maintained clean and disinfected all times."
+      },
+      {
+        "id": "OHAS.SMCS.101.C",
+        "description": "All unit staff are well trained and oriented to the infection control guidelines applied to the unit."
+      },
+      {
+        "id": "OHAS.SMCS.101.D",
+        "description": "Standard precautions are strictly followed in the burn unit, with strict emphasis on the hand hygiene and appropriate PPEs, use of masks, gowns, gloves, and other barriers."
+      },
+      {
+        "id": "OHAS.SMCS.101.E",
+        "description": "All unit rooms and equipment are cleaned and disinfected as per the ICP guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.101.F",
+        "description": "The unit scrubs suits are only allowed inside the restricted areas of the unit."
+      },
+      {
+        "id": "OHAS.SMCS.101.G",
+        "description": "There is clear guideline on management, and proper Separation of cases."
+      },
+      {
+        "id": "OHAS.SMCS.101.H",
+        "description": "The team strictly implements aseptic dressing change, and care of skin graft."
+      },
+      {
+        "id": "OHAS.SMCS.101.I",
+        "description": "The burn care unit has positive pressure with High Efficiency Particulate Air (HEPA) filters."
+      },
+      {
+        "id": "OHAS.SMCS.101.J",
+        "description": "There is regular audit to ensure that policies and guidelines related to infection control are implemented in daily practice and recorded in patients’ medical records."
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.102",
+    "standardId": "OHAS.SMCS.102",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The burn unit has adequate equipment and supplies for the provision of burn care service.",
+    "criticality": "High",
+    "totalMeasures": 18,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.102.B",
+        "description": "All staff are trained on the use of the equipment"
+      },
+      {
+        "id": "OHAS.SMCS.102.C",
+        "description": "Equipment is disinfected and cleaned on daily based as required"
+      },
+      {
+        "id": "OHAS.SMCS.102.D",
+        "description": "The unit has designated storage area for equipment."
+      },
+      {
+        "id": "OHAS.SMCS.102.E",
+        "description": "The unit has an access to emergency equipment, and any new set or new supply."
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.103",
+    "standardId": "OHAS.SMCS.103",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The burn care and service in burn care unit is coordinated with other multidisciplinary team, to meet the need of burn patients.",
+    "criticality": "High",
+    "totalMeasures": 15,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.103.A",
+        "description": "The multidisciplinary team includes, but is not limited to :"
+      },
+      {
+        "id": "OHAS.SMCS.103.B",
+        "description": "The staff are all aware about multidisciplinary care approach"
+      },
+      {
+        "id": "OHAS.SMCS.103.C",
+        "description": "The team communicates with the admitting and referring services"
+      },
+      {
+        "id": "OHAS.SMCS.103.D",
+        "description": "Care is coordinated between the multidisciplinary team and documented in patient medical records."
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.104",
+    "standardId": "OHAS.SMCS.104",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Burn care unit implements various approaches to enhance staff knowledge and competency.",
+    "criticality": "High",
+    "totalMeasures": 20,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.104.A",
+        "description": "The unit has an orientation program and training for all newly joining nursing staff, with a written orientation checklist."
+      },
+      {
+        "id": "OHAS.SMCS.104.B",
+        "description": "All unit nursing staff receive required training and education on intensive care related cases and procedures, covering"
+      },
+      {
+        "id": "OHAS.SMCS.104.C",
+        "description": "The unit has a clinical nurse educator/ instructor, responsible about staff training and competency."
+      },
+      {
+        "id": "OHAS.SMCS.104.D",
+        "description": "The unit has an annual training plan to ensure a proper coverage of the staff into different courses."
+      },
+      {
+        "id": "OHAS.SMCS.104.E",
+        "description": "Nursing staff receive continuous training with competency assessment."
+      },
+      {
+        "id": "OHAS.SMCS.104.F",
+        "description": "The staff performance is monitored through competency checklist"
+      },
+      {
+        "id": "OHAS.SMCS.104.G",
+        "description": "The staff competency assessment is documented and kept in staff personal file."
+      }
+    ],
+    "category": "Burn Care Unit"
+  },
+  {
+    "id": "OHAS.SMCS.105",
+    "standardId": "OHAS.SMCS.105",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The director of obstetrics and gynecology department is a qualified physician",
+    "criticality": "Medium",
+    "totalMeasures": 3,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.105.A",
+        "description": "The head of the obstetrics and gynecology department is an obstetrician who is qualified by education, training and experience"
+      },
+      {
+        "id": "OHAS.SMCS.105.B",
+        "description": "The head of the department is responsible for monitoring the development and implementation of department policies, guidelines, and protocols."
+      },
+      {
+        "id": "OHAS.SMCS.105.C",
+        "description": "The department head ensure there is regular monitoring and audits to ensure compliance to the policies."
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.106",
+    "standardId": "OHAS.SMCS.106",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The department of obstetrics and gynaecology has well trained, qualified, and competent care medical, midwifes and nursing staff",
+    "criticality": "High",
+    "totalMeasures": 7,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.106.A",
+        "description": "The delivery room is covered by registered obstetrician twenty-four hours a day, seven days a week."
+      },
+      {
+        "id": "OHAS.SMCS.106.B",
+        "description": "All obstetricians are certified in advanced life support in obstetrics (ALSO)."
+      },
+      {
+        "id": "OHAS.SMCS.106.C",
+        "description": "At time of caesarean section delivery there a qualified pediatrician/ neonatologist available who is certified in neonatal resuscitation program (NRP)."
+      },
+      {
+        "id": "OHAS.SMCS.106.D",
+        "description": "The obstetrics department nurse manager/in charge is qualified registered nurse with training, education, experience in obstetric and midwifery."
+      },
+      {
+        "id": "OHAS.SMCS.106.E",
+        "description": "The department bedside nurses are trained and qualified in managing women with obstetric  problems."
+      },
+      {
+        "id": "OHAS.SMCS.106.F",
+        "description": "The nurse manager monitors the competency of the midwives and nursing staff using checklist."
+      },
+      {
+        "id": "OHAS.SMCS.106.G",
+        "description": "The department maintains competency levels of the staff (doctors, nurses)."
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.107",
+    "standardId": "OHAS.SMCS.107",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Department of OB/GYN has policies, procedures, clinical pathways to guide the care of women in labour and obstetrical patients.",
+    "criticality": "High",
+    "totalMeasures": 11,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.107.A",
+        "description": "The department has updated policies and procedures and clinical pathways to guide the care of women in labor and obstetrical patients, these policies include, but are not limited to the following:"
+      },
+      {
+        "id": "OHAS.SMCS.107.B",
+        "description": "All polices were written by collaborative team and approved by head of department and hospital management."
+      },
+      {
+        "id": "OHAS.SMCS.107.C",
+        "description": "All staff are familiar and oriented with the department policies."
+      },
+      {
+        "id": "OHAS.SMCS.107.D",
+        "description": "There is regular audit to assess proper implementation of these policies."
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.108",
+    "standardId": "OHAS.SMCS.108",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Obstetrics and Gynaecology department has a systematic approach for admission and discharge of women.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.108.A",
+        "description": "The obstetric department of obstetrics has specific identified admission and discharge and transfer policies."
+      },
+      {
+        "id": "OHAS.SMCS.108.B",
+        "description": "The criteria are developed collaboratively with other relevant departments, covering gestational age of women, and the available resources."
+      },
+      {
+        "id": "OHAS.SMCS.108.C",
+        "description": "The department has evaluation process for admission through a triage system"
+      },
+      {
+        "id": "OHAS.SMCS.108.D",
+        "description": "Planning for discharge/ transfer /follow-up started at admission"
+      },
+      {
+        "id": "OHAS.SMCS.108.E",
+        "description": "All staff are trained on the admission and discharge criteria"
+      },
+      {
+        "id": "OHAS.SMCS.105.F",
+        "description": "The patient readiness for discharge/transfer/follow-up is assessed and documented and follow-up requirements are determined"
+      },
+      {
+        "id": "OHAS.SMCS.108.G",
+        "description": "Checklist is completed for each patient prior to discharge or transfer."
+      },
+      {
+        "id": "OHAS.SMCS.108.H",
+        "description": "There is audit and monitoring process to assess compliance"
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.109",
+    "standardId": "OHAS.SMCS.109",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Obstetrics and gynecology department has an individualized clinical assessment and management plan.",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.109.A",
+        "description": "Patient history taking with clinical assessment is carried out and documented during the initial contact with the patient."
+      },
+      {
+        "id": "OHAS.SMCS.109.B",
+        "description": "The patient’s assessment and documented carried out by caregivers (e.g., doctors, midwives, nurses, etc.)"
+      },
+      {
+        "id": "OHAS.SMCS.109.C",
+        "description": "Senior input is obtained according to the assessment of the patient’s clinical condition."
+      },
+      {
+        "id": "OHAS.SMCS.109.D",
+        "description": "Care plan is initiated and modified as required, then clearly communicated to other care providers."
+      },
+      {
+        "id": "OHAS.SMCS.109.E",
+        "description": "The care plan is reviewed and modified as required and clearly communicated to the patient and family who participate in the decision about plan of care."
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.110",
+    "standardId": "OHAS.SMCS.110",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Obstetrics and gynecology unit has adequate medical equipment, physical facilities, and essential medications for the provision of safe care.",
+    "criticality": "High",
+    "totalMeasures": 38,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.110.A",
+        "description": "The Obstetrics and Gynecology department has appropriate physical facilities, including:"
+      },
+      {
+        "id": "OHAS.SMCS.110.B",
+        "description": "The Obstetrics and Gynecology department have appropriate medical equipment required for provision of care, including but are not limited to, the following:"
+      },
+      {
+        "id": "OHAS.SMCS.110.C",
+        "description": "The Obstetrics and Gynecology department has essential medication required for safe care including, but are not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.110.D",
+        "description": "All staff are trained on the use of the equipment and medications."
+      },
+      {
+        "id": "OHAS.SMCS.110.E",
+        "description": "The unit has designated storage area for equipment."
+      },
+      {
+        "id": "OHAS.SMCS.110.F",
+        "description": "The unit has an access to emergency equipment, and any new set or new supply"
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.111",
+    "standardId": "OHAS.SMCS.111",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Obstetrics and Gynecology department strictly follows and supervises infection control and prevention practices.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.111.A",
+        "description": "The Obstetrics and Gynecology department follows hospital infection control and prevention guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.111.B",
+        "description": "All Obstetrics and Gynecology department staff are well trained and oriented to the infection control guidelines applied to the unit. The unit allocate champion to monitor infection within the unit."
+      },
+      {
+        "id": "OHAS.SMCS.111.C",
+        "description": "The Obstetrics and Gynecology department is maintained clean and disinfected."
+      },
+      {
+        "id": "OHAS.SMCS.111.D",
+        "description": "Standard precautions are strictly followed in the Obstetrics and Gynecology department unit with strict emphasis on the hand hygiene, appropriate PPEs and other barriers."
+      },
+      {
+        "id": "OHAS.SMCS.111.E",
+        "description": "All Obstetrics and Gynecology department equipment and rooms are clean and disinfected as per the hospital guidelines."
+      },
+      {
+        "id": "OHAS.SMCS.111.F",
+        "description": "The labour room scrub suits are only allowed inside the restricted areas."
+      },
+      {
+        "id": "OHAS.SMCS.111.G",
+        "description": "There is clear guideline on management, and proper handling of patients with infectious diseases."
+      },
+      {
+        "id": "OHAS.SMCS.111.H",
+        "description": "There is regular audit to assess compliance to those policies."
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.112",
+    "standardId": "OHAS.SMCS.112",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The Obstetrics and Gynecology department has an implemented quality and safety improvement plan.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.112.B",
+        "description": "The department has list of performance indicators, which are monitored as part of the quality improvement activities."
+      },
+      {
+        "id": "OHAS.SMCS.112.C",
+        "description": "The department quality activities are aligned with hospital quality activities."
+      },
+      {
+        "id": "OHAS.SMCS.112.D",
+        "description": "The Obstetrics and Gynecology department staff are aware of quality improvement activities and department indicators."
+      }
+    ],
+    "category": "Obstetrics and Gynaecology"
+  },
+  {
+    "id": "OHAS.SMCS.113",
+    "standardId": "OHAS.SMCS.113",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a Respiratory Therapy care provision, covering twenty-four seven.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.113.A",
+        "description": "The hospital has respiratory care service provided 24 hours seven days a week (24/7), covering ED, ICU (adult ICU, pediatric ICU, Neonatal ICU)."
+      },
+      {
+        "id": "OHAS.SMCS.113.B",
+        "description": "The respiratory care service team has clear scope of service with clear roles and responsibilities."
+      },
+      {
+        "id": "OHAS.SMCS.113.C",
+        "description": "The respiratory care team is directed (Lead) by qualified respiratory therapies by education with at least bachelor’s in respiratory care science, training and experience in respiratory care."
+      },
+      {
+        "id": "OHAS.SMCS.113.D",
+        "description": "All respiratory care staff are trained, experienced in respiratory care and certified in advance life support applicable to the age category they serve."
+      }
+    ],
+    "category": "Respiratory Therapy  service"
+  },
+  {
+    "id": "OHAS.SMCS.114",
+    "standardId": "OHAS.SMCS.114",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Hospital has clear policies and procedures to guide the respiratory care service.",
+    "criticality": "High",
+    "totalMeasures": 17,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.114.A",
+        "description": "The team has policies and procedures to guide the provision of service, covering:"
+      },
+      {
+        "id": "OHAS.SMCS.114.B",
+        "description": "Policies are approved by head of respiratory team, head of intensive care department, and hospital top management."
+      },
+      {
+        "id": "OHAS.SMCS.114.C",
+        "description": "All respiratory team staff are well oriented on the policies."
+      },
+      {
+        "id": "OHAS.SMCS.114.D",
+        "description": "The policies are properly implemented by the respiratory care team."
+      },
+      {
+        "id": "OHAS.SMCS.114.E",
+        "description": "There is regular monitoring and audit for the staff to assess their compliance to the policies."
+      }
+    ],
+    "category": "Respiratory Therapy  service"
+  },
+  {
+    "id": "OHAS.SMCS.115",
+    "standardId": "OHAS.SMCS.115",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Respiratory care service equipment undergoes regular calibration and maintenance",
+    "criticality": "High",
+    "totalMeasures": 6,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.115.A",
+        "description": "All respiratory care equipment is calibrated and operated as per the operation guide and manufacturer’s specifications. Major Calibration includes:"
+      },
+      {
+        "id": "OHAS.SMCS.115.B",
+        "description": "There is regular periodic preventative maintenance as per the manufacturer recommendations with clear documentation."
+      },
+      {
+        "id": "OHAS.SMCS.115.C",
+        "description": "There is clear guide for circuit change after each use."
+      },
+      {
+        "id": "OHAS.SMCS.115.D",
+        "description": "Equipment calibration is done after each use, according to the patient age category (Infant, Pediatric or Adult)"
+      }
+    ],
+    "category": "Respiratory Therapy  service"
+  },
+  {
+    "id": "OHAS.SMCS.116",
+    "standardId": "OHAS.SMCS.116",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital implements various approaches to maintain competency of the respiratory therapist team.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.116.A",
+        "description": "The hospital has a structured approach to promote the competency of respiratory care staff, through clinical training and updated programs and policies, mandatory training as per specialty, continuous monitoring, through clinical competency, etc."
+      },
+      {
+        "id": "OHAS.SMCS.116.B",
+        "description": "Respiratory staff attend orientation program."
+      },
+      {
+        "id": "OHAS.SMCS.116.C",
+        "description": "All Respiratory therapists receive ongoing training and educations, within the unit protocols and guides."
+      },
+      {
+        "id": "OHAS.SMCS.116.D",
+        "description": "All Respiratory therapists has valid BLS/ACLS certification."
+      },
+      {
+        "id": "OHAS.SMCS.116.E",
+        "description": "There is Annual assessment by written examinations and knowledge in practice focused on:"
+      },
+      {
+        "id": "OHAS.SMCS.116.F",
+        "description": "All training and competency records are maintained in staff personal files."
+      }
+    ],
+    "category": "Respiratory Therapy  service"
+  },
+  {
+    "id": "OHAS.SMCS.117",
+    "standardId": "OHAS.SMCS.117",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Medical rehabilitation department has qualified trained therapists.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.117.A",
+        "description": "The medical rehabilitation department is supervised by well qualified staff."
+      },
+      {
+        "id": "OHAS.SMCS.117.B",
+        "description": "All unit staff are qualified with appropriate training and qualification, and experience in rehabilitation."
+      },
+      {
+        "id": "OHAS.SMCS.117.C",
+        "description": "The medical rehabilitation department has a clear scope of service for each rehabilitation discipline, which is known by all unit staff."
+      },
+      {
+        "id": "OHAS.SMCS.117.D",
+        "description": "Research activities are encouraged and organized in all medical rehabilitation services."
+      }
+    ],
+    "category": "Medical Rehabilitation and Physiotherapy Service"
+  },
+  {
+    "id": "OHAS.SMCS.118",
+    "standardId": "OHAS.SMCS.118",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The medical rehabilitation department has documented policies and procedures to guide the care of patients undertaking physiotherapy/ rehabilitation care.",
+    "criticality": "High",
+    "totalMeasures": 14,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.118.A",
+        "description": "The rehabilitation department has clear written policies, guidelines and procedures on the care of patients undergoing medical rehabilitation in the hospital including, but are not limited to, the following:"
+      },
+      {
+        "id": "OHAS.SMCS.118.B",
+        "description": "Policies, guidelines and procedures are reviewed and approved by head of department and hospital top management."
+      },
+      {
+        "id": "OHAS.SMCS.118.C",
+        "description": "All rehabilitation policies, guidelines and procedures are accessible to all medical rehabilitation departments’ staff."
+      },
+      {
+        "id": "OHAS.SMCS.118.D",
+        "description": "The department conducts regular audit to ensure all staff are aware and comply with the written policies, guidelines and procedures."
+      }
+    ],
+    "category": "Medical Rehabilitation and Physiotherapy Service"
+  },
+  {
+    "id": "OHAS.SMCS.119",
+    "standardId": "OHAS.SMCS.119",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Rehabilitation service is provided by multidisciplinary team.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.119.A",
+        "description": "There is a clear referral guide for providing medical rehabilitation services for patients within the hospital units."
+      },
+      {
+        "id": "OHAS.SMCS.119.B",
+        "description": "Medical Rehabilitation Services is offered only after referral by a physician. The referral is requested to the specialty required i.e., physiotherapy, occupational therapy, speech and language therapy and prosthetic and orthotic."
+      },
+      {
+        "id": "OHAS.SMCS.119.C",
+        "description": "The response to routine referrals issued within maximum 24 hours."
+      },
+      {
+        "id": "OHAS.SMCS.119.D",
+        "description": "Rehabilitation professionals communicate effectively with the multidisciplinary team about patient’s plan of care and perform the necessary activities."
+      },
+      {
+        "id": "OHAS.SMCS.119.E",
+        "description": "All communication and patient ‘plan of care provided are clearly documented by the rehabilitation staff and all other team members in the patient's medical record."
+      },
+      {
+        "id": "OHAS.SMCS.119.F",
+        "description": "The plan of patient care includes a multidisciplinary team involved in the rehabilitation, and the intensity and duration of the sessions to be arranged depending on the patient’s progression and needs."
+      },
+      {
+        "id": "OHAS.SMCS.119.G",
+        "description": "The patient’s response to therapy is documented in patient’s electronic record."
+      },
+      {
+        "id": "OHAS.SMCS.119.H",
+        "description": "The team provides information booklets for patients when available and needed."
+      }
+    ],
+    "category": "Medical Rehabilitation and Physiotherapy Service"
+  },
+  {
+    "id": "OHAS.SMCS.120",
+    "standardId": "OHAS.SMCS.120",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The rehabilitation department has an established comprehensive quality management system.",
+    "criticality": "High",
+    "totalMeasures": 12,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.120.A",
+        "description": "The rehabilitation service has a quality management plan (e.g., monthly collection of data)."
+      },
+      {
+        "id": "OHAS.SMCS.120.B",
+        "description": "Quality focal point is appointed to monitor quality plan."
+      },
+      {
+        "id": "OHAS.SMCS.120.C",
+        "description": "The availability of the following measures is essential to maintain quality and patient safety:"
+      },
+      {
+        "id": "OHAS.SMCS.120.D",
+        "description": "There is a regular scheduled audit, using checklist that classifies areas for improvement and the action plans."
+      }
+    ],
+    "category": "Medical Rehabilitation and Physiotherapy Service"
+  },
+  {
+    "id": "OHAS.SMCS.121",
+    "standardId": "OHAS.SMCS.121",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Patients are assessed comprehensively by medical rehabilitation professionals to identify their functional risks and needs.",
+    "criticality": "Medium",
+    "totalMeasures": 5,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.121.A",
+        "description": "Patient rehabilitation care is guided by a comprehensive functional assessment process that is performed by a qualified therapist for each patient. The assessment includes collecting subjective and objective data."
+      },
+      {
+        "id": "OHAS.SMCS.121.B",
+        "description": "Evidence based clinical assessment tools are used to generate rehabilitation goals and action plans."
+      },
+      {
+        "id": "OHAS.SMCS.121.C",
+        "description": "Functional assessment is completed within twenty-four hours of referral. This can be applied in inpatient settings. For outpatients, it is limited by appointment date after referral which mostly exceeds 24 hours."
+      },
+      {
+        "id": "OHAS.SMCS.121.D",
+        "description": "Functional screening and assessment findings are documented in the patient’s medical record."
+      },
+      {
+        "id": "OHAS.SMCS.121.E",
+        "description": "The rehabilitation staff in collaboration with other multidisciplinary team develop appropriate plan of care for patients with functional needs that meets the needs of the patient."
+      }
+    ],
+    "category": "Medical Rehabilitation and Physiotherapy Service"
+  },
+  {
+    "id": "OHAS.SMCS.122",
+    "standardId": "OHAS.SMCS.122",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "There is a clear process of follow-up/ discharge plan for the patients.",
+    "criticality": "High",
+    "totalMeasures": 8,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.122.A",
+        "description": "Rehabilitation patient discharge procedure is available."
+      },
+      {
+        "id": "OHAS.SMCS.122.B",
+        "description": "During the patient care process, there is planning for discharge/follow-up arranged in timely intervals depending on the diagnosis and prognosis of the patient."
+      },
+      {
+        "id": "OHAS.SMCS.122.C",
+        "description": "Identified goals are met through various standardized assessment tools."
+      },
+      {
+        "id": "OHAS.SMCS.122.D",
+        "description": "Discharge decision is based on the agreed plan of care."
+      },
+      {
+        "id": "OHAS.SMCS.122.E",
+        "description": "Education of the patient/ family for follow up/ discharge is provided, using various applicable methods."
+      },
+      {
+        "id": "OHAS.SMCS.122.F",
+        "description": "Patient’s summary upon discharge includes but not limited to:"
+      }
+    ],
+    "category": "Medical Rehabilitation and Physiotherapy Service"
+  },
+  {
+    "id": "OHAS.SMCS.123",
+    "standardId": "OHAS.SMCS.123",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital has a standardized nutritional screening for all age group patients",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.123.A",
+        "description": "The hospital has an effective policy and procedure for a comprehensive nutritional assessment, that includes, but is not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.123.B",
+        "description": "Nutritional screening is only conducted by a qualified/trained nurse to determine the risk score that indicates whether a patient requires dietary consultation or not, within twenty-four hours of admission."
+      },
+      {
+        "id": "OHAS.SMCS.123.C",
+        "description": "Nutritional assessment is only conducted by qualified dietitian to determine the patient’s nutritional requirements and to initiate medical nutritional therapy."
+      },
+      {
+        "id": "OHAS.SMCS.123.D",
+        "description": "The nutritional screening and assessment findings are documented in the patient’s medical record."
+      }
+    ],
+    "category": "Nutrition and Dietary Services"
+  },
+  {
+    "id": "OHAS.SMCS.124",
+    "standardId": "OHAS.SMCS.124",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "The hospital dietary services are provided by qualified clinical nutritionists.",
+    "criticality": "High",
+    "totalMeasures": 9,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.124.A",
+        "description": "All aspects of the hospital's dietary services are overseen by a qualified dietitian."
+      },
+      {
+        "id": "OHAS.SMCS.124.B",
+        "description": "Dietitians provide a variety of services, including, but not limited to:"
+      },
+      {
+        "id": "OHAS.SMCS.124.C",
+        "description": "Activities conducted by the dietician are documented in the patient’s electronic record."
+      }
+    ],
+    "category": "Nutrition and Dietary Services"
+  },
+  {
+    "id": "OHAS.SMCS.125",
+    "standardId": "OHAS.SMCS.125",
+    "programId": "prog-ohap",
+    "chapter": "Chapter 4",
+    "section": "Specialized Medical Care Services (SMCS)",
+    "description": "Hospital   maintains dry food store temperature under 25 degrees Celsius in catering facilities.",
+    "criticality": "Medium",
+    "totalMeasures": 4,
+    "subStandards": [
+      {
+        "id": "OHAS.SMCS.125.A",
+        "description": "Essential points (temperature and humidity) within the dry store of the catering facility, to be monitored."
+      },
+      {
+        "id": "OHAS.SMCS.125.B",
+        "description": "Records to ensure that dry stores should be dry and cool to prevent spoilage and the swelling of canned goods. The ideal temperature range is 10°C to 15°C (50°F to 59°F) and not to exceed 25C (77F)."
+      },
+      {
+        "id": "OHAS.SMCS.125.C",
+        "description": "Records to ensure cleanness from biological, chemical and physical spoilage."
+      },
+      {
+        "id": "OHAS.SMCS.125.D",
+        "description": "All procedures (e.g., building specifications etc.) required to ensure safety from biological, chemical, physical and allergic hazards."
+      }
+    ],
+    "category": "Nutrition and Dietary Services"
+  }
+]

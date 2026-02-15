@@ -52,9 +52,14 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
     setIsModalOpen(false);
   };
 
-  const handleDelete = (programId: string) => {
+  const handleDelete = async (programId: string) => {
     if (window.confirm(t("areYouSureDeleteProgram"))) {
-      deleteProgram(programId);
+      try {
+        await deleteProgram(programId);
+        toast.success(t("programDeletedSuccessfully") || "Program deleted successfully");
+      } catch {
+        toast.error(t("failedToDeleteProgram") || "Failed to delete program");
+      }
     }
   };
 

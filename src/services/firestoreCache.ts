@@ -44,7 +44,7 @@ class FirestoreCache {
     const q = constraints ? query(collectionRef, ...constraints) : query(collectionRef);
     
     const snapshot = await getDocs(q);
-    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as T));
+    const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as T));
 
     // Record read operation in monitoring
     freeTierMonitor.recordRead(1);
