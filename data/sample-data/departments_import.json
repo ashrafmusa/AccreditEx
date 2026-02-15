@@ -1,106 +1,54 @@
-{
-  "collection": "departments",
-  "documentIdField": "id",
-  "documents": [
-    {
-      "id": "dep-1",
-      "name": {
-        "en": "Nursing",
-        "ar": "التمريض"
-      },
-      "requiredCompetencyIds": [
-        "comp-bls",
-        "comp-acls"
-      ]
-    },
-    {
-      "id": "dep-2",
-      "name": {
-        "en": "Pharmacy",
-        "ar": "الصيدلية"
-      }
-    },
-    {
-      "id": "dep-3",
-      "name": {
-        "en": "Laboratory",
-        "ar": "المختبر"
-      }
-    },
-    {
-      "id": "dep-4",
-      "name": {
-        "en": "Radiology",
-        "ar": "الأشعة"
-      }
-    },
-    {
-      "id": "dep-5",
-      "name": {
-        "en": "Quality Management",
-        "ar": "إدارة الجودة"
-      },
-      "requiredCompetencyIds": [
-        "comp-cphq"
-      ]
-    },
-    {
-      "id": "dep-6",
-      "name": {
-        "en": "Infection Control",
-        "ar": "مكافحة العدوى"
-      },
-      "requiredCompetencyIds": [
-        "comp-cic"
-      ]
-    },
-    {
-      "id": "dep-7",
-      "name": {
-        "en": "Administration",
-        "ar": "الإدارة"
-      }
-    },
-    {
-      "id": "dep-8",
-      "name": {
-        "en": "Facilities Management",
-        "ar": "إدارة المنشآت"
-      },
-      "description": {
-        "en": "Responsible for maintenance, safety, and operations of healthcare facilities",
-        "ar": "مسؤول عن صيانة وسلامة وتشغيل منشآت الرعاية الصحية"
-      },
-      "ohasChapter": "Chapter 10 - Facility Management System (FMS)",
-      "requiredCompetencyIds": []
-    },
-    {
-      "id": "dep-9",
-      "name": {
-        "en": "Human Resources",
-        "ar": "الموارد البشرية"
-      },
-      "description": {
-        "en": "Manages staffing, training, and personnel development",
-        "ar": "يدير التوظيف والتدريب وتطوير الموظفين"
-      },
-      "ohasChapter": "Chapter 2 - Human Resources Management (HRM)",
-      "requiredCompetencyIds": []
-    },
-    {
-      "id": "dep-10",
-      "name": {
-        "en": "Information Technology",
-        "ar": "تكنولوجيا المعلومات"
-      },
-      "description": {
-        "en": "Manages information systems, data security, and IT infrastructure",
-        "ar": "يدير أنظمة المعلومات وأمان البيانات والبنية التحتية لتكنولوجيا المعلومات"
-      },
-      "ohasChapter": "Chapter 9 - Information Management System (IMS)",
-      "requiredCompetencyIds": []
-    }
-  ],
-  "importedAt": "2025-12-05T04:55:29.765Z",
-  "documentCount": 10
-}
+[
+  {
+    "name": { "en": "Nursing", "ar": "التمريض" },
+    "requiredCompetencyIds": ["comp-bls", "comp-acls"],
+    "isActive": true
+  },
+  {
+    "name": { "en": "Pharmacy", "ar": "الصيدلية" },
+    "description": { "en": "Manages medication dispensing, storage, and pharmaceutical care", "ar": "يدير صرف الأدوية وتخزينها والرعاية الصيدلانية" },
+    "isActive": true
+  },
+  {
+    "name": { "en": "Laboratory", "ar": "المختبر" },
+    "description": { "en": "Provides clinical laboratory testing and diagnostics", "ar": "يقدم فحوصات المختبر السريري والتشخيص" },
+    "isActive": true
+  },
+  {
+    "name": { "en": "Radiology", "ar": "الأشعة" },
+    "description": { "en": "Provides imaging and radiology diagnostic services", "ar": "يقدم خدمات التصوير والتشخيص الإشعاعي" },
+    "isActive": true
+  },
+  {
+    "name": { "en": "Quality Management", "ar": "إدارة الجودة" },
+    "description": { "en": "Oversees quality assurance, accreditation compliance, and continuous improvement", "ar": "يشرف على ضمان الجودة والامتثال للاعتماد والتحسين المستمر" },
+    "requiredCompetencyIds": ["comp-cphq"],
+    "isActive": true
+  },
+  {
+    "name": { "en": "Infection Control", "ar": "مكافحة العدوى" },
+    "description": { "en": "Manages infection prevention and control programs", "ar": "يدير برامج الوقاية من العدوى ومكافحتها" },
+    "requiredCompetencyIds": ["comp-cic"],
+    "isActive": true
+  },
+  {
+    "name": { "en": "Administration", "ar": "الإدارة" },
+    "description": { "en": "Handles general hospital administration and operations", "ar": "يتولى الإدارة العامة للمستشفى والعمليات" },
+    "isActive": true
+  },
+  {
+    "name": { "en": "Facilities Management", "ar": "إدارة المنشآت" },
+    "description": { "en": "Responsible for maintenance, safety, and operations of healthcare facilities", "ar": "مسؤول عن صيانة وسلامة وتشغيل منشآت الرعاية الصحية" },
+    "isActive": true
+  },
+  {
+    "name": { "en": "Human Resources", "ar": "الموارد البشرية" },
+    "description": { "en": "Manages staffing, training, and personnel development", "ar": "يدير التوظيف والتدريب وتطوير الموظفين" },
+    "isActive": true
+  },
+  {
+    "name": { "en": "Information Technology", "ar": "تكنولوجيا المعلومات" },
+    "description": { "en": "Manages information systems, data security, and IT infrastructure", "ar": "يدير أنظمة المعلومات وأمان البيانات والبنية التحتية لتكنولوجيا المعلومات" },
+    "isActive": true
+  }
+]

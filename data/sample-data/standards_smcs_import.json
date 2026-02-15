@@ -1,6 +1,5 @@
 [
   {
-    "id": "OHAS.SMCS.1",
     "standardId": "OHAS.SMCS.1",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -25,7 +24,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.2",
     "standardId": "OHAS.SMCS.2",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -62,7 +60,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.3",
     "standardId": "OHAS.SMCS.3",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -107,7 +104,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.4",
     "standardId": "OHAS.SMCS.4",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -144,7 +140,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.5",
     "standardId": "OHAS.SMCS.5",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -193,7 +188,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.6",
     "standardId": "OHAS.SMCS.6",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -222,7 +216,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.7",
     "standardId": "OHAS.SMCS.7",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -251,7 +244,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.8",
     "standardId": "OHAS.SMCS.8",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -292,7 +284,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.9",
     "standardId": "OHAS.SMCS.9",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -353,7 +344,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.11",
     "standardId": "OHAS.SMCS.11",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -450,7 +440,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.14",
     "standardId": "OHAS.SMCS.14",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -491,7 +480,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.15",
     "standardId": "OHAS.SMCS.15",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -524,7 +512,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.16",
     "standardId": "OHAS.SMCS.16",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -557,7 +544,6 @@
     "category": "Provision of Care"
   },
   {
-    "id": "OHAS.SMCS.17",
     "standardId": "OHAS.SMCS.17",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -586,7 +572,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.18",
     "standardId": "OHAS.SMCS.18",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -627,7 +612,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.19",
     "standardId": "OHAS.SMCS.19",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -668,7 +652,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.20",
     "standardId": "OHAS.SMCS.20",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -725,7 +708,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.21",
     "standardId": "OHAS.SMCS.21",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -762,7 +744,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.22",
     "standardId": "OHAS.SMCS.22",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -774,7 +755,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.22",
     "standardId": "OHAS.SMCS.22",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -815,7 +795,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.23",
     "standardId": "OHAS.SMCS.23",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -856,7 +835,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.24",
     "standardId": "OHAS.SMCS.24",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -905,7 +883,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.25",
     "standardId": "OHAS.SMCS.25",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -954,7 +931,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.26",
     "standardId": "OHAS.SMCS.26",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -995,7 +971,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.27",
     "standardId": "OHAS.SMCS.27",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1032,7 +1007,6 @@
     "category": "Laboratory"
   },
   {
-    "id": "OHAS.SMCS.28",
     "standardId": "OHAS.SMCS.28",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1065,7 +1039,6 @@
     "category": "Diagnostic Imaging Services (RD)"
   },
   {
-    "id": "OHAS.SMCS.29",
     "standardId": "OHAS.SMCS.29",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1118,7 +1091,6 @@
     "category": "Diagnostic Imaging Services (RD)"
   },
   {
-    "id": "OHAS.SMCS.30",
     "standardId": "OHAS.SMCS.30",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1143,7 +1115,6 @@
     "category": "Diagnostic Imaging Services (RD)"
   },
   {
-    "id": "OHAS.SMCS.31",
     "standardId": "OHAS.SMCS.31",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1188,7 +1159,6 @@
     "category": "Diagnostic Imaging Services (RD)"
   },
   {
-    "id": "OHAS.SMCS.32",
     "standardId": "OHAS.SMCS.32",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1257,7 +1227,6 @@
     "category": "Diagnostic Imaging Services (RD)"
   },
   {
-    "id": "OHAS.SMCS.33",
     "standardId": "OHAS.SMCS.33",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1282,7 +1251,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.34",
     "standardId": "OHAS.SMCS.34",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1319,7 +1287,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.35",
     "standardId": "OHAS.SMCS.35",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1376,7 +1343,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.36",
     "standardId": "OHAS.SMCS.36",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1425,7 +1391,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.37",
     "standardId": "OHAS.SMCS.37",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1526,7 +1491,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.39",
     "standardId": "OHAS.SMCS.39",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1555,7 +1519,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.40",
     "standardId": "OHAS.SMCS.40",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1596,7 +1559,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.42",
     "standardId": "OHAS.SMCS.42",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1649,7 +1611,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.43",
     "standardId": "OHAS.SMCS.43",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1690,7 +1651,6 @@
     "category": "Emergency Department"
   },
   {
-    "id": "OHAS.SMCS.45",
     "standardId": "OHAS.SMCS.45",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1731,7 +1691,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.46",
     "standardId": "OHAS.SMCS.46",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1760,7 +1719,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.47",
     "standardId": "OHAS.SMCS.47",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1789,7 +1747,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.48",
     "standardId": "OHAS.SMCS.48",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1850,7 +1807,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.50",
     "standardId": "OHAS.SMCS.50",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1891,7 +1847,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.51",
     "standardId": "OHAS.SMCS.51",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1916,7 +1871,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.52",
     "standardId": "OHAS.SMCS.52",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1945,7 +1899,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.53",
     "standardId": "OHAS.SMCS.53",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -1994,7 +1947,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.54",
     "standardId": "OHAS.SMCS.54",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2023,7 +1975,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.55",
     "standardId": "OHAS.SMCS.55",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2064,7 +2015,6 @@
     "category": "Nursing"
   },
   {
-    "id": "OHAS.SMCS.56",
     "standardId": "OHAS.SMCS.56",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2089,7 +2039,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.57",
     "standardId": "OHAS.SMCS.57",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2118,7 +2067,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.58",
     "standardId": "OHAS.SMCS.58",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2151,7 +2099,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.59",
     "standardId": "OHAS.SMCS.59",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2180,7 +2127,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.60",
     "standardId": "OHAS.SMCS.60",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2225,7 +2171,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.61",
     "standardId": "OHAS.SMCS.61",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2246,7 +2191,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.62",
     "standardId": "OHAS.SMCS.62",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2275,7 +2219,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.62",
     "standardId": "OHAS.SMCS.62",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2300,7 +2243,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.63",
     "standardId": "OHAS.SMCS.63",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2333,7 +2275,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.64",
     "standardId": "OHAS.SMCS.64",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2358,7 +2299,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.65",
     "standardId": "OHAS.SMCS.65",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2399,7 +2339,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.66",
     "standardId": "OHAS.SMCS.66",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2460,7 +2399,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.68",
     "standardId": "OHAS.SMCS.68",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2489,7 +2427,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.69",
     "standardId": "OHAS.SMCS.69",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2546,7 +2483,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.70",
     "standardId": "OHAS.SMCS.70",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2583,7 +2519,6 @@
     "category": "Operation Theatre"
   },
   {
-    "id": "OHAS.SMCS.71",
     "standardId": "OHAS.SMCS.71",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2612,7 +2547,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.72",
     "standardId": "OHAS.SMCS.72",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2641,7 +2575,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.73",
     "standardId": "OHAS.SMCS.73",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2666,7 +2599,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.74",
     "standardId": "OHAS.SMCS.74",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2711,7 +2643,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.75",
     "standardId": "OHAS.SMCS.75",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2764,7 +2695,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.76",
     "standardId": "OHAS.SMCS.76",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2805,7 +2735,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.77",
     "standardId": "OHAS.SMCS.77",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2846,7 +2775,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.78",
     "standardId": "OHAS.SMCS.78",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2895,7 +2823,6 @@
     "category": "Anaesthesia Care (AN)"
   },
   {
-    "id": "OHAS.SMCS.79",
     "standardId": "OHAS.SMCS.79",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2936,7 +2863,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.80",
     "standardId": "OHAS.SMCS.80",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2965,7 +2891,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.81",
     "standardId": "OHAS.SMCS.81",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -2994,7 +2919,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.82",
     "standardId": "OHAS.SMCS.82",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3031,7 +2955,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.83",
     "standardId": "OHAS.SMCS.83",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3060,7 +2983,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.84",
     "standardId": "OHAS.SMCS.84",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3097,7 +3019,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.85",
     "standardId": "OHAS.SMCS.85",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3126,7 +3047,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.86",
     "standardId": "OHAS.SMCS.86",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3155,7 +3075,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.87",
     "standardId": "OHAS.SMCS.87",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3192,7 +3111,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.88",
     "standardId": "OHAS.SMCS.88",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3237,7 +3155,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.89",
     "standardId": "OHAS.SMCS.89",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3274,7 +3191,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.90",
     "standardId": "OHAS.SMCS.90",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3307,7 +3223,6 @@
     "category": "Critical Care"
   },
   {
-    "id": "OHAS.SMCS.91",
     "standardId": "OHAS.SMCS.91",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3332,7 +3247,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.92",
     "standardId": "OHAS.SMCS.92",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3373,7 +3287,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.93",
     "standardId": "OHAS.SMCS.93",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3402,7 +3315,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.94",
     "standardId": "OHAS.SMCS.94",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3439,7 +3351,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.95",
     "standardId": "OHAS.SMCS.95",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3488,7 +3399,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.96",
     "standardId": "OHAS.SMCS.96",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3525,7 +3435,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.97",
     "standardId": "OHAS.SMCS.97",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3574,7 +3483,6 @@
     "category": "Neonatal Intensive Care Unit (NICU)"
   },
   {
-    "id": "OHAS.SMCS.98",
     "standardId": "OHAS.SMCS.98",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3611,7 +3519,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.99",
     "standardId": "OHAS.SMCS.99",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3640,7 +3547,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.100",
     "standardId": "OHAS.SMCS.100",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3665,7 +3571,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.101",
     "standardId": "OHAS.SMCS.101",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3718,7 +3623,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.102",
     "standardId": "OHAS.SMCS.102",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3747,7 +3651,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.103",
     "standardId": "OHAS.SMCS.103",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3776,7 +3679,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.104",
     "standardId": "OHAS.SMCS.104",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3817,7 +3719,6 @@
     "category": "Burn Care Unit"
   },
   {
-    "id": "OHAS.SMCS.105",
     "standardId": "OHAS.SMCS.105",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3842,7 +3743,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.106",
     "standardId": "OHAS.SMCS.106",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3883,7 +3783,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.107",
     "standardId": "OHAS.SMCS.107",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3912,7 +3811,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.108",
     "standardId": "OHAS.SMCS.108",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3957,7 +3855,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.109",
     "standardId": "OHAS.SMCS.109",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -3990,7 +3887,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.110",
     "standardId": "OHAS.SMCS.110",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4027,7 +3923,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.111",
     "standardId": "OHAS.SMCS.111",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4072,7 +3967,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.112",
     "standardId": "OHAS.SMCS.112",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4097,7 +3991,6 @@
     "category": "Obstetrics and Gynaecology"
   },
   {
-    "id": "OHAS.SMCS.113",
     "standardId": "OHAS.SMCS.113",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4126,7 +4019,6 @@
     "category": "Respiratory Therapy  service"
   },
   {
-    "id": "OHAS.SMCS.114",
     "standardId": "OHAS.SMCS.114",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4159,7 +4051,6 @@
     "category": "Respiratory Therapy  service"
   },
   {
-    "id": "OHAS.SMCS.115",
     "standardId": "OHAS.SMCS.115",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4188,7 +4079,6 @@
     "category": "Respiratory Therapy  service"
   },
   {
-    "id": "OHAS.SMCS.116",
     "standardId": "OHAS.SMCS.116",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4225,7 +4115,6 @@
     "category": "Respiratory Therapy  service"
   },
   {
-    "id": "OHAS.SMCS.117",
     "standardId": "OHAS.SMCS.117",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4254,7 +4143,6 @@
     "category": "Medical Rehabilitation and Physiotherapy Service"
   },
   {
-    "id": "OHAS.SMCS.118",
     "standardId": "OHAS.SMCS.118",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4283,7 +4171,6 @@
     "category": "Medical Rehabilitation and Physiotherapy Service"
   },
   {
-    "id": "OHAS.SMCS.119",
     "standardId": "OHAS.SMCS.119",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4328,7 +4215,6 @@
     "category": "Medical Rehabilitation and Physiotherapy Service"
   },
   {
-    "id": "OHAS.SMCS.120",
     "standardId": "OHAS.SMCS.120",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4357,7 +4243,6 @@
     "category": "Medical Rehabilitation and Physiotherapy Service"
   },
   {
-    "id": "OHAS.SMCS.121",
     "standardId": "OHAS.SMCS.121",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4390,7 +4275,6 @@
     "category": "Medical Rehabilitation and Physiotherapy Service"
   },
   {
-    "id": "OHAS.SMCS.122",
     "standardId": "OHAS.SMCS.122",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4427,7 +4311,6 @@
     "category": "Medical Rehabilitation and Physiotherapy Service"
   },
   {
-    "id": "OHAS.SMCS.123",
     "standardId": "OHAS.SMCS.123",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4456,7 +4339,6 @@
     "category": "Nutrition and Dietary Services"
   },
   {
-    "id": "OHAS.SMCS.124",
     "standardId": "OHAS.SMCS.124",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
@@ -4481,7 +4363,6 @@
     "category": "Nutrition and Dietary Services"
   },
   {
-    "id": "OHAS.SMCS.125",
     "standardId": "OHAS.SMCS.125",
     "programId": "prog-ohap",
     "chapter": "Chapter 4",
