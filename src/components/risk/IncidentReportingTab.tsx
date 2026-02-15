@@ -20,23 +20,34 @@ const IncidentReportingTab: React.FC = () => {
   const { currentUser } = useUserStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReport, setEditingReport] = useState<IncidentReport | null>(
-    null
+    null,
   );
 
-  const handleSave = (
-    reportData: IncidentReport | Omit<IncidentReport, "id">
+  const handleSave = async (
+    reportData: IncidentReport | Omit<IncidentReport, "id">,
   ) => {
-    if ("id" in reportData) {
-      updateIncidentReport(reportData);
-    } else {
-      addIncidentReport({ ...reportData, reportedBy: currentUser!.name });
+    try {
+      if ("id" in reportData) {
+        await updateIncidentReport(reportData);
+      } else {
+        await addIncidentReport({
+          ...reportData,
+          reportedBy: currentUser?.name ?? "Unknown",
+        });
+      }
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Failed to save incident report:", error);
     }
-    setIsModalOpen(false);
   };
 
-  const handleDelete = (reportId: string) => {
+  const handleDelete = async (reportId: string) => {
     if (window.confirm(t("areYouSureDeleteIncident"))) {
-      deleteIncidentReport(reportId);
+      try {
+        await deleteIncidentReport(reportId);
+      } catch (error) {
+        console.error("Failed to delete incident report:", error);
+      }
     }
   };
 
@@ -45,9 +56,9 @@ const IncidentReportingTab: React.FC = () => {
       [...incidentReports].sort(
         (a, b) =>
           new Date(b.incidentDate).getTime() -
-          new Date(a.incidentDate).getTime()
+          new Date(a.incidentDate).getTime(),
       ),
-    [incidentReports]
+    [incidentReports],
   );
 
   return (
@@ -70,19 +81,19 @@ const IncidentReportingTab: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
                   {t("incidentDate")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
                   {t("incidentType")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
                   {t("severity")}
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
                   {t("status")}
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-end text-xs font-medium uppercase">
                   {t("actions")}
                 </th>
               </tr>
@@ -103,13 +114,15 @@ const IncidentReportingTab: React.FC = () => {
                           setEditingReport(report);
                           setIsModalOpen(true);
                         }}
-                        className="p-1"
+                        className="p-1 hover:text-brand-primary"
+                        aria-label={t("editIncident")}
                       >
                         <PencilIcon className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(report.id)}
-                        className="p-1"
+                        className="p-1 hover:text-red-600"
+                        aria-label={t("deleteIncident")}
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>

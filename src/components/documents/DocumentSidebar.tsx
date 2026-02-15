@@ -254,10 +254,9 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
     : types;
 
   /* ---- total documents count ---- */
-  const totalDocuments = Object.values(documentCounts).reduce(
-    (sum, n) => sum + n,
-    0,
-  );
+  const totalDocuments =
+    documentCounts.all ??
+    Object.values(documentCounts).reduce((sum, n) => sum + n, 0);
 
   /* ---- storage bar percentage (cap at 1 GB for display) ---- */
   const storageCapBytes = 1024 * 1024 * 1024; // 1 GB

@@ -70,16 +70,17 @@ const UsersSettingsPage: React.FC = () => {
         "maxLoginAttempts",
         "lockoutDurationMinutes",
       ] as const;
-      const changes: { field: string; from: any; to: any }[] = [];
+      const changes: { field: string; oldValue: unknown; newValue: unknown }[] =
+        [];
       for (const field of auditFields) {
         const oldVal = (oldUsers as any)[field];
         const newVal = usersSettings[field];
         if (oldVal !== newVal) {
-          changes.push({ field, from: oldVal, to: newVal });
+          changes.push({ field, oldValue: oldVal, newValue: newVal });
         }
       }
       if (changes.length > 0) {
-        auditBatch("users", changes);
+        await auditBatch("users", changes);
       }
 
       const updatedSettings = {

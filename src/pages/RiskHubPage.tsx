@@ -20,13 +20,6 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
   const { updateCapa } = useProjectStore();
   const projects = useProjectStore((state) => state.projects);
 
-  const tabButtonClasses = (tabName: RiskHubTab) =>
-    `px-4 py-2 text-sm font-semibold rounded-t-lg border-b-2 ${
-      activeTab === tabName
-        ? "border-brand-primary text-brand-primary"
-        : "border-transparent text-brand-text-secondary dark:text-dark-brand-text-secondary hover:border-gray-300 dark:hover:border-gray-600"
-    }`;
-
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-3 rtl:space-x-reverse self-start">

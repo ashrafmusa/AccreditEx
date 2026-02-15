@@ -1,4 +1,12 @@
-import React, { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast";
 import { ContextualHelp } from "../components/common/ContextualHelp";
@@ -31,6 +39,7 @@ import {
   HomeIcon,
   TrashIcon,
   ArrowDownTrayIcon,
+  EyeIcon,
 } from "../components/icons";
 
 const DocumentEditorModal = lazy(
@@ -62,7 +71,7 @@ interface DocumentControlHubPageProps {
   standards: Standard[];
   departments: Department[];
   currentUser: User;
-  onUpdateDocument: (updatedDocument: AppDocument) => void;
+  onUpdateDocument: (updatedDocument: AppDocument) => Promise<void> | void;
   onCreateDocument: (data: {
     name: { en: string; ar: string };
     type: AppDocument["type"];
@@ -70,37 +79,49 @@ interface DocumentControlHubPageProps {
     tags?: string[];
     category?: string;
     departmentIds?: string[];
-  }) => void;
+  }) => Promise<void> | void;
   onAddProcessMap: (data: {
     name: { en: string; ar: string };
     tags?: string[];
     category?: string;
     departmentIds?: string[];
-  }) => void;
-  onDeleteDocument: (docId: string) => void;
-  onApproveDocument: (docId: string) => void;
+  }) => Promise<void> | void;
+  onDeleteDocument: (docId: string) => Promise<void> | void;
+  onApproveDocument: (docId: string) => Promise<void> | void;
 }
 
 // --- Status Badge Component ---
-const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
+const StatusBadge: React.FC<{ status: string; t: (key: string) => string }> = ({
+  status,
+  t,
+}) => {
   const colors: Record<string, string> = {
     Approved:
       "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
     "Pending Review":
       "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+    "Under Review":
+      "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
     Draft: "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300",
+    Rejected: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+    Obsolete:
+      "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400",
   };
+  const statusKey = status.toLowerCase().replace(/\s+/g, "");
   return (
     <span
       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colors[status] || "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
     >
-      {status}
+      {t(statusKey) || status}
     </span>
   );
 };
 
 // --- Type Badge Component ---
-const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
+const TypeBadge: React.FC<{ type: string; t: (key: string) => string }> = ({
+  type,
+  t,
+}) => {
   const colors: Record<string, string> = {
     Policy: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
     Procedure:
@@ -111,11 +132,12 @@ const TypeBadge: React.FC<{ type: string }> = ({ type }) => {
       "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
     Report: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
   };
+  const typeKey = type.toLowerCase().replace(/\s+/g, "");
   return (
     <span
       className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${colors[type] || "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
     >
-      {type}
+      {t(typeKey) || type}
     </span>
   );
 };
@@ -138,6 +160,22 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [isProcessMapModalOpen, setIsProcessMapModalOpen] = useState(false);
   const [signingDoc, setSigningDoc] = useState<AppDocument | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close Add New dropdown on outside click
+  useEffect(() => {
+    if (!isAddMenuOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        addMenuRef.current &&
+        !addMenuRef.current.contains(e.target as Node)
+      ) {
+        setIsAddMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isAddMenuOpen]);
   const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
   const [viewingPDF, setViewingPDF] = useState<AppDocument | null>(null);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -155,13 +193,15 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
   const [activeQuickFilter, setActiveQuickFilter] =
     useState<QuickFilterKey>("all");
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  useState<QuickFilterKey>("all");
 
   const handleConfirmSignature = async () => {
     if (!signingDoc) return;
 
     setIsSaving(true);
     try {
-      onApproveDocument(signingDoc.id);
+      await onApproveDocument(signingDoc.id);
       toast.success(
         t("documentApprovedSuccessfully") || "Document approved successfully",
       );
@@ -181,7 +221,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const handleSaveDocument = async (doc: AppDocument) => {
     setIsSaving(true);
     try {
-      onUpdateDocument(doc);
+      await onUpdateDocument(doc);
       toast.success(
         t("documentSavedSuccessfully") || "Document saved successfully",
       );
@@ -215,7 +255,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
     setIsDeleting(true);
     try {
-      onDeleteDocument(docId);
+      await onDeleteDocument(docId);
       toast.success(
         t("documentDeletedSuccessfully") || "Document deleted successfully",
       );
@@ -249,7 +289,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         return;
       }
 
-      onCreateDocument(docData as Parameters<typeof onCreateDocument>[0]);
+      await onCreateDocument(docData as Parameters<typeof onCreateDocument>[0]);
       toast.success(
         t("documentCreatedSuccessfully") || "Document created successfully",
       );
@@ -411,6 +451,16 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const stats = useMemo(() => {
     const allControlled = documents.filter((d) => d.isControlled);
     const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const recentDocs = allControlled.filter(
+      (d) => d.uploadedAt && new Date(d.uploadedAt) >= thirtyDaysAgo,
+    );
+    const recentApproved = recentDocs.filter(
+      (d) => d.status === "Approved",
+    ).length;
+    const recentPending = recentDocs.filter(
+      (d) => d.status === "Pending Review",
+    ).length;
     return {
       total: allControlled.length,
       approved: allControlled.filter((d) => d.status === "Approved").length,
@@ -420,6 +470,9 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       overdue: allControlled.filter(
         (d) => d.reviewDate && new Date(d.reviewDate) < now,
       ).length,
+      recentTotal: recentDocs.length,
+      recentApproved,
+      recentPending,
     };
   }, [documents]);
 
@@ -497,17 +550,26 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   }, [controlledDocuments, selectedDocIds.size]);
 
   // --- Bulk action handlers ---
-  const handleBulkApprove = useCallback(() => {
-    selectedDocIds.forEach((docId) => {
-      onApproveDocument(docId);
-    });
-    toast.success(
-      t("bulkApproveSuccess") || `${selectedDocIds.size} documents approved`,
+  const handleBulkApprove = useCallback(async () => {
+    const results = await Promise.allSettled(
+      Array.from(selectedDocIds).map((docId) => onApproveDocument(docId)),
     );
+    const failed = results.filter((r) => r.status === "rejected").length;
+    const succeeded = results.filter((r) => r.status === "fulfilled").length;
+    if (failed > 0) {
+      toast.error(
+        t("bulkApprovePartialFail") ||
+          `${succeeded} approved, ${failed} failed`,
+      );
+    } else {
+      toast.success(
+        t("bulkApproveSuccess") || `${succeeded} documents approved`,
+      );
+    }
     setSelectedDocIds(new Set());
   }, [selectedDocIds, onApproveDocument, toast, t]);
 
-  const handleBulkDelete = useCallback(() => {
+  const handleBulkDelete = useCallback(async () => {
     if (
       !window.confirm(
         t("confirmBulkDelete") ||
@@ -516,12 +578,18 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     ) {
       return;
     }
-    selectedDocIds.forEach((docId) => {
-      onDeleteDocument(docId);
-    });
-    toast.success(
-      t("bulkDeleteSuccess") || `${selectedDocIds.size} documents deleted`,
+    const results = await Promise.allSettled(
+      Array.from(selectedDocIds).map((docId) => onDeleteDocument(docId)),
     );
+    const failed = results.filter((r) => r.status === "rejected").length;
+    const succeeded = results.filter((r) => r.status === "fulfilled").length;
+    if (failed > 0) {
+      toast.error(
+        t("bulkDeletePartialFail") || `${succeeded} deleted, ${failed} failed`,
+      );
+    } else {
+      toast.success(t("bulkDeleteSuccess") || `${succeeded} documents deleted`);
+    }
     setSelectedDocIds(new Set());
   }, [selectedDocIds, onDeleteDocument, toast, t]);
 
@@ -593,11 +661,30 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
   // --- View document handler ---
   const handleViewDoc = useCallback((doc: AppDocument) => {
-    if (doc.fileUrl && doc.fileUrl.endsWith(".pdf")) {
-      setViewingPDF(doc);
-    } else {
-      setViewingDoc(doc);
+    if (doc.fileUrl) {
+      const url = doc.fileUrl.toLowerCase();
+      if (
+        url.endsWith(".pdf") ||
+        url.includes("/pdf") ||
+        url.includes("f_pdf")
+      ) {
+        setViewingPDF(doc);
+        return;
+      }
+      if (
+        url.endsWith(".docx") ||
+        url.endsWith(".xlsx") ||
+        url.endsWith(".pptx") ||
+        url.endsWith(".doc") ||
+        url.endsWith(".xls")
+      ) {
+        // For office files, open in editor which can handle rich text content
+        setViewingDoc(doc);
+        return;
+      }
     }
+    // Default: open in document editor
+    setViewingDoc(doc);
   }, []);
 
   // --- Breadcrumb Separator ---
@@ -650,53 +737,89 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             </Button>
           )}
           {canModify && (
-            <div className="relative">
+            <div className="relative" ref={addMenuRef}>
               <Button
                 onClick={() => setIsAddMenuOpen(!isAddMenuOpen)}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto gap-2"
+                aria-haspopup="true"
+                aria-expanded={isAddMenuOpen}
               >
-                <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                <PlusIcon className="w-5 h-5" />
                 {t("addNew")}
                 <ChevronDownIcon
-                  className={`w-4 h-4 ltr:ml-2 rtl:mr-2 transition-transform duration-200 ${
+                  className={`w-4 h-4 transition-transform duration-200 ${
                     isAddMenuOpen ? "rotate-180" : ""
                   }`}
                 />
               </Button>
               {isAddMenuOpen && (
-                <div className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-56 bg-white dark:bg-dark-brand-surface rounded-xl shadow-xl border dark:border-dark-brand-border z-10 overflow-hidden">
-                  <button
-                    onClick={() => {
-                      setIsMetaModalOpen(true);
-                      setIsAddMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-blue-50 dark:hover:bg-gray-700/60 transition-colors"
-                  >
-                    <DocumentTextIcon className="w-5 h-5 text-blue-500" />
-                    <span>
-                      {t("policy")}/{t("procedure")}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsProcessMapModalOpen(true);
-                      setIsAddMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-teal-50 dark:hover:bg-gray-700/60 transition-colors"
-                  >
-                    <ArrowPathIcon className="w-5 h-5 text-teal-500" />
-                    <span>{t("processMap")}</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMetaModalOpen(true);
-                      setIsAddMenuOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-orange-50 dark:hover:bg-gray-700/60 transition-colors border-t border-gray-100 dark:border-gray-700"
-                  >
-                    <DocumentPlusIcon className="w-5 h-5 text-orange-500" />
-                    <span>{t("uploadEvidence") || "Upload Evidence"}</span>
-                  </button>
+                <div
+                  className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-64 bg-white dark:bg-dark-brand-surface rounded-xl shadow-xl border border-gray-200 dark:border-dark-brand-border z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
+                  role="menu"
+                >
+                  <div className="p-2">
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setIsMetaModalOpen(true);
+                        setIsAddMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-blue-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                        <DocumentTextIcon className="w-5 h-5 text-blue-500" />
+                      </div>
+                      <div className="text-start">
+                        <div className="font-medium">
+                          {t("policy")}/{t("procedure")}
+                        </div>
+                        <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                          {t("createControlledDoc") ||
+                            "Create a controlled document"}
+                        </div>
+                      </div>
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setIsProcessMapModalOpen(true);
+                        setIsAddMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-teal-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                        <ArrowPathIcon className="w-5 h-5 text-teal-500" />
+                      </div>
+                      <div className="text-start">
+                        <div className="font-medium">{t("processMap")}</div>
+                        <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                          {t("createProcessMap") || "Design a process flow"}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
+                  <div className="border-t border-gray-100 dark:border-gray-700 p-2">
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setIsMetaModalOpen(true);
+                        setIsAddMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-orange-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                    >
+                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
+                        <DocumentPlusIcon className="w-5 h-5 text-orange-500" />
+                      </div>
+                      <div className="text-start">
+                        <div className="font-medium">
+                          {t("uploadEvidence") || "Upload Evidence"}
+                        </div>
+                        <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                          {t("uploadEvidenceDesc") || "Upload supporting files"}
+                        </div>
+                      </div>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -714,6 +837,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
           onSelectCategory={setActiveCategory}
           documentCounts={documentCounts}
           departments={departments}
+          isMobileOpen={isMobileSidebarOpen}
+          onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
 
         <div className="flex-1 space-y-6 min-w-0">
@@ -725,10 +850,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               icon={DocumentTextIcon}
               color="from-blue-500 to-blue-700 bg-gradient-to-br"
               trend={
-                stats.total > 0
+                stats.recentTotal > 0
                   ? {
                       direction: "up",
-                      value: 12,
+                      value: stats.recentTotal,
                       label: t("thisMonth") || "this month",
                     }
                   : undefined
@@ -740,10 +865,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               icon={CheckCircleIcon}
               color="from-green-500 to-green-700 bg-gradient-to-br"
               trend={
-                stats.approved > 0
+                stats.recentApproved > 0
                   ? {
                       direction: "up",
-                      value: 8,
+                      value: stats.recentApproved,
                       label: t("thisMonth") || "this month",
                     }
                   : undefined
@@ -755,10 +880,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               icon={ClockIcon}
               color="from-yellow-500 to-yellow-700 bg-gradient-to-br"
               trend={
-                stats.pending > 0
+                stats.recentPending > 0
                   ? {
-                      direction: "down",
-                      value: 5,
+                      direction:
+                        stats.pending > stats.recentPending ? "up" : "down",
+                      value: stats.recentPending,
                       label: t("thisMonth") || "this month",
                     }
                   : undefined
@@ -825,6 +951,14 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
           {/* ===== Search Bar + View Toggle ===== */}
           <div className="flex items-center gap-3 flex-wrap">
+            {/* Mobile Sidebar Toggle */}
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-2.5 bg-white dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-lg text-gray-500 dark:text-gray-400 hover:text-brand-primary transition-colors"
+              aria-label={t("openFilters") || "Open Filters"}
+            >
+              <ListBulletIcon className="w-5 h-5" />
+            </button>
             <div className="flex-1 min-w-[200px]">
               <DocumentSearch
                 onSearch={setSearchQuery}
@@ -840,6 +974,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     : "text-gray-500 dark:text-gray-400 hover:text-brand-primary"
                 }`}
                 title={t("listView") || "List View"}
+                aria-label={t("listView") || "List View"}
               >
                 <ListBulletIcon className="w-5 h-5" />
               </button>
@@ -851,6 +986,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     : "text-gray-500 dark:text-gray-400 hover:text-brand-primary"
                 }`}
                 title={t("gridView") || "Grid View"}
+                aria-label={t("gridView") || "Grid View"}
               >
                 <Squares2X2Icon className="w-5 h-5" />
               </button>
@@ -989,10 +1125,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                             )}
                           </td>
                           <td className="px-6 py-4">
-                            <TypeBadge type={doc.type} />
+                            <TypeBadge type={doc.type} t={t} />
                           </td>
                           <td className="px-6 py-4">
-                            <StatusBadge status={doc.status} />
+                            <StatusBadge status={doc.status} t={t} />
                           </td>
                           <td className="px-6 py-4 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
                             v{doc.currentVersion}
@@ -1097,8 +1233,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
                     {/* Badges Row */}
                     <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <TypeBadge type={doc.type} />
-                      <StatusBadge status={doc.status} />
+                      <TypeBadge type={doc.type} t={t} />
+                      <StatusBadge status={doc.status} t={t} />
                     </div>
 
                     {/* Meta Info */}
@@ -1122,20 +1258,40 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     </div>
 
                     {/* Card Actions */}
-                    {canModify && (
-                      <div
-                        className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700"
-                        onClick={(e) => e.stopPropagation()}
+                    <div
+                      className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => handleViewDoc(doc)}
+                        className="flex items-center gap-1 text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
+                        aria-label={t("view") || "View"}
                       >
-                        {doc.status === "Pending Review" && (
-                          <button
-                            onClick={() => setSigningDoc(doc)}
-                            className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium"
-                          >
-                            <CheckCircleIcon className="w-4 h-4" />
-                            {t("approve")}
-                          </button>
-                        )}
+                        <EyeIcon className="w-4 h-4" />
+                        {t("view") || "View"}
+                      </button>
+                      {doc.fileUrl && (
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                          aria-label={t("download") || "Download"}
+                        >
+                          <ArrowDownTrayIcon className="w-4 h-4" />
+                          {t("download") || "Download"}
+                        </a>
+                      )}
+                      {canModify && doc.status === "Pending Review" && (
+                        <button
+                          onClick={() => setSigningDoc(doc)}
+                          className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium"
+                        >
+                          <CheckCircleIcon className="w-4 h-4" />
+                          {t("approve")}
+                        </button>
+                      )}
+                      {canModify && (
                         <button
                           onClick={() => handleDeleteDocument(doc.id)}
                           className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ltr:ml-auto rtl:mr-auto"
@@ -1143,8 +1299,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                           <TrashIcon className="w-4 h-4" />
                           {t("delete")}
                         </button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 );
               })}
@@ -1155,7 +1311,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
       {/* ===== Bulk Actions Floating Bar ===== */}
       {selectedDocIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-4 px-6 py-3 bg-brand-surface dark:bg-dark-brand-surface rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-brand-border">
+        <div
+          className="fixed bottom-6 inset-x-0 mx-auto w-fit z-50 flex items-center gap-4 px-6 py-3 bg-brand-surface dark:bg-dark-brand-surface rounded-2xl shadow-2xl border border-gray-200 dark:border-dark-brand-border"
+          role="status"
+          aria-live="polite"
+        >
           <span className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
             {selectedDocIds.size} {t("selected") || "selected"}
           </span>

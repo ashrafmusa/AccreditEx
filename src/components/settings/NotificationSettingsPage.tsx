@@ -44,9 +44,11 @@ const NotificationSettingsPage: React.FC = () => {
     quietHoursEnabled: appSettings?.notifications?.quietHoursEnabled ?? false,
     quietHoursStart: appSettings?.notifications?.quietHoursStart ?? "22:00",
     quietHoursEnd: appSettings?.notifications?.quietHoursEnd ?? "08:00",
-    digestFrequency: (appSettings?.notifications?.digestFrequency ?? "instant") as "instant" | "daily" | "weekly",
+    digestFrequency: (appSettings?.notifications?.digestFrequency ??
+      "instant") as "instant" | "daily" | "weekly",
     notificationSound: appSettings?.notifications?.notificationSound ?? true,
-    desktopNotifications: appSettings?.notifications?.desktopNotifications ?? true,
+    desktopNotifications:
+      appSettings?.notifications?.desktopNotifications ?? true,
   });
 
   const [loading, setLoading] = useState(false);
@@ -83,14 +85,17 @@ const NotificationSettingsPage: React.FC = () => {
       }
       const oldNotif = appSettings.notifications || {};
       const allNewValues = { ...notifications, ...advancedSettings };
-      const changes: Record<string, { old: any; new: any }> = {};
+      const changes: { field: string; oldValue: unknown; newValue: unknown }[] =
+        [];
       for (const [key, newVal] of Object.entries(allNewValues)) {
         const oldVal = (oldNotif as any)[key];
         if (oldVal !== newVal) {
-          changes[key] = { old: oldVal, new: newVal };
+          changes.push({ field: key, oldValue: oldVal, newValue: newVal });
         }
       }
-      auditBatch('notifications', changes);
+      if (changes.length > 0) {
+        await auditBatch("notifications", changes);
+      }
       const updatedSettings = {
         ...appSettings,
         notifications: {
@@ -120,13 +125,16 @@ const NotificationSettingsPage: React.FC = () => {
       auditSchedules: appSettings?.notifications?.auditSchedules ?? true,
     });
     setAdvancedSettings({
-      criticalAlertsOnly: appSettings?.notifications?.criticalAlertsOnly ?? false,
+      criticalAlertsOnly:
+        appSettings?.notifications?.criticalAlertsOnly ?? false,
       quietHoursEnabled: appSettings?.notifications?.quietHoursEnabled ?? false,
       quietHoursStart: appSettings?.notifications?.quietHoursStart ?? "22:00",
       quietHoursEnd: appSettings?.notifications?.quietHoursEnd ?? "08:00",
-      digestFrequency: (appSettings?.notifications?.digestFrequency ?? "instant") as "instant" | "daily" | "weekly",
+      digestFrequency: (appSettings?.notifications?.digestFrequency ??
+        "instant") as "instant" | "daily" | "weekly",
       notificationSound: appSettings?.notifications?.notificationSound ?? true,
-      desktopNotifications: appSettings?.notifications?.desktopNotifications ?? true,
+      desktopNotifications:
+        appSettings?.notifications?.desktopNotifications ?? true,
     });
     setHasChanges(false);
   };

@@ -1,14 +1,15 @@
-import React from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Link } from '@tiptap/extension-link';
-import { Table } from '@tiptap/extension-table';
-import { TableRow } from '@tiptap/extension-table-row';
-import { TableCell } from '@tiptap/extension-table-cell';
-import { TableHeader } from '@tiptap/extension-table-header';
-import { Image } from '@tiptap/extension-image';
-import { TextAlign } from '@tiptap/extension-text-align';
-import { Underline } from '@tiptap/extension-underline';
+import React from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import { useTranslation } from "@/hooks/useTranslation";
+import StarterKit from "@tiptap/starter-kit";
+import { Link } from "@tiptap/extension-link";
+import { Table } from "@tiptap/extension-table";
+import { TableRow } from "@tiptap/extension-table-row";
+import { TableCell } from "@tiptap/extension-table-cell";
+import { TableHeader } from "@tiptap/extension-table-header";
+import { Image } from "@tiptap/extension-image";
+import { TextAlign } from "@tiptap/extension-text-align";
+import { Underline } from "@tiptap/extension-underline";
 import {
   BoldIcon,
   ItalicIcon,
@@ -23,7 +24,7 @@ import {
   TableIcon,
   UndoIcon,
   RedoIcon,
-} from '../icons';
+} from "../icons";
 
 interface RichTextEditorProps {
   content: string;
@@ -36,8 +37,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   content,
   onChange,
   editable = true,
-  placeholder = 'Start typing...',
+  placeholder = "Start typing...",
 }) => {
+  const { t } = useTranslation();
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -48,7 +50,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
-          class: 'text-brand-primary underline cursor-pointer',
+          class: "text-brand-primary underline cursor-pointer",
         },
       }),
       Table.configure({
@@ -59,11 +61,11 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       TableHeader,
       Image.configure({
         HTMLAttributes: {
-          class: 'max-w-full h-auto rounded-lg',
+          class: "max-w-full h-auto rounded-lg",
         },
       }),
       TextAlign.configure({
-        types: ['heading', 'paragraph'],
+        types: ["heading", "paragraph"],
       }),
       Underline,
     ],
@@ -74,7 +76,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
     },
     editorProps: {
       attributes: {
-        class: 'prose dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-4',
+        class:
+          "prose dark:prose-invert max-w-none focus:outline-none min-h-[400px] p-4",
       },
     },
   });
@@ -96,21 +99,25 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }
 
   const addLink = () => {
-    const url = window.prompt('Enter URL:');
+    const url = window.prompt(t("enterUrl") || "Enter URL:");
     if (url) {
       editor.chain().focus().setLink({ href: url }).run();
     }
   };
 
   const addImage = () => {
-    const url = window.prompt('Enter image URL:');
+    const url = window.prompt(t("enterImageUrl") || "Enter image URL:");
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
     }
   };
 
   const addTable = () => {
-    editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run();
+    editor
+      .chain()
+      .focus()
+      .insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+      .run();
   };
 
   const MenuButton = ({ onClick, active, disabled, children, title }: any) => (
@@ -119,7 +126,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       disabled={disabled}
       title={title}
       className={`p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors ${
-        active ? 'bg-gray-200 dark:bg-gray-600' : ''
+        active ? "bg-gray-200 dark:bg-gray-600" : ""
       }`}
     >
       {children}
@@ -134,35 +141,35 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <MenuButton
             onClick={() => editor.chain().focus().toggleBold().run()}
             active={editor.isActive("bold")}
-            title="Bold (Ctrl+B)"
+            title={t("boldCtrlB") || "Bold (Ctrl+B)"}
           >
             <BoldIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleItalic().run()}
             active={editor.isActive("italic")}
-            title="Italic (Ctrl+I)"
+            title={t("italicCtrlI") || "Italic (Ctrl+I)"}
           >
             <ItalicIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleUnderline().run()}
             active={editor.isActive("underline")}
-            title="Underline (Ctrl+U)"
+            title={t("underlineCtrlU") || "Underline (Ctrl+U)"}
           >
             <UnderlineIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleStrike().run()}
             active={editor.isActive("strike")}
-            title="Strikethrough"
+            title={t("strikethrough") || "Strikethrough"}
           >
             <StrikethroughIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleCode().run()}
             active={editor.isActive("code")}
-            title="Code"
+            title={t("code") || "Code"}
           >
             <CodeIcon className="w-4 h-4" />
           </MenuButton>
@@ -177,7 +184,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 editor.chain().focus().toggleHeading({ level }).run()
               }
               active={editor.isActive("heading", { level })}
-              title={`Heading ${level}`}
+              title={t(`heading${level}` as any) || `Heading ${level}`}
             >
               <span className="text-sm font-semibold">H{level}</span>
             </MenuButton>
@@ -189,14 +196,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <MenuButton
             onClick={() => editor.chain().focus().toggleBulletList().run()}
             active={editor.isActive("bulletList")}
-            title="Bullet List"
+            title={t("bulletList") || "Bullet List"}
           >
             <ListBulletIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
             active={editor.isActive("orderedList")}
-            title="Numbered List"
+            title={t("numberedList") || "Numbered List"}
           >
             <ListNumberIcon className="w-4 h-4" />
           </MenuButton>
@@ -207,21 +214,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <MenuButton
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
             active={editor.isActive("blockquote")}
-            title="Quote"
+            title={t("quote") || "Quote"}
           >
             <QuoteIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={addLink}
             active={editor.isActive("link")}
-            title="Add Link"
+            title={t("addLink") || "Add Link"}
           >
             <LinkIcon className="w-4 h-4" />
           </MenuButton>
-          <MenuButton onClick={addImage} title="Add Image">
+          <MenuButton onClick={addImage} title={t("addImage") || "Add Image"}>
             <ImageIcon className="w-4 h-4" />
           </MenuButton>
-          <MenuButton onClick={addTable} title="Insert Table">
+          <MenuButton
+            onClick={addTable}
+            title={t("insertTable") || "Insert Table"}
+          >
             <TableIcon className="w-4 h-4" />
           </MenuButton>
 
@@ -231,14 +241,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <MenuButton
             onClick={() => editor.chain().focus().undo().run()}
             disabled={!editor.can().undo()}
-            title="Undo (Ctrl+Z)"
+            title={t("undoCtrlZ") || "Undo (Ctrl+Z)"}
           >
             <UndoIcon className="w-4 h-4" />
           </MenuButton>
           <MenuButton
             onClick={() => editor.chain().focus().redo().run()}
             disabled={!editor.can().redo()}
-            title="Redo (Ctrl+Y)"
+            title={t("redoCtrlY") || "Redo (Ctrl+Y)"}
           >
             <RedoIcon className="w-4 h-4" />
           </MenuButton>

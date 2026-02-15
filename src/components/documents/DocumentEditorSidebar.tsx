@@ -659,7 +659,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
 
   return (
     <aside
-      className="w-80 border-l dark:border-dark-brand-border flex-shrink-0 flex flex-col bg-white dark:bg-gray-900 overflow-y-auto"
+      className="w-80 border-s dark:border-dark-brand-border flex-shrink-0 flex flex-col bg-white dark:bg-gray-900 overflow-y-auto"
       dir={isRtl ? "rtl" : "ltr"}
     >
       {/* ===== Edit / View toggle ===== */}
@@ -959,7 +959,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
           title={t("relatedDocuments") || "Related Documents"}
           icon={<LinkIcon className="w-4 h-4" />}
           badge={
-            <span className="ml-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-1.5 py-0.5">
+            <span className="ms-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-1.5 py-0.5">
               {relatedDocuments.length +
                 childDocuments.length +
                 (parentDocument ? 1 : 0)}
@@ -979,7 +979,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
               <button
                 type="button"
                 onClick={() => onRelatedDocumentClick?.(parentDocument.id)}
-                className="w-full text-left text-sm p-2 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100
+                className="w-full text-start text-sm p-2 rounded-md bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100
                            dark:hover:bg-blue-900/30 cursor-pointer border border-blue-200 dark:border-blue-800 transition-colors"
               >
                 <div className="flex items-center gap-1.5 font-medium">
@@ -1005,7 +1005,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                     key={doc.id}
                     type="button"
                     onClick={() => onRelatedDocumentClick?.(doc.id)}
-                    className="w-full text-left text-sm p-2 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100
+                    className="w-full text-start text-sm p-2 rounded-md bg-green-50 dark:bg-green-900/20 hover:bg-green-100
                                dark:hover:bg-green-900/30 cursor-pointer border border-green-200 dark:border-green-800 transition-colors"
                   >
                     <div className="flex items-center gap-1.5 font-medium">
@@ -1033,7 +1033,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                     key={doc.id}
                     type="button"
                     onClick={() => onRelatedDocumentClick?.(doc.id)}
-                    className="w-full text-left text-sm p-2 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100
+                    className="w-full text-start text-sm p-2 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100
                                dark:hover:bg-gray-700 cursor-pointer border border-gray-200 dark:border-gray-700 transition-colors"
                   >
                     <div className="flex items-center gap-1.5 font-medium">
@@ -1075,7 +1075,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
         title={t("versionHistory") || "Version History"}
         icon={<ClockIcon className="w-4 h-4" />}
         badge={
-          <span className="ml-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-1.5 py-0.5">
+          <span className="ms-1 text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-full px-1.5 py-0.5">
             {(document.versionHistory?.length || 0) + 1}
           </span>
         }
@@ -1123,7 +1123,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                     setViewingVersion("current");
                   }
                 }}
-                className={`w-full text-left text-sm p-2.5 rounded-md transition-colors ${
+                className={`w-full text-start text-sm p-2.5 rounded-md transition-colors ${
                   viewingVersion === "current"
                     ? "bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-400 font-semibold"
                     : selectedVersionForComparison === "current"
@@ -1191,7 +1191,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                         setViewingVersion(v.version);
                       }
                     }}
-                    className={`w-full text-left text-sm p-2.5 rounded-md transition-colors ${
+                    className={`w-full text-start text-sm p-2.5 rounded-md transition-colors ${
                       viewingVersion === v.version
                         ? "bg-blue-50 dark:bg-blue-900/20 ring-2 ring-blue-400 font-semibold"
                         : selectedVersionForComparison === v.version

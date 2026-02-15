@@ -1,6 +1,7 @@
 import React from "react";
 import { XMarkIcon } from "../icons";
 import DOCXViewer from "./DOCXViewer";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface DOCXViewerModalProps {
   isOpen: boolean;
@@ -15,6 +16,8 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
   fileUrl,
   fileName,
 }) => {
+  const { t } = useTranslation();
+
   if (!isOpen) return null;
 
   const handleDownload = () => {
@@ -29,6 +32,8 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
       className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center backdrop-blur-sm"
       onClick={onClose}
     >
@@ -43,7 +48,7 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
               {fileName}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Word Document Viewer
+              {t("wordDocumentViewer") || "Word Document Viewer"}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -51,12 +56,12 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
               onClick={handleDownload}
               className="px-4 py-2 text-sm font-medium text-brand-primary hover:bg-sky-50 dark:hover:bg-sky-900/20 border border-brand-primary rounded-md transition-colors"
             >
-              Download
+              {t("download") || "Download"}
             </button>
             <button
               onClick={onClose}
               className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              aria-label="Close"
+              aria-label={t("close") || "Close"}
             >
               <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
             </button>
@@ -71,14 +76,14 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
         {/* Footer */}
         <div className="flex items-center justify-between p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 shrink-0">
           <p className="text-xs text-gray-500 dark:text-gray-400">
-            This document has been converted from DOCX format for viewing.
-            Download for full formatting.
+            {t("docxConversionNote") ||
+              "This document has been converted from DOCX format for viewing. Download for full formatting."}
           </p>
           <button
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 rounded-md transition-colors"
           >
-            Close
+            {t("close") || "Close"}
           </button>
         </div>
       </div>

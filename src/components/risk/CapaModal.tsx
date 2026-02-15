@@ -68,7 +68,11 @@ const CapaModal: FC<CapaModalProps> = ({
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="capa-modal-title"
       onClick={onClose}
+      onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
       <div
         className="bg-white dark:bg-dark-brand-surface rounded-lg shadow-xl w-full max-w-2xl m-4"
@@ -77,7 +81,9 @@ const CapaModal: FC<CapaModalProps> = ({
       >
         <form onSubmit={handleSubmit} className="flex flex-col max-h-[90vh]">
           <div className="p-6 border-b">
-            <h3 className="text-lg font-medium">{t("capaReport")}</h3>
+            <h3 id="capa-modal-title" className="text-lg font-medium">
+              {t("capaReport")}
+            </h3>
           </div>
           <div className="p-6 space-y-4 overflow-y-auto">
             <div>
@@ -151,11 +157,11 @@ const CapaModal: FC<CapaModalProps> = ({
                   className={`${inputClasses} opacity-70`}
                   disabled={true}
                 >
-                  <option value="Plan">Plan</option>
-                  <option value="Do">Do</option>
-                  <option value="Check">Check</option>
-                  <option value="Act">Act</option>
-                  <option value="Completed">Completed</option>
+                  <option value="Plan">{t("pdcaPlan")}</option>
+                  <option value="Do">{t("pdcaDo")}</option>
+                  <option value="Check">{t("pdcaCheck")}</option>
+                  <option value="Act">{t("pdcaAct")}</option>
+                  <option value="Completed">{t("pdcaCompleted")}</option>
                 </select>
                 <p className="text-xs text-gray-500 mt-1">
                   {t("manageStageInBoard") || "Manage stage in PDCA Board"}

@@ -12,7 +12,6 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { useSanitizedHTML } from "../../hooks/useSanitizedHTML";
 import {
   XMarkIcon,
-  SparklesIcon,
   PrinterIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
@@ -84,7 +83,6 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
     version1: number | "current";
     version2: number | "current";
   }>({ isOpen: false, version1: "current", version2: "current" });
-  const [templateGalleryOpen, setTemplateGalleryOpen] = useState(false);
 
   // New state for enhancements
   const [editorLang, setEditorLang] = useState<"en" | "ar">(
@@ -404,17 +402,6 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
             {/* Right: header actions */}
             <div className="flex items-center gap-2">
-              {/* Templates button */}
-              {isEditMode && viewingVersion === "current" && (
-                <button
-                  onClick={() => setTemplateGalleryOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-linear-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm hover:shadow-md"
-                >
-                  <SparklesIcon className="w-4 h-4" />
-                  {t("templates") || "Templates"}
-                </button>
-              )}
-
               {/* Shortcuts tooltip */}
               <div className="relative">
                 <button

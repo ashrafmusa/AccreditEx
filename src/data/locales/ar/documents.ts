@@ -69,6 +69,9 @@ export const ar = {
     addNew: 'إضافة جديد',
     processMap: 'خريطة العمليات',
     uploadEvidence: 'تحميل دليل',
+    createControlledDoc: 'إنشاء وثيقة مُحكمة',
+    createProcessMap: 'تصميم مخطط عمليات',
+    uploadEvidenceDesc: 'رفع ملفات داعمة',
     fileName: 'اسم الملف',
     generate: 'إنشاء',
     complianceSummaryReport: 'تقرير ملخص الامتثال',
@@ -90,36 +93,36 @@ export const ar = {
     pendingReview: 'قيد المراجعة',
     drafts: 'مسودات',
     selectEvidence: 'اختر مستند الدليل',
-    
+
     // Document Control Hub
     documentControl: 'التحكم في المستندات',
     documentControlHubDescription: 'إدارة جميع السياسات والإجراءات ومستندات الدليل. التحكم في إصدارات المستندات وتتبع الموافقات.',
-    
+
     // Document Form Validation
     documentNameRequired: 'اسم المستند مطلوب',
     arabicNameRequired: 'الاسم العربي مطلوب',
     processMapNameRequired: 'اسم خريطة العملية مطلوب',
     uploadFile: 'تحميل ملف',
     uploading: 'جاري التحميل',
-    
+
     // Document Operations Success
     documentCreatedSuccessfully: 'تم إنشاء المستند بنجاح',
     documentSavedSuccessfully: 'تم حفظ المستند بنجاح',
     documentDeletedSuccessfully: 'تم حذف المستند بنجاح',
     documentApprovedSuccessfully: 'تم اعتماد المستند بنجاح',
     processMapCreatedSuccessfully: 'تم إنشاء خريطة العملية بنجاح',
-    
+
     // Document Operations Failed
     failedToCreateDocument: 'فشل إنشاء المستند',
     failedToSaveDocument: 'فشل حفظ المستند',
     failedToDeleteDocument: 'فشل حذف المستند',
     failedToApproveDocument: 'فشل اعتماد المستند',
     failedToCreateProcessMap: 'فشل إنشاء خريطة العملية',
-    
+
     // Signature
     signatureStatementDocument: 'أشهد بأنني قد راجعت بيانات هذا المستند وأوافق على استخدامه عليه.',
     signAndApprove: 'بالتوقيع والموافقة',
-    
+
     // Document Search & Filters
     searchDocuments: 'بحث عن مستندات...',
     allStatuses: 'جميع الحالات',
@@ -128,7 +131,7 @@ export const ar = {
     archived: 'محفوظ',
     filterByAuthor: 'تصفية حسب المؤلف',
     clearFilters: 'مسح المرشحات',
-    
+
     // Document Sidebar
     allDocuments: 'جميع المستندات',
     myDocuments: 'مستنداتي',
@@ -140,7 +143,7 @@ export const ar = {
     library: 'المكتبة',
     types: 'الأنواع',
     uploadFailed: 'فشل التحميل',
-    
+
     // Rich Text Editor
     enterURL: 'أدخل رابط (URL):',
     enterImageURL: 'أدخل رابط الصورة:',
@@ -172,6 +175,53 @@ export const ar = {
     loadTemplate: 'تحميل القالب',
     templateWarning: 'تحميل قالب سيستبدل خريطة العمليات الحالية. تأكد من حفظ عملك أولاً!',
     connections: 'اتصالات',
+
+    // Process Map AI Tools
+    aiTools: 'أدوات الذكاء الاصطناعي:',
+    generateFromText: 'إنشاء من نص',
+    suggestNextSteps: 'اقتراح الخطوات التالية',
+    optimizeProcess: 'تحسين العملية',
+    exportToDocument: 'تصدير إلى مستند',
+    searchNodes: 'بحث في العقد',
+    quickAdd: 'إضافة سريعة',
+    active: 'نشط',
+    swimlanes: 'مسارات السباحة',
+    metrics: 'المقاييس',
+    aiProcessing: 'الذكاء الاصطناعي يعالج...',
+    generateProcessMapDesc: 'إنشاء خريطة عمليات من وصف',
+    describeProcessPlaceholder: 'صف عمليتك بالتفصيل. مثال: \'إنشاء عملية مراجعة المستندات حيث يتم تقديم المستندات ومراجعتها من قبل المدير والموافقة عليها أو رفضها ثم نشرها أو إعادتها للمراجعة.\'',
+    generating: 'جاري الإنشاء...',
+    suggestedNextSteps: 'الخطوات التالية المقترحة',
+    addThisStep: 'أضف هذه الخطوة',
+    processOptimizations: 'اقتراحات تحسين العملية',
+    noOptimizationsSuggested: 'لا توجد اقتراحات تحسين. عمليتك تبدو جيدة!',
+    complianceCheck: 'فحص الامتثال',
+    selectStandardToCheck: 'اختر معياراً للفحص:',
+    cbahiDesc: 'اعتماد المنشآت الصحية',
+    jciDesc: 'معايير المستشفيات الدولية',
+    mohDesc: 'أنظمة الصحة السعودية',
+    hesnDesc: 'المراقبة الصحية الإلكترونية',
+    compliant: 'متوافق',
+    nonCompliant: 'غير متوافق',
+    issuesFound: 'المشاكل الموجودة:',
+    recommendations: 'التوصيات:',
+    checkAnother: 'فحص آخر',
+    typeToSearchNodes: 'اكتب للبحث في تسميات العقد...',
+    processDocumentation: 'توثيق العملية',
+    downloadHTML: 'تحميل HTML',
+    multiSelectTools: 'أدوات التحديد المتعدد',
+    duplicate: 'تكرار',
+    alignH: 'محاذاة أفقية',
+    alignV: 'محاذاة عمودية',
+    nodeTypesAvailable: 'أنواع العقد المتاحة',
+    moveTip: 'تحريك:',
+    dragNodes: 'اسحب العقد',
+    connectTip: 'توصيل:',
+    dragFrom: 'اسحب من',
+    to: 'إلى',
+    deleteTip: 'حذف:',
+    selectAndDel: 'حدد واضغط Del',
+    pressForHelp: 'للمساعدة',
 
     // Training Placeholders
     questionEn: 'السؤال (بالإنجليزية)',
@@ -300,4 +350,218 @@ export const ar = {
 
     // Common Settings
     youHaveUnsavedChanges: 'لديك تغييرات غير محفوظة في إعداداتك',
+
+    // PDF/DOCX Viewer
+    pdfDocument: 'مستند PDF',
+    wordDocumentViewer: 'عارض مستندات Word',
+    loadingDocument: 'جاري تحميل المستند...',
+    errorLoadingDocument: 'خطأ في تحميل المستند',
+    failedToLoadDocument: 'فشل في تحميل المستند',
+    docxConversionNote: 'تم تحويل هذا المستند من تنسيق DOCX للعرض. قم بالتنزيل للحصول على التنسيق الكامل.',
+
+    // Rich Text Editor Toolbar
+    boldCtrlB: 'غامق (Ctrl+B)',
+    italicCtrlI: 'مائل (Ctrl+I)',
+    underlineCtrlU: 'تحته خط (Ctrl+U)',
+    strikethrough: 'يتوسطه خط',
+    code: 'كود',
+    heading1: 'عنوان 1',
+    heading2: 'عنوان 2',
+    heading3: 'عنوان 3',
+    bulletList: 'قائمة نقطية',
+    numberedList: 'قائمة مرقمة',
+    quote: 'اقتباس',
+    addLink: 'إضافة رابط',
+    addImage: 'إضافة صورة',
+    insertTable: 'إدراج جدول',
+    undoCtrlZ: 'تراجع (Ctrl+Z)',
+    redoCtrlY: 'إعادة (Ctrl+Y)',
+    enterUrl: 'أدخل الرابط:',
+    enterImageUrl: 'أدخل رابط الصورة:',
+
+    // File Uploader
+    removeFile: 'إزالة الملف',
+    fileSizeExceeds: 'حجم الملف يتجاوز الحد المسموح',
+    fileTypeNotSupported: 'نوع الملف غير مدعوم',
+    maxFilesAllowed: 'تم الوصول إلى الحد الأقصى لعدد الملفات المسموح به',
+
+    // Document Statuses
+    underReview: 'قيد المراجعة',
+    obsolete: 'ملغى',
+    pendingreview: 'قيد المراجعة',
+
+    // Document Type keys (lowercase, no spaces)
+    processmap: 'خريطة العمليات',
+
+    // Relative dates (formatRelativeDate)
+    daysOverdue: 'أيام متأخرة',
+    dueToday: 'مستحق اليوم',
+    dueIn: 'مستحق خلال',
+    days: 'أيام',
+    notApplicable: 'غير متاح',
+
+    // Document version comparison
+    currentVersion: 'الإصدار الحالي',
+
+    // Quick filters & toolbar
+    all: 'الكل',
+    needsReview: 'تحتاج مراجعة',
+    recentlyUpdated: 'تم التحديث مؤخراً',
+    overdue: 'متأخرة',
+    thisMonth: 'هذا الشهر',
+    needsAttention: 'تحتاج اهتمام',
+
+    // View toggle
+    listView: 'عرض القائمة',
+    gridView: 'عرض الشبكة',
+
+    // Bulk actions
+    bulkApproveSuccess: 'تم اعتماد المستندات بنجاح',
+    bulkDeleteSuccess: 'تم حذف المستندات بنجاح',
+    bulkExportSuccess: 'تم تصدير المستندات بنجاح',
+    bulkApprovePartialFail: 'فشل اعتماد بعض المستندات',
+    bulkDeletePartialFail: 'فشل حذف بعض المستندات',
+    confirmBulkDelete: 'هل أنت متأكد أنك تريد حذف المستندات المحددة؟',
+    approveSelected: 'اعتماد المحدد',
+    exportSelected: 'تصدير المحدد',
+    deleteSelected: 'حذف المحدد',
+    clearSelection: 'مسح التحديد',
+    selected: 'محدد',
+
+    // Summary line
+    documentsNeedReview: 'مستندات تحتاج مراجعة',
+    overdueReviews: 'مراجعات متأخرة',
+    draftsInProgress: 'مسودات قيد العمل',
+    allDocumentsUpToDate: 'جميع المستندات محدثة',
+
+    // Empty states
+    noDocumentsFound: 'لم يتم العثور على مستندات',
+    noDocumentsMatchFilter: 'لا توجد مستندات تطابق التصفية',
+    getStartedCreatingDocuments: 'ابدأ بإنشاء أول مستند',
+    createFirstDocument: 'إنشاء مستند',
+
+    // Show toggle
+    showAllDocuments: 'عرض جميع المستندات',
+    showMyDocuments: 'عرض مستنداتي',
+
+    // Table columns
+    showingXOfY: 'عرض {x} من {y}',
+    columns: 'الأعمدة',
+    columnSettings: 'إعدادات الأعمدة',
+    selectAll: 'تحديد الكل',
+    selectDocument: 'تحديد المستند',
+
+    // More actions
+    moreActions: 'إجراءات أخرى',
+
+    // Sidebar
+    documentSidebar: 'الشريط الجانبي للمستندات',
+    searchSidebar: 'بحث في الشريط الجانبي...',
+    clearSearch: 'مسح البحث',
+    openFilters: 'فتح التصفيات',
+    noResults: 'لم يتم العثور على نتائج',
+    documents: 'المستندات',
+    used: 'مستخدم',
+    storage: 'التخزين',
+
+    // Document Editor Sidebar
+    completeness: 'الاكتمال',
+    hasContent: 'يحتوي محتوى',
+    hasTags: 'يحتوي وسوم',
+    hasCategory: 'يحتوي فئة',
+    hasDepartment: 'يحتوي قسم',
+    hasReviewDate: 'يحتوي تاريخ مراجعة',
+    isApproved: 'معتمد',
+    documentInfo: 'معلومات المستند',
+    documentProperties: 'خصائص المستند',
+    noTags: 'لا توجد وسوم',
+    linkDocument: 'ربط مستند',
+
+    // Document Editor Modal
+    autosaving: 'حفظ تلقائي...',
+    saved: 'تم الحفظ',
+    unsavedChanges: 'تغييرات غير محفوظة',
+    unsavedChangesTitle: 'تغييرات غير محفوظة',
+    unsavedChangesMessage: 'لديك تغييرات غير محفوظة. ماذا تريد أن تفعل؟',
+    discardChanges: 'تجاهل التغييرات',
+    saveAndClose: 'حفظ وإغلاق',
+    saveChanges: 'حفظ التغييرات',
+    words: 'كلمات',
+    minRead: 'دقيقة قراءة',
+    justNow: 'الآن',
+    minAgo: 'دقيقة مضت',
+    copyEnToAr: 'نسخ EN ← AR',
+    copyArToEn: 'نسخ AR ← EN',
+    shortcuts: 'اختصارات',
+    keyboardShortcuts: 'اختصارات لوحة المفاتيح',
+    exportFailed: 'فشل التصدير',
+    loadingEditor: 'جاري تحميل المحرر...',
+    startTyping: 'ابدأ الكتابة...',
+
+    // AI features
+    complianceScore: 'درجة الامتثال',
+    confidence: 'الثقة',
+    addedWords: 'الكلمات المضافة',
+    removedWords: 'الكلمات المحذوفة',
+    summarizeDocument: 'تلخيص المستند',
+    checkCompliance: 'فحص الامتثال',
+    failedToImprove: 'فشل تحسين الكتابة',
+    failedToTranslate: 'فشل الترجمة',
+    failedComplianceCheck: 'فشل فحص الامتثال',
+    failedToSummarize: 'فشل التلخيص',
+
+    // Relationships/versions
+    implements: 'ينفذ',
+    references: 'يشير إلى',
+    supersedes: 'يحل محل',
+    related: 'ذو صلة',
+    current: 'الحالي',
+    unknown: 'غير معروف',
+
+    // Process Map Modal
+    processMapNameEn: 'اسم خريطة العملية (الإنجليزية)',
+    processMapNameAr: 'اسم خريطة العملية (العربية)',
+    addNewProcessMap: 'إضافة خريطة عملية جديدة',
+
+    // Search
+    oneResultFound: 'نتيجة واحدة',
+    resultsFound: 'نتائج',
+    recentSearches: 'عمليات البحث الأخيرة',
+    addTags: 'إضافة وسوم',
+    removeTag: 'إزالة وسم',
+    dateRange: 'نطاق التاريخ',
+    fromDate: 'من',
+    toDate: 'إلى',
+    last7Days: 'آخر 7 أيام',
+    last30Days: 'آخر 30 يوم',
+    last90Days: 'آخر 90 يوم',
+    thisYear: 'هذا العام',
+    clearAll: 'مسح الكل',
+
+    // File Uploader
+    dropFilesHere: 'أسقط الملفات هنا',
+    dragDropFiles: 'اسحب وأسقط الملفات هنا',
+    orClickToBrowse: 'أو انقر للتصفح',
+    acceptedTypes: 'الأنواع المقبولة',
+    maxSize: 'الحد الأقصى للحجم',
+    perFile: 'لكل ملف',
+    maxFiles: 'الحد الأقصى للملفات',
+    selectedFiles: 'الملفات المحددة',
+    uploaded: 'تم التحميل',
+    acceptedFileTypes: 'PDF, DOCX, صور',
+
+    // Category keys
+    hr: 'الموارد البشرية',
+    clinical: 'سريري',
+    administrative: 'إداري',
+
+    // Common
+    close: 'إغلاق',
+    view: 'عرض',
+    edit: 'تعديل',
+    delete: 'حذف',
+    download: 'تحميل',
+    cancel: 'إلغاء',
+    save: 'حفظ',
+    home: 'الرئيسية',
 };

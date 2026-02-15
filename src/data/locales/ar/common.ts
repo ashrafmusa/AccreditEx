@@ -43,6 +43,7 @@ export const ar = {
     settings: 'الإعدادات',
     trainingHub: 'مركز التدريب',
     documentControl: 'إدارة المستندات',
+    competencies: 'الكفاءات',
     departments: 'الأقسام',
     dashboardOverview: 'نظرة عامة على لوحة التحكم',
     accreditationProjects: 'مشاريع الاعتماد',
@@ -379,4 +380,11 @@ export const ar = {
     tryDifferentKeywords: 'جرب كلمات مفتاحية مختلفة',
     adminAccessRequired: 'يتطلب وصول المسؤول',
     saveTheExcelFile: 'حفظ ملف Excel',
+
+    // Access Denied Dialog
+    accessDenied: 'تم رفض الوصول',
+    noPermissionToAccess: 'دورك لا يملك صلاحية الوصول إلى هذه المنطقة.',
+    needHelp: 'هل تحتاج مساعدة؟',
+    contactAdminForAccess: 'إذا كنت تعتقد أنه يجب أن يكون لديك حق الوصول إلى هذه الميزة، يرجى التواصل مع المسؤول.',
+    iUnderstand: 'فهمت',
 };

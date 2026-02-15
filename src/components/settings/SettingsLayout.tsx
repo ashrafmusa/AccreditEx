@@ -3,7 +3,6 @@ import { NavigationState, SettingsSection } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 
-const GeneralSettingsPage = lazy(() => import("./GeneralSettingsPage"));
 const ProfileSettingsPage = lazy(() => import("./ProfileSettingsPage"));
 const SecuritySettingsPage = lazy(() => import("./SecuritySettingsPage"));
 const AccreditationHubPage = lazy(() => import("@/pages/AccreditationHubPage"));
@@ -58,7 +57,7 @@ interface SettingsLayoutProps {
 }
 
 const SettingsLayout: React.FC<SettingsLayoutProps> = ({
-  section = "visual", // Default to Visual Settings as the first page
+  section: sectionProp,
   setNavigation,
 }) => {
   const { t } = useTranslation();
@@ -69,13 +68,16 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   // Firebase Setup is admin-only
   const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
+  // Default section: admins see Visual first, non-admins see Profile
+  const section = sectionProp ?? (isAdmin ? "visual" : "profile");
+
   const allNavItems = [
     {
       id: "visual",
       label: t("visualSettings"),
       icon: PaintBrushIcon,
-      adminOnly: false,
-      category: t("personal"),
+      adminOnly: true,
+      category: t("admin"),
     },
     {
       id: "profile",
@@ -88,8 +90,8 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       id: "security",
       label: t("security"),
       icon: ShieldCheckIcon,
-      adminOnly: false,
-      category: t("personal"),
+      adminOnly: true,
+      category: t("admin"),
     },
     {
       id: "notifications",
@@ -109,29 +111,29 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       id: "settingsPresets",
       label: t("settingsPresets"),
       icon: StarIcon,
-      adminOnly: false,
-      category: t("personal"),
+      adminOnly: true,
+      category: t("admin"),
     },
     {
       id: "versionHistory",
       label: t("versionHistory"),
       icon: DocumentDuplicateIcon,
-      adminOnly: false,
-      category: t("personal"),
+      adminOnly: true,
+      category: t("admin"),
     },
     {
       id: "usageTracking",
       label: t("usageTracking") || "Usage Tracking Settings",
       icon: Cog6ToothIcon,
-      adminOnly: false,
-      category: t("system"),
+      adminOnly: true,
+      category: t("admin"),
     },
     {
       id: "firebaseUsage",
       label: t("firebaseUsageDashboard") || "Firebase Usage Dashboard",
       icon: ChartBarIcon,
-      adminOnly: false,
-      category: t("system"),
+      adminOnly: true,
+      category: t("admin"),
     },
     {
       id: "users",
@@ -216,25 +218,23 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   const renderSection = () => {
     switch (section) {
       case "visual":
-        return <VisualSettingsPage />;
-      case "general":
-        return <GeneralSettingsPage />;
+        return isAdmin ? <VisualSettingsPage /> : <ProfileSettingsPage />;
       case "profile":
         return <ProfileSettingsPage />;
       case "security":
-        return <SecuritySettingsPage />;
+        return isAdmin ? <SecuritySettingsPage /> : <ProfileSettingsPage />;
       case "notifications":
         return <NotificationSettingsPage />;
       case "accessibility":
         return <AccessibilitySettingsPage />;
       case "settingsPresets":
-        return <SettingsPresetsPanel />;
+        return isAdmin ? <SettingsPresetsPanel /> : <ProfileSettingsPage />;
       case "versionHistory":
-        return <SettingsVersionHistory />;
+        return isAdmin ? <SettingsVersionHistory /> : <ProfileSettingsPage />;
       case "usageTracking":
-        return <UsageMonitorSettingsPage />;
+        return isAdmin ? <UsageMonitorSettingsPage /> : <ProfileSettingsPage />;
       case "firebaseUsage":
-        return <UsageMonitorPage />;
+        return isAdmin ? <UsageMonitorPage /> : <ProfileSettingsPage />;
       case "users":
         return <UsersPage setNavigation={setNavigation} />;
       case "accreditationHub":
@@ -244,15 +244,15 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       case "data":
         return <DataSettingsPage />;
       case "auditLog":
-        return isAdmin ? <SettingsAuditLogViewer /> : <GeneralSettingsPage />;
+        return isAdmin ? <SettingsAuditLogViewer /> : <ProfileSettingsPage />;
       case "bulkUserImport":
-        return isAdmin ? <BulkUserImport /> : <GeneralSettingsPage />;
+        return isAdmin ? <BulkUserImport /> : <ProfileSettingsPage />;
       case "firebaseSetup":
-        return isAdmin ? <FirebaseSetupPage /> : <GeneralSettingsPage />;
+        return isAdmin ? <FirebaseSetupPage /> : <ProfileSettingsPage />;
       case "about":
         return <AboutSettingsPage />;
       default:
-        return <VisualSettingsPage />;
+        return isAdmin ? <VisualSettingsPage /> : <ProfileSettingsPage />;
     }
   };
 

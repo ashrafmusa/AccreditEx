@@ -3,7 +3,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
 import { useUserStore } from "@/stores/useUserStore";
-import { AppSettings, UserRole } from "@/types";
+import { AppSettings, Language, UserRole } from "@/types";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsSection from "./SettingsSection";
@@ -35,11 +35,14 @@ const VisualSettingsPage: React.FC = () => {
   const { theme, toggleTheme, setTheme } = useTheme();
   const { appSettings, updateAppSettings } = useAppStore();
 
-  // Combined state for all visual settings
+  // Combined state for all visual + general settings
   const [settings, setSettings] = useState({
-    // General UI Settings
+    // General / Branding Settings
     appName: appSettings?.appName ?? "AccreditEx",
     logoUrl: appSettings?.logoUrl ?? "",
+    defaultLanguage: (appSettings?.defaultLanguage ?? "en") as Language,
+    defaultUserRole: (appSettings?.defaultUserRole ??
+      UserRole.TeamMember) as UserRole,
 
     // Appearance Settings
     appearance: {
@@ -148,8 +151,8 @@ const VisualSettingsPage: React.FC = () => {
         appName: settings.appName,
         logoUrl: settings.logoUrl,
         primaryColor: settings.appearance.customColors.primary,
-        defaultLanguage: appSettings?.defaultLanguage ?? "en",
-        defaultUserRole: appSettings?.defaultUserRole ?? UserRole.TeamMember,
+        defaultLanguage: settings.defaultLanguage,
+        defaultUserRole: settings.defaultUserRole,
         passwordPolicy: appSettings?.passwordPolicy ?? {
           minLength: 8,
           requireUppercase: false,
@@ -283,6 +286,16 @@ const VisualSettingsPage: React.FC = () => {
             oldValue: appSettings?.globeSettings?.rotationSpeed,
             newValue: settings.globeSettings.rotationSpeed,
           },
+          {
+            field: "defaultLanguage",
+            oldValue: appSettings?.defaultLanguage,
+            newValue: settings.defaultLanguage,
+          },
+          {
+            field: "defaultUserRole",
+            oldValue: appSettings?.defaultUserRole,
+            newValue: settings.defaultUserRole,
+          },
         ]);
       } catch (logError) {
         // Log errors shouldn't prevent save success
@@ -321,6 +334,9 @@ const VisualSettingsPage: React.FC = () => {
     setSettings({
       appName: appSettings?.appName ?? "AccreditEx",
       logoUrl: appSettings?.logoUrl ?? "",
+      defaultLanguage: (appSettings?.defaultLanguage ?? "en") as Language,
+      defaultUserRole: (appSettings?.defaultUserRole ??
+        UserRole.TeamMember) as UserRole,
       appearance: {
         compactMode: appSettings?.appearance?.compactMode ?? false,
         sidebarCollapsed: appSettings?.appearance?.sidebarCollapsed ?? false,
@@ -413,6 +429,58 @@ const VisualSettingsPage: React.FC = () => {
                   handleChange((s) => ({ ...s, logoUrl: url }))
                 }
               />
+            </div>
+          </SettingsSection>
+
+          <SettingsSection
+            title={t("defaults")}
+            description={
+              t("defaultLanguageAndRoleDescription") ||
+              "Set the default language and role for new users"
+            }
+            gridCols={2}
+            noBorder
+          >
+            <div>
+              <label htmlFor="defaultLanguage" className={labelClasses}>
+                {t("defaultLanguage")}
+              </label>
+              <select
+                id="defaultLanguage"
+                value={settings.defaultLanguage}
+                onChange={(e) =>
+                  handleChange((s) => ({
+                    ...s,
+                    defaultLanguage: e.target.value as Language,
+                  }))
+                }
+                className={`${inputClasses} transition-all`}
+              >
+                <option value="en">{t("englishLanguage")}</option>
+                <option value="ar">{t("arabicLanguage")}</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="defaultUserRole" className={labelClasses}>
+                {t("defaultUserRole")}
+              </label>
+              <select
+                id="defaultUserRole"
+                value={settings.defaultUserRole}
+                onChange={(e) =>
+                  handleChange((s) => ({
+                    ...s,
+                    defaultUserRole: e.target.value as UserRole,
+                  }))
+                }
+                className={`${inputClasses} transition-all`}
+              >
+                {Object.values(UserRole).map((role) => (
+                  <option key={role} value={role}>
+                    {role}
+                  </option>
+                ))}
+              </select>
             </div>
           </SettingsSection>
         </SettingsCard>

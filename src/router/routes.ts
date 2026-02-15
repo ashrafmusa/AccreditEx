@@ -50,9 +50,9 @@ export const routes: RouteConfig[] = [
     { path: "/departments", view: "departments", requiresAuth: true, requiresAdmin: true },
     { path: "/departments/:departmentId", view: "departmentDetail", requiresAuth: true, requiresAdmin: true },
 
-    // Settings
-    { path: "/settings", view: "settings", requiresAuth: true, requiresAdmin: true },
-    { path: "/settings/:section", view: "settings", requiresAuth: true, requiresAdmin: true },
+    // Settings (accessible to all authenticated users)
+    { path: "/settings", view: "settings", requiresAuth: true },
+    { path: "/settings/:section", view: "settings", requiresAuth: true },
 
     // User Profile
     { path: "/users/:userId", view: "userProfile", requiresAuth: true },
@@ -74,6 +74,13 @@ export const routes: RouteConfig[] = [
 
     // AI Tools
     { path: "/ai-document-generator", view: "aiDocumentGenerator", requiresAuth: true },
+
+    // Accreditation and Competencies (promoted from settings)
+    { path: "/accreditation", view: "accreditationHub", requiresAuth: true },
+    { path: "/competencies", view: "competencies", requiresAuth: true },
+
+    // Reports
+    { path: "/reports", view: "reports", requiresAuth: true },
 ];
 
 /**
@@ -133,6 +140,12 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/messages";
         case "aiDocumentGenerator":
             return "/ai-document-generator";
+        case "accreditationHub":
+            return "/accreditation";
+        case "competencies":
+            return "/competencies";
+        case "reports":
+            return "/reports";
         default:
             return "/dashboard";
     }
@@ -165,6 +178,9 @@ export const pathToNavigationState = (
     if (path === "/data") return { view: "dataHub" };
     if (path === "/messages") return { view: "messaging" };
     if (path === "/ai-document-generator") return { view: "aiDocumentGenerator" };
+    if (path === "/accreditation") return { view: "accreditationHub" };
+    if (path === "/competencies") return { view: "competencies" };
+    if (path === "/reports") return { view: "reports" };
     if (path === "/projects") return { view: "projects" };
     if (path === "/projects/create") return { view: "createProject" };
 
