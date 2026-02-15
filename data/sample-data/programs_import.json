@@ -1,16 +1,13 @@
-{
-  "collection": "programs",
-  "documentIdField": "id",
-  "documents": [
-    {
-      "id": "prog-ohap",
-      "name": "OHAS",
-      "description": {
-        "en": "Oman Healthcare Accreditation System - The national accreditation system for healthcare institutions in the Sultanate of Oman. Consists of 10 chapters with 256 standards applicable to public and private healthcare institutions.",
-        "ar": "نظام اعتماد الرعاية الصحية بسلطنة عمان - نظام الاعتماد الوطني للمؤسسات الصحية في سلطنة عمان. يتكون من 10 فصول مع 256 معيار ينطبق على المؤسسات الصحية العامة والخاصة."
-      }
-    }
-  ],
-  "importedAt": "2025-12-05T04:55:29.461Z",
-  "documentCount": 1
-}
+[
+  {
+    "name": "OHAS",
+    "description": {
+      "en": "Oman Healthcare Accreditation System - The national accreditation system for healthcare institutions in the Sultanate of Oman. Consists of 10 chapters with 256 standards applicable to public and private healthcare institutions.",
+      "ar": "نظام اعتماد الرعاية الصحية بسلطنة عمان - نظام الاعتماد الوطني للمؤسسات الصحية في سلطنة عمان. يتكون من 10 فصول مع 256 معيار ينطبق على المؤسسات الصحية العامة والخاصة."
+    },
+    "version": "2023",
+    "accreditingBody": "Ministry of Health - Oman",
+    "country": "Oman",
+    "status": "active"
+  }
+]
