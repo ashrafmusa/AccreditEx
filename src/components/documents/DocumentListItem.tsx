@@ -178,7 +178,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
       </div>
 
       {showActions && (
-        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+        <div className="flex items-center gap-2 flex-shrink-0 ms-4">
           {canViewDocument(document) && onView && (
             <button
               onClick={handleView}

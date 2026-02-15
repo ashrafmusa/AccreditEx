@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect, useCallback } from "react";
 import { AppDocument } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useSanitizedHTML } from "../../hooks/useSanitizedHTML";
@@ -23,28 +23,45 @@ const DocumentVersionComparisonModal: React.FC<
         version: document.currentVersion,
         content: document.content,
         date: document.approvalDate || document.uploadedAt,
-        label: "Current Version",
+        label: t("currentVersion") || "Current Version",
       };
     }
     const historyItem = document.versionHistory?.find(
-      (v) => v.version === version
+      (v) => v.version === version,
     );
     return {
       version: version,
       content: historyItem?.content || document.content,
       date: historyItem?.date || "",
-      label: `Version ${version}`,
+      label: `${t("version") || "Version"} ${version}`,
     };
   };
 
   const leftVersion = useMemo(
     () => getVersionContent(version1),
-    [version1, document]
+    [version1, document],
   );
   const rightVersion = useMemo(
     () => getVersionContent(version2),
-    [version2, document]
+    [version2, document],
   );
+
+  // Escape key handler
+  const handleEscapeKey = useCallback(
+    (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    },
+    [onClose],
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      window.addEventListener("keydown", handleEscapeKey);
+      return () => window.removeEventListener("keydown", handleEscapeKey);
+    }
+  }, [isOpen, handleEscapeKey]);
 
   if (!isOpen) return null;
 
@@ -52,6 +69,9 @@ const DocumentVersionComparisonModal: React.FC<
     <div
       className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="version-comparison-modal-title"
     >
       <div
         className="bg-white dark:bg-dark-brand-surface rounded-lg shadow-xl w-full max-w-7xl h-[90vh] m-4 flex flex-col modal-content-enter"
@@ -61,7 +81,10 @@ const DocumentVersionComparisonModal: React.FC<
         {/* Header */}
         <header className="p-4 border-b dark:border-dark-brand-border flex justify-between items-center flex-shrink-0">
           <div>
-            <h3 className="text-xl font-semibold dark:text-dark-brand-text-primary">
+            <h3
+              id="version-comparison-modal-title"
+              className="text-xl font-semibold dark:text-dark-brand-text-primary"
+            >
               {t("compareVersions") || "Compare Versions"}:{" "}
               {document.name[lang]}
             </h3>
@@ -72,7 +95,7 @@ const DocumentVersionComparisonModal: React.FC<
           <button
             onClick={onClose}
             className="p-2 text-gray-500 rounded-full dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-            aria-label="Close"
+            aria-label={t("close") || "Close"}
           >
             <XMarkIcon className="w-6 h-6" />
           </button>
@@ -81,7 +104,7 @@ const DocumentVersionComparisonModal: React.FC<
         {/* Content - Side by Side */}
         <main className="flex-grow flex overflow-hidden">
           {/* Left Version */}
-          <div className="flex-1 flex flex-col border-r dark:border-dark-brand-border">
+          <div className="flex-1 flex flex-col border-e dark:border-dark-brand-border">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b dark:border-dark-brand-border">
               <h4 className="font-semibold text-blue-900 dark:text-blue-300">
                 {leftVersion.label} (v{leftVersion.version})

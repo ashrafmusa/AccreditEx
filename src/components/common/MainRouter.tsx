@@ -6,6 +6,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import EmptyState from "@/components/common/EmptyState";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import { LockClosedIcon } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // Performance Optimization: Lazy load all page components
 // This reduces the main bundle from 4.39MB to under 500KB
@@ -66,6 +67,13 @@ const AIDocumentGeneratorPage = lazy(
   () => import("@/pages/AIDocumentGeneratorPage"),
 );
 
+// Accreditation, Competencies, and Reports (promoted from settings)
+const AccreditationHubPage = lazy(() => import("@/pages/AccreditationHubPage"));
+const CompetencyLibraryPage = lazy(
+  () => import("@/components/competencies/CompetencyLibraryPage"),
+);
+const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
+
 // Loading component for lazy-loaded routes
 const RouteLoadingFallback: React.FC = () => <LoadingScreen />;
 
@@ -80,6 +88,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
 }) => {
   const [unauthorizedAttempt, setUnauthorizedAttempt] = useState(false);
   const [unauthorizedMessage, setUnauthorizedMessage] = useState("");
+  const { t } = useTranslation();
 
   const { projects, updateMockSurvey, applySurveyFindingsToProject } =
     useProjectStore();
@@ -117,7 +126,6 @@ const MainRouter: React.FC<MainRouterProps> = ({
       const adminOnlyViews: NavigationState["view"][] = [
         "departments",
         "departmentDetail",
-        "auditHub",
         "dataHub",
       ];
 
@@ -239,10 +247,10 @@ const MainRouter: React.FC<MainRouterProps> = ({
             </div>
           </div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Access Denied
+            {t("accessDenied")}
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mb-2">
-            Your role does not have permission to access this area.
+            {t("noPermissionToAccess")}
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 italic">
             {unauthorizedMessage}
@@ -250,11 +258,10 @@ const MainRouter: React.FC<MainRouterProps> = ({
 
           <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 text-left">
             <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase mb-1">
-              ℹ️ Need Help?
+              ℹ️ {t("needHelp")}
             </p>
             <p className="text-sm text-blue-800 dark:text-blue-200">
-              If you believe you should have access to this feature, please
-              contact your administrator.
+              {t("contactAdminForAccess")}
             </p>
           </div>
 
@@ -266,7 +273,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
               }}
               className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
             >
-              I Understand
+              {t("iUnderstand")}
             </button>
           </div>
         </div>
@@ -294,7 +301,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
         );
       case "calendar":
         return <CalendarPage setNavigation={setNavigation} />;
-      case "risk":
+      case "riskHub":
         return <RiskHubPage setNavigation={setNavigation} />;
       case "auditHub":
         return <AuditHubPage setNavigation={setNavigation} />;
@@ -306,7 +313,9 @@ const MainRouter: React.FC<MainRouterProps> = ({
             departments={departments}
             currentUser={currentUser}
             onUpdateDocument={updateDocument}
-            onCreateDocument={addControlledDocument}
+            onCreateDocument={async (data) => {
+              await addControlledDocument(data);
+            }}
             onAddProcessMap={addProcessMap}
             onDeleteDocument={deleteDocument}
             onApproveDocument={approveDocument}
@@ -447,6 +456,12 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <MessagingPage setNavigation={setNavigation} />;
       case "aiDocumentGenerator":
         return <AIDocumentGeneratorPage />;
+      case "accreditationHub":
+        return <AccreditationHubPage setNavigation={setNavigation} />;
+      case "competencies":
+        return <CompetencyLibraryPage />;
+      case "reports":
+        return <ReportsPage />;
       default:
         return <DashboardPage setNavigation={setNavigation} />;
     }

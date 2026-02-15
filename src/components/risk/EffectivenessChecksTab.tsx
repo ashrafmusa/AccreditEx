@@ -57,19 +57,19 @@ const EffectivenessChecksTab: React.FC<Props> = ({
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
                 >
                   {t("source")}
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
                 >
                   {t("checkDueDate")}
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
                 >
                   {t("actions")}
                 </th>
@@ -89,7 +89,7 @@ const EffectivenessChecksTab: React.FC<Props> = ({
                       onClick={() => setCompletingCheck(capa)}
                       className="flex items-center text-sm text-brand-primary hover:underline"
                     >
-                      <CheckCircleIcon className="w-4 h-4 mr-1" />
+                      <CheckCircleIcon className="w-4 h-4 me-1" />
                       {t("completeCheck")}
                     </button>
                   </td>
@@ -109,7 +109,10 @@ const EffectivenessChecksTab: React.FC<Props> = ({
       {completingCheck && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
+          role="dialog"
+          aria-modal="true"
           onClick={() => setCompletingCheck(null)}
+          onKeyDown={(e) => e.key === "Escape" && setCompletingCheck(null)}
         >
           <div
             className="bg-white dark:bg-dark-brand-surface rounded-lg shadow-xl w-full max-w-lg m-4 modal-content-enter"

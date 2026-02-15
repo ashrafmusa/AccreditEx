@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
 import { useUserStore } from "@/stores/useUserStore";
 import { User } from "@/types";
 import {
@@ -30,9 +31,11 @@ const BulkUserImport: React.FC = () => {
   } | null>(null);
 
   const isAdmin = currentUser?.role === "Admin";
+  const { auditLog } = useSettingsAudit();
 
   const handleExportUsers = async () => {
     try {
+      await auditLog("bulkUser", "exportUsers", null, "excel-export", "export");
       const blob = await exportUsersToExcel(users);
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -143,10 +146,18 @@ const BulkUserImport: React.FC = () => {
           </p>
           <button
             onClick={handleExportUsers}
-            className="w-full px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+            disabled={!isAdmin}
+            className={`w-full px-4 py-2 ${
+              isAdmin
+                ? "bg-green-500 hover:bg-green-600"
+                : "bg-gray-400 cursor-not-allowed"
+            } text-white rounded-lg transition-colors`}
           >
             Export to Excel
           </button>
+          {!isAdmin && (
+            <p className="text-xs text-red-500 mt-2">Admin access required</p>
+          )}
         </div>
 
         {/* Download Template */}

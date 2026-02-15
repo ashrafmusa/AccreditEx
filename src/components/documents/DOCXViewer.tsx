@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import mammoth from "mammoth";
 import DOMPurify from "dompurify";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface DOCXViewerProps {
   fileUrl: string;
@@ -8,6 +9,7 @@ interface DOCXViewerProps {
 }
 
 const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
+  const { t } = useTranslation();
   const [htmlContent, setHtmlContent] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,7 +59,9 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
       } catch (err) {
         console.error("Error loading DOCX:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to load document",
+          err instanceof Error
+            ? err.message
+            : t("failedToLoadDocument") || "Failed to load document",
         );
       } finally {
         setLoading(false);
@@ -71,11 +75,14 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
+      <div
+        className={`flex items-center justify-center p-8 ${className}`}
+        aria-live="polite"
+      >
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">
-            Loading document...
+            {t("loadingDocument") || "Loading document..."}
           </p>
         </div>
       </div>
@@ -84,7 +91,10 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
+      <div
+        className={`flex items-center justify-center p-8 ${className}`}
+        aria-live="polite"
+      >
         <div className="text-center">
           <div className="text-red-500 mb-2">
             <svg
@@ -102,7 +112,7 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
             </svg>
           </div>
           <p className="text-red-600 dark:text-red-400 font-medium">
-            Error loading document
+            {t("errorLoadingDocument") || "Error loading document"}
           </p>
           <p className="text-sm text-gray-500 mt-1">{error}</p>
         </div>
@@ -113,10 +123,9 @@ const DOCXViewer: React.FC<DOCXViewerProps> = ({ fileUrl, className = "" }) => {
   return (
     <div className={`docx-viewer-container ${className}`}>
       <div
-        className="prose dark:prose-invert max-w-none p-6"
+        className="prose dark:prose-invert max-w-none p-6 bg-white dark:bg-gray-900"
         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
         style={{
-          backgroundColor: "white",
           minHeight: "500px",
         }}
       />

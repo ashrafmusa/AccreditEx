@@ -1,6 +1,7 @@
 import React, { useState, FormEvent } from "react";
 import { User, Department } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
 import { useAppStore } from "../../stores/useAppStore";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
@@ -59,6 +60,7 @@ const calculatePasswordStrength = (
 const ProfileSettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { auditBatch } = useSettingsAudit();
   const { currentUser, updateUser: onUpdateUser } = useUserStore();
   const { departments } = useAppStore();
 
@@ -206,6 +208,20 @@ const ProfileSettingsPage: React.FC = () => {
       }
 
       await onUpdateUser(updatedUser as User);
+
+      // Audit log profile changes
+      const profileChanges = [
+        { field: "name", oldValue: currentUser!.name, newValue: name },
+        {
+          field: "jobTitle",
+          oldValue: currentUser!.jobTitle || "",
+          newValue: jobTitle,
+        },
+      ].filter((c) => c.oldValue !== c.newValue);
+      if (profileChanges.length > 0) {
+        await auditBatch("profile", profileChanges);
+      }
+
       setAvatarFile(undefined);
       setPassword("");
       setConfirmPassword("");

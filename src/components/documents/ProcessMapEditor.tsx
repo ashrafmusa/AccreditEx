@@ -22,6 +22,7 @@ import "reactflow/dist/style.css";
 import { toPng } from "html-to-image";
 import { AppDocument } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { aiAgentService } from "@/services/aiAgentService";
 import {
   XMarkIcon,
   PlusIcon,
@@ -331,12 +332,42 @@ const ProcessMapEditorContent: React.FC<
 
   // Handler stubs for compliance check and node search
   const handleCheckCompliance = async (standard: string) => {
-    setComplianceResult({
-      compliant: true,
-      standard,
-      issues: [],
-      recommendations: [],
-    });
+    setIsAIProcessing(true);
+    try {
+      const nodesDesc = nodes
+        .map((n) => `${n.type}: ${n.data.label}`)
+        .join(", ");
+      const prompt = `Analyze this process map for compliance with ${standard} standard. The process has these steps: ${nodesDesc}. Provide a JSON response with keys: "compliant" (boolean), "issues" (array of strings), "recommendations" (array of strings).`;
+      const response = await aiAgentService.chat(prompt, true);
+      try {
+        const parsed = JSON.parse(
+          response.response
+            .replace(/```json\s*/gi, "")
+            .replace(/```\s*/g, "")
+            .trim(),
+        );
+        setComplianceResult({ ...parsed, standard });
+      } catch {
+        setComplianceResult({
+          compliant: true,
+          standard,
+          issues: [],
+          recommendations: [response.response],
+        });
+      }
+    } catch {
+      setComplianceResult({
+        compliant: false,
+        standard,
+        issues: [
+          t("complianceCheckFailed") ||
+            "Compliance check failed. Please try again.",
+        ],
+        recommendations: [],
+      });
+    } finally {
+      setIsAIProcessing(false);
+    }
   };
 
   const handleNodeSearch = (query: string) => {
@@ -424,48 +455,147 @@ const ProcessMapEditorContent: React.FC<
     setTimeout(saveToHistory, 100);
   };
 
-  // AI & advanced handler stubs
+  // AI & advanced handler implementations
   const handleGetSuggestions = useCallback(async () => {
     setIsAIProcessing(true);
     try {
-      // AI suggestion logic placeholder
+      const nodesDesc = getNodes()
+        .map((n) => `${n.type}: ${n.data.label}`)
+        .join(", ");
+      const prompt = `Given this process map with steps: [${nodesDesc}], suggest 2-3 logical next steps. Return a JSON array where each item has "type" (process/decision/end), "label" (short name), and "rationale" (one sentence explanation).`;
+      const response = await aiAgentService.chat(prompt, true);
+      try {
+        const parsed = JSON.parse(
+          response.response
+            .replace(/```json\s*/gi, "")
+            .replace(/```\s*/g, "")
+            .trim(),
+        );
+        setAiSuggestions(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setAiSuggestions([]);
+      }
+    } catch {
       setAiSuggestions([]);
     } finally {
       setIsAIProcessing(false);
     }
-  }, []);
+  }, [getNodes]);
 
   const handleOptimizeProcess = useCallback(async () => {
     setIsAIProcessing(true);
     try {
-      // Optimization logic placeholder
+      const nodesDesc = getNodes()
+        .map((n) => `${n.type}: ${n.data.label}`)
+        .join(", ");
+      const edgesDesc = getEdges()
+        .map((e) => `${e.source} → ${e.target}`)
+        .join(", ");
+      const prompt = `Analyze this process map for optimization. Steps: [${nodesDesc}]. Connections: [${edgesDesc}]. Suggest improvements. Return a JSON array where each item has "category" (efficiency/clarity/compliance/structure), "priority" (high/medium/low), and "suggestion" (one-two sentences).`;
+      const response = await aiAgentService.chat(prompt, true);
+      try {
+        const parsed = JSON.parse(
+          response.response
+            .replace(/```json\s*/gi, "")
+            .replace(/```\s*/g, "")
+            .trim(),
+        );
+        setOptimizations(Array.isArray(parsed) ? parsed : []);
+      } catch {
+        setOptimizations([
+          {
+            category: "clarity",
+            priority: "medium",
+            suggestion: response.response,
+          },
+        ]);
+      }
+      setShowOptimizations(true);
+    } catch {
       setOptimizations([]);
       setShowOptimizations(true);
     } finally {
       setIsAIProcessing(false);
     }
-  }, []);
+  }, [getNodes, getEdges]);
 
   const handleGenerateDocumentation = useCallback(async () => {
     setIsAIProcessing(true);
     try {
-      // Documentation generation placeholder
-      setExportedDoc(null);
+      const nodesDesc = getNodes()
+        .map((n) => `${n.type}: ${n.data.label}`)
+        .join(", ");
+      const edgesDesc = getEdges()
+        .map((e) => `${e.source} → ${e.target}`)
+        .join(", ");
+      const prompt = `Generate a professional HTML document describing this process map. Process name: "${documentData.name[lang]}". Steps: [${nodesDesc}]. Connections: [${edgesDesc}]. Include sections: Overview, Steps Description, Decision Points, and Flow Summary. Use proper HTML formatting with h2, h3, p, ul, li tags.`;
+      const response = await aiAgentService.chat(prompt, true);
+      setExportedDoc(response.response);
+      setShowExportDoc(true);
+    } catch {
+      setExportedDoc(
+        `<p>${t("documentationGenerationFailed") || "Failed to generate documentation. Please try again."}</p>`,
+      );
       setShowExportDoc(true);
     } finally {
       setIsAIProcessing(false);
     }
-  }, []);
+  }, [getNodes, getEdges, documentData.name, lang, t]);
 
   const handleGenerateFromAI = useCallback(async () => {
     if (!aiDescription.trim()) return;
     setIsAIProcessing(true);
     try {
-      // AI generation logic placeholder
+      const prompt = `Generate a process map from this description: "${aiDescription}". Return a JSON object with "nodes" (array of objects with "id", "type" (start/process/decision/end), "label", "x", "y") and "edges" (array of objects with "source", "target", "label" (optional)). Position nodes vertically with 150px spacing. Start at y=50.`;
+      const response = await aiAgentService.chat(prompt, true);
+      try {
+        const parsed = JSON.parse(
+          response.response
+            .replace(/```json\s*/gi, "")
+            .replace(/```\s*/g, "")
+            .trim(),
+        );
+        if (parsed.nodes && Array.isArray(parsed.nodes)) {
+          const newNodes: Node[] = parsed.nodes.map((n: any, i: number) => ({
+            id: `ai-${Date.now()}-${i}`,
+            type: n.type || "process",
+            data: { label: n.label || `Step ${i + 1}` },
+            position: { x: n.x || 250, y: n.y || i * 150 + 50 },
+          }));
+          const nodeIdMap: Record<string, string> = {};
+          parsed.nodes.forEach((n: any, i: number) => {
+            nodeIdMap[n.id || String(i)] = newNodes[i].id;
+          });
+          const newEdges: Edge[] = (parsed.edges || []).map(
+            (e: any, i: number) => ({
+              id: `ai-e-${Date.now()}-${i}`,
+              source: nodeIdMap[e.source] || newNodes[0]?.id || "",
+              target: nodeIdMap[e.target] || newNodes[1]?.id || "",
+              label: e.label,
+              type: "smoothstep",
+              animated: true,
+              markerEnd: {
+                type: MarkerType.ArrowClosed,
+                width: 20,
+                height: 20,
+              },
+              style: { stroke: "#3b82f6", strokeWidth: 2 },
+            }),
+          );
+          setNodes(newNodes);
+          setEdges(newEdges);
+          setHasChanges(true);
+          setShowAIGenerator(false);
+          setAiDescription("");
+          setTimeout(saveToHistory, 100);
+        }
+      } catch {
+        // Could not parse AI response
+      }
     } finally {
       setIsAIProcessing(false);
     }
-  }, [aiDescription]);
+  }, [aiDescription, setNodes, setEdges, saveToHistory]);
 
   const handleAddSuggestedNode = useCallback(
     (suggestion: any) => {
@@ -484,8 +614,8 @@ const ProcessMapEditorContent: React.FC<
     [setNodes],
   );
 
-  const handleApplyOptimization = useCallback((optimization: any) => {
-    // Apply optimization logic placeholder
+  const handleApplyOptimization = useCallback((_optimization: any) => {
+    // Apply optimization — mark as changed so user can save
     setHasChanges(true);
   }, []);
 
@@ -804,45 +934,45 @@ const ProcessMapEditorContent: React.FC<
       </header>
 
       {/* AI-Powered Toolbar */}
-      <div className="border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-2 bg-rose-50 dark:bg-pink-900/20">
-        <div className="flex items-center gap-2 text-sm font-semibold text-pink-600 dark:text-rose-300">
+      <div className="border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-2 bg-sky-50 dark:bg-sky-900/20">
+        <div className="flex items-center gap-2 text-sm font-semibold text-sky-600 dark:text-sky-300">
           <span className="text-lg">✨</span>
-          AI Tools:
+          {t("aiTools") || "AI Tools:"}
         </div>
         <button
           onClick={() => setShowAIGenerator(true)}
           disabled={isAIProcessing}
-          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
         >
-          🤖 Generate from Text
+          🤖 {t("generateFromText") || "Generate from Text"}
         </button>
         <button
           onClick={handleGetSuggestions}
           disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
         >
-          💡 Suggest Next Steps
+          💡 {t("suggestNextSteps") || "Suggest Next Steps"}
         </button>
         <button
           onClick={handleOptimizeProcess}
           disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
         >
-          ⚡ Optimize Process
+          ⚡ {t("optimizeProcess") || "Optimize Process"}
         </button>
         <button
           onClick={handleGenerateDocumentation}
           disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
         >
-          📄 Export to Document
+          📄 {t("exportToDocument") || "Export to Document"}
         </button>
         <button
           onClick={() => setShowComplianceCheck(true)}
           disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-rose-600 text-white hover:bg-pink-600 disabled:opacity-50 transition-colors flex items-center gap-1.5"
+          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
         >
-          ✅ Check Compliance
+          ✅ {t("checkCompliance") || "Check Compliance"}
         </button>
 
         <div className="ml-auto flex items-center gap-2">
@@ -850,7 +980,7 @@ const ProcessMapEditorContent: React.FC<
             onClick={() => setShowNodeSearch(true)}
             className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1.5"
           >
-            🔍 Search Nodes
+            🔍 {t("searchNodes") || "Search Nodes"}
           </button>
           <button
             onClick={() => setQuickAddMode(!quickAddMode)}
@@ -860,24 +990,25 @@ const ProcessMapEditorContent: React.FC<
                 : "bg-gray-600 text-white hover:bg-gray-700"
             }`}
           >
-            ⚡ Quick Add {quickAddMode && "(Active)"}
+            ⚡ {t("quickAdd") || "Quick Add"}{" "}
+            {quickAddMode && `(${t("active") || "Active"})`}
           </button>
           <button
             onClick={() => setShowSwimlanes(!showSwimlanes)}
             className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 transition-colors flex items-center gap-1.5"
           >
-            🏊 Swimlanes
+            🏊 {t("swimlanes") || "Swimlanes"}
           </button>
           <button
             onClick={() => setShowMetrics(!showMetrics)}
             className="px-3 py-1.5 text-sm rounded bg-orange-600 text-white hover:bg-orange-700 transition-colors flex items-center gap-1.5"
           >
-            📊 Metrics
+            📊 {t("metrics") || "Metrics"}
           </button>
         </div>
 
         {isAIProcessing && (
-          <div className="w-full flex items-center gap-2 text-sm text-pink-600 dark:text-rose-300 mt-2">
+          <div className="w-full flex items-center gap-2 text-sm text-sky-600 dark:text-sky-300 mt-2">
             <svg
               className="animate-spin h-4 w-4"
               xmlns="http://www.w3.org/2000/svg"
@@ -898,7 +1029,7 @@ const ProcessMapEditorContent: React.FC<
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               ></path>
             </svg>
-            AI is processing...
+            {t("aiProcessing") || "AI is processing..."}
           </div>
         )}
       </div>
@@ -1084,7 +1215,7 @@ const ProcessMapEditorContent: React.FC<
                     type="text"
                     value={nodeLabel}
                     onChange={(e) => setNodeLabel(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleAddNode()}
+                    onKeyDown={(e) => e.key === "Enter" && handleAddNode()}
                     placeholder={t("enterNodeLabel") || "Enter label..."}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 transition-all"
                     autoFocus
@@ -1108,13 +1239,13 @@ const ProcessMapEditorContent: React.FC<
             {nodes.some((n) => n.selected) && (
               <div className="space-y-2 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-800">
                 <p className="text-xs font-bold text-sky-700 dark:text-sky-300 mb-2">
-                  ✨ Multi-Select Tools
+                  ✨ {t("multiSelectTools") || "Multi-Select Tools"}
                 </p>
                 <button
                   onClick={handleDuplicateSelected}
                   className="w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all text-xs font-medium shadow-sm"
                 >
-                  📋 Duplicate
+                  📋 {t("duplicate") || "Duplicate"}
                 </button>
                 <div className="flex gap-2">
                   <button
@@ -1122,14 +1253,14 @@ const ProcessMapEditorContent: React.FC<
                     className="flex-1 px-2 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all text-xs font-medium"
                     title="Align horizontally"
                   >
-                    ↔️ Align H
+                    ↔️ {t("alignH") || "Align H"}
                   </button>
                   <button
                     onClick={() => handleAlignSelected("vertical")}
                     className="flex-1 px-2 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all text-xs font-medium"
                     title="Align vertically"
                   >
-                    ↕️ Align V
+                    ↕️ {t("alignV") || "Align V"}
                   </button>
                 </div>
               </div>
@@ -1148,7 +1279,7 @@ const ProcessMapEditorContent: React.FC<
 
             <button
               onClick={handleAutoLayout}
-              className="w-full px-4 py-2 bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded-lg hover:from-pink-600 hover:to-pink-700 transition-all text-sm font-medium shadow-md"
+              className="w-full px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all text-sm font-medium shadow-md"
             >
               {t("autoLayout") || "✨ Auto Layout"}
             </button>
@@ -1172,7 +1303,7 @@ const ProcessMapEditorContent: React.FC<
                   <span>{t("legend") || "Legend"}</span>
                 </div>
                 <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
-                  Node types available
+                  {t("nodeTypesAvailable") || "Node types available"}
                 </span>
               </div>
               <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-colors cursor-default">
@@ -1220,19 +1351,27 @@ const ProcessMapEditorContent: React.FC<
                   </span>
                   <div className="flex items-center gap-3 text-sm">
                     <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">Move:</span> Drag nodes
+                      <span className="font-semibold">
+                        {t("moveTip") || "Move:"}
+                      </span>{" "}
+                      {t("dragNodes") || "Drag nodes"}
                     </span>
                     <span className="text-gray-400">•</span>
                     <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">Connect:</span> Drag from{" "}
+                      <span className="font-semibold">
+                        {t("connectTip") || "Connect:"}
+                      </span>{" "}
+                      {t("dragFrom") || "Drag from"}{" "}
                       <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></span>{" "}
-                      to{" "}
+                      {t("to") || "to"}{" "}
                       <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></span>
                     </span>
                     <span className="text-gray-400">•</span>
                     <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">Delete:</span> Select &
-                      press Del
+                      <span className="font-semibold">
+                        {t("deleteTip") || "Delete:"}
+                      </span>{" "}
+                      {t("selectAndDel") || "Select & press Del"}
                     </span>
                     <span className="text-gray-400">•</span>
                     <span className="text-gray-700 dark:text-gray-300">
@@ -1240,7 +1379,7 @@ const ProcessMapEditorContent: React.FC<
                       <span className="px-1.5 py-0.5 bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 rounded font-mono text-xs">
                         ?
                       </span>{" "}
-                      for help
+                      {t("pressForHelp") || "for help"}
                     </span>
                   </div>
                 </div>
@@ -1579,12 +1718,16 @@ const ProcessMapEditorContent: React.FC<
           >
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">🤖</span>
-              Generate Process Map from Description
+              {t("generateProcessMapDesc") ||
+                "Generate Process Map from Description"}
             </h3>
             <textarea
               value={aiDescription}
               onChange={(e) => setAiDescription(e.target.value)}
-              placeholder="Describe your process in detail. For example: 'Create a document review process where documents are submitted, reviewed by a manager, approved or rejected, and then either published or sent back for revision.'"
+              placeholder={
+                t("describeProcessPlaceholder") ||
+                "Describe your process in detail. For example: 'Create a document review process where documents are submitted, reviewed by a manager, approved or rejected, and then either published or sent back for revision.'"
+              }
               className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white resize-none"
             />
             <div className="mt-4 flex gap-2 justify-end">
@@ -1592,14 +1735,16 @@ const ProcessMapEditorContent: React.FC<
                 onClick={() => setShowAIGenerator(false)}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
               >
-                Cancel
+                {t("cancel") || "Cancel"}
               </button>
               <button
                 onClick={handleGenerateFromAI}
                 disabled={isAIProcessing || !aiDescription.trim()}
-                className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 disabled:opacity-50"
               >
-                {isAIProcessing ? "Generating..." : "Generate"}
+                {isAIProcessing
+                  ? t("generating") || "Generating..."
+                  : t("generate")}
               </button>
             </div>
           </div>
@@ -1608,11 +1753,11 @@ const ProcessMapEditorContent: React.FC<
 
       {/* AI Suggestions Panel */}
       {aiSuggestions.length > 0 && (
-        <div className="absolute top-20 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 max-w-sm z-40 border-2 border-rose-500">
+        <div className="absolute top-20 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 max-w-sm z-40 border-2 border-sky-500">
           <div className="flex items-center justify-between mb-3">
-            <h4 className="font-bold text-pink-600 dark:text-rose-300 flex items-center gap-2">
+            <h4 className="font-bold text-sky-600 dark:text-sky-300 flex items-center gap-2">
               <span>💡</span>
-              Suggested Next Steps
+              {t("suggestedNextSteps") || "Suggested Next Steps"}
             </h4>
             <button
               onClick={() => setAiSuggestions([])}
@@ -1625,7 +1770,7 @@ const ProcessMapEditorContent: React.FC<
             {aiSuggestions.map((suggestion, idx) => (
               <div
                 key={idx}
-                className="p-3 bg-rose-50 dark:bg-pink-900/20 rounded-lg border border-rose-200 dark:border-pink-700"
+                className="p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-700"
               >
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-2xl">
@@ -1640,9 +1785,9 @@ const ProcessMapEditorContent: React.FC<
                 </p>
                 <button
                   onClick={() => handleAddSuggestedNode(suggestion)}
-                  className="w-full px-3 py-1 text-xs bg-rose-600 text-white rounded hover:bg-pink-600"
+                  className="w-full px-3 py-1 text-xs bg-sky-600 text-white rounded hover:bg-sky-700"
                 >
-                  Add This Step
+                  {t("addThisStep") || "Add This Step"}
                 </button>
               </div>
             ))}
@@ -1662,11 +1807,12 @@ const ProcessMapEditorContent: React.FC<
           >
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">⚡</span>
-              Process Optimization Suggestions
+              {t("processOptimizations") || "Process Optimization Suggestions"}
             </h3>
             {optimizations.length === 0 ? (
               <p className="text-gray-600 dark:text-gray-400">
-                No optimizations suggested. Your process looks good!
+                {t("noOptimizationsSuggested") ||
+                  "No optimizations suggested. Your process looks good!"}
               </p>
             ) : (
               <div className="space-y-3">
@@ -1717,9 +1863,9 @@ const ProcessMapEditorContent: React.FC<
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setShowOptimizations(false)}
-                className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-pink-600"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
               >
-                Close
+                {t("close")}
               </button>
             </div>
           </div>
@@ -1738,56 +1884,57 @@ const ProcessMapEditorContent: React.FC<
           >
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">✅</span>
-              Compliance Check
+              {t("complianceCheck") || "Compliance Check"}
             </h3>
             {!complianceResult ? (
               <div>
                 <p className="mb-4 text-gray-700 dark:text-gray-300">
-                  Select a standard to check against:
+                  {t("selectStandardToCheck") ||
+                    "Select a standard to check against:"}
                 </p>
                 <div className="grid grid-cols-2 gap-3">
                   <button
-                    onClick={() => handleCheckCompliance("ISO 9001")}
+                    onClick={() => handleCheckCompliance("CBAHI")}
+                    className="p-4 bg-sky-50 dark:bg-sky-900/20 border-2 border-sky-300 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30"
+                  >
+                    <div className="font-bold text-sky-900 dark:text-sky-100">
+                      CBAHI
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {t("cbahiDesc") || "Healthcare Facility Accreditation"}
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => handleCheckCompliance("JCI")}
                     className="p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30"
                   >
                     <div className="font-bold text-blue-900 dark:text-blue-100">
-                      ISO 9001
+                      JCI
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Quality Management
+                      {t("jciDesc") || "International Hospital Standards"}
                     </div>
                   </button>
                   <button
-                    onClick={() => handleCheckCompliance("ISO 27001")}
-                    className="p-4 bg-rose-50 dark:bg-pink-900/20 border-2 border-rose-300 dark:border-pink-700 rounded-lg hover:bg-rose-100 dark:hover:bg-pink-900/30"
-                  >
-                    <div className="font-bold text-pink-900 dark:text-rose-100">
-                      ISO 27001
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Information Security
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => handleCheckCompliance("SOX")}
+                    onClick={() => handleCheckCompliance("MOH")}
                     className="p-4 bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30"
                   >
                     <div className="font-bold text-green-900 dark:text-green-100">
-                      SOX
+                      MOH
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Financial Controls
+                      {t("mohDesc") || "Saudi Health Regulations"}
                     </div>
                   </button>
                   <button
-                    onClick={() => handleCheckCompliance("OHAS")}
-                    className="p-4 bg-orange-50 dark:bg-orange-900/20 border-2 border-orange-300 dark:border-orange-800 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/30"
+                    onClick={() => handleCheckCompliance("HESN")}
+                    className="p-4 bg-teal-50 dark:bg-teal-900/20 border-2 border-teal-300 dark:border-teal-800 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30"
                   >
-                    <div className="font-bold text-orange-900 dark:text-orange-100">
-                      OHAS
+                    <div className="font-bold text-teal-900 dark:text-teal-100">
+                      HESN
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Health & Safety
+                      {t("hesnDesc") || "Health Electronic Surveillance"}
                     </div>
                   </button>
                 </div>
@@ -1805,8 +1952,8 @@ const ProcessMapEditorContent: React.FC<
                     <span>{complianceResult.compliant ? "✅" : "❌"}</span>
                     <span>
                       {complianceResult.compliant
-                        ? "Compliant"
-                        : "Non-Compliant"}
+                        ? t("compliant") || "Compliant"
+                        : t("nonCompliant") || "Non-Compliant"}
                     </span>
                   </div>
                 </div>
@@ -1814,7 +1961,7 @@ const ProcessMapEditorContent: React.FC<
                 {complianceResult.issues?.length > 0 && (
                   <div className="mb-4">
                     <h4 className="font-bold text-red-700 dark:text-red-300 mb-2">
-                      Issues Found:
+                      {t("issuesFound") || "Issues Found:"}
                     </h4>
                     <ul className="space-y-1">
                       {complianceResult.issues.map(
@@ -1834,7 +1981,7 @@ const ProcessMapEditorContent: React.FC<
                 {complianceResult.recommendations?.length > 0 && (
                   <div>
                     <h4 className="font-bold text-blue-700 dark:text-blue-300 mb-2">
-                      Recommendations:
+                      {t("recommendations") || "Recommendations:"}
                     </h4>
                     <ul className="space-y-1">
                       {complianceResult.recommendations.map(
@@ -1858,7 +2005,7 @@ const ProcessMapEditorContent: React.FC<
                   onClick={() => setComplianceResult(null)}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
                 >
-                  Check Another
+                  {t("checkAnother") || "Check Another"}
                 </button>
               )}
               <button
@@ -1866,9 +2013,9 @@ const ProcessMapEditorContent: React.FC<
                   setShowComplianceCheck(false);
                   setComplianceResult(null);
                 }}
-                className="px-4 py-2 bg-rose-600 text-white rounded-lg hover:bg-pink-600"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
               >
-                Close
+                {t("close")}
               </button>
             </div>
           </div>
@@ -1887,13 +2034,15 @@ const ProcessMapEditorContent: React.FC<
           >
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">🔍</span>
-              Search Nodes
+              {t("searchNodes") || "Search Nodes"}
             </h3>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => handleNodeSearch(e.target.value)}
-              placeholder="Type to search node labels..."
+              placeholder={
+                t("typeToSearchNodes") || "Type to search node labels..."
+              }
               className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               autoFocus
             />
@@ -1936,9 +2085,9 @@ const ProcessMapEditorContent: React.FC<
                   setShowNodeSearch(false);
                   setSearchTerm("");
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
               >
-                Close
+                {t("close")}
               </button>
             </div>
           </div>
@@ -1957,7 +2106,7 @@ const ProcessMapEditorContent: React.FC<
           >
             <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
               <span className="text-2xl">📄</span>
-              Process Documentation
+              {t("processDocumentation") || "Process Documentation"}
             </h3>
             <div
               className="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
@@ -1979,13 +2128,13 @@ const ProcessMapEditorContent: React.FC<
                 }}
                 className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
               >
-                Download HTML
+                {t("downloadHTML") || "Download HTML"}
               </button>
               <button
                 onClick={() => setShowExportDoc(false)}
                 className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
               >
-                Close
+                {t("close")}
               </button>
             </div>
           </div>
@@ -1997,6 +2146,7 @@ const ProcessMapEditorContent: React.FC<
 
 const ProcessMapEditor: React.FC<ProcessMapEditorProps> = (props) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const { dir } = useTranslation();
 
   if (!props.isOpen) return null;
 
@@ -2005,7 +2155,7 @@ const ProcessMapEditor: React.FC<ProcessMapEditorProps> = (props) => {
       <div
         ref={reactFlowWrapper}
         className="bg-white dark:bg-dark-brand-surface rounded-xl shadow-2xl w-full max-w-7xl h-[90vh] m-4 flex flex-col overflow-hidden"
-        dir={props.document.name.ar ? "rtl" : "ltr"}
+        dir={dir}
       >
         <ReactFlowProvider>
           <ProcessMapEditorContent

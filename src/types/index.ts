@@ -2,9 +2,9 @@ export type Language = 'en' | 'ar';
 export type Direction = 'ltr' | 'rtl';
 export type Theme = 'light' | 'dark';
 
-export type SettingsSection = 'general' | 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport';
+export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport';
 
-export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'accreditationHub' | 'dataHub' | 'messaging' | 'aiDocumentGenerator' | 'users' | 'competencies';
+export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'accreditationHub' | 'dataHub' | 'messaging' | 'aiDocumentGenerator' | 'users' | 'competencies' | 'reports';
 
 export interface NavigationState {
   view: NavigationView;
@@ -135,6 +135,13 @@ export interface NotificationSettings {
   projectUpdates: boolean;
   trainingDueDates: boolean;
   auditSchedules: boolean;
+  criticalAlertsOnly?: boolean;
+  quietHoursEnabled?: boolean;
+  quietHoursStart?: string;
+  quietHoursEnd?: string;
+  digestFrequency?: 'instant' | 'daily' | 'weekly';
+  notificationSound?: boolean;
+  desktopNotifications?: boolean;
 }
 
 export interface AccessibilitySettings {
@@ -216,12 +223,23 @@ export interface Standard {
   }[];
   documentIds?: string[];
   documents?: StandardDocument[];
+  version?: string;
+  effectiveDate?: string;
+  retiredDate?: string;
+  regulatoryBody?: string;
+  category?: string;
 }
 
 export interface Competency {
   id: string;
   name: LocalizedString;
   description: LocalizedString;
+  category?: string;
+  level?: 'basic' | 'intermediate' | 'advanced' | 'expert';
+  validityPeriodMonths?: number;
+  relatedStandardIds?: string[];
+  relatedTrainingIds?: string[];
+  isActive?: boolean;
 }
 
 export interface Department {
@@ -230,6 +248,11 @@ export interface Department {
   requiredCompetencyIds?: string[];
   head?: string;
   members?: string[];
+  parentDepartmentId?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  description?: LocalizedString;
+  location?: string;
 }
 
 export interface User {
@@ -257,6 +280,12 @@ export interface User {
     assignedDate: string;
     dueDate?: string;
   }[];
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  lastLogin?: string;
+  supervisorId?: string;
+  phone?: string;
 }
 
 export type UserCompetency = User['competencies'] extends (infer T)[] | undefined ? T : never;
@@ -267,6 +296,12 @@ export interface AccreditationProgram {
   description: LocalizedString;
   documentIds?: string[];
   documents?: ProgramDocument[];
+  version?: string;
+  cycleStartDate?: string;
+  cycleEndDate?: string;
+  accreditingBody?: string;
+  country?: string;
+  status?: 'active' | 'retired' | 'pending';
 }
 
 export interface AppDocument {
@@ -274,7 +309,7 @@ export interface AppDocument {
   name: LocalizedString;
   type: 'Policy' | 'Procedure' | 'Report' | 'Evidence' | 'Process Map';
   isControlled: boolean;
-  status: 'Draft' | 'Approved' | 'Pending Review';
+  status: 'Draft' | 'Under Review' | 'Pending Review' | 'Approved' | 'Rejected' | 'Obsolete';
   content: LocalizedString | null;
   fileUrl?: string;
   currentVersion: number;
@@ -304,6 +339,16 @@ export interface AppDocument {
   projectId?: string;  // Associated project ID for evidence documents
   createdAt?: string;  // Creation timestamp
   version?: number;  // Document version number
+  reviewers?: string[];
+  approvalChain?: {
+    step: number;
+    reviewerId: string;
+    status: 'pending' | 'approved' | 'rejected';
+    date?: string;
+    comments?: string;
+  }[];
+  expiryDate?: string;
+  retentionPeriod?: number;
 }
 
 export interface TrainingProgram {
@@ -318,6 +363,14 @@ export interface TrainingProgram {
     options: LocalizedString[];
     correctOptionIndex: number;
   }[];
+  duration?: number;
+  category?: string;
+  prerequisites?: string[];
+  frequency?: 'one-time' | 'annual' | 'biannual' | 'quarterly';
+  expiryMonths?: number;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface CertificateData {
@@ -391,6 +444,13 @@ export interface Risk {
   rootCauseCategory?: string;
   trainingRecommendationId?: string;
   createdAt: string;
+  updatedAt?: string;
+  reviewDate?: string;
+  category?: string;
+  affectedStandardIds?: string[];
+  residualLikelihood?: number;
+  residualImpact?: number;
+  department?: string;
 }
 
 export interface IncidentReport {
@@ -403,6 +463,11 @@ export interface IncidentReport {
   status: 'Open' | 'Under Investigation' | 'Closed';
   reportedBy: string;
   correctiveActionIds: string[];
+  updatedAt?: string;
+  investigatorId?: string;
+  rootCause?: string;
+  department?: string;
+  linkedRiskIds?: string[];
 }
 
 export interface AuditPlan {
@@ -413,6 +478,11 @@ export interface AuditPlan {
   frequency: 'weekly' | 'monthly';
   itemCount: number; // number of checklist items to audit
   assignedAuditorId: string;
+  scope?: string;
+  objectives?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: 'planned' | 'in-progress' | 'completed' | 'cancelled';
 }
 
 export interface AuditResult {
@@ -426,6 +496,35 @@ export interface Audit {
   dateConducted: string;
   auditorId: string;
   results: AuditResult[];
+  status?: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+  findings?: AuditFinding[];
+  recommendations?: string;
+  followUpDate?: string;
+  summary?: string;
+}
+
+export type FindingSeverity = 'major' | 'minor' | 'observation' | 'opportunity';
+
+export interface AuditFinding {
+  id: string;
+  auditId: string;
+  standardId?: string;
+  checklistItemId?: string;
+  severity: FindingSeverity;
+  title: string;
+  description: string;
+  evidence?: string;
+  rootCause?: string;
+  correctiveAction?: string;
+  preventiveAction?: string;
+  assignedTo?: string;
+  dueDate?: string;
+  status: 'open' | 'in-progress' | 'resolved' | 'verified' | 'closed';
+  verifiedBy?: string;
+  verifiedDate?: string;
+  createdAt: string;
+  updatedAt?: string;
+  linkedCapaId?: string;
 }
 
 export type UserTrainingStatus = {

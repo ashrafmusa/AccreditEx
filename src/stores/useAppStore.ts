@@ -209,6 +209,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   addDocument: (doc: AppDocument) => set(state => ({ documents: [...state.documents, doc] })),
   addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], projectId?: string }): Promise<AppDocument> => {
     try {
+      const currentUser = useUserStore.getState().currentUser;
+      const uploaderName = currentUser?.name || 'Unknown';
+      const now = new Date().toISOString();
+
       // Create document without ID (Firebase will generate it)
       const docWithoutId: Omit<AppDocument, 'id'> = {
         name: docData.name,
@@ -218,8 +222,15 @@ export const useAppStore = create<AppState>((set, get) => ({
         content: { en: '', ar: '' },
         fileUrl: docData.fileUrl,
         currentVersion: 1,
-        versionHistory: [],
-        uploadedAt: new Date().toISOString(),
+        versionHistory: [{
+          version: 1,
+          date: now,
+          uploadedBy: uploaderName,
+          content: { en: '', ar: '' },
+        }],
+        uploadedAt: now,
+        uploadedBy: uploaderName,
+        createdAt: now,
         tags: docData.tags,
         category: docData.category,
         departmentIds: docData.departmentIds,
@@ -240,8 +251,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   addProcessMap: async (docData: { name: { en: string; ar: string }, tags?: string[], category?: string, departmentIds?: string[] }) => {
     try {
-      const newDoc: AppDocument = {
-        id: `pm-${Date.now()}`,
+      const now = new Date().toISOString();
+
+      // Create without ID — let Firebase generate the ID to avoid mismatch
+      const docWithoutId: Omit<AppDocument, 'id'> = {
         name: docData.name,
         type: 'Process Map',
         isControlled: true,
@@ -249,16 +262,22 @@ export const useAppStore = create<AppState>((set, get) => ({
         content: null,
         processMapContent: { nodes: [], edges: [] },
         currentVersion: 1,
-        versionHistory: [],
-        uploadedAt: new Date().toISOString(),
+        versionHistory: [{
+          version: 1,
+          date: now,
+          uploadedBy: 'System',
+          content: { en: '', ar: '' },
+        }],
+        uploadedAt: now,
+        createdAt: now,
         tags: docData.tags,
         category: docData.category,
         departmentIds: docData.departmentIds,
       };
 
-      // Save to Firebase first
-      await addDocumentToFirebase(newDoc);
-      // Then update local state
+      // Save to Firebase first — returns doc with Firebase-generated ID
+      const newDoc = await addDocumentToFirebase(docWithoutId);
+      // Then update local state with the same Firebase ID
       set(state => ({ documents: [...state.documents, newDoc] }));
     } catch (error) {
       logger.error('Failed to add process map', error);
@@ -267,10 +286,36 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   updateDocument: async (doc: AppDocument) => {
     try {
+      const existingDoc = get().documents.find(d => d.id === doc.id);
+      const hasContentChanged = existingDoc && (
+        JSON.stringify(existingDoc.content) !== JSON.stringify(doc.content) ||
+        JSON.stringify(existingDoc.processMapContent) !== JSON.stringify(doc.processMapContent)
+      );
+
+      let updatedDoc = { ...doc };
+
+      // Auto-increment version and append to history when content changes
+      if (hasContentChanged && existingDoc) {
+        const newVersion = (existingDoc.currentVersion || 1) + 1;
+        updatedDoc = {
+          ...doc,
+          currentVersion: newVersion,
+          versionHistory: [
+            ...(existingDoc.versionHistory || []),
+            {
+              version: newVersion,
+              date: new Date().toISOString(),
+              uploadedBy: doc.uploadedBy || 'Unknown',
+              content: existingDoc.content || { en: '', ar: '' },
+            },
+          ],
+        };
+      }
+
       // Save to Firebase first
-      await updateDocumentInFirebase(doc);
+      await updateDocumentInFirebase(updatedDoc);
       // Then update local state
-      set(state => ({ documents: state.documents.map(d => d.id === doc.id ? doc : d) }));
+      set(state => ({ documents: state.documents.map(d => d.id === updatedDoc.id ? updatedDoc : d) }));
     } catch (error) {
       logger.error('Failed to update document', error);
       throw error;
@@ -291,7 +336,16 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const doc = get().documents.find(d => d.id === docId);
       if (doc) {
-        const updatedDoc = { ...doc, status: 'Approved' as const };
+        const now = new Date().toISOString();
+        const currentUser = useUserStore.getState().currentUser;
+        const approverName = currentUser?.name || 'Admin';
+
+        const updatedDoc: AppDocument = {
+          ...doc,
+          status: 'Approved' as const,
+          approvedBy: approverName,
+          approvalDate: now,
+        };
         // Save to Firebase first
         await updateDocumentInFirebase(updatedDoc);
         // Then update local state

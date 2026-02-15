@@ -30,7 +30,7 @@ interface DocumentRowProps {
 }
 
 /** Relative date formatting helper */
-const formatRelativeDate = (dateStr: string) => {
+const formatRelativeDate = (dateStr: string, t: (key: string) => string) => {
   const date = new Date(dateStr);
   const now = new Date();
   const diffDays = Math.round(
@@ -45,25 +45,25 @@ const formatRelativeDate = (dateStr: string) => {
     };
   if (diffDays < 0)
     return {
-      text: `${Math.abs(diffDays)} days overdue`,
+      text: `${Math.abs(diffDays)} ${t("daysOverdue") || "days overdue"}`,
       color: "text-red-600 font-medium",
       isOverdue: true,
     };
   if (diffDays === 0)
     return {
-      text: "Due today",
+      text: t("dueToday") || "Due today",
       color: "text-amber-600 font-medium",
       isOverdue: false,
     };
   if (diffDays <= 7)
     return {
-      text: `Due in ${diffDays} days`,
+      text: `${t("dueIn") || "Due in"} ${diffDays} ${t("days") || "days"}`,
       color: "text-amber-500",
       isOverdue: false,
     };
   if (diffDays <= 30)
     return {
-      text: `Due in ${diffDays} days`,
+      text: `${t("dueIn") || "Due in"} ${diffDays} ${t("days") || "days"}`,
       color: "text-green-600",
       isOverdue: false,
     };
@@ -272,7 +272,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
           </div>
           <div className="flex items-center gap-2 mt-1">
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              {doc.type}
+              {t(doc.type.toLowerCase().replace(/\s+/g, "")) || doc.type}
             </div>
             {doc.category && (
               <span className="text-xs px-2 py-0.5 bg-rose-100 dark:bg-pink-900/30 text-pink-600 dark:text-rose-300 rounded">
@@ -336,14 +336,14 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
         <td className="px-6 py-4 text-sm">
           {doc.reviewDate ? (
             <span
-              className={formatRelativeDate(doc.reviewDate).color}
+              className={formatRelativeDate(doc.reviewDate, t).color}
               title={new Date(doc.reviewDate).toLocaleDateString()}
             >
-              {formatRelativeDate(doc.reviewDate).text}
+              {formatRelativeDate(doc.reviewDate, t).text}
             </span>
           ) : (
             <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              N/A
+              {t("notApplicable") || "N/A"}
             </span>
           )}
         </td>
@@ -362,6 +362,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
                 }}
                 className="p-1.5 rounded-md text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
                 title={t("approve") || "Approve"}
+                aria-label={t("approve") || "Approve"}
               >
                 <CheckCircleIcon className="w-4 h-4" />
               </button>
@@ -375,6 +376,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
               }}
               className="p-1.5 rounded-md text-gray-500 hover:text-brand-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               title={t("view") || "View"}
+              aria-label={t("view") || "View"}
             >
               <EyeIcon className="w-4 h-4" />
             </button>
@@ -388,6 +390,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
                 }}
                 className="p-1.5 rounded-md text-gray-500 hover:text-brand-primary hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 title={t("edit") || "Edit"}
+                aria-label={t("edit") || "Edit"}
               >
                 <PencilIcon className="w-4 h-4" />
               </button>
@@ -402,6 +405,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
                 onClick={(e) => e.stopPropagation()}
                 className="p-1.5 rounded-md text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                 title={t("download") || "Download"}
+                aria-label={t("download") || "Download"}
               >
                 <ArrowDownTrayIcon className="w-4 h-4" />
               </a>
@@ -417,6 +421,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
                   }}
                   className="p-1.5 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 dark:hover:text-gray-300 transition-colors"
                   title={t("moreActions") || "More actions"}
+                  aria-label={t("moreActions") || "More actions"}
                 >
                   <EllipsisVerticalIcon className="w-4 h-4" />
                 </button>

@@ -140,6 +140,8 @@ const Layout: React.FC<LayoutProps> = ({
           />
           <main
             id="main-content"
+            role="main"
+            aria-label="Main content"
             className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6 bg-brand-background dark:bg-dark-brand-background page-enter-active scroll-smooth overscroll-contain touch-pan-y"
             style={{ WebkitOverflowScrolling: "touch" }}
           >

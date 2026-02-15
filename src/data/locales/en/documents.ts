@@ -69,6 +69,9 @@ export const en = {
     addNew: 'Add New',
     processMap: 'Process Map',
     uploadEvidence: 'Upload Evidence',
+    createControlledDoc: 'Create a controlled document',
+    createProcessMap: 'Design a process flow',
+    uploadEvidenceDesc: 'Upload supporting files',
     fileName: 'File Name',
     generate: 'Generate',
     complianceSummaryReport: 'Compliance Summary Report',
@@ -90,36 +93,36 @@ export const en = {
     pendingReview: 'Pending Review',
     drafts: 'Drafts',
     selectEvidence: 'Select evidence document',
-    
+
     // Document Control Hub
     documentControl: 'Document Control',
     documentControlHubDescription: 'Manage all policies, procedures, and evidence documents. Control document versions and track approvals.',
-    
+
     // Document Form Validation
     documentNameRequired: 'Document name is required',
     arabicNameRequired: 'Arabic name is required',
     processMapNameRequired: 'Process map name is required',
     uploadFile: 'Upload File',
     uploading: 'Uploading',
-    
+
     // Document Operations Success
     documentCreatedSuccessfully: 'Document created successfully',
     documentSavedSuccessfully: 'Document saved successfully',
     documentDeletedSuccessfully: 'Document deleted successfully',
     documentApprovedSuccessfully: 'Document approved successfully',
     processMapCreatedSuccessfully: 'Process map created successfully',
-    
+
     // Document Operations Failed
     failedToCreateDocument: 'Failed to create document',
     failedToSaveDocument: 'Failed to save document',
     failedToDeleteDocument: 'Failed to delete document',
     failedToApproveDocument: 'Failed to approve document',
     failedToCreateProcessMap: 'Failed to create process map',
-    
+
     // Signature
     signatureStatementDocument: 'I hereby certify that I have reviewed and approve this document for use.',
     signAndApprove: 'Sign and Approve',
-    
+
     // Document Search & Filters
     searchDocuments: 'Search documents...',
     allStatuses: 'All Statuses',
@@ -128,7 +131,7 @@ export const en = {
     archived: 'Archived',
     filterByAuthor: 'Filter by author',
     clearFilters: 'Clear Filters',
-    
+
     // Document Sidebar
     allDocuments: 'All Documents',
     myDocuments: 'My Documents',
@@ -140,7 +143,7 @@ export const en = {
     library: 'Library',
     types: 'Types',
     uploadFailed: 'Upload failed',
-    
+
     // Rich Text Editor
     enterURL: 'Enter URL:',
     enterImageURL: 'Enter image URL:',
@@ -172,6 +175,53 @@ export const en = {
     loadTemplate: 'Load Template',
     templateWarning: 'Loading a template will replace your current process map. Make sure to save your work first!',
     connections: 'connections',
+
+    // Process Map AI Tools
+    aiTools: 'AI Tools:',
+    generateFromText: 'Generate from Text',
+    suggestNextSteps: 'Suggest Next Steps',
+    optimizeProcess: 'Optimize Process',
+    exportToDocument: 'Export to Document',
+    searchNodes: 'Search Nodes',
+    quickAdd: 'Quick Add',
+    active: 'Active',
+    swimlanes: 'Swimlanes',
+    metrics: 'Metrics',
+    aiProcessing: 'AI is processing...',
+    generateProcessMapDesc: 'Generate Process Map from Description',
+    describeProcessPlaceholder: 'Describe your process in detail. For example: \'Create a document review process where documents are submitted, reviewed by a manager, approved or rejected, and then either published or sent back for revision.\'',
+    generating: 'Generating...',
+    suggestedNextSteps: 'Suggested Next Steps',
+    addThisStep: 'Add This Step',
+    processOptimizations: 'Process Optimization Suggestions',
+    noOptimizationsSuggested: 'No optimizations suggested. Your process looks good!',
+    complianceCheck: 'Compliance Check',
+    selectStandardToCheck: 'Select a standard to check against:',
+    cbahiDesc: 'Healthcare Facility Accreditation',
+    jciDesc: 'International Hospital Standards',
+    mohDesc: 'Saudi Health Regulations',
+    hesnDesc: 'Health Electronic Surveillance',
+    compliant: 'Compliant',
+    nonCompliant: 'Non-Compliant',
+    issuesFound: 'Issues Found:',
+    recommendations: 'Recommendations:',
+    checkAnother: 'Check Another',
+    typeToSearchNodes: 'Type to search node labels...',
+    processDocumentation: 'Process Documentation',
+    downloadHTML: 'Download HTML',
+    multiSelectTools: 'Multi-Select Tools',
+    duplicate: 'Duplicate',
+    alignH: 'Align H',
+    alignV: 'Align V',
+    nodeTypesAvailable: 'Node types available',
+    moveTip: 'Move:',
+    dragNodes: 'Drag nodes',
+    connectTip: 'Connect:',
+    dragFrom: 'Drag from',
+    to: 'to',
+    deleteTip: 'Delete:',
+    selectAndDel: 'Select & press Del',
+    pressForHelp: 'for help',
 
     // Training Placeholders
     questionEn: 'Question (EN)',
@@ -300,4 +350,220 @@ export const en = {
 
     // Common Settings
     youHaveUnsavedChanges: 'You have unsaved changes to your settings',
+
+    // PDF/DOCX Viewer
+    pdfDocument: 'PDF Document',
+    wordDocumentViewer: 'Word Document Viewer',
+    loadingDocument: 'Loading document...',
+    errorLoadingDocument: 'Error loading document',
+    failedToLoadDocument: 'Failed to load document',
+    docxConversionNote: 'This document has been converted from DOCX format for viewing. Download for full formatting.',
+
+    // Rich Text Editor Toolbar
+    boldCtrlB: 'Bold (Ctrl+B)',
+    italicCtrlI: 'Italic (Ctrl+I)',
+    underlineCtrlU: 'Underline (Ctrl+U)',
+    strikethrough: 'Strikethrough',
+    code: 'Code',
+    heading1: 'Heading 1',
+    heading2: 'Heading 2',
+    heading3: 'Heading 3',
+    bulletList: 'Bullet List',
+    numberedList: 'Numbered List',
+    quote: 'Quote',
+    addLink: 'Add Link',
+    addImage: 'Add Image',
+    insertTable: 'Insert Table',
+    undoCtrlZ: 'Undo (Ctrl+Z)',
+    redoCtrlY: 'Redo (Ctrl+Y)',
+    enterUrl: 'Enter URL:',
+    enterImageUrl: 'Enter image URL:',
+
+    // File Uploader
+    removeFile: 'Remove file',
+    fileSizeExceeds: 'File size exceeds the allowed limit',
+    fileTypeNotSupported: 'File type not supported',
+    maxFilesAllowed: 'Maximum number of files allowed reached',
+
+    // Document Statuses
+    underReview: 'Under Review',
+    obsolete: 'Obsolete',
+    pendingreview: 'Pending Review',
+
+    // Translated status/type keys (lowercase, no spaces — used by StatusBadge/TypeBadge)
+
+    // Document Type keys (lowercase, no spaces)
+    processmap: 'Process Map',
+
+    // Relative dates (formatRelativeDate)
+    daysOverdue: 'days overdue',
+    dueToday: 'Due today',
+    dueIn: 'Due in',
+    days: 'days',
+    notApplicable: 'N/A',
+
+    // Document version comparison
+    currentVersion: 'Current Version',
+
+    // Quick filters & toolbar
+    all: 'All',
+    needsReview: 'Needs Review',
+    recentlyUpdated: 'Recently Updated',
+    overdue: 'Overdue',
+    thisMonth: 'this month',
+    needsAttention: 'needs attention',
+
+    // View toggle
+    listView: 'List view',
+    gridView: 'Grid view',
+
+    // Bulk actions
+    bulkApproveSuccess: 'Documents approved successfully',
+    bulkDeleteSuccess: 'Documents deleted successfully',
+    bulkExportSuccess: 'Documents exported successfully',
+    bulkApprovePartialFail: 'Some documents failed to approve',
+    bulkDeletePartialFail: 'Some documents failed to delete',
+    confirmBulkDelete: 'Are you sure you want to delete the selected documents?',
+    approveSelected: 'Approve Selected',
+    exportSelected: 'Export Selected',
+    deleteSelected: 'Delete Selected',
+    clearSelection: 'Clear Selection',
+    selected: 'selected',
+
+    // Summary line
+    documentsNeedReview: 'documents need review',
+    overdueReviews: 'Overdue Reviews',
+    draftsInProgress: 'drafts in progress',
+    allDocumentsUpToDate: 'All documents are up to date',
+
+    // Empty states
+    noDocumentsFound: 'No documents found',
+    noDocumentsMatchFilter: 'No documents match your filter',
+    getStartedCreatingDocuments: 'Get started by creating your first document',
+    createFirstDocument: 'Create Document',
+
+    // Show toggle
+    showAllDocuments: 'Show All Documents',
+    showMyDocuments: 'Show My Documents',
+
+    // Table columns
+    showingXOfY: 'Showing {x} of {y}',
+    columns: 'Columns',
+    columnSettings: 'Column Settings',
+    selectAll: 'Select all',
+    selectDocument: 'Select document',
+
+    // More actions
+    moreActions: 'More actions',
+
+    // Sidebar
+    documentSidebar: 'Document Sidebar',
+    searchSidebar: 'Search sidebar...',
+    clearSearch: 'Clear search',
+    openFilters: 'Open Filters',
+    noResults: 'No results found',
+    documents: 'Documents',
+    used: 'used',
+    storage: 'Storage',
+
+    // Document Editor Sidebar
+    completeness: 'Completeness',
+    hasContent: 'Has Content',
+    hasTags: 'Has Tags',
+    hasCategory: 'Has Category',
+    hasDepartment: 'Has Department',
+    hasReviewDate: 'Has Review Date',
+    isApproved: 'Is Approved',
+    documentInfo: 'Document Info',
+    documentProperties: 'Document Properties',
+    noTags: 'No tags',
+    linkDocument: 'Link Document',
+
+    // Document Editor Modal
+    autosaving: 'Autosaving...',
+    saved: 'Saved',
+    unsavedChanges: 'Unsaved Changes',
+    unsavedChangesTitle: 'Unsaved Changes',
+    unsavedChangesMessage: 'You have unsaved changes. What would you like to do?',
+    discardChanges: 'Discard Changes',
+    saveAndClose: 'Save & Close',
+    saveChanges: 'Save Changes',
+    words: 'words',
+    minRead: 'min read',
+    justNow: 'Just now',
+    minAgo: 'min ago',
+    copyEnToAr: 'Copy EN → AR',
+    copyArToEn: 'Copy AR → EN',
+    shortcuts: 'Shortcuts',
+    keyboardShortcuts: 'Keyboard Shortcuts',
+    exportFailed: 'Export failed',
+    loadingEditor: 'Loading editor...',
+    startTyping: 'Start typing...',
+
+    // AI features
+    complianceScore: 'Compliance Score',
+    confidence: 'Confidence',
+    addedWords: 'Added Words',
+    removedWords: 'Removed Words',
+    summarizeDocument: 'Summarize Document',
+    checkCompliance: 'Check Compliance',
+    failedToImprove: 'Failed to improve writing',
+    failedToTranslate: 'Failed to translate',
+    failedComplianceCheck: 'Compliance check failed',
+    failedToSummarize: 'Failed to summarize',
+
+    // Relationships/versions
+    implements: 'Implements',
+    references: 'References',
+    supersedes: 'Supersedes',
+    related: 'Related',
+    current: 'Current',
+    unknown: 'Unknown',
+
+    // Process Map Modal
+    processMapNameEn: 'Process Map Name (English)',
+    processMapNameAr: 'Process Map Name (Arabic)',
+    addNewProcessMap: 'Add New Process Map',
+
+    // Search
+    oneResultFound: '1 result found',
+    resultsFound: 'results found',
+    recentSearches: 'Recent Searches',
+    addTags: 'Add tags',
+    removeTag: 'Remove tag',
+    dateRange: 'Date Range',
+    fromDate: 'From',
+    toDate: 'To',
+    last7Days: 'Last 7 days',
+    last30Days: 'Last 30 days',
+    last90Days: 'Last 90 days',
+    thisYear: 'This year',
+    clearAll: 'Clear All',
+
+    // File Uploader
+    dropFilesHere: 'Drop files here',
+    dragDropFiles: 'Drag & drop files here',
+    orClickToBrowse: 'or click to browse',
+    acceptedTypes: 'Accepted types',
+    maxSize: 'Max size',
+    perFile: 'per file',
+    maxFiles: 'Max files',
+    selectedFiles: 'Selected files',
+    uploaded: 'Uploaded',
+    acceptedFileTypes: 'PDF, DOCX, Images',
+
+    // Category keys
+    hr: 'HR',
+    clinical: 'Clinical',
+    administrative: 'Administrative',
+
+    // Common
+    close: 'Close',
+    view: 'View',
+    edit: 'Edit',
+    delete: 'Delete',
+    download: 'Download',
+    cancel: 'Cancel',
+    save: 'Save',
+    home: 'Home',
 };

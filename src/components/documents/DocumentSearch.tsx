@@ -139,7 +139,7 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
   resultCount,
   availableTags = [],
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { departments } = useAppStore();
 
   // ---- State ---------------------------------------------------------------
@@ -365,9 +365,11 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
     (id: string): string => {
       const dept = departments.find((d) => d.id === id);
       if (!dept) return id;
-      return typeof dept.name === "string" ? dept.name : dept.name.en;
+      return typeof dept.name === "string"
+        ? dept.name
+        : dept.name[lang] || dept.name.en;
     },
-    [departments],
+    [departments, lang],
   );
   const activeEntries = useMemo(
     () => getActiveFilterEntries(filters, t, deptLookup),
@@ -587,7 +589,9 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
                 </option>
                 {departments.map((dept) => (
                   <option key={dept.id} value={dept.id}>
-                    {typeof dept.name === "string" ? dept.name : dept.name.en}
+                    {typeof dept.name === "string"
+                      ? dept.name
+                      : dept.name[lang] || dept.name.en}
                   </option>
                 ))}
               </select>

@@ -20,7 +20,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
   capa,
   project,
 }) => {
-  const { t } = useTranslation();
+  const { t, dir } = useTranslation();
   const toast = useToast();
   const { updateCapa, deleteCapa } = useProjectStore();
   const { currentUser } = useUserStore();
@@ -36,17 +36,17 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
     if (!project) return;
     try {
       await updateCapa(project.id, editedCapa);
-      toast.success("CAPA updated successfully!");
+      toast.success(t("capaUpdatedSuccessfully"));
       setIsEditing(false);
       onClose();
     } catch (error) {
-      toast.error("Failed to update CAPA");
+      toast.error(t("failedToUpdateCapa"));
     }
   };
 
   const handleDelete = async () => {
     if (!project) {
-      toast.error("Cannot delete CAPA: Project not found");
+      toast.error(t("cannotDeleteCapaProjectNotFound"));
       console.error("Project is undefined. CAPA:", capa);
       return;
     }
@@ -55,11 +55,11 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
 
     try {
       await deleteCapa(project.id, capa.id);
-      toast.success("CAPA deleted successfully!");
+      toast.success(t("capaDeletedSuccessfully"));
       onClose();
     } catch (error: any) {
       console.error("Delete CAPA error:", error);
-      toast.error(error?.message || "Failed to delete CAPA");
+      toast.error(error?.message || t("failedToDeleteCapa"));
     }
   };
 
@@ -67,13 +67,20 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
   const completeness = evaluateCapaCompleteness(editedCapa);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col"
+        dir={dir}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <div>
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              CAPA Report Details
+              {t("capaReportDetails")}
             </h2>
             {project && (
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -95,8 +102,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {!project && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
               <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                ⚠️ Warning: Parent project not found. Delete and edit functions
-                are disabled.
+                {t("parentProjectNotFoundWarning")}
               </p>
               <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-1">
                 CAPA ID: {capa.id} | Source Project ID:{" "}
@@ -108,7 +114,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {/* Description */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              Description
+              {t("description")}
             </label>
             {isEditing ? (
               <textarea
@@ -121,7 +127,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
               />
             ) : (
               <p className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 p-3 rounded-md">
-                {capa.description || "No description"}
+                {capa.description || t("noDescription")}
               </p>
             )}
           </div>
@@ -129,7 +135,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {/* Root Cause */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              🔍 Root Cause Analysis
+              {t("rootCauseAnalysis")}
             </label>
             {isEditing ? (
               <textarea
@@ -139,7 +145,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 rows={3}
-                placeholder="Describe the root cause..."
+                placeholder={t("describeRootCausePlaceholder")}
               />
             ) : (
               <div className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 p-3 rounded-md whitespace-pre-wrap">
@@ -151,7 +157,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {/* Corrective Action */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              ✅ Corrective Action (AI Generated Action Plan)
+              {t("correctiveActionAiPlan")}
             </label>
             {isEditing ? (
               <textarea
@@ -164,7 +170,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 rows={4}
-                placeholder="Define corrective action..."
+                placeholder={t("defineCorrectiveActionPlaceholder")}
               />
             ) : (
               <div className="text-gray-900 dark:text-white bg-gradient-to-br from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 p-4 rounded-md border border-rose-200 dark:border-pink-700 whitespace-pre-wrap">
@@ -176,7 +182,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {/* Preventive Action */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              🛡️ Preventive Action
+              {t("preventiveAction")}
             </label>
             {isEditing ? (
               <textarea
@@ -189,11 +195,11 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 }
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 rows={3}
-                placeholder="Define preventive action..."
+                placeholder={t("definePreventiveActionPlaceholder")}
               />
             ) : (
               <div className="text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-900 p-3 rounded-md whitespace-pre-wrap">
-                {capa.preventiveAction || "To be defined"}
+                {capa.preventiveAction || t("toBeDefined")}
               </div>
             )}
           </div>
@@ -202,7 +208,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                PDCA Stage
+                {t("pdcaStage")}
               </label>
               {isEditing ? (
                 <select
@@ -217,7 +223,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 >
                   {pdcaStages.map((stage) => (
                     <option key={stage} value={stage}>
-                      {stage}
+                      {t(`pdca${stage}`)}
                     </option>
                   ))}
                 </select>
@@ -240,7 +246,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
 
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Status
+                {t("status")}
               </label>
               <span
                 className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
@@ -257,17 +263,19 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           {/* Dates */}
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600 dark:text-gray-400">Created:</span>
-              <span className="ml-2 text-gray-900 dark:text-white">
+              <span className="text-gray-600 dark:text-gray-400">
+                {t("createdLabel")}
+              </span>
+              <span className="ms-2 text-gray-900 dark:text-white">
                 {new Date(capa.createdAt).toLocaleDateString()}
               </span>
             </div>
             {capa.updatedAt && (
               <div>
                 <span className="text-gray-600 dark:text-gray-400">
-                  Updated:
+                  {t("updatedLabel")}
                 </span>
-                <span className="ml-2 text-gray-900 dark:text-white">
+                <span className="ms-2 text-gray-900 dark:text-white">
                   {new Date(capa.updatedAt).toLocaleDateString()}
                 </span>
               </div>
@@ -278,7 +286,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           <div className="border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-900/40">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
-                Evidence Governance Check
+                {t("evidenceGovernanceCheck")}
               </p>
               <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
                 {completeness.completenessScore}%
@@ -286,17 +294,16 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
             </div>
             {completeness.missingFields.length > 0 ? (
               <p className="text-xs text-amber-700 dark:text-amber-300">
-                Missing fields: {completeness.missingFields.join(", ")}
+                {t("missingFields")} {completeness.missingFields.join(", ")}
               </p>
             ) : (
               <p className="text-xs text-green-700 dark:text-green-300">
-                Required evidence fields are complete.
+                {t("evidenceFieldsComplete")}
               </p>
             )}
             {!completeness.isClosureReady && (
               <p className="text-xs text-rose-700 dark:text-rose-300 mt-1">
-                Closure readiness is incomplete (guidance only, no blocking
-                applied).
+                {t("closureReadinessIncomplete")}
               </p>
             )}
           </div>
@@ -310,11 +317,11 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
               className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 flex items-center gap-2"
             >
               <TrashIcon className="h-4 w-4" />
-              Delete CAPA
+              {t("deleteCapa")}
             </button>
           )}
           <div
-            className={`flex gap-3 ${isAdmin && !isEditing ? "" : "ml-auto"}`}
+            className={`flex gap-3 ${isAdmin && !isEditing ? "" : "ms-auto"}`}
           >
             {isEditing ? (
               <>
@@ -325,13 +332,13 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                   }}
                   className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={handleSave}
                   className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-pink-600"
                 >
-                  Save Changes
+                  {t("saveChanges")}
                 </button>
               </>
             ) : (
@@ -340,13 +347,13 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                   onClick={onClose}
                   className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Close
+                  {t("close")}
                 </button>
                 <button
                   onClick={() => setIsEditing(true)}
                   className="px-4 py-2 text-sm font-medium text-white bg-rose-600 rounded-md hover:bg-pink-600"
                 >
-                  Edit
+                  {t("edit")}
                 </button>
               </>
             )}
@@ -358,24 +365,23 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                Delete CAPA Report?
+                {t("deleteCapaConfirmTitle")}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-6">
-                Are you sure you want to delete this CAPA report? This action
-                cannot be undone.
+                {t("deleteCapaConfirmMessage")}
               </p>
               <div className="flex justify-end gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-600"
                 >
-                  Cancel
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={handleDelete}
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700"
                 >
-                  Delete
+                  {t("delete")}
                 </button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
 import SettingsCard from "./SettingsCard";
 import SettingsButton from "./SettingsButton";
 import SettingsAlert from "./SettingsAlert";
@@ -20,6 +21,7 @@ import {
 const AccessibilitySettingsPage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const { auditBatch } = useSettingsAudit();
   const { appSettings, updateAppSettings } = useAppStore();
 
   const [accessibility, setAccessibility] = useState({
@@ -65,6 +67,34 @@ const AccessibilitySettingsPage: React.FC = () => {
         accessibility,
       };
       await updateAppSettings(updatedSettings);
+
+      // Audit log accessibility changes
+      const oldA = appSettings?.accessibility || {};
+      const changes = [
+        {
+          field: "fontSize",
+          oldValue: (oldA as any).fontSize ?? "medium",
+          newValue: accessibility.fontSize,
+        },
+        {
+          field: "highContrast",
+          oldValue: String((oldA as any).highContrast ?? false),
+          newValue: String(accessibility.highContrast),
+        },
+        {
+          field: "reduceMotion",
+          oldValue: String((oldA as any).reduceMotion ?? false),
+          newValue: String(accessibility.reduceMotion),
+        },
+        {
+          field: "screenReaderOptimized",
+          oldValue: String((oldA as any).screenReaderOptimized ?? false),
+          newValue: String(accessibility.screenReaderOptimized),
+        },
+      ].filter((c) => c.oldValue !== c.newValue);
+      if (changes.length > 0) {
+        await auditBatch("accessibility", changes);
+      }
 
       const root = document.documentElement;
       root.setAttribute("data-font-size", accessibility.fontSize);
@@ -114,6 +144,26 @@ const AccessibilitySettingsPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Global settings warning banner */}
+      <div className="flex items-start gap-3 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+        <svg
+          className="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          strokeWidth={1.5}
+          stroke="currentColor"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+          />
+        </svg>
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          These settings apply to all users across the application.
+        </p>
+      </div>
+
       {hasChanges && (
         <SettingsAlert
           type="warning"

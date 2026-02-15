@@ -18,6 +18,8 @@ import {
   CircleStackIcon,
   ClipboardDocumentSearchIcon,
   ChatBubbleLeftEllipsisIcon,
+  CheckBadgeIcon,
+  ChartBarIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -172,6 +174,24 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       label: t("trainingHub"),
       icon: AcademicCapIcon,
     },
+    {
+      nav: { view: "accreditationHub" },
+      key: "accreditationHub",
+      label: t("accreditationHub"),
+      icon: ShieldCheckIcon,
+    },
+    {
+      nav: { view: "competencies" },
+      key: "competencies",
+      label: t("competencies"),
+      icon: CheckBadgeIcon,
+    },
+    {
+      nav: { view: "reports" },
+      key: "reports",
+      label: t("reports"),
+      icon: ChartBarIcon,
+    },
   ];
 
   const bottomNavItems: NavItemData[] = [
@@ -180,7 +200,6 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "settings",
       label: t("settings"),
       icon: Cog6ToothIcon,
-      adminOnly: true,
     },
   ];
 

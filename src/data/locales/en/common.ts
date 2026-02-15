@@ -43,6 +43,7 @@ export const en = {
     settings: 'Settings',
     trainingHub: 'Training Hub',
     documentControl: 'Document Control',
+    competencies: 'Competencies',
     reports: 'Reports',
     reportsDescription: 'View and download generated compliance and incident reports',
     searchReports: 'Search reports...',
@@ -454,4 +455,11 @@ export const en = {
     featuresRotateWeekly: 'Features rotate weekly to help you learn.',
     learnMore: 'Learn More',
     proTip: 'Pro Tip',
+
+    // Access Denied Dialog
+    accessDenied: 'Access Denied',
+    noPermissionToAccess: 'Your role does not have permission to access this area.',
+    needHelp: 'Need Help?',
+    contactAdminForAccess: 'If you believe you should have access to this feature, please contact your administrator.',
+    iUnderstand: 'I Understand',
 };

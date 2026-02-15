@@ -59,19 +59,18 @@ export const getAuthInstance = (): Auth => {
 
 export const auth = getAuthInstance();
 
-// TEMPORARILY DISABLED - Enable offline persistence for free tier optimization
-// Reduces reads by caching data locally
-// try {
-//     enableIndexedDbPersistence(db).catch((err) => {
-//         if (err.code === 'failed-precondition') {
-//             console.warn('Multiple tabs open, persistence disabled');
-//         } else if (err.code === 'unimplemented') {
-//             console.warn('Browser does not support persistence');
-//         }
-//     });
-// } catch (error) {
-//     // Handle cases where persistence is already enabled
-// }
+// Enable offline persistence for better reliability
+try {
+    enableIndexedDbPersistence(db).catch((err) => {
+        if (err.code === 'failed-precondition') {
+            console.warn('Multiple tabs open, persistence disabled');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Browser does not support persistence');
+        }
+    });
+} catch (error) {
+    // Handle cases where persistence is already enabled
+}
 
 console.log('🔥 Firebase initialized:', {
     projectId: firebaseConfig.projectId,

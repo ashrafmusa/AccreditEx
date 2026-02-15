@@ -51,9 +51,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAdmin();
-      // Allow updates for authenticated users
-      // Authorization handled in application code
-      allow update: if isAuthenticated();
+      allow update: if isAuthenticated() && cannotEscalatePrivilege();
       allow delete: if isAdmin();
     }
     
@@ -62,7 +60,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && hasRequiredProjectFields() && isValidSize(request.resource.data);
       allow update: if isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow delete: if isProjectLead();
     }
     
     // Documents collection
@@ -113,11 +111,34 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
     
-    // App Settings collection (admin and project leads can write)
+    // App Settings collection
     match /appSettings/{docId} {
       allow read: if isAuthenticated();
-      // Allow authenticated users (size check removed - using Cloudinary URLs now)
-      allow write: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    // Audit Findings collection
+    match /auditFindings/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidSize(request.resource.data);
+      allow update: if isAuthenticated() && isValidSize(request.resource.data);
+      allow delete: if isAdmin();
+    }
+    
+    // Settings Audit Logs collection
+    match /settings_audit_logs/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if false;
+      allow delete: if false;
+    }
+    
+    // Settings Versions collection
+    match /settings_versions/{docId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
   }
 }
