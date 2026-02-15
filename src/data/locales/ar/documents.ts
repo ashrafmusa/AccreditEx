@@ -555,6 +555,16 @@ export const ar = {
     clinical: 'سريري',
     administrative: 'إداري',
 
+    // AI Features
+    aiAutoFill: 'ملء تلقائي',
+    aiAutoFillDescription: 'دع الذكاء الاصطناعي يترجم تلقائياً ويقترح الفئة والوسوم بناءً على اسم المستند',
+    aiTranslate: 'ترجمة',
+    aiSuggest: 'اقتراح',
+    aiSuggestTags: 'اقتراح وسوم',
+    applying: 'جاري التطبيق...',
+    applied: '✓ تم التطبيق',
+    apply: 'تطبيق',
+
     // Common
     close: 'إغلاق',
     view: 'عرض',

@@ -557,6 +557,16 @@ export const en = {
     clinical: 'Clinical',
     administrative: 'Administrative',
 
+    // AI Features
+    aiAutoFill: 'Auto-Fill',
+    aiAutoFillDescription: 'Let AI auto-translate, suggest category & tags based on the document name',
+    aiTranslate: 'Translate',
+    aiSuggest: 'Suggest',
+    aiSuggestTags: 'Suggest Tags',
+    applying: 'Applying...',
+    applied: '✓ Applied',
+    apply: 'Apply',
+
     // Common
     close: 'Close',
     view: 'View',
