@@ -98,7 +98,7 @@ agent = None
 
 # Request/Response Models
 class ChatRequest(BaseModel):
-    message: str = Field(..., description="User message", min_length=1, max_length=5000, example="How do I prepare for ISO 9001 audit?")
+    message: str = Field(..., description="User message", min_length=1, max_length=50000, example="How do I prepare for ISO 9001 audit?")
     thread_id: Optional[str] = Field(None, description="Optional thread ID for conversation continuity", example="thread-abc123")
     user_id: Optional[str] = Field(None, description="User ID for context-aware responses")
     context: Optional[Dict[str, Any]] = Field(None, description="Additional context (current_page, current_data, forms, templates, etc.)", example={
