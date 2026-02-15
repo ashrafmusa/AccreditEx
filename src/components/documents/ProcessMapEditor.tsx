@@ -5,6 +5,7 @@ import ReactFlow, {
   Edge,
   Controls,
   Background,
+  BackgroundVariant,
   addEdge,
   Connection,
   useNodesState,
@@ -17,6 +18,8 @@ import ReactFlow, {
   useReactFlow,
   getRectOfNodes,
   getTransformForBounds,
+  Handle,
+  Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { toPng } from "html-to-image";
@@ -34,8 +37,12 @@ import {
   QuestionMarkCircleIcon,
   MagnifyingGlassPlusIcon,
   MagnifyingGlassMinusIcon,
+  SparklesIcon,
+  DocumentDuplicateIcon,
+  Squares2X2Icon,
 } from "../icons";
 
+// ─── Props ────────────────────────────────────────────────────────────────────
 interface ProcessMapEditorProps {
   isOpen: boolean;
   onClose: () => void;
@@ -44,40 +51,102 @@ interface ProcessMapEditorProps {
   isSaving?: boolean;
 }
 
-// Custom node types with enhanced styling - LARGER & MORE READABLE
-const CustomStartNode = ({ data }: any) => (
-  <div className="px-8 py-4 shadow-2xl rounded-full bg-gradient-to-br from-green-500 to-green-600 text-white border-3 border-green-700 text-center font-bold min-w-[200px] hover:shadow-green-500/50 transition-all duration-200 hover:scale-105 cursor-pointer">
-    <div className="flex items-center justify-center gap-3">
-      <span className="text-2xl">▶️</span>
-      <span className="text-base">{data.label}</span>
+// ─── Professional Flat Node Components ────────────────────────────────────────
+const handleClass =
+  "!w-2.5 !h-2.5 !bg-slate-300 hover:!bg-blue-400 !border-2 !border-white !shadow-sm !transition-colors";
+
+const CustomStartNode = ({ data, selected }: any) => (
+  <div className="group relative">
+    <Handle type="target" position={Position.Top} className={handleClass} />
+    <div
+      className={`px-7 py-3 rounded-full shadow-sm min-w-[140px] text-center transition-all duration-150
+        bg-emerald-50 dark:bg-emerald-900/30 border
+        ${selected ? "border-emerald-400 ring-2 ring-emerald-200/60 dark:ring-emerald-800/40 shadow-md" : "border-emerald-200 dark:border-emerald-700 hover:shadow-md"}`}
+    >
+      <div className="flex items-center justify-center gap-2.5">
+        <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          {data.label}
+        </span>
+      </div>
+    </div>
+    <Handle type="source" position={Position.Bottom} className={handleClass} />
+  </div>
+);
+
+const CustomEndNode = ({ data, selected }: any) => (
+  <div className="group relative">
+    <Handle type="target" position={Position.Top} className={handleClass} />
+    <div
+      className={`px-7 py-3 rounded-full shadow-sm min-w-[140px] text-center transition-all duration-150
+        bg-rose-50 dark:bg-rose-900/30 border
+        ${selected ? "border-rose-400 ring-2 ring-rose-200/60 dark:ring-rose-800/40 shadow-md" : "border-rose-200 dark:border-rose-700 hover:shadow-md"}`}
+    >
+      <div className="flex items-center justify-center gap-2.5">
+        <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0" />
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          {data.label}
+        </span>
+      </div>
     </div>
   </div>
 );
 
-const CustomEndNode = ({ data }: any) => (
-  <div className="px-8 py-4 shadow-2xl rounded-full bg-gradient-to-br from-red-500 to-red-600 text-white border-3 border-red-700 text-center font-bold min-w-[200px] hover:shadow-red-500/50 transition-all duration-200 hover:scale-105 cursor-pointer">
-    <div className="flex items-center justify-center gap-3">
-      <span className="text-2xl">⏹️</span>
-      <span className="text-base">{data.label}</span>
+const CustomProcessNode = ({ data, selected }: any) => (
+  <div className="group relative">
+    <Handle type="target" position={Position.Top} className={handleClass} />
+    <div
+      className={`relative px-7 py-3.5 rounded-lg shadow-sm min-w-[160px] text-center transition-all duration-150
+        bg-white dark:bg-slate-800 border overflow-hidden
+        ${selected ? "border-blue-400 ring-2 ring-blue-200/60 dark:ring-blue-800/40 shadow-md" : "border-slate-200 dark:border-slate-600 hover:shadow-md"}`}
+    >
+      <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-400 rounded-l-lg" />
+      <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+        {data.label}
+      </span>
     </div>
+    <Handle type="source" position={Position.Bottom} className={handleClass} />
   </div>
 );
 
-const CustomProcessNode = ({ data }: any) => (
-  <div className="px-8 py-5 shadow-2xl rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white border-3 border-blue-700 text-center font-semibold min-w-[220px] hover:shadow-blue-500/50 transition-all duration-200 hover:scale-105 cursor-pointer">
-    <div className="flex flex-col items-center justify-center gap-2">
-      <span className="text-3xl">⚙️</span>
-      <span className="text-base">{data.label}</span>
+const CustomDecisionNode = ({ data, selected }: any) => (
+  <div className="group relative" style={{ width: 120, height: 120 }}>
+    <Handle
+      type="target"
+      position={Position.Top}
+      className={handleClass}
+      style={{ top: -2 }}
+    />
+    <div
+      className={`absolute inset-0 rotate-45 shadow-sm transition-all duration-150
+        bg-amber-50 dark:bg-amber-900/30 border rounded-md
+        ${selected ? "border-amber-400 ring-2 ring-amber-200/60 dark:ring-amber-800/40 shadow-md" : "border-amber-200 dark:border-amber-700 hover:shadow-md"}`}
+    />
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <span className="text-sm font-medium text-slate-700 dark:text-slate-200 text-center leading-tight px-3">
+        {data.label}
+      </span>
     </div>
-  </div>
-);
-
-const CustomDecisionNode = ({ data }: any) => (
-  <div className="p-10 shadow-2xl bg-gradient-to-br from-yellow-400 to-yellow-500 text-gray-900 border-3 border-yellow-600 text-center font-semibold min-w-[200px] min-h-[200px] transform rotate-45 hover:shadow-yellow-500/50 transition-all duration-200 hover:scale-105 cursor-pointer">
-    <div className="transform -rotate-45 flex flex-col items-center justify-center gap-2">
-      <span className="text-3xl">◆</span>
-      <span className="text-base font-bold">{data.label}</span>
-    </div>
+    <Handle
+      type="source"
+      position={Position.Bottom}
+      className={handleClass}
+      style={{ bottom: -2 }}
+    />
+    <Handle
+      type="source"
+      position={Position.Right}
+      id="right"
+      className={handleClass}
+      style={{ right: -2 }}
+    />
+    <Handle
+      type="source"
+      position={Position.Left}
+      id="left"
+      className={handleClass}
+      style={{ left: -2 }}
+    />
   </div>
 );
 
@@ -88,18 +157,17 @@ const nodeTypes: NodeTypes = {
   decision: CustomDecisionNode,
 };
 
-// History management for undo/redo
+// ─── History ──────────────────────────────────────────────────────────────────
 interface HistoryState {
   nodes: Node[];
   edges: Edge[];
 }
 
-// Template patterns
+// ─── Templates ────────────────────────────────────────────────────────────────
 interface Template {
   id: string;
   name: string;
   description: string;
-  icon: string;
   nodes: Partial<Node>[];
   edges: Partial<Edge>[];
 }
@@ -109,25 +177,24 @@ const templates: Template[] = [
     id: "simple-flow",
     name: "Simple Flow",
     description: "Start → Process → End",
-    icon: "➡️",
     nodes: [
       {
         id: "1",
         type: "start",
         data: { label: "Start" },
-        position: { x: 100, y: 100 },
+        position: { x: 250, y: 50 },
       },
       {
         id: "2",
         type: "process",
         data: { label: "Process" },
-        position: { x: 100, y: 200 },
+        position: { x: 250, y: 180 },
       },
       {
         id: "3",
         type: "end",
         data: { label: "End" },
-        position: { x: 100, y: 300 },
+        position: { x: 250, y: 310 },
       },
     ],
     edges: [
@@ -139,37 +206,36 @@ const templates: Template[] = [
     id: "decision-flow",
     name: "Decision Flow",
     description: "Start → Decision → Two paths",
-    icon: "🔀",
     nodes: [
       {
         id: "1",
         type: "start",
         data: { label: "Start" },
-        position: { x: 250, y: 50 },
+        position: { x: 300, y: 50 },
       },
       {
         id: "2",
         type: "decision",
         data: { label: "Decision?" },
-        position: { x: 200, y: 150 },
+        position: { x: 240, y: 180 },
       },
       {
         id: "3",
         type: "process",
         data: { label: "Yes Path" },
-        position: { x: 100, y: 300 },
+        position: { x: 100, y: 370 },
       },
       {
         id: "4",
         type: "process",
         data: { label: "No Path" },
-        position: { x: 350, y: 300 },
+        position: { x: 420, y: 370 },
       },
       {
         id: "5",
         type: "end",
         data: { label: "End" },
-        position: { x: 250, y: 450 },
+        position: { x: 300, y: 520 },
       },
     ],
     edges: [
@@ -183,38 +249,37 @@ const templates: Template[] = [
   {
     id: "review-process",
     name: "Review Process",
-    description: "Submit → Review → Approve/Reject",
-    icon: "📝",
+    description: "Submit → Review → Approve / Reject",
     nodes: [
       {
         id: "1",
         type: "start",
         data: { label: "Submit" },
-        position: { x: 250, y: 50 },
+        position: { x: 300, y: 50 },
       },
       {
         id: "2",
         type: "process",
         data: { label: "Review" },
-        position: { x: 250, y: 150 },
+        position: { x: 300, y: 180 },
       },
       {
         id: "3",
         type: "decision",
         data: { label: "Approved?" },
-        position: { x: 200, y: 270 },
+        position: { x: 240, y: 330 },
       },
       {
         id: "4",
         type: "process",
         data: { label: "Revise" },
-        position: { x: 400, y: 350 },
+        position: { x: 460, y: 420 },
       },
       {
         id: "5",
         type: "end",
         data: { label: "Complete" },
-        position: { x: 100, y: 420 },
+        position: { x: 160, y: 520 },
       },
     ],
     edges: [
@@ -228,44 +293,43 @@ const templates: Template[] = [
   {
     id: "parallel-tasks",
     name: "Parallel Tasks",
-    description: "Execute multiple tasks simultaneously",
-    icon: "⚡",
+    description: "Execute tasks simultaneously",
     nodes: [
       {
         id: "1",
         type: "start",
         data: { label: "Start" },
-        position: { x: 250, y: 50 },
+        position: { x: 300, y: 50 },
       },
       {
         id: "2",
         type: "process",
         data: { label: "Task A" },
-        position: { x: 100, y: 180 },
+        position: { x: 100, y: 200 },
       },
       {
         id: "3",
         type: "process",
         data: { label: "Task B" },
-        position: { x: 250, y: 180 },
+        position: { x: 300, y: 200 },
       },
       {
         id: "4",
         type: "process",
         data: { label: "Task C" },
-        position: { x: 400, y: 180 },
+        position: { x: 500, y: 200 },
       },
       {
         id: "5",
         type: "process",
-        data: { label: "Merge Results" },
-        position: { x: 250, y: 310 },
+        data: { label: "Merge" },
+        position: { x: 300, y: 350 },
       },
       {
         id: "6",
         type: "end",
         data: { label: "End" },
-        position: { x: 250, y: 410 },
+        position: { x: 300, y: 480 },
       },
     ],
     edges: [
@@ -280,6 +344,25 @@ const templates: Template[] = [
   },
 ];
 
+// ─── Default edge style ───────────────────────────────────────────────────────
+const defaultEdgeOpts = {
+  type: "simplebezier" as const,
+  animated: false,
+  style: { stroke: "#94a3b8", strokeWidth: 1.5 },
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    width: 16,
+    height: 16,
+    color: "#94a3b8",
+  },
+};
+
+// ─── Glass panel utility classes ──────────────────────────────────────────────
+const glass =
+  "bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200/60 dark:border-slate-700/60 shadow-sm";
+const glassRound = `${glass} rounded-lg`;
+
+// ─── Main Content ─────────────────────────────────────────────────────────────
 const ProcessMapEditorContent: React.FC<
   ProcessMapEditorProps & { reactFlowWrapper: React.RefObject<HTMLDivElement> }
 > = ({
@@ -303,17 +386,17 @@ const ProcessMapEditorContent: React.FC<
   const [hasChanges, setHasChanges] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-
-  // Advanced features
-  const [snapToGrid, setSnapToGrid] = useState(false);
+  const [snapToGrid, setSnapToGrid] = useState(true);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [selectedNodeForColor, setSelectedNodeForColor] = useState<
     string | null
   >(null);
   const [exportFormat, setExportFormat] = useState<"png" | "svg">("png");
+  const addPanelRef = useRef<HTMLDivElement>(null);
 
-  // AI & advanced feature states
+  // AI states
+  const [showAIMenu, setShowAIMenu] = useState(false);
   const [showAIGenerator, setShowAIGenerator] = useState(false);
   const [isAIProcessing, setIsAIProcessing] = useState(false);
   const [aiDescription, setAiDescription] = useState("");
@@ -326,33 +409,60 @@ const ProcessMapEditorContent: React.FC<
   const [searchTerm, setSearchTerm] = useState("");
   const [showExportDoc, setShowExportDoc] = useState(false);
   const [exportedDoc, setExportedDoc] = useState<string | null>(null);
-  const [quickAddMode, setQuickAddMode] = useState(false);
-  const [showSwimlanes, setShowSwimlanes] = useState(false);
-  const [showMetrics, setShowMetrics] = useState(false);
+  const aiMenuRef = useRef<HTMLDivElement>(null);
 
-  // Handler stubs for compliance check and node search
+  // Close AI menu on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        aiMenuRef.current &&
+        !aiMenuRef.current.contains(e.target as HTMLElement)
+      ) {
+        setShowAIMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Close add-node panel on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (
+        addPanelRef.current &&
+        !addPanelRef.current.contains(e.target as HTMLElement)
+      ) {
+        setShowAddNodePanel(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // ─── Compliance Check ────────────────────────────────────────────────────
   const handleCheckCompliance = async (standard: string) => {
     setIsAIProcessing(true);
     try {
-      const nodesDesc = nodes
-        .map((n) => `${n.type}: ${n.data.label}`)
-        .join(", ");
-      const prompt = `Analyze this process map for compliance with ${standard} standard. The process has these steps: ${nodesDesc}. Provide a JSON response with keys: "compliant" (boolean), "issues" (array of strings), "recommendations" (array of strings).`;
+      const { nodesDesc, edgesDesc } = describeGraph();
+      const prompt = `You are a healthcare compliance auditor. Analyze this process map for compliance with the ${standard} standard.
+Steps: [${nodesDesc}]
+Flow: [${edgesDesc}]
+
+Return ONLY a JSON object (no markdown) with:
+- "compliant": boolean
+- "score": number 0-100
+- "issues": array of specific issue strings
+- "recommendations": array of actionable recommendation strings`;
       const response = await aiAgentService.chat(prompt, true);
-      try {
-        const parsed = JSON.parse(
-          response.response
-            .replace(/```json\s*/gi, "")
-            .replace(/```\s*/g, "")
-            .trim(),
-        );
+      const parsed = extractJSON(response.response || "");
+      if (parsed && typeof parsed === "object") {
         setComplianceResult({ ...parsed, standard });
-      } catch {
+      } else {
         setComplianceResult({
           compliant: true,
           standard,
           issues: [],
-          recommendations: [response.response],
+          recommendations: [response.response || "No issues found."],
         });
       }
     } catch {
@@ -370,17 +480,14 @@ const ProcessMapEditorContent: React.FC<
     }
   };
 
-  const handleNodeSearch = (query: string) => {
-    setSearchTerm(query);
-  };
+  const handleNodeSearch = (query: string) => setSearchTerm(query);
 
-  // Undo/Redo history
+  // ─── Undo / Redo ─────────────────────────────────────────────────────────
   const [history, setHistory] = useState<HistoryState[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const canUndo = historyIndex > 0;
   const canRedo = historyIndex < history.length - 1;
 
-  // Save current state to history
   const saveToHistory = useCallback(() => {
     const currentState = { nodes: getNodes(), edges: getEdges() };
     const newHistory = history.slice(0, historyIndex + 1);
@@ -389,45 +496,36 @@ const ProcessMapEditorContent: React.FC<
     setHistoryIndex(newHistory.length - 1);
   }, [history, historyIndex, getNodes, getEdges]);
 
-  // Load existing process map data
+  // ─── Load data ────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen) return; // Only load when modal is open
-
+    if (!isOpen) return;
     if (documentData.processMapContent) {
       if (documentData.processMapContent.nodes?.length > 0) {
         const loadedNodes = documentData.processMapContent.nodes;
         const loadedEdges = documentData.processMapContent.edges || [];
         setNodes(loadedNodes);
         setEdges(loadedEdges);
-        // Initialize history
         setHistory([{ nodes: loadedNodes, edges: loadedEdges }]);
         setHistoryIndex(0);
       } else {
-        // Initialize with a start node if empty
         const initialNode: Node = {
           id: "1",
           type: "start",
           data: { label: t("start") || "Start" },
-          position: { x: 250, y: 50 },
+          position: { x: 300, y: 80 },
         };
         setNodes([initialNode]);
         setHistory([{ nodes: [initialNode], edges: [] }]);
         setHistoryIndex(0);
       }
     }
-    // Only run when modal opens or document ID changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, documentData.id]);
 
+  // ─── Edge connect ─────────────────────────────────────────────────────────
   const onConnect = useCallback(
     (connection: Connection) => {
-      const edge = {
-        ...connection,
-        type: "smoothstep",
-        animated: true,
-        markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 },
-        style: { stroke: "#3b82f6", strokeWidth: 2 },
-      };
+      const edge = { ...connection, ...defaultEdgeOpts };
       setEdges((eds) => addEdge(edge, eds));
       setHasChanges(true);
       setTimeout(saveToHistory, 100);
@@ -435,19 +533,15 @@ const ProcessMapEditorContent: React.FC<
     [setEdges, saveToHistory],
   );
 
+  // ─── Add node ─────────────────────────────────────────────────────────────
   const handleAddNode = () => {
     if (!nodeLabel.trim()) return;
-
     const newNode: Node = {
       id: `${Date.now()}`,
       type: selectedNodeType,
       data: { label: nodeLabel },
-      position: {
-        x: Math.random() * 400 + 100,
-        y: Math.random() * 300 + 100,
-      },
+      position: { x: Math.random() * 400 + 150, y: Math.random() * 300 + 100 },
     };
-
     setNodes((nds) => [...nds, newNode]);
     setNodeLabel("");
     setShowAddNodePanel(false);
@@ -455,24 +549,87 @@ const ProcessMapEditorContent: React.FC<
     setTimeout(saveToHistory, 100);
   };
 
-  // AI & advanced handler implementations
+  // ─── AI Handlers ──────────────────────────────────────────────────────────
+
+  // Helper: extract JSON object from a string that may contain prose around it
+  const extractJSON = (text: string): any | null => {
+    // Strip markdown fences
+    let cleaned = text
+      .replace(/```json\s*/gi, "")
+      .replace(/```\s*/g, "")
+      .trim();
+    // Try direct parse first
+    try {
+      return JSON.parse(cleaned);
+    } catch {
+      /* continue */
+    }
+    // Find the outermost { ... } block
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start !== -1 && end > start) {
+      try {
+        return JSON.parse(cleaned.slice(start, end + 1));
+      } catch {
+        /* continue */
+      }
+    }
+    // Find the outermost [ ... ] block (in case AI returns an array)
+    const aStart = cleaned.indexOf("[");
+    const aEnd = cleaned.lastIndexOf("]");
+    if (aStart !== -1 && aEnd > aStart) {
+      try {
+        const arr = JSON.parse(cleaned.slice(aStart, aEnd + 1));
+        if (Array.isArray(arr)) return arr;
+      } catch {
+        /* continue */
+      }
+    }
+    return null;
+  };
+
+  const describeGraph = useCallback(() => {
+    const currentNodes = getNodes();
+    const currentEdges = getEdges();
+    const nodeMap: Record<string, string> = {};
+    currentNodes.forEach((n) => {
+      nodeMap[n.id] = `[${n.type}] ${n.data.label}`;
+    });
+    const nodesDesc = currentNodes
+      .map((n) => `${n.type}: "${n.data.label}"`)
+      .join(", ");
+    const edgesDesc = currentEdges
+      .map((e) => {
+        const src = nodeMap[e.source] || e.source;
+        const tgt = nodeMap[e.target] || e.target;
+        return `${src} → ${tgt}${e.label ? ` (${e.label})` : ""}`;
+      })
+      .join("; ");
+    return { nodesDesc, edgesDesc, nodeCount: currentNodes.length };
+  }, [getNodes, getEdges]);
+
   const handleGetSuggestions = useCallback(async () => {
     setIsAIProcessing(true);
+    setShowAIMenu(false);
     try {
-      const nodesDesc = getNodes()
-        .map((n) => `${n.type}: ${n.data.label}`)
-        .join(", ");
-      const prompt = `Given this process map with steps: [${nodesDesc}], suggest 2-3 logical next steps. Return a JSON array where each item has "type" (process/decision/end), "label" (short name), and "rationale" (one sentence explanation).`;
+      const { nodesDesc, edgesDesc } = describeGraph();
+      const prompt = `You are a process-map assistant. Given this process map:
+Steps: [${nodesDesc}]
+Connections: [${edgesDesc}]
+
+Suggest 2-3 logical next steps that would improve or complete this process. Return ONLY a JSON array (no markdown, no commentary). Each item must have:
+- "type": one of "process", "decision", or "end"
+- "label": short descriptive name (2-5 words)
+- "rationale": one sentence explanation
+- "connectAfter": the label of the existing node this should connect from`;
       const response = await aiAgentService.chat(prompt, true);
-      try {
-        const parsed = JSON.parse(
-          response.response
-            .replace(/```json\s*/gi, "")
-            .replace(/```\s*/g, "")
-            .trim(),
-        );
-        setAiSuggestions(Array.isArray(parsed) ? parsed : []);
-      } catch {
+      const parsed = extractJSON(response.response || "");
+      if (parsed) {
+        const arr = Array.isArray(parsed)
+          ? parsed
+          : parsed.suggestions || parsed.nodes || [];
+        setAiSuggestions(arr.length > 0 ? arr : []);
+      } else {
         setAiSuggestions([]);
       }
     } catch {
@@ -480,33 +637,47 @@ const ProcessMapEditorContent: React.FC<
     } finally {
       setIsAIProcessing(false);
     }
-  }, [getNodes]);
+  }, [describeGraph, extractJSON]);
 
   const handleOptimizeProcess = useCallback(async () => {
     setIsAIProcessing(true);
+    setShowAIMenu(false);
     try {
-      const nodesDesc = getNodes()
-        .map((n) => `${n.type}: ${n.data.label}`)
-        .join(", ");
-      const edgesDesc = getEdges()
-        .map((e) => `${e.source} → ${e.target}`)
-        .join(", ");
-      const prompt = `Analyze this process map for optimization. Steps: [${nodesDesc}]. Connections: [${edgesDesc}]. Suggest improvements. Return a JSON array where each item has "category" (efficiency/clarity/compliance/structure), "priority" (high/medium/low), and "suggestion" (one-two sentences).`;
+      const { nodesDesc, edgesDesc } = describeGraph();
+      const prompt = `You are a process-map optimization expert. Analyze this process map:
+Steps: [${nodesDesc}]
+Connections: [${edgesDesc}]
+
+Suggest improvements. Return ONLY a JSON array (no markdown). EVERY item MUST have ALL of these fields:
+- "category": one of "efficiency", "clarity", "compliance", "structure"
+- "priority": one of "high", "medium", "low"
+- "suggestion": one-two sentence actionable recommendation
+- "action": REQUIRED object with { "type": "add_node" or "remove_node" or "rename_node", "nodeLabel": "exact label of existing node", "newLabel": "new label (for rename_node and add_node)" }
+
+Every suggestion MUST have a concrete action. For "add_node", nodeLabel is the new node name. For "rename_node", nodeLabel is the current name and newLabel is the improved name. For "remove_node", nodeLabel is the node to remove.`;
       const response = await aiAgentService.chat(prompt, true);
-      try {
-        const parsed = JSON.parse(
-          response.response
-            .replace(/```json\s*/gi, "")
-            .replace(/```\s*/g, "")
-            .trim(),
+      const parsed = extractJSON(response.response || "");
+      if (parsed) {
+        const arr = Array.isArray(parsed)
+          ? parsed
+          : parsed.optimizations || parsed.suggestions || [];
+        setOptimizations(
+          arr.length > 0
+            ? arr
+            : [
+                {
+                  category: "clarity",
+                  priority: "medium",
+                  suggestion: response.response || "No issues found.",
+                },
+              ],
         );
-        setOptimizations(Array.isArray(parsed) ? parsed : []);
-      } catch {
+      } else {
         setOptimizations([
           {
             category: "clarity",
             priority: "medium",
-            suggestion: response.response,
+            suggestion: response.response || "No issues found.",
           },
         ]);
       }
@@ -517,20 +688,32 @@ const ProcessMapEditorContent: React.FC<
     } finally {
       setIsAIProcessing(false);
     }
-  }, [getNodes, getEdges]);
+  }, [describeGraph, extractJSON]);
 
   const handleGenerateDocumentation = useCallback(async () => {
     setIsAIProcessing(true);
+    setShowAIMenu(false);
     try {
-      const nodesDesc = getNodes()
-        .map((n) => `${n.type}: ${n.data.label}`)
-        .join(", ");
-      const edgesDesc = getEdges()
-        .map((e) => `${e.source} → ${e.target}`)
-        .join(", ");
-      const prompt = `Generate a professional HTML document describing this process map. Process name: "${documentData.name[lang]}". Steps: [${nodesDesc}]. Connections: [${edgesDesc}]. Include sections: Overview, Steps Description, Decision Points, and Flow Summary. Use proper HTML formatting with h2, h3, p, ul, li tags.`;
+      const { nodesDesc, edgesDesc } = describeGraph();
+      const prompt = `Generate a professional HTML document describing this process map.
+Process name: "${documentData.name[lang]}"
+Steps: [${nodesDesc}]
+Flow: [${edgesDesc}]
+
+Include these sections with proper HTML (h2, h3, p, ul, li, table tags):
+1. Overview - brief summary
+2. Steps Description - describe each step's purpose
+3. Decision Points - explain each decision and its branches
+4. Flow Summary - overall flow narrative
+5. Recommendations - any improvements
+
+Return ONLY the HTML content. No markdown fences.`;
       const response = await aiAgentService.chat(prompt, true);
-      setExportedDoc(response.response);
+      let html = (response.response || "")
+        .replace(/```html\s*/gi, "")
+        .replace(/```\s*/g, "")
+        .trim();
+      setExportedDoc(html);
       setShowExportDoc(true);
     } catch {
       setExportedDoc(
@@ -540,100 +723,333 @@ const ProcessMapEditorContent: React.FC<
     } finally {
       setIsAIProcessing(false);
     }
-  }, [getNodes, getEdges, documentData.name, lang, t]);
+  }, [describeGraph, documentData.name, lang, t]);
+
+  // Helper: build nodes & edges from a parsed AI response and apply them
+  const applyGeneratedMap = useCallback(
+    (parsed: any) => {
+      const rawNodes: any[] = Array.isArray(parsed)
+        ? parsed
+        : parsed.nodes || parsed.steps || [];
+      if (rawNodes.length === 0) return false;
+
+      const ts = Date.now();
+      const newNodes: Node[] = rawNodes.map((n: any, i: number) => {
+        // Normalise type
+        let type = (n.type || "process").toLowerCase();
+        if (!["start", "process", "decision", "end"].includes(type))
+          type = "process";
+        // First node should be start, last should be end if not already set
+        if (i === 0 && type === "process") type = "start";
+        if (i === rawNodes.length - 1 && type === "process") type = "end";
+        // Position: honour AI positions or auto-layout vertically
+        const x = typeof n.x === "number" ? n.x : 300;
+        const y = typeof n.y === "number" ? n.y : i * 160 + 80;
+        return {
+          id: `ai-${ts}-${i}`,
+          type,
+          data: { label: n.label || n.name || n.title || `Step ${i + 1}` },
+          position: { x, y },
+        };
+      });
+
+      // Build id mapping from AI ids → our ids
+      const idMap: Record<string, string> = {};
+      rawNodes.forEach((n: any, i: number) => {
+        const key = String(n.id ?? i);
+        idMap[key] = newNodes[i].id;
+        // Also map by label in case edges reference labels
+        if (n.label) idMap[n.label] = newNodes[i].id;
+        if (n.name) idMap[n.name] = newNodes[i].id;
+      });
+
+      let newEdges: Edge[] = [];
+      if (
+        parsed.edges &&
+        Array.isArray(parsed.edges) &&
+        parsed.edges.length > 0
+      ) {
+        newEdges = parsed.edges.map((e: any, i: number) => ({
+          id: `ai-e-${ts}-${i}`,
+          source:
+            idMap[String(e.source)] ||
+            idMap[e.from] ||
+            newNodes[Math.min(i, newNodes.length - 2)]?.id ||
+            "",
+          target:
+            idMap[String(e.target)] ||
+            idMap[e.to] ||
+            newNodes[Math.min(i + 1, newNodes.length - 1)]?.id ||
+            "",
+          label: e.label || undefined,
+          ...defaultEdgeOpts,
+        }));
+      } else {
+        // No edges provided — connect sequentially
+        newEdges = newNodes.slice(0, -1).map((node, i) => ({
+          id: `ai-e-${ts}-${i}`,
+          source: node.id,
+          target: newNodes[i + 1].id,
+          ...defaultEdgeOpts,
+        }));
+      }
+
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setHasChanges(true);
+      setShowAIGenerator(false);
+      setAiDescription("");
+      setTimeout(saveToHistory, 100);
+      setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 250);
+      return true;
+    },
+    [setNodes, setEdges, saveToHistory, fitView],
+  );
+
+  // Fallback: convert a plain-text response into a simple linear flowchart
+  const buildMapFromText = useCallback(
+    (text: string) => {
+      // Try to find numbered/bulleted list items
+      const lines = text
+        .split(/\n/)
+        .map((l) => l.replace(/^[\s\-\*\d\.\)]+/, "").trim())
+        .filter((l) => l.length > 0 && l.length < 120);
+      if (lines.length < 2) return false;
+      // Cap at 15 steps for sanity
+      const steps = lines.slice(0, 15);
+      const ts = Date.now();
+      const newNodes: Node[] = steps.map((label, i) => ({
+        id: `ai-${ts}-${i}`,
+        type: i === 0 ? "start" : i === steps.length - 1 ? "end" : "process",
+        data: { label },
+        position: { x: 300, y: i * 160 + 80 },
+      }));
+      const newEdges: Edge[] = newNodes.slice(0, -1).map((node, i) => ({
+        id: `ai-e-${ts}-${i}`,
+        source: node.id,
+        target: newNodes[i + 1].id,
+        ...defaultEdgeOpts,
+      }));
+      setNodes(newNodes);
+      setEdges(newEdges);
+      setHasChanges(true);
+      setShowAIGenerator(false);
+      setAiDescription("");
+      setTimeout(saveToHistory, 100);
+      setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 250);
+      return true;
+    },
+    [setNodes, setEdges, saveToHistory, fitView],
+  );
+
+  const [aiGenerateError, setAiGenerateError] = useState<string | null>(null);
 
   const handleGenerateFromAI = useCallback(async () => {
     if (!aiDescription.trim()) return;
     setIsAIProcessing(true);
+    setAiGenerateError(null);
     try {
-      const prompt = `Generate a process map from this description: "${aiDescription}". Return a JSON object with "nodes" (array of objects with "id", "type" (start/process/decision/end), "label", "x", "y") and "edges" (array of objects with "source", "target", "label" (optional)). Position nodes vertically with 150px spacing. Start at y=50.`;
+      const prompt = `You are a process-map generator. Given the user's description, output ONLY a valid JSON object — no explanation, no markdown, no text before or after.
+
+The JSON schema:
+{
+  "nodes": [
+    { "id": "1", "type": "start|process|decision|end", "label": "short name", "x": 300, "y": 80 }
+  ],
+  "edges": [
+    { "source": "1", "target": "2", "label": "optional edge label" }
+  ]
+}
+
+Rules:
+- First node MUST be type "start". Last node MUST be type "end".
+- Use "decision" for any yes/no or branching step; connect both branches with labeled edges ("Yes"/"No").
+- Position: keep all x at 300 for linear flows. For branches, use x=150 for left path and x=450 for right path.
+- Increment y by 160 for each row of nodes.
+- Every node must be connected. Every edge source/target must reference a valid node id.
+- Return ONLY the JSON object. No markdown fences. No commentary.
+
+User description:
+${aiDescription}`;
+
       const response = await aiAgentService.chat(prompt, true);
-      try {
-        const parsed = JSON.parse(
-          response.response
-            .replace(/```json\s*/gi, "")
-            .replace(/```\s*/g, "")
-            .trim(),
-        );
-        if (parsed.nodes && Array.isArray(parsed.nodes)) {
-          const newNodes: Node[] = parsed.nodes.map((n: any, i: number) => ({
-            id: `ai-${Date.now()}-${i}`,
-            type: n.type || "process",
-            data: { label: n.label || `Step ${i + 1}` },
-            position: { x: n.x || 250, y: n.y || i * 150 + 50 },
-          }));
-          const nodeIdMap: Record<string, string> = {};
-          parsed.nodes.forEach((n: any, i: number) => {
-            nodeIdMap[n.id || String(i)] = newNodes[i].id;
-          });
-          const newEdges: Edge[] = (parsed.edges || []).map(
-            (e: any, i: number) => ({
-              id: `ai-e-${Date.now()}-${i}`,
-              source: nodeIdMap[e.source] || newNodes[0]?.id || "",
-              target: nodeIdMap[e.target] || newNodes[1]?.id || "",
-              label: e.label,
-              type: "smoothstep",
-              animated: true,
-              markerEnd: {
-                type: MarkerType.ArrowClosed,
-                width: 20,
-                height: 20,
-              },
-              style: { stroke: "#3b82f6", strokeWidth: 2 },
-            }),
-          );
-          setNodes(newNodes);
-          setEdges(newEdges);
-          setHasChanges(true);
-          setShowAIGenerator(false);
-          setAiDescription("");
-          setTimeout(saveToHistory, 100);
-        }
-      } catch {
-        // Could not parse AI response
-      }
+      const raw = response.response || "";
+
+      // Strategy 1: Parse structured JSON from the response
+      const parsed = extractJSON(raw);
+      if (parsed && applyGeneratedMap(parsed)) return;
+
+      // Strategy 2: AI returned prose — try to build a map from text lines
+      if (buildMapFromText(raw)) return;
+
+      // Everything failed — show error
+      setAiGenerateError(
+        t("aiGenerateError") ||
+          "Could not generate a process map. Try a more specific description (e.g. 'A patient admission process with triage, registration, assessment, and discharge steps').",
+      );
+    } catch {
+      setAiGenerateError(
+        t("aiGenerateError") ||
+          "Failed to connect to AI service. Please try again.",
+      );
     } finally {
       setIsAIProcessing(false);
     }
-  }, [aiDescription, setNodes, setEdges, saveToHistory]);
+  }, [aiDescription, applyGeneratedMap, buildMapFromText, t]);
 
   const handleAddSuggestedNode = useCallback(
     (suggestion: any) => {
+      const existingNodes = getNodes();
+      const existingEdges = getEdges();
+      const maxY = existingNodes.reduce(
+        (max, n) => Math.max(max, n.position.y),
+        0,
+      );
+
+      // Find the node to connect from
+      let connectFromId: string | null = null;
+      if (suggestion.connectAfter) {
+        const match = existingNodes.find(
+          (n) => n.data.label === suggestion.connectAfter,
+        );
+        if (match) connectFromId = match.id;
+      }
+      // Fallback: find the last node not already connected as a source to anything
+      if (!connectFromId) {
+        const sourcesUsed = new Set(existingEdges.map((e) => e.source));
+        const leafNodes = existingNodes.filter((n) => !sourcesUsed.has(n.id));
+        if (leafNodes.length > 0) {
+          // Prefer the one furthest down
+          connectFromId = leafNodes.reduce(
+            (best, n) => (n.position.y > best.position.y ? n : best),
+            leafNodes[0],
+          ).id;
+        } else if (existingNodes.length > 0) {
+          connectFromId = existingNodes[existingNodes.length - 1].id;
+        }
+      }
+
+      const ts = Date.now();
       const newNode: Node = {
-        id: `${Date.now()}`,
+        id: `sug-${ts}`,
         type: suggestion.type || "process",
         data: { label: suggestion.label || "New Node" },
-        position: {
-          x: Math.random() * 400 + 100,
-          y: Math.random() * 300 + 100,
-        },
+        position: { x: 300, y: maxY + 160 },
       };
       setNodes((nds) => [...nds, newNode]);
+
+      // Auto-connect
+      if (connectFromId) {
+        const newEdge: Edge = {
+          id: `sug-e-${ts}`,
+          source: connectFromId,
+          target: newNode.id,
+          ...defaultEdgeOpts,
+        };
+        setEdges((eds) => [...eds, newEdge]);
+      }
+
       setHasChanges(true);
+      setTimeout(saveToHistory, 100);
+      setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 200);
     },
-    [setNodes],
+    [setNodes, setEdges, getNodes, getEdges, saveToHistory, fitView],
   );
 
-  const handleApplyOptimization = useCallback((_optimization: any) => {
-    // Apply optimization — mark as changed so user can save
-    setHasChanges(true);
-  }, []);
+  const [applyingOptIdx, setApplyingOptIdx] = useState<number | null>(null);
 
-  const handleExportDocumentation = useCallback(() => {
-    // Export documentation logic placeholder
-    setShowExportDoc(true);
-  }, []);
+  const handleApplyOptimization = useCallback(
+    async (optimization: any, idx: number) => {
+      const currentNodes = getNodes();
+      let action = optimization.action;
 
-  const handleDeleteSelected = () => {
+      // If no structured action, ask AI to produce one
+      if (!action || !action.type) {
+        setApplyingOptIdx(idx);
+        try {
+          const { nodesDesc } = describeGraph();
+          const prompt = `Given this process map with steps: [${nodesDesc}], implement this optimization: "${optimization.suggestion}"
+
+Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename_node", "nodeLabel": "exact existing node label or new node name", "newLabel": "new label for rename" }`;
+          const resp = await aiAgentService.chat(prompt, true);
+          action = extractJSON(resp.response || "");
+        } catch {
+          setApplyingOptIdx(null);
+          return;
+        }
+        setApplyingOptIdx(null);
+        if (!action || !action.type) return;
+      }
+
+      if (
+        action.type === "rename_node" &&
+        action.nodeLabel &&
+        action.newLabel
+      ) {
+        setNodes((nds) =>
+          nds.map((n) =>
+            n.data.label === action.nodeLabel
+              ? { ...n, data: { ...n.data, label: action.newLabel } }
+              : n,
+          ),
+        );
+        setHasChanges(true);
+        setTimeout(saveToHistory, 100);
+      } else if (action.type === "remove_node" && action.nodeLabel) {
+        const target = currentNodes.find(
+          (n) => n.data.label === action.nodeLabel,
+        );
+        if (target) {
+          setNodes((nds) => nds.filter((n) => n.id !== target.id));
+          setEdges((eds) =>
+            eds.filter((e) => e.source !== target.id && e.target !== target.id),
+          );
+          setHasChanges(true);
+          setTimeout(saveToHistory, 100);
+        }
+      } else if (action.type === "add_node" && action.nodeLabel) {
+        const maxY = currentNodes.reduce(
+          (max, n) => Math.max(max, n.position.y),
+          0,
+        );
+        const newNode: Node = {
+          id: `opt-${Date.now()}`,
+          type: "process",
+          data: { label: action.nodeLabel || action.newLabel },
+          position: { x: 300, y: maxY + 160 },
+        };
+        setNodes((nds) => [...nds, newNode]);
+        setHasChanges(true);
+        setTimeout(saveToHistory, 100);
+        setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 200);
+      }
+
+      // Mark this optimization as applied in the list
+      setOptimizations((prev) =>
+        prev.map((o, i) => (i === idx ? { ...o, _applied: true } : o)),
+      );
+    },
+    [
+      getNodes,
+      setNodes,
+      setEdges,
+      saveToHistory,
+      fitView,
+      describeGraph,
+      extractJSON,
+    ],
+  );
+
+  // ─── Node operations ──────────────────────────────────────────────────────
+  const handleDeleteSelected = useCallback(() => {
     const hasSelection =
       nodes.some((n) => n.selected) || edges.some((e) => e.selected);
     if (!hasSelection) return;
-
     setNodes((nds) => nds.filter((node) => !node.selected));
     setEdges((eds) => eds.filter((edge) => !edge.selected));
     setHasChanges(true);
     setTimeout(saveToHistory, 100);
-  };
+  }, [nodes, edges, setNodes, setEdges, saveToHistory]);
 
   const handleUndo = useCallback(() => {
     if (canUndo) {
@@ -657,203 +1073,15 @@ const ProcessMapEditorContent: React.FC<
     }
   }, [canRedo, history, historyIndex, setNodes, setEdges]);
 
-  // Keyboard shortcuts
-  useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (!isOpen) return;
-
-      // Undo: Ctrl+Z / Cmd+Z
-      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
-        e.preventDefault();
-        handleUndo();
-      }
-      // Redo: Ctrl+Shift+Z / Cmd+Shift+Z or Ctrl+Y
-      if (
-        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z") ||
-        (e.ctrlKey && e.key === "y")
-      ) {
-        e.preventDefault();
-        handleRedo();
-      }
-      // Delete: Delete/Backspace
-      if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault();
-        handleDeleteSelected();
-      }
-      // Help: ?
-      if (e.key === "?") {
-        e.preventDefault();
-        setShowHelp(true);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyPress);
-    return () => window.removeEventListener("keydown", handleKeyPress);
-  }, [isOpen, handleUndo, handleRedo, handleDeleteSelected]);
-
-  const handleSave = () => {
-    const updatedDocument = {
-      ...documentData,
-      processMapContent: {
-        nodes,
-        edges,
-      },
-    };
-    onSave(updatedDocument);
-    setHasChanges(false);
-  };
-
-  const handleClear = () => {
-    if (
-      window.confirm(
-        t("confirmClearProcessMap") ||
-          "Are you sure you want to clear the entire process map?",
-      )
-    ) {
-      setNodes([]);
-      setEdges([]);
-      setHasChanges(true);
-      setTimeout(saveToHistory, 100);
-    }
-  };
-
-  const handleAutoLayout = () => {
-    // Simple vertical auto-layout
-    const layoutNodes = nodes.map((node, index) => ({
-      ...node,
-      position: {
-        x: 250,
-        y: index * 150 + 50,
-      },
-    }));
-    setNodes(layoutNodes);
-    setHasChanges(true);
-    setTimeout(saveToHistory, 100);
-  };
-
-  const handleExportPNG = useCallback(async () => {
-    if (!reactFlowWrapper.current) return;
-
-    setIsExporting(true);
-    try {
-      const nodesBounds = getRectOfNodes(getNodes());
-      const transform = getTransformForBounds(
-        nodesBounds,
-        1920,
-        1080,
-        0.5,
-        2,
-        0.1,
-      );
-
-      const dataUrl = await toPng(reactFlowWrapper.current, {
-        backgroundColor: "#ffffff",
-        width: 1920,
-        height: 1080,
-        style: {
-          width: "1920px",
-          height: "1080px",
-          transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
-        },
-      });
-
-      const link = document.createElement("a");
-      link.download = `${documentData.name.en.replace(
-        /\s+/g,
-        "_",
-      )}_process_map.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (error) {
-      console.error("Export failed:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  }, [reactFlowWrapper, getNodes, documentData.name.en]);
-
-  // SVG Export
-  const handleExportSVG = useCallback(async () => {
-    setIsExporting(true);
-    try {
-      const svg = reactFlowWrapper.current?.querySelector(
-        ".react-flow__viewport",
-      );
-      if (!svg) return;
-
-      const svgData = new XMLSerializer().serializeToString(svg);
-      const blob = new Blob([svgData], { type: "image/svg+xml" });
-      const url = URL.createObjectURL(blob);
-
-      const link = document.createElement("a");
-      link.download = `${documentData.name.en.replace(
-        /\\s+/g,
-        "_",
-      )}_process_map.svg`;
-      link.href = url;
-      link.click();
-      URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("SVG Export failed:", error);
-    } finally {
-      setIsExporting(false);
-    }
-  }, [reactFlowWrapper, documentData.name.en]);
-
-  // Template loading
-  const handleLoadTemplate = (template: Template) => {
-    const newNodes = template.nodes.map((n) => ({
-      ...n,
-      id: `${Date.now()}-${Math.random()}`,
-    })) as Node[];
-
-    const newEdges = template.edges.map((e) => ({
-      ...e,
-      id: `e-${Date.now()}-${Math.random()}`,
-      type: "smoothstep",
-      animated: true,
-      markerEnd: { type: MarkerType.ArrowClosed, width: 20, height: 20 },
-      style: { stroke: "#3b82f6", strokeWidth: 2 },
-    })) as Edge[];
-
-    setNodes(newNodes);
-    setEdges(newEdges);
-    setShowTemplates(false);
-    setHasChanges(true);
-    setTimeout(saveToHistory, 100);
-  };
-
-  // Node color customization
-  const handleChangeNodeColor = (color: string) => {
-    if (!selectedNodeForColor) return;
-
-    setNodes((nds) =>
-      nds.map((node) =>
-        node.id === selectedNodeForColor
-          ? { ...node, data: { ...node.data, customColor: color } }
-          : node,
-      ),
-    );
-    setHasChanges(true);
-    setShowColorPicker(false);
-    setSelectedNodeForColor(null);
-    setTimeout(saveToHistory, 100);
-  };
-
-  // Multi-select operations
   const handleDuplicateSelected = () => {
     const selectedNodes = nodes.filter((n) => n.selected);
     if (selectedNodes.length === 0) return;
-
     const duplicatedNodes = selectedNodes.map((node) => ({
       ...node,
       id: `${Date.now()}-${Math.random()}`,
-      position: {
-        x: node.position.x + 50,
-        y: node.position.y + 50,
-      },
+      position: { x: node.position.x + 50, y: node.position.y + 50 },
       selected: false,
     }));
-
     setNodes((nds) => [
       ...nds.map((n) => ({ ...n, selected: false })),
       ...duplicatedNodes,
@@ -865,7 +1093,6 @@ const ProcessMapEditorContent: React.FC<
   const handleAlignSelected = (direction: "horizontal" | "vertical") => {
     const selectedNodes = nodes.filter((n) => n.selected);
     if (selectedNodes.length < 2) return;
-
     if (direction === "horizontal") {
       const avgY =
         selectedNodes.reduce((sum, n) => sum + n.position.y, 0) /
@@ -889,150 +1116,514 @@ const ProcessMapEditorContent: React.FC<
         ),
       );
     }
-
     setHasChanges(true);
     setTimeout(saveToHistory, 100);
   };
 
+  // ─── Keyboard shortcuts ───────────────────────────────────────────────────
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (!isOpen) return;
+      if ((e.ctrlKey || e.metaKey) && e.key === "z" && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+      if (
+        ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "z") ||
+        (e.ctrlKey && e.key === "y")
+      ) {
+        e.preventDefault();
+        handleRedo();
+      }
+      if (e.key === "Delete" || e.key === "Backspace") {
+        const active = document.activeElement;
+        if (
+          active &&
+          (active.tagName === "INPUT" || active.tagName === "TEXTAREA")
+        )
+          return;
+        e.preventDefault();
+        handleDeleteSelected();
+      }
+      if (
+        e.key === "?" &&
+        !(
+          document.activeElement?.tagName === "INPUT" ||
+          document.activeElement?.tagName === "TEXTAREA"
+        )
+      ) {
+        e.preventDefault();
+        setShowHelp(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, [isOpen, handleUndo, handleRedo, handleDeleteSelected]);
+
+  // ─── Save / Clear / Auto-Layout ───────────────────────────────────────────
+  const handleSave = () => {
+    onSave({ ...documentData, processMapContent: { nodes, edges } });
+    setHasChanges(false);
+  };
+
+  const handleClear = () => {
+    if (
+      window.confirm(
+        t("confirmClearProcessMap") ||
+          "Are you sure you want to clear the entire process map?",
+      )
+    ) {
+      setNodes([]);
+      setEdges([]);
+      setHasChanges(true);
+      setTimeout(saveToHistory, 100);
+    }
+  };
+
+  const handleAutoLayout = () => {
+    const sorted = [...nodes];
+    const layoutNodes = sorted.map((node, index) => ({
+      ...node,
+      position: { x: 300, y: index * 160 + 80 },
+    }));
+    setNodes(layoutNodes);
+    setHasChanges(true);
+    setTimeout(saveToHistory, 100);
+    setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 150);
+  };
+
+  // ─── Export ───────────────────────────────────────────────────────────────
+  const handleExportPNG = useCallback(async () => {
+    if (!reactFlowWrapper.current) return;
+    setIsExporting(true);
+    try {
+      // Target the actual flow element, not the outer wrapper
+      const flowEl = reactFlowWrapper.current.querySelector(
+        ".react-flow",
+      ) as HTMLElement;
+      if (!flowEl) {
+        setIsExporting(false);
+        return;
+      }
+
+      const currentNodes = getNodes();
+      if (currentNodes.length === 0) {
+        setIsExporting(false);
+        return;
+      }
+
+      const nodesBounds = getRectOfNodes(currentNodes);
+      // Add padding around nodes
+      const padding = 80;
+      const imgWidth = Math.max(nodesBounds.width + padding * 2, 800);
+      const imgHeight = Math.max(nodesBounds.height + padding * 2, 600);
+      const transform = getTransformForBounds(
+        nodesBounds,
+        imgWidth,
+        imgHeight,
+        0.5,
+        2,
+        padding / Math.max(imgWidth, imgHeight),
+      );
+
+      const dataUrl = await toPng(flowEl, {
+        backgroundColor: "#f8fafc",
+        width: imgWidth,
+        height: imgHeight,
+        skipFonts: true,
+        pixelRatio: 2,
+        style: {
+          width: `${imgWidth}px`,
+          height: `${imgHeight}px`,
+          transform: `translate(${transform[0]}px, ${transform[1]}px) scale(${transform[2]})`,
+        },
+      });
+      const link = document.createElement("a");
+      link.download = `${documentData.name.en.replace(/\s+/g, "_")}_process_map.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error("Export PNG failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [reactFlowWrapper, getNodes, documentData.name.en]);
+
+  const handleExportSVG = useCallback(async () => {
+    if (!reactFlowWrapper.current) return;
+    setIsExporting(true);
+    try {
+      const currentNodes = getNodes();
+      if (currentNodes.length === 0) {
+        setIsExporting(false);
+        return;
+      }
+
+      const nodesBounds = getRectOfNodes(currentNodes);
+      const padding = 80;
+      const svgWidth = Math.max(nodesBounds.width + padding * 2, 800);
+      const svgHeight = Math.max(nodesBounds.height + padding * 2, 600);
+      const transform = getTransformForBounds(
+        nodesBounds,
+        svgWidth,
+        svgHeight,
+        0.5,
+        2,
+        padding / Math.max(svgWidth, svgHeight),
+      );
+
+      const viewport = reactFlowWrapper.current.querySelector(
+        ".react-flow__viewport",
+      );
+      if (!viewport) {
+        setIsExporting(false);
+        return;
+      }
+
+      const viewportClone = viewport.cloneNode(true) as Element;
+      // Build a proper SVG wrapper
+      const svgEl = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "svg",
+      );
+      svgEl.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+      svgEl.setAttribute("width", String(svgWidth));
+      svgEl.setAttribute("height", String(svgHeight));
+      svgEl.setAttribute("viewBox", `0 0 ${svgWidth} ${svgHeight}`);
+
+      // White background
+      const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      bg.setAttribute("width", "100%");
+      bg.setAttribute("height", "100%");
+      bg.setAttribute("fill", "#f8fafc");
+      svgEl.appendChild(bg);
+
+      // Apply transform to position content
+      const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+      g.setAttribute(
+        "transform",
+        `translate(${transform[0]}, ${transform[1]}) scale(${transform[2]})`,
+      );
+
+      // Inline basic styles
+      const style = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "style",
+      );
+      style.textContent = `
+        .react-flow__node { font-family: system-ui, -apple-system, sans-serif; font-size: 14px; }
+        .react-flow__edge-path { fill: none; stroke: #94a3b8; stroke-width: 1.5px; }
+        .react-flow__arrowhead { fill: #94a3b8; }
+        text { font-family: system-ui, -apple-system, sans-serif; }
+      `;
+      svgEl.appendChild(style);
+
+      // Move cloned viewport content into the g element
+      while (viewportClone.firstChild) g.appendChild(viewportClone.firstChild);
+      svgEl.appendChild(g);
+
+      const svgData = new XMLSerializer().serializeToString(svgEl);
+      const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.download = `${documentData.name.en.replace(/\s+/g, "_")}_process_map.svg`;
+      link.href = url;
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) {
+      console.error("SVG Export failed:", error);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [reactFlowWrapper, getNodes, documentData.name.en]);
+
+  // ─── Template loading ─────────────────────────────────────────────────────
+  const handleLoadTemplate = (template: Template) => {
+    const newNodes = template.nodes.map((n) => ({
+      ...n,
+      id: `${Date.now()}-${Math.random()}`,
+    })) as Node[];
+    const newEdges = template.edges.map((e) => ({
+      ...e,
+      id: `e-${Date.now()}-${Math.random()}`,
+      ...defaultEdgeOpts,
+    })) as Edge[];
+    setNodes(newNodes);
+    setEdges(newEdges);
+    setShowTemplates(false);
+    setHasChanges(true);
+    setTimeout(saveToHistory, 100);
+    setTimeout(() => fitView({ padding: 0.2, duration: 400 }), 150);
+  };
+
+  // ─── Node color ───────────────────────────────────────────────────────────
+  const handleChangeNodeColor = (color: string) => {
+    if (!selectedNodeForColor) return;
+    setNodes((nds) =>
+      nds.map((node) =>
+        node.id === selectedNodeForColor
+          ? { ...node, data: { ...node.data, customColor: color } }
+          : node,
+      ),
+    );
+    setHasChanges(true);
+    setShowColorPicker(false);
+    setSelectedNodeForColor(null);
+    setTimeout(saveToHistory, 100);
+  };
+
+  const hasSelectedNodes = nodes.some((n) => n.selected);
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // RENDER
+  // ═══════════════════════════════════════════════════════════════════════════
   return (
     <>
-      <header className="p-4 border-b dark:border-dark-brand-border flex justify-between items-center flex-shrink-0 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-gray-900 dark:to-gray-800">
-        <div>
-          <h3 className="text-xl font-semibold dark:text-dark-brand-text-primary flex items-center gap-2">
-            <span className="text-2xl">🗺️</span>
+      {/* ─── Unified Slim Header ──────────────────────────────────────────── */}
+      <header
+        className={`h-12 px-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-4 flex-shrink-0 relative z-20 ${glass}`}
+      >
+        {/* Left: title */}
+        <div className="flex items-center gap-2.5 min-w-0 flex-shrink">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
             {documentData.name[lang]}
           </h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            v{documentData.currentVersion} -{" "}
-            {t(
-              (documentData.status.charAt(0).toLowerCase() +
-                documentData.status.slice(1).replace(" ", "")) as any,
-            )}
-            {hasChanges && (
-              <span className="ml-2 text-yellow-600 dark:text-yellow-500 animate-pulse">
-                ● {t("unsavedChanges") || "Unsaved changes"}
-              </span>
-            )}
-          </p>
+          <span className="text-[11px] text-slate-400 flex-shrink-0">
+            v{documentData.currentVersion}
+          </span>
+          {hasChanges && (
+            <span
+              className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0"
+              title={t("unsavedChanges") || "Unsaved changes"}
+            />
+          )}
         </div>
-        <div className="flex items-center gap-2">
+
+        {/* Center: Tool buttons */}
+        <div className="flex items-center gap-0.5 flex-1 justify-center">
+          {/* Undo / Redo */}
+          <button
+            onClick={handleUndo}
+            disabled={!canUndo}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-25 transition-colors"
+            title={t("undo") || "Undo (Ctrl+Z)"}
+          >
+            <ArrowUturnLeftIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          <button
+            onClick={handleRedo}
+            disabled={!canRedo}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-25 transition-colors"
+            title={t("redo") || "Redo (Ctrl+Shift+Z)"}
+          >
+            <ArrowUturnRightIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-600 mx-1" />
+
+          {/* Zoom */}
+          <button
+            onClick={() => zoomIn()}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("zoomIn") || "Zoom In"}
+          >
+            <MagnifyingGlassPlusIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          <button
+            onClick={() => zoomOut()}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("zoomOut") || "Zoom Out"}
+          >
+            <MagnifyingGlassMinusIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          <button
+            onClick={() => fitView({ padding: 0.2, duration: 400 })}
+            className="px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-xs font-medium text-slate-600 dark:text-slate-300"
+            title={t("fitView") || "Fit View"}
+          >
+            {t("fit") || "Fit"}
+          </button>
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-600 mx-1" />
+
+          {/* Grid */}
+          <button
+            onClick={() => setSnapToGrid(!snapToGrid)}
+            className={`p-1.5 rounded-md transition-colors ${snapToGrid ? "bg-slate-200 dark:bg-slate-600" : "hover:bg-slate-100 dark:hover:bg-slate-700"}`}
+            title={snapToGrid ? "Grid: ON" : "Grid: OFF"}
+          >
+            <Squares2X2Icon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          {/* Export */}
+          <button
+            onClick={exportFormat === "png" ? handleExportPNG : handleExportSVG}
+            disabled={isExporting}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors disabled:opacity-40"
+            title={`Export ${exportFormat.toUpperCase()}`}
+          >
+            <PhotoIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          <select
+            value={exportFormat}
+            onChange={(e) => setExportFormat(e.target.value as "png" | "svg")}
+            className="text-[11px] bg-transparent text-slate-500 border-none focus:ring-0 p-0 cursor-pointer"
+          >
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+          </select>
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-600 mx-1" />
+
+          {/* Templates */}
+          <button
+            onClick={() => setShowTemplates(true)}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("processMapTemplates") || "Templates"}
+          >
+            <DocumentDuplicateIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+          {/* Auto Layout */}
+          <button
+            onClick={handleAutoLayout}
+            className="px-2 py-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors text-xs font-medium text-slate-600 dark:text-slate-300"
+            title={t("autoLayout") || "Auto Layout"}
+          >
+            {t("autoLayout") || "Layout"}
+          </button>
+          {/* Clear */}
+          <button
+            onClick={handleClear}
+            className="px-2 py-1 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs font-medium text-slate-500 hover:text-red-600"
+            title={t("clearAll") || "Clear All"}
+          >
+            {t("clearAll") || "Clear"}
+          </button>
+          <div className="w-px h-4 bg-slate-200 dark:bg-slate-600 mx-1" />
+
+          {/* Search */}
+          <button
+            onClick={() => setShowNodeSearch(true)}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("searchNodes") || "Search Nodes"}
+          >
+            <MagnifyingGlassPlusIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+          </button>
+
+          {/* AI Dropdown */}
+          <div className="relative" ref={aiMenuRef}>
+            <button
+              onClick={() => setShowAIMenu(!showAIMenu)}
+              disabled={isAIProcessing}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                showAIMenu || isAIProcessing
+                  ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300"
+                  : "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40"
+              }`}
+            >
+              {isAIProcessing ? (
+                <svg
+                  className="animate-spin w-3.5 h-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+              ) : (
+                <SparklesIcon className="w-3.5 h-3.5" />
+              )}
+              AI
+            </button>
+            {showAIMenu && (
+              <div
+                className={`absolute top-full mt-1 right-0 w-52 py-1 rounded-lg z-50 ${glassRound} shadow-lg`}
+              >
+                <button
+                  onClick={() => {
+                    setShowAIGenerator(true);
+                    setShowAIMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
+                >
+                  <SparklesIcon className="w-4 h-4 text-violet-500" />
+                  {t("generateFromText") || "Generate from Text"}
+                </button>
+                <button
+                  onClick={handleGetSuggestions}
+                  disabled={nodes.length === 0}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 disabled:opacity-40"
+                >
+                  <SparklesIcon className="w-4 h-4 text-blue-500" />
+                  {t("suggestNextSteps") || "Suggest Next Steps"}
+                </button>
+                <button
+                  onClick={handleOptimizeProcess}
+                  disabled={nodes.length === 0}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 disabled:opacity-40"
+                >
+                  <SparklesIcon className="w-4 h-4 text-amber-500" />
+                  {t("optimizeProcess") || "Optimize Process"}
+                </button>
+                <button
+                  onClick={handleGenerateDocumentation}
+                  disabled={nodes.length === 0}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 disabled:opacity-40"
+                >
+                  <SparklesIcon className="w-4 h-4 text-emerald-500" />
+                  {t("exportToDocument") || "Export Documentation"}
+                </button>
+                <div className="h-px bg-slate-200 dark:bg-slate-600 my-1" />
+                <button
+                  onClick={() => {
+                    setShowComplianceCheck(true);
+                    setShowAIMenu(false);
+                  }}
+                  disabled={nodes.length === 0}
+                  className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2 disabled:opacity-40"
+                >
+                  <CheckIcon className="w-4 h-4 text-emerald-500" />
+                  {t("checkCompliance") || "Check Compliance"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Help + Save + Close */}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
           <button
             onClick={() => setShowHelp(true)}
-            className="p-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-white dark:hover:bg-gray-700 transition-colors"
-            title={t("help") || "Help (Press ?)"}
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            title={t("help") || "Help (?)"}
           >
-            <QuestionMarkCircleIcon className="w-5 h-5" />
+            <QuestionMarkCircleIcon className="w-4 h-4 text-slate-400" />
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving || !hasChanges}
+            className="px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 hover:bg-slate-700 dark:hover:bg-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          >
+            {isSaving ? t("saving") || "Saving..." : t("saveChanges") || "Save"}
           </button>
           <button
             onClick={onClose}
-            className="p-2 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-600 transition-colors"
+            className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             aria-label="Close"
           >
-            <XMarkIcon className="w-6 h-6" />
+            <XMarkIcon className="w-4 h-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
           </button>
         </div>
       </header>
 
-      {/* AI-Powered Toolbar */}
-      <div className="border-b border-gray-300 dark:border-gray-700 p-3 flex flex-wrap gap-2 bg-sky-50 dark:bg-sky-900/20">
-        <div className="flex items-center gap-2 text-sm font-semibold text-sky-600 dark:text-sky-300">
-          <span className="text-lg">✨</span>
-          {t("aiTools") || "AI Tools:"}
-        </div>
-        <button
-          onClick={() => setShowAIGenerator(true)}
-          disabled={isAIProcessing}
-          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-        >
-          🤖 {t("generateFromText") || "Generate from Text"}
-        </button>
-        <button
-          onClick={handleGetSuggestions}
-          disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-        >
-          💡 {t("suggestNextSteps") || "Suggest Next Steps"}
-        </button>
-        <button
-          onClick={handleOptimizeProcess}
-          disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-        >
-          ⚡ {t("optimizeProcess") || "Optimize Process"}
-        </button>
-        <button
-          onClick={handleGenerateDocumentation}
-          disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-        >
-          📄 {t("exportToDocument") || "Export to Document"}
-        </button>
-        <button
-          onClick={() => setShowComplianceCheck(true)}
-          disabled={isAIProcessing || nodes.length === 0}
-          className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-        >
-          ✅ {t("checkCompliance") || "Check Compliance"}
-        </button>
-
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={() => setShowNodeSearch(true)}
-            className="px-3 py-1.5 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors flex items-center gap-1.5"
-          >
-            🔍 {t("searchNodes") || "Search Nodes"}
-          </button>
-          <button
-            onClick={() => setQuickAddMode(!quickAddMode)}
-            className={`px-3 py-1.5 text-sm rounded transition-colors flex items-center gap-1.5 ${
-              quickAddMode
-                ? "bg-green-600 text-white hover:bg-green-700"
-                : "bg-gray-600 text-white hover:bg-gray-700"
-            }`}
-          >
-            ⚡ {t("quickAdd") || "Quick Add"}{" "}
-            {quickAddMode && `(${t("active") || "Active"})`}
-          </button>
-          <button
-            onClick={() => setShowSwimlanes(!showSwimlanes)}
-            className="px-3 py-1.5 text-sm rounded bg-sky-600 text-white hover:bg-sky-700 transition-colors flex items-center gap-1.5"
-          >
-            🏊 {t("swimlanes") || "Swimlanes"}
-          </button>
-          <button
-            onClick={() => setShowMetrics(!showMetrics)}
-            className="px-3 py-1.5 text-sm rounded bg-orange-600 text-white hover:bg-orange-700 transition-colors flex items-center gap-1.5"
-          >
-            📊 {t("metrics") || "Metrics"}
-          </button>
-        </div>
-
-        {isAIProcessing && (
-          <div className="w-full flex items-center gap-2 text-sm text-sky-600 dark:text-sky-300 mt-2">
-            <svg
-              className="animate-spin h-4 w-4"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-            {t("aiProcessing") || "AI is processing..."}
-          </div>
-        )}
-      </div>
+      {/* ─── Canvas ───────────────────────────────────────────────────────── */}
       <main className="flex-grow overflow-hidden relative">
         <ReactFlow
           nodes={nodes}
@@ -1049,166 +1640,128 @@ const ProcessMapEditorContent: React.FC<
           nodeTypes={nodeTypes}
           fitView
           snapToGrid={snapToGrid}
-          snapGrid={[15, 15]}
-          className="bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800"
-          defaultEdgeOptions={{
-            type: "smoothstep",
-            animated: true,
-            style: { strokeWidth: 2 },
-          }}
+          snapGrid={[20, 20]}
+          className="!bg-slate-50 dark:!bg-slate-900"
+          defaultEdgeOptions={defaultEdgeOpts}
+          deleteKeyCode={null}
         >
           <Background
-            color="#93c5fd"
-            gap={snapToGrid ? 15 : 16}
-            size={snapToGrid ? 2 : 1}
+            color="#cbd5e1"
+            gap={20}
+            size={1}
+            variant={BackgroundVariant.Dots}
           />
           <Controls
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
+            className={`!${glass} !rounded-lg`}
             showInteractive={false}
           />
           <MiniMap
             nodeColor={(node) => {
               switch (node.type) {
                 case "start":
-                  return "#10b981";
+                  return "#34d399";
                 case "end":
-                  return "#ef4444";
+                  return "#fb7185";
                 case "decision":
-                  return "#eab308";
+                  return "#fbbf24";
                 default:
-                  return "#3b82f6";
+                  return "#60a5fa";
               }
             }}
-            className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg"
-            maskColor="rgba(0, 0, 0, 0.1)"
+            className={`!bg-white/70 dark:!bg-slate-800/70 !backdrop-blur-md !border !border-slate-200/50 dark:!border-slate-700/50 !rounded-lg !shadow-sm`}
+            maskColor="rgba(0, 0, 0, 0.04)"
           />
+        </ReactFlow>
 
-          {/* Top Action Bar */}
-          <Panel position="top-left" className="flex gap-2">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-2 flex gap-2 border border-gray-200 dark:border-gray-700">
-              <button
-                onClick={handleUndo}
-                disabled={!canUndo}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                title={t("undo") || "Undo (Ctrl+Z)"}
-              >
-                <ArrowUturnLeftIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={handleRedo}
-                disabled={!canRedo}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                title={t("redo") || "Redo (Ctrl+Shift+Z)"}
-              >
-                <ArrowUturnRightIcon className="w-5 h-5" />
-              </button>
-              <div className="w-px bg-gray-300 dark:bg-gray-600"></div>
-              <button
-                onClick={() => zoomIn()}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-                title={t("zoomIn") || "Zoom In"}
-              >
-                <MagnifyingGlassPlusIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => zoomOut()}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-                title={t("zoomOut") || "Zoom Out"}
-              >
-                <MagnifyingGlassMinusIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => fitView({ padding: 0.2, duration: 400 })}
-                className="p-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all text-sm font-medium"
-                title={t("fitView") || "Fit View"}
-              >
-                {t("fit") || "Fit"}
-              </button>
-              <div className="w-px bg-gray-300 dark:bg-gray-600"></div>
-              <button
-                onClick={
-                  exportFormat === "png" ? handleExportPNG : handleExportSVG
-                }
-                disabled={isExporting}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all disabled:opacity-50"
-                title={`Export as ${exportFormat.toUpperCase()}`}
-              >
-                <PhotoIcon className="w-5 h-5" />
-              </button>
-              <select
-                value={exportFormat}
-                onChange={(e) =>
-                  setExportFormat(e.target.value as "png" | "svg")
-                }
-                className="px-2 py-1 text-xs rounded bg-gray-100 dark:bg-gray-700 border-none focus:ring-2 focus:ring-sky-500"
-                title="Export format"
-              >
-                <option value="png">PNG</option>
-                <option value="svg">SVG</option>
-              </select>
-              <div className="w-px bg-gray-300 dark:bg-gray-600"></div>
-              <button
-                onClick={() => setSnapToGrid(!snapToGrid)}
-                className={`p-2 rounded-lg transition-all ${
-                  snapToGrid
-                    ? "bg-sky-100 dark:bg-sky-900 text-sky-600 dark:text-sky-300"
-                    : "hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
-                title={snapToGrid ? "Snap to Grid: ON" : "Snap to Grid: OFF"}
-              >
-                <span className="text-lg">⊞</span>
-              </button>
-              <button
-                onClick={() => setShowTemplates(!showTemplates)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
-                title="Templates"
-              >
-                <span className="text-lg">📋</span>
-              </button>
-            </div>
-          </Panel>
-
-          {/* Node Controls Panel */}
-          <Panel
-            position="top-right"
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-3 space-y-2 border border-gray-200 dark:border-gray-700 max-w-xs"
+        {/* ─── Contextual Floating Toolbar (appears when nodes selected) ─── */}
+        {hasSelectedNodes && (
+          <div
+            className={`absolute top-3 left-1/2 -translate-x-1/2 z-10 ${glassRound} px-1.5 py-1 flex items-center gap-0.5`}
           >
             <button
-              onClick={() => setShowAddNodePanel(!showAddNodePanel)}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105"
+              onClick={handleDeleteSelected}
+              className="p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 transition-colors"
+              title={t("deleteSelected") || "Delete (Del)"}
             >
-              <PlusIcon className="w-5 h-5" />
-              <span className="font-semibold">
-                {t("addNode") || "Add Node"}
-              </span>
+              <TrashIcon className="w-4 h-4" />
             </button>
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
+            <button
+              onClick={handleDuplicateSelected}
+              className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 transition-colors"
+              title={t("duplicate") || "Duplicate"}
+            >
+              <DocumentDuplicateIcon className="w-4 h-4" />
+            </button>
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-600" />
+            <button
+              onClick={() => handleAlignSelected("horizontal")}
+              className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 transition-colors text-xs font-medium"
+              title={t("alignH") || "Align Horizontally"}
+            >
+              H
+            </button>
+            <button
+              onClick={() => handleAlignSelected("vertical")}
+              className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 transition-colors text-xs font-medium"
+              title={t("alignV") || "Align Vertically"}
+            >
+              V
+            </button>
+          </div>
+        )}
 
-            {showAddNodePanel && (
-              <div className="space-y-3 p-4 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-700 dark:to-gray-600 rounded-lg border border-gray-200 dark:border-gray-600 animate-fadeIn">
+        {/* ─── Floating Add-Node Button + Panel ───────────────────────────── */}
+        <div className="absolute bottom-6 right-6 z-10" ref={addPanelRef}>
+          {showAddNodePanel && (
+            <div
+              className={`absolute bottom-14 right-0 w-64 p-4 ${glassRound} shadow-lg mb-2`}
+            >
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
-                    {t("nodeType") || "Node Type"}
+                  <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
+                    {t("nodeType") || "Type"}
                   </label>
-                  <select
-                    value={selectedNodeType}
-                    onChange={(e) => setSelectedNodeType(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 transition-all"
-                  >
-                    <option value="start">
-                      ▶️ {t("startNode") || "Start"}
-                    </option>
-                    <option value="process">
-                      ⚙️ {t("processNode") || "Process"}
-                    </option>
-                    <option value="decision">
-                      ◆ {t("decisionNode") || "Decision"}
-                    </option>
-                    <option value="end">⏹️ {t("endNode") || "End"}</option>
-                  </select>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {(["start", "process", "decision", "end"] as const).map(
+                      (type) => {
+                        const colors: Record<string, string> = {
+                          start: "bg-emerald-500",
+                          process: "bg-blue-400",
+                          decision: "bg-amber-400",
+                          end: "bg-rose-500",
+                        };
+                        const shapes: Record<string, string> = {
+                          start: "rounded-full",
+                          process: "rounded",
+                          decision: "rotate-45 rounded-sm",
+                          end: "rounded-full",
+                        };
+                        return (
+                          <button
+                            key={type}
+                            onClick={() => setSelectedNodeType(type)}
+                            className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-colors text-[10px] font-medium capitalize
+                            ${selectedNodeType === type ? "bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200" : "text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/50"}`}
+                          >
+                            <div
+                              className={`w-3 h-3 ${colors[type]} ${shapes[type]}`}
+                            />
+                            {type === "start"
+                              ? t("start") || "Start"
+                              : type === "process"
+                                ? t("process") || "Step"
+                                : type === "decision"
+                                  ? t("decision") || "If"
+                                  : t("end") || "End"}
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
                 </div>
-
                 <div>
-                  <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-500 dark:text-slate-400 mb-1 uppercase tracking-wider">
                     {t("nodeLabel") || "Label"}
                   </label>
                   <input
@@ -1217,645 +1770,401 @@ const ProcessMapEditorContent: React.FC<
                     onChange={(e) => setNodeLabel(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleAddNode()}
                     placeholder={t("enterNodeLabel") || "Enter label..."}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-500 rounded-lg dark:bg-gray-800 dark:text-white text-sm focus:ring-2 focus:ring-sky-500 transition-all"
+                    className="w-full px-3 py-2 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800 focus:border-blue-300 dark:focus:border-blue-600 transition-all"
                     autoFocus
                   />
                 </div>
-
                 <button
                   onClick={handleAddNode}
                   disabled={!nodeLabel.trim()}
-                  className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg hover:from-green-700 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-sm font-semibold shadow-md"
+                  className="w-full py-2 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 rounded-lg text-sm font-semibold hover:bg-slate-700 dark:hover:bg-slate-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <CheckIcon className="w-4 h-4" />
                   {t("add") || "Add"}
                 </button>
               </div>
-            )}
-
-            <div className="w-full h-px bg-gray-300 dark:bg-gray-600"></div>
-
-            {/* Multi-select operations */}
-            {nodes.some((n) => n.selected) && (
-              <div className="space-y-2 p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-800">
-                <p className="text-xs font-bold text-sky-700 dark:text-sky-300 mb-2">
-                  ✨ {t("multiSelectTools") || "Multi-Select Tools"}
-                </p>
-                <button
-                  onClick={handleDuplicateSelected}
-                  className="w-full px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all text-xs font-medium shadow-sm"
-                >
-                  📋 {t("duplicate") || "Duplicate"}
-                </button>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => handleAlignSelected("horizontal")}
-                    className="flex-1 px-2 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all text-xs font-medium"
-                    title="Align horizontally"
-                  >
-                    ↔️ {t("alignH") || "Align H"}
-                  </button>
-                  <button
-                    onClick={() => handleAlignSelected("vertical")}
-                    className="flex-1 px-2 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all text-xs font-medium"
-                    title="Align vertically"
-                  >
-                    ↕️ {t("alignV") || "Align V"}
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <button
-              onClick={handleDeleteSelected}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all shadow-md font-medium"
-              title={
-                t("deleteSelectedHint") || "Delete selected nodes/edges (Del)"
-              }
-            >
-              <TrashIcon className="w-4 h-4" />
-              {t("deleteSelected") || "Delete Selected"}
-            </button>
-
-            <button
-              onClick={handleAutoLayout}
-              className="w-full px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all text-sm font-medium shadow-md"
-            >
-              {t("autoLayout") || "✨ Auto Layout"}
-            </button>
-
-            <button
-              onClick={handleClear}
-              className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all text-sm font-medium border border-gray-300 dark:border-gray-600"
-            >
-              {t("clearAll") || "Clear All"}
-            </button>
-          </Panel>
-
-          <Panel
-            position="bottom-left"
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-5 border-2 border-gray-200 dark:border-gray-700 max-w-[220px]"
-          >
-            <div className="space-y-3">
-              <div className="font-bold text-base text-gray-800 dark:text-gray-200 mb-3 flex flex-col gap-1 pb-3 border-b border-gray-200 dark:border-gray-700">
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">📋</span>
-                  <span>{t("legend") || "Legend"}</span>
-                </div>
-                <span className="text-xs text-gray-500 dark:text-gray-400 font-normal">
-                  {t("nodeTypesAvailable") || "Node types available"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-colors cursor-default">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow-lg flex items-center justify-center">
-                  <span className="text-xs">▶️</span>
-                </div>
-                <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                  {t("startNode") || "Start"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-colors cursor-default">
-                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-lg flex items-center justify-center">
-                  <span className="text-xs">⚙️</span>
-                </div>
-                <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                  {t("processNode") || "Process"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-colors cursor-default">
-                <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-yellow-500 transform rotate-45 shadow-lg flex items-center justify-center">
-                  <span className="text-xs transform -rotate-45">◆</span>
-                </div>
-                <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                  {t("decisionNode") || "Decision"}
-                </span>
-              </div>
-              <div className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 p-2 rounded-lg transition-colors cursor-default">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg flex items-center justify-center">
-                  <span className="text-xs">⏹️</span>
-                </div>
-                <span className="font-semibold text-sm text-gray-700 dark:text-gray-300">
-                  {t("endNode") || "End"}
-                </span>
-              </div>
-            </div>
-          </Panel>
-
-          <Panel position="bottom-center" className="hidden sm:block">
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/40 dark:to-cyan-900/40 rounded-xl shadow-2xl px-6 py-3 border-2 border-blue-200 dark:border-blue-700 backdrop-blur-sm">
-              <div className="flex items-center gap-4 max-w-5xl">
-                <span className="text-2xl flex-shrink-0">💡</span>
-                <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                  <span className="font-bold text-sky-700 dark:text-sky-300 text-sm whitespace-nowrap">
-                    {t("quickTips") || "Quick Tips:"}
-                  </span>
-                  <div className="flex items-center gap-3 text-sm">
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">
-                        {t("moveTip") || "Move:"}
-                      </span>{" "}
-                      {t("dragNodes") || "Drag nodes"}
-                    </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">
-                        {t("connectTip") || "Connect:"}
-                      </span>{" "}
-                      {t("dragFrom") || "Drag from"}{" "}
-                      <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></span>{" "}
-                      {t("to") || "to"}{" "}
-                      <span className="inline-block w-3 h-3 rounded-full bg-blue-500 border-2 border-white"></span>
-                    </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="flex items-center gap-1 text-gray-700 dark:text-gray-300">
-                      <span className="font-semibold">
-                        {t("deleteTip") || "Delete:"}
-                      </span>{" "}
-                      {t("selectAndDel") || "Select & press Del"}
-                    </span>
-                    <span className="text-gray-400">•</span>
-                    <span className="text-gray-700 dark:text-gray-300">
-                      Press{" "}
-                      <span className="px-1.5 py-0.5 bg-sky-100 dark:bg-sky-900 text-sky-700 dark:text-sky-300 rounded font-mono text-xs">
-                        ?
-                      </span>{" "}
-                      {t("pressForHelp") || "for help"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Panel>
-        </ReactFlow>
-      </main>
-
-      <footer className="bg-gradient-to-r from-gray-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 px-6 py-4 flex justify-between items-center border-t dark:border-dark-brand-border flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-sky-600 dark:text-sky-400 font-bold">
-              {nodes.length}
-            </span>{" "}
-            {t("nodes") || "nodes"}
-          </div>
-          <div className="text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 px-3 py-1.5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <span className="text-blue-600 dark:text-blue-400 font-bold">
-              {edges.length}
-            </span>{" "}
-            {t("connections") || "connections"}
-          </div>
-          {isExporting && (
-            <div className="text-sm text-sky-600 dark:text-sky-400 animate-pulse">
-              {t("exporting") || "Exporting..."}
             </div>
           )}
-        </div>
-        <div className="flex gap-3">
           <button
-            type="button"
-            onClick={onClose}
-            className="py-2 px-5 rounded-lg text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+            onClick={() => setShowAddNodePanel(!showAddNodePanel)}
+            className={`w-11 h-11 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
+              showAddNodePanel
+                ? "bg-slate-600 text-white rotate-45 scale-110"
+                : "bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 hover:bg-slate-700 dark:hover:bg-slate-300 hover:scale-105"
+            }`}
+            title={t("addNode") || "Add Node"}
           >
-            {t("close")}
-          </button>
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={isSaving || !hasChanges}
-            className="inline-flex items-center justify-center gap-2 py-2 px-6 rounded-lg text-sm font-semibold text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-          >
-            {isSaving ? (
-              <>
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    fill="none"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                <span>{t("saving") || "Saving..."}</span>
-              </>
-            ) : (
-              <>
-                <CheckIcon className="w-4 h-4" />
-                <span>{t("saveChanges") || "Save Changes"}</span>
-              </>
-            )}
+            <PlusIcon className="w-5 h-5" />
           </button>
         </div>
+
+        {/* ─── AI Suggestions Floating Panel ──────────────────────────────── */}
+        {aiSuggestions.length > 0 && (
+          <div
+            className={`absolute top-3 right-4 max-w-xs z-20 ${glassRound} shadow-lg p-3`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 flex items-center gap-1.5">
+                <SparklesIcon className="w-3.5 h-3.5" />
+                {t("suggestedNextSteps") || "Suggestions"}
+              </span>
+              <button
+                onClick={() => setAiSuggestions([])}
+                className="p-0.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded"
+              >
+                <XMarkIcon className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+            </div>
+            <div className="space-y-1.5">
+              {aiSuggestions.map((s, idx) => {
+                const typeColor: Record<string, string> = {
+                  process: "bg-blue-400",
+                  decision: "bg-amber-400",
+                  end: "bg-rose-500",
+                };
+                return (
+                  <div
+                    key={idx}
+                    className="flex items-start gap-2 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full ${typeColor[s.type] || "bg-blue-400"} mt-1.5 flex-shrink-0`}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                        {s.label}
+                      </p>
+                      <p className="text-[11px] text-slate-400 leading-tight">
+                        {s.rationale}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleAddSuggestedNode(s)}
+                      className="flex-shrink-0 px-2 py-1 text-[11px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                    >
+                      {t("add") || "Add"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* ─── Compact Footer ───────────────────────────────────────────────── */}
+      <footer
+        className={`h-9 px-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400 flex-shrink-0 ${glass}`}
+      >
+        <div className="flex items-center gap-4">
+          <span>
+            <strong className="text-slate-600 dark:text-slate-300">
+              {nodes.length}
+            </strong>{" "}
+            {t("nodes") || "nodes"}
+          </span>
+          <span>
+            <strong className="text-slate-600 dark:text-slate-300">
+              {edges.length}
+            </strong>{" "}
+            {t("connections") || "edges"}
+          </span>
+          {isExporting && (
+            <span className="text-violet-500 animate-pulse">
+              {t("exporting") || "Exporting..."}
+            </span>
+          )}
+          {isAIProcessing && (
+            <span className="text-violet-500 animate-pulse">
+              {t("aiProcessing") || "AI processing..."}
+            </span>
+          )}
+        </div>
+        <span className="text-slate-300 dark:text-slate-600">
+          <kbd className="px-1 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[10px]">
+            ?
+          </kbd>{" "}
+          {t("pressForHelp") || "for help"}
+        </span>
       </footer>
 
-      {/* Templates Modal */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+      {/* MODALS                                                             */}
+      {/* ═══════════════════════════════════════════════════════════════════ */}
+
+      {/* ─── Templates Modal ──────────────────────────────────────────────── */}
       {showTemplates && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowTemplates(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full m-4 p-6 border border-gray-200 dark:border-gray-700 max-h-[80vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6 border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <span className="text-3xl">📋</span>
-                {t("processMapTemplates") || "Process Map Templates"}
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                {t("processMapTemplates") || "Templates"}
               </h3>
               <button
                 onClick={() => setShowTemplates(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                aria-label={t("close")}
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
               >
-                <XMarkIcon className="w-5 h-5" />
+                <XMarkIcon className="w-4 h-4 text-slate-400" />
               </button>
             </div>
-
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              {t("chooseTemplateDescription")}
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               {templates.map((template) => (
-                <div
+                <button
                   key={template.id}
-                  className="border-2 border-gray-200 dark:border-gray-700 rounded-xl p-5 hover:border-sky-500 dark:hover:border-sky-400 transition-all cursor-pointer hover:shadow-lg group"
                   onClick={() => handleLoadTemplate(template)}
+                  className="text-left p-4 border border-slate-200 dark:border-slate-600 rounded-lg hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-all group"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="text-5xl flex-shrink-0 group-hover:scale-110 transition-transform">
-                      {template.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-bold text-lg text-gray-900 dark:text-white mb-2">
-                        {t(template.id.replace(/-/g, "")) || template.name}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                        {t(`${template.id.replace(/-/g, "")}Description`) ||
-                          template.description}
-                      </p>
-                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-500">
-                        <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-sky-500"></span>
-                          {template.nodes.length} {t("nodes")}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                          {template.edges.length} {t("connections")}
-                        </span>
-                      </div>
-                    </div>
+                  <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400">
+                    {t(template.id.replace(/-/g, "")) || template.name}
+                  </h4>
+                  <p className="text-xs text-slate-400 mb-2">
+                    {t(`${template.id.replace(/-/g, "")}Description`) ||
+                      template.description}
+                  </p>
+                  <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                    <span>
+                      {template.nodes.length} {t("nodes") || "nodes"}
+                    </span>
+                    <span>
+                      {template.edges.length} {t("connections") || "edges"}
+                    </span>
                   </div>
-                  <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    <button className="w-full px-4 py-2 bg-gradient-to-r from-sky-600 to-blue-600 text-white rounded-lg hover:from-sky-700 hover:to-blue-700 transition-all font-medium text-sm">
-                      {t("loadTemplate") || "Load Template"}
-                    </button>
-                  </div>
-                </div>
+                </button>
               ))}
             </div>
-
-            <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p className="text-sm text-yellow-800 dark:text-yellow-300">
-                ⚠️ <strong>{t("note") || "Note"}:</strong>{" "}
-                {t("templateWarning")}
-              </p>
-            </div>
+            <p className="mt-4 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800 rounded-lg px-3 py-2">
+              {t("templateWarning") ||
+                "Loading a template will replace your current process map."}
+            </p>
           </div>
         </div>
       )}
 
-      {/* Help Modal */}
+      {/* ─── Help Modal ───────────────────────────────────────────────────── */}
       {showHelp && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowHelp(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6 border border-gray-200 dark:border-gray-700"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-lg w-full m-4 p-6 border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <span className="text-2xl">❓</span>
-                {t("helpAndShortcuts") || "Help & Keyboard Shortcuts"}
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200">
+                {t("helpAndShortcuts") || "Keyboard Shortcuts"}
               </h3>
               <button
                 onClick={() => setShowHelp(false)}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors"
               >
-                <XMarkIcon className="w-5 h-5" />
+                <XMarkIcon className="w-4 h-4 text-slate-400" />
               </button>
             </div>
-            <div className="space-y-4 text-sm">
-              <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <h4 className="font-bold text-blue-900 dark:text-blue-300 mb-3 flex items-center gap-2">
-                  <span className="text-xl">🔗</span>
-                  {t("howToConnect") || "How to Connect Nodes"}
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                      1
-                    </span>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      <strong>Find the colored dots</strong> (handles) on the
-                      edges of each node. They look like this:{" "}
-                      <span className="inline-block w-4 h-4 rounded-full bg-blue-500 border-2 border-white shadow-md mx-1"></span>
-                    </p>
+            <div className="space-y-4 text-sm text-slate-600 dark:text-slate-300">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-3">
+                <p className="font-medium text-blue-700 dark:text-blue-300 mb-1">
+                  {t("howToConnect") || "Connecting Nodes"}
+                </p>
+                <p className="text-xs text-blue-600/70 dark:text-blue-300/70">
+                  {t("clickAndDrag") ||
+                    "Drag from any handle (dot) on a node to another node's handle to create a connection."}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  ["Ctrl+Z", t("undo") || "Undo"],
+                  ["Ctrl+Shift+Z", t("redo") || "Redo"],
+                  ["Delete", t("deleteSelected") || "Delete selected"],
+                  ["?", t("showHelp") || "Show help"],
+                ].map(([key, action]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-[11px] font-mono text-slate-500">
+                      {key}
+                    </kbd>
+                    <span className="text-xs text-slate-500">{action}</span>
                   </div>
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                      2
-                    </span>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      <strong>Click and drag</strong> from one node's handle to
-                      another node's handle
-                    </p>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-bold">
-                      3
-                    </span>
-                    <p className="text-gray-700 dark:text-gray-300">
-                      Release when you see the target handle{" "}
-                      <strong>highlighted</strong> - a connection line will
-                      appear!
-                    </p>
-                  </div>
-                  <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                    <p className="text-xs text-blue-700 dark:text-blue-300">
-                      💡 <strong>Tip:</strong> Handles get bigger when you hover
-                      over them. If you select a node, its handles will pulse to
-                      show where you can connect!
-                    </p>
-                  </div>
+                ))}
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                  {t("nodeTypes") || "Node Types"}
+                </p>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    {
+                      color: "bg-emerald-500",
+                      shape: "rounded-full",
+                      name: t("start") || "Start",
+                    },
+                    {
+                      color: "bg-blue-400",
+                      shape: "rounded",
+                      name: t("process") || "Process",
+                    },
+                    {
+                      color: "bg-amber-400",
+                      shape: "rotate-45 rounded-sm",
+                      name: t("decision") || "Decision",
+                    },
+                    {
+                      color: "bg-rose-500",
+                      shape: "rounded-full",
+                      name: t("end") || "End",
+                    },
+                  ].map((item) => (
+                    <div key={item.name} className="flex items-center gap-2">
+                      <div className={`w-3 h-3 ${item.color} ${item.shape}`} />
+                      <span className="text-xs text-slate-600 dark:text-slate-300">
+                        {item.name}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {t("basicActions") || "Basic Actions"}
-                </h4>
-                <ul className="space-y-1 text-gray-700 dark:text-gray-300">
-                  <li>
-                    • <strong>{t("moveNodes") || "Move nodes"}:</strong>{" "}
-                    {t("clickAndDrag") || "Click and drag"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <strong>{t("selectMultiple") || "Select multiple"}:</strong>{" "}
-                    {t("clickAndDragCanvas") || "Click and drag on canvas"}
-                  </li>
-                  <li>
-                    • <strong>{t("pan") || "Pan"}:</strong>{" "}
-                    {t("dragCanvas") || "Drag canvas background"}
-                  </li>
-                  <li>
-                    • <strong>{t("zoom") || "Zoom"}:</strong>{" "}
-                    {t("mouseWheel") || "Mouse wheel or pinch"}
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {t("keyboardShortcuts") || "Keyboard Shortcuts"}
-                </h4>
-                <ul className="space-y-1 text-gray-700 dark:text-gray-300">
-                  <li>
-                    •{" "}
-                    <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">
-                      Ctrl+Z
-                    </kbd>{" "}
-                    - {t("undo") || "Undo"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">
-                      Ctrl+Shift+Z
-                    </kbd>{" "}
-                    - {t("redo") || "Redo"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">
-                      Delete
-                    </kbd>{" "}
-                    - {t("deleteSelected") || "Delete selected"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <kbd className="px-2 py-1 bg-gray-200 dark:bg-gray-700 rounded">
-                      ?
-                    </kbd>{" "}
-                    - {t("showHelp") || "Show this help"}
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  {t("nodeTypes") || "Node Types"}
-                </h4>
-                <ul className="space-y-1 text-gray-700 dark:text-gray-300">
-                  <li>
-                    •{" "}
-                    <span className="text-green-600 dark:text-green-400">
-                      ▶️ {t("start") || "Start"}
-                    </span>{" "}
-                    - {t("startDescription") || "Beginning of the process"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <span className="text-blue-600 dark:text-blue-400">
-                      ⚙️ {t("process") || "Process"}
-                    </span>{" "}
-                    - {t("processDescription") || "An action or step"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <span className="text-yellow-600 dark:text-yellow-500">
-                      ◆ {t("decision") || "Decision"}
-                    </span>{" "}
-                    - {t("decisionDescription") || "A decision point (yes/no)"}
-                  </li>
-                  <li>
-                    •{" "}
-                    <span className="text-red-600 dark:text-red-400">
-                      ⏹️ {t("end") || "End"}
-                    </span>{" "}
-                    - {t("endDescription") || "End of the process"}
-                  </li>
-                </ul>
-              </div>
             </div>
-            <div className="mt-6 flex justify-end">
+            <div className="mt-5 flex justify-end">
               <button
                 onClick={() => setShowHelp(false)}
-                className="px-6 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-medium"
+                className="px-4 py-1.5 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 rounded-lg text-sm font-medium hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors"
               >
-                {t("gotIt") || "Got it!"}
+                {t("gotIt") || "Got it"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* AI Generator Modal */}
+      {/* ─── AI Generator Modal ───────────────────────────────────────────── */}
       {showAIGenerator && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowAIGenerator(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-xl w-full m-4 p-6 border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">🤖</span>
-              {t("generateProcessMapDesc") ||
-                "Generate Process Map from Description"}
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-1">
+              {t("generateProcessMapDesc") || "Generate from Description"}
             </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              {t("describeProcessPlaceholder") ||
+                "Describe your process and AI will create the flowchart."}
+            </p>
             <textarea
               value={aiDescription}
-              onChange={(e) => setAiDescription(e.target.value)}
+              onChange={(e) => {
+                setAiDescription(e.target.value);
+                setAiGenerateError(null);
+              }}
               placeholder={
-                t("describeProcessPlaceholder") ||
-                "Describe your process in detail. For example: 'Create a document review process where documents are submitted, reviewed by a manager, approved or rejected, and then either published or sent back for revision.'"
+                "e.g. A patient admission process:\n1. Patient arrives at reception\n2. Triage nurse assesses urgency\n3. If emergency → go to ER, else → register in OPD\n4. Doctor consultation\n5. Discharge or admit to ward"
               }
-              className="w-full h-48 p-4 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white resize-none"
+              className="w-full h-36 p-3 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 resize-none focus:ring-2 focus:ring-violet-200 dark:focus:ring-violet-800 focus:border-violet-300 dark:focus:border-violet-600"
             />
+            {aiGenerateError && (
+              <p className="mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-lg px-3 py-2">
+                {aiGenerateError}
+              </p>
+            )}
+            <p className="mt-2 text-[11px] text-slate-400">
+              {t("aiGenerateTip") ||
+                "Tip: Be specific — mention each step, decision point, and branch. The AI will create actual nodes and connections on the canvas."}
+            </p>
             <div className="mt-4 flex gap-2 justify-end">
               <button
                 onClick={() => setShowAIGenerator(false)}
-                className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                className="px-4 py-2 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
               >
                 {t("cancel") || "Cancel"}
               </button>
               <button
                 onClick={handleGenerateFromAI}
                 disabled={isAIProcessing || !aiDescription.trim()}
-                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-semibold bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors"
               >
                 {isAIProcessing
                   ? t("generating") || "Generating..."
-                  : t("generate")}
+                  : t("generate") || "Generate"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* AI Suggestions Panel */}
-      {aiSuggestions.length > 0 && (
-        <div className="absolute top-20 right-4 bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-4 max-w-sm z-40 border-2 border-sky-500">
-          <div className="flex items-center justify-between mb-3">
-            <h4 className="font-bold text-sky-600 dark:text-sky-300 flex items-center gap-2">
-              <span>💡</span>
-              {t("suggestedNextSteps") || "Suggested Next Steps"}
-            </h4>
-            <button
-              onClick={() => setAiSuggestions([])}
-              className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-            >
-              <XMarkIcon className="w-4 h-4" />
-            </button>
-          </div>
-          <div className="space-y-2">
-            {aiSuggestions.map((suggestion, idx) => (
-              <div
-                key={idx}
-                className="p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-700"
-              >
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl">
-                    {suggestion.type === "process" && "⚙️"}
-                    {suggestion.type === "decision" && "◆"}
-                    {suggestion.type === "end" && "⏹️"}
-                  </span>
-                  <strong className="text-sm">{suggestion.label}</strong>
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
-                  {suggestion.rationale}
-                </p>
-                <button
-                  onClick={() => handleAddSuggestedNode(suggestion)}
-                  className="w-full px-3 py-1 text-xs bg-sky-600 text-white rounded hover:bg-sky-700"
-                >
-                  {t("addThisStep") || "Add This Step"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Optimizations Modal */}
+      {/* ─── Optimizations Modal ──────────────────────────────────────────── */}
       {showOptimizations && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowOptimizations(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full m-4 p-6 max-h-[80vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6 max-h-[80vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">⚡</span>
-              {t("processOptimizations") || "Process Optimization Suggestions"}
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+              {t("processOptimizations") || "Optimization Suggestions"}
             </h3>
             {optimizations.length === 0 ? (
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm text-slate-400">
                 {t("noOptimizationsSuggested") ||
-                  "No optimizations suggested. Your process looks good!"}
+                  "No optimizations needed — your process looks good!"}
               </p>
             ) : (
-              <div className="space-y-3">
+              <div className="space-y-2">
                 {optimizations.map((opt, idx) => (
                   <div
                     key={idx}
-                    className={`p-4 rounded-lg border-2 ${
+                    className={`p-3 rounded-lg border ${
                       opt.priority === "high"
-                        ? "bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800"
+                        ? "border-red-200 dark:border-red-800 bg-red-50/50 dark:bg-red-900/10"
                         : opt.priority === "medium"
-                          ? "bg-yellow-50 dark:bg-yellow-900/20 border-yellow-300 dark:border-yellow-800"
-                          : "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-800"
+                          ? "border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-900/10"
+                          : "border-slate-200 dark:border-slate-600 bg-slate-50/50 dark:bg-slate-700/30"
                     }`}
                   >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">
-                        {opt.category === "efficiency" && "⚡"}
-                        {opt.category === "clarity" && "🔍"}
-                        {opt.category === "compliance" && "✅"}
-                        {opt.category === "structure" && "🏗️"}
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className={`px-1.5 py-0.5 text-[10px] font-bold uppercase rounded ${
+                          opt.priority === "high"
+                            ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200"
+                            : opt.priority === "medium"
+                              ? "bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-200"
+                              : "bg-slate-100 dark:bg-slate-600 text-slate-600 dark:text-slate-300"
+                        }`}
+                      >
+                        {opt.priority}
                       </span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span
-                            className={`px-2 py-0.5 text-xs font-bold rounded ${
-                              opt.priority === "high"
-                                ? "bg-red-200 dark:bg-red-900 text-red-900 dark:text-red-100"
-                                : opt.priority === "medium"
-                                  ? "bg-yellow-200 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100"
-                                  : "bg-blue-200 dark:bg-blue-900 text-blue-900 dark:text-blue-100"
-                            }`}
-                          >
-                            {opt.priority.toUpperCase()}
-                          </span>
-                          <span className="text-xs text-gray-600 dark:text-gray-400">
-                            {opt.category}
-                          </span>
-                        </div>
-                        <p className="text-sm text-gray-800 dark:text-gray-200">
-                          {opt.suggestion}
-                        </p>
-                      </div>
+                      <span className="text-[11px] text-slate-400 capitalize">
+                        {opt.category}
+                      </span>
                     </div>
+                    <p className="text-sm text-slate-700 dark:text-slate-300">
+                      {opt.suggestion}
+                    </p>
+                    <button
+                      onClick={() => handleApplyOptimization(opt, idx)}
+                      disabled={opt._applied || applyingOptIdx === idx}
+                      className={`mt-2 px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                        opt._applied
+                          ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200 cursor-default"
+                          : applyingOptIdx === idx
+                            ? "bg-blue-400 text-white cursor-wait"
+                            : "bg-blue-600 text-white hover:bg-blue-700"
+                      }`}
+                    >
+                      {opt._applied
+                        ? t("applied") || "✓ Applied"
+                        : applyingOptIdx === idx
+                          ? t("applying") || "Applying..."
+                          : t("apply") || "Apply"}
+                    </button>
                   </div>
                 ))}
               </div>
@@ -1863,112 +2172,99 @@ const ProcessMapEditorContent: React.FC<
             <div className="mt-4 flex justify-end">
               <button
                 onClick={() => setShowOptimizations(false)}
-                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+                className="px-4 py-1.5 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 rounded-lg text-sm font-medium hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors"
               >
-                {t("close")}
+                {t("close") || "Close"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Compliance Check Modal */}
+      {/* ─── Compliance Check Modal ───────────────────────────────────────── */}
       {showComplianceCheck && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowComplianceCheck(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full m-4 p-6"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-lg w-full m-4 p-6 border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">✅</span>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
               {t("complianceCheck") || "Compliance Check"}
             </h3>
             {!complianceResult ? (
               <div>
-                <p className="mb-4 text-gray-700 dark:text-gray-300">
+                <p className="text-sm text-slate-500 mb-3">
                   {t("selectStandardToCheck") ||
                     "Select a standard to check against:"}
                 </p>
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => handleCheckCompliance("CBAHI")}
-                    className="p-4 bg-sky-50 dark:bg-sky-900/20 border-2 border-sky-300 dark:border-sky-800 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/30"
-                  >
-                    <div className="font-bold text-sky-900 dark:text-sky-100">
-                      CBAHI
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {t("cbahiDesc") || "Healthcare Facility Accreditation"}
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => handleCheckCompliance("JCI")}
-                    className="p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-300 dark:border-blue-800 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30"
-                  >
-                    <div className="font-bold text-blue-900 dark:text-blue-100">
-                      JCI
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {t("jciDesc") || "International Hospital Standards"}
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => handleCheckCompliance("MOH")}
-                    className="p-4 bg-green-50 dark:bg-green-900/20 border-2 border-green-300 dark:border-green-800 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/30"
-                  >
-                    <div className="font-bold text-green-900 dark:text-green-100">
-                      MOH
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {t("mohDesc") || "Saudi Health Regulations"}
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => handleCheckCompliance("HESN")}
-                    className="p-4 bg-teal-50 dark:bg-teal-900/20 border-2 border-teal-300 dark:border-teal-800 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30"
-                  >
-                    <div className="font-bold text-teal-900 dark:text-teal-100">
-                      HESN
-                    </div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      {t("hesnDesc") || "Health Electronic Surveillance"}
-                    </div>
-                  </button>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    {
+                      code: "CBAHI",
+                      desc:
+                        t("cbahiDesc") || "Healthcare Facility Accreditation",
+                      color:
+                        "border-sky-200 hover:border-sky-400 hover:bg-sky-50/50 dark:border-sky-700 dark:hover:border-sky-500 dark:hover:bg-sky-900/20",
+                    },
+                    {
+                      code: "JCI",
+                      desc: t("jciDesc") || "International Hospital Standards",
+                      color:
+                        "border-blue-200 hover:border-blue-400 hover:bg-blue-50/50 dark:border-blue-700 dark:hover:border-blue-500 dark:hover:bg-blue-900/20",
+                    },
+                    {
+                      code: "MOH",
+                      desc: t("mohDesc") || "Saudi Health Regulations",
+                      color:
+                        "border-emerald-200 hover:border-emerald-400 hover:bg-emerald-50/50 dark:border-emerald-700 dark:hover:border-emerald-500 dark:hover:bg-emerald-900/20",
+                    },
+                    {
+                      code: "HESN",
+                      desc: t("hesnDesc") || "Health Electronic Surveillance",
+                      color:
+                        "border-teal-200 hover:border-teal-400 hover:bg-teal-50/50 dark:border-teal-700 dark:hover:border-teal-500 dark:hover:bg-teal-900/20",
+                    },
+                  ].map((std) => (
+                    <button
+                      key={std.code}
+                      onClick={() => handleCheckCompliance(std.code)}
+                      className={`p-3 rounded-lg border text-left transition-all ${std.color}`}
+                    >
+                      <div className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                        {std.code}
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {std.desc}
+                      </div>
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : (
               <div>
                 <div
-                  className={`p-4 rounded-lg mb-4 ${
-                    complianceResult.compliant
-                      ? "bg-green-50 dark:bg-green-900/20 border-2 border-green-300"
-                      : "bg-red-50 dark:bg-red-900/20 border-2 border-red-300"
-                  }`}
+                  className={`p-3 rounded-lg mb-3 border ${complianceResult.compliant ? "border-emerald-200 bg-emerald-50/50 dark:border-emerald-700 dark:bg-emerald-900/10" : "border-red-200 bg-red-50/50 dark:border-red-700 dark:bg-red-900/10"}`}
                 >
-                  <div className="flex items-center gap-2 text-lg font-bold mb-2">
-                    <span>{complianceResult.compliant ? "✅" : "❌"}</span>
-                    <span>
-                      {complianceResult.compliant
-                        ? t("compliant") || "Compliant"
-                        : t("nonCompliant") || "Non-Compliant"}
-                    </span>
-                  </div>
+                  <span className="text-sm font-semibold">
+                    {complianceResult.compliant
+                      ? `✓ ${t("compliant") || "Compliant"}`
+                      : `✗ ${t("nonCompliant") || "Non-Compliant"}`}
+                  </span>
                 </div>
-
                 {complianceResult.issues?.length > 0 && (
-                  <div className="mb-4">
-                    <h4 className="font-bold text-red-700 dark:text-red-300 mb-2">
-                      {t("issuesFound") || "Issues Found:"}
-                    </h4>
-                    <ul className="space-y-1">
+                  <div className="mb-3">
+                    <p className="text-xs font-semibold text-red-600 dark:text-red-400 mb-1">
+                      {t("issuesFound") || "Issues:"}
+                    </p>
+                    <ul className="space-y-0.5">
                       {complianceResult.issues.map(
                         (issue: string, idx: number) => (
                           <li
                             key={idx}
-                            className="text-sm text-gray-700 dark:text-gray-300"
+                            className="text-sm text-slate-600 dark:text-slate-300"
                           >
                             • {issue}
                           </li>
@@ -1977,18 +2273,17 @@ const ProcessMapEditorContent: React.FC<
                     </ul>
                   </div>
                 )}
-
                 {complianceResult.recommendations?.length > 0 && (
                   <div>
-                    <h4 className="font-bold text-blue-700 dark:text-blue-300 mb-2">
+                    <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 mb-1">
                       {t("recommendations") || "Recommendations:"}
-                    </h4>
-                    <ul className="space-y-1">
+                    </p>
+                    <ul className="space-y-0.5">
                       {complianceResult.recommendations.map(
                         (rec: string, idx: number) => (
                           <li
                             key={idx}
-                            className="text-sm text-gray-700 dark:text-gray-300"
+                            className="text-sm text-slate-600 dark:text-slate-300"
                           >
                             • {rec}
                           </li>
@@ -2003,7 +2298,7 @@ const ProcessMapEditorContent: React.FC<
               {complianceResult && (
                 <button
                   onClick={() => setComplianceResult(null)}
-                  className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+                  className="px-3 py-1.5 text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
                 >
                   {t("checkAnother") || "Check Another"}
                 </button>
@@ -2013,103 +2308,110 @@ const ProcessMapEditorContent: React.FC<
                   setShowComplianceCheck(false);
                   setComplianceResult(null);
                 }}
-                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+                className="px-4 py-1.5 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 rounded-lg text-sm font-medium hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors"
               >
-                {t("close")}
+                {t("close") || "Close"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Node Search Modal */}
+      {/* ─── Node Search Modal ────────────────────────────────────────────── */}
       {showNodeSearch && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowNodeSearch(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full m-4 p-6"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-sm w-full m-4 p-5 border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">🔍</span>
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-3">
               {t("searchNodes") || "Search Nodes"}
             </h3>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => handleNodeSearch(e.target.value)}
-              placeholder={
-                t("typeToSearchNodes") || "Type to search node labels..."
-              }
-              className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder={t("typeToSearchNodes") || "Type to search..."}
+              className="w-full p-2.5 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800"
               autoFocus
             />
-            <div className="mt-4 max-h-64 overflow-y-auto">
+            <div className="mt-3 max-h-48 overflow-y-auto space-y-1">
               {nodes
                 .filter((n) =>
                   n.data.label.toLowerCase().includes(searchTerm.toLowerCase()),
                 )
-                .map((node) => (
-                  <div
-                    key={node.id}
-                    className="p-3 mb-2 bg-gray-50 dark:bg-gray-900 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 cursor-pointer border border-gray-200 dark:border-gray-700"
-                    onClick={() => {
-                      setNodes((nds) =>
-                        nds.map((n) => ({ ...n, selected: n.id === node.id })),
-                      );
-                      setViewport({
-                        x: -node.position.x + 300,
-                        y: -node.position.y + 200,
-                        zoom: 1.5,
-                      });
-                      setShowNodeSearch(false);
-                    }}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-xl">
-                        {node.type === "start" && "▶️"}
-                        {node.type === "end" && "⏹️"}
-                        {node.type === "process" && "⚙️"}
-                        {node.type === "decision" && "◆"}
+                .map((node) => {
+                  const typeColor: Record<string, string> = {
+                    start: "bg-emerald-500",
+                    process: "bg-blue-400",
+                    decision: "bg-amber-400",
+                    end: "bg-rose-500",
+                  };
+                  return (
+                    <div
+                      key={node.id}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors"
+                      onClick={() => {
+                        setNodes((nds) =>
+                          nds.map((n) => ({
+                            ...n,
+                            selected: n.id === node.id,
+                          })),
+                        );
+                        setViewport({
+                          x: -node.position.x + 300,
+                          y: -node.position.y + 200,
+                          zoom: 1.5,
+                        });
+                        setShowNodeSearch(false);
+                      }}
+                    >
+                      <div
+                        className={`w-2.5 h-2.5 rounded-full ${typeColor[node.type || "process"] || "bg-blue-400"}`}
+                      />
+                      <span className="text-sm text-slate-700 dark:text-slate-200">
+                        {node.data.label}
                       </span>
-                      <span className="font-medium">{node.data.label}</span>
+                      <span className="text-[10px] text-slate-400 ml-auto capitalize">
+                        {node.type}
+                      </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
-            <div className="mt-4 flex justify-end">
+            <div className="mt-3 flex justify-end">
               <button
                 onClick={() => {
                   setShowNodeSearch(false);
                   setSearchTerm("");
                 }}
-                className="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700"
+                className="px-4 py-1.5 bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-800 rounded-lg text-sm font-medium hover:bg-slate-700 dark:hover:bg-slate-300 transition-colors"
               >
-                {t("close")}
+                {t("close") || "Close"}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Export Documentation Modal */}
+      {/* ─── Export Documentation Modal ───────────────────────────────────── */}
       {showExportDoc && (
         <div
-          className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 backdrop-blur-sm"
+          className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 backdrop-blur-sm"
           onClick={() => setShowExportDoc(false)}
         >
           <div
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full m-4 p-6 max-h-[80vh] overflow-y-auto"
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-3xl w-full m-4 p-6 max-h-[80vh] overflow-y-auto border border-slate-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-              <span className="text-2xl">📄</span>
-              {t("processDocumentation") || "Process Documentation"}
+            <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-4">
+              {t("processDocumentation") || "Documentation"}
             </h3>
             <div
-              className="prose dark:prose-invert max-w-none bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700"
+              className="prose dark:prose-invert prose-sm max-w-none bg-slate-50 dark:bg-slate-900 p-5 rounded-lg border border-slate-200 dark:border-slate-700"
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(exportedDoc || ""),
               }}
@@ -2126,15 +2428,15 @@ const ProcessMapEditorContent: React.FC<
                   a.download = `${documentData.name.en}_documentation.html`;
                   a.click();
                 }}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"
               >
                 {t("downloadHTML") || "Download HTML"}
               </button>
               <button
                 onClick={() => setShowExportDoc(false)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                className="px-4 py-1.5 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
               >
-                {t("close")}
+                {t("close") || "Close"}
               </button>
             </div>
           </div>
@@ -2144,6 +2446,7 @@ const ProcessMapEditorContent: React.FC<
   );
 };
 
+// ─── Wrapper ──────────────────────────────────────────────────────────────────
 const ProcessMapEditor: React.FC<ProcessMapEditorProps> = (props) => {
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { dir } = useTranslation();
@@ -2151,10 +2454,10 @@ const ProcessMapEditor: React.FC<ProcessMapEditorProps> = (props) => {
   if (!props.isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center backdrop-blur-sm">
+    <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center backdrop-blur-sm">
       <div
         ref={reactFlowWrapper}
-        className="bg-white dark:bg-dark-brand-surface rounded-xl shadow-2xl w-full max-w-7xl h-[90vh] m-4 flex flex-col overflow-hidden"
+        className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-7xl h-[92vh] m-4 flex flex-col overflow-hidden border border-slate-200 dark:border-slate-700"
         dir={dir}
       >
         <ReactFlowProvider>

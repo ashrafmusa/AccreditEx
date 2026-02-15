@@ -562,17 +562,25 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
         ? standardsMap.get(selectedStandard)
         : undefined;
       const text = document.content?.[lang] || "";
-      const prompt = standard
-        ? `Check if the following document content meets the requirements of standard ${standard.standardId}: "${standard.description}". Content: "${text.slice(0, 3000)}"`
-        : `Check the following document content for general compliance issues. Content: "${text.slice(0, 3000)}"`;
-      await aiService.improveWriting(prompt, lang);
+      const standardDesc = standard
+        ? `${standard.standardId}: ${standard.description}`
+        : "General healthcare accreditation compliance";
+      const result = await aiService.checkCompliance(text, standardDesc, lang);
       setAiResults([
         {
           type: "confidence",
           label: t("complianceScore") || "Compliance",
-          value: `${Math.min(95, 65 + Math.floor(Math.random() * 25))}%`,
+          value: `${result.score}%`,
         },
       ]);
+      setConfidenceScore(result.score);
+      // Show the detailed findings in a toast or as content (non-destructive)
+      if (result.findings) {
+        toast.success(
+          t("complianceCheckComplete") ||
+            "Compliance check complete — see score above.",
+        );
+      }
     } catch {
       toast.error(t("failedComplianceCheck") || "Compliance check failed.");
       throw new Error();
@@ -582,10 +590,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
   const handleSummarize = withLoading("summarize", async () => {
     try {
       const text = document.content?.[lang] || "";
-      const summary = await aiService.improveWriting(
-        `Summarize the following document in a concise paragraph: "${text.slice(0, 3000)}"`,
-        lang,
-      );
+      const summary = await aiService.summarizeContent(text, lang);
       setDocument(
         (d) =>
           ({
