@@ -107,8 +107,14 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
   const handleImportStandards = async (programId: string) => {
     try {
-      const data = JSON.parse(fileContent);
-      if (!Array.isArray(data)) {
+      const raw = JSON.parse(fileContent);
+      // Accept both plain array and wrapped { documents: [...] } format
+      const data = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.documents)
+          ? raw.documents
+          : null;
+      if (!data) {
         toast.error(
           t("invalidStandardsFormat") ||
             "Invalid standards format. Expected an array.",

@@ -6,7 +6,7 @@ const trainingProgramsCollection = collection(db, 'trainingPrograms');
 
 export const getTrainingPrograms = async (): Promise<TrainingProgram[]> => {
     const programSnapshot = await getDocs(trainingProgramsCollection);
-    return programSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as TrainingProgram));
+    return programSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TrainingProgram));
 };
 
 export const addTrainingProgram = async (program: Omit<TrainingProgram, 'id'>): Promise<TrainingProgram> => {

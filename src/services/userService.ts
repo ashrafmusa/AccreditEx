@@ -8,5 +8,5 @@ const usersCollection = collection(db, 'users');
 export const getUsers = async (): Promise<User[]> => {
     const userSnapshot = await getDocs(usersCollection);
     freeTierMonitor.recordRead(1);
-    return userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
+    return userSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as User));
 };

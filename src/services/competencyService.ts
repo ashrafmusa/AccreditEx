@@ -6,7 +6,7 @@ const competenciesCollection = collection(db, 'competencies');
 
 export const getCompetencies = async (): Promise<Competency[]> => {
     const competencySnapshot = await getDocs(competenciesCollection);
-    return competencySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Competency));
+    return competencySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Competency));
 };
 
 export const addCompetency = async (competency: Omit<Competency, 'id'>): Promise<Competency> => {

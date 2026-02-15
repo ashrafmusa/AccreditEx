@@ -6,5 +6,5 @@ const userTrainingStatusesCollection = collection(db, 'userTrainingStatuses');
 
 export const getUserTrainingStatuses = async (): Promise<(UserTrainingStatus & { id: string })[]> => {
     const userTrainingStatusSnapshot = await getDocs(userTrainingStatusesCollection);
-    return userTrainingStatusSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as UserTrainingStatus & { id: string }));
+    return userTrainingStatusSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as UserTrainingStatus & { id: string }));
 };
