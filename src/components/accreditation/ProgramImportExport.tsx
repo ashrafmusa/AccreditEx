@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { AccreditationProgram } from '@/types';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useToast } from '@/hooks/useToast';
@@ -6,19 +6,15 @@ import { DownloadIcon, UploadIcon } from '@/components/icons';
 
 interface ProgramImportExportProps {
   programs: AccreditationProgram[];
-  onImport: (programs: AccreditationProgram[]) => void;
-  onImportError?: (error: string) => void;
+  onImportClick: () => void;
 }
 
 const ProgramImportExport: React.FC<ProgramImportExportProps> = ({
   programs,
-  onImport,
-  onImportError,
+  onImportClick,
 }) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [isImporting, setIsImporting] = useState(false);
-  const [importProgress, setImportProgress] = useState(0);
 
   const handleDownloadTemplate = () => {
     try {
@@ -68,103 +64,6 @@ const ProgramImportExport: React.FC<ProgramImportExportProps> = ({
     }
   };
 
-  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsImporting(true);
-    setImportProgress(0);
-
-    try {
-      const reader = new FileReader();
-
-      reader.onprogress = (e) => {
-        if (e.lengthComputable) {
-          setImportProgress((e.loaded / e.total) * 100);
-        }
-      };
-
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const importedData = JSON.parse(content);
-
-          // Validate imported data structure
-          if (!Array.isArray(importedData)) {
-            throw new Error(t('invalidFileFormat'));
-          }
-
-          // Validate each program has required fields with trim checks
-          const validatedPrograms = importedData.map((prog: any, index: number) => {
-            // Check required fields exist
-            if (!prog.name || !prog.description || !prog.description.en || !prog.description.ar) {
-              throw new Error(
-                `${t('invalidProgramStructure')} (${t('row')} ${index + 1}): ${t('missingRequiredFields')}`
-              );
-            }
-
-            // Trim and check not empty
-            const nameStr = prog.name.toString().trim();
-            const descEn = prog.description.en.toString().trim();
-            const descAr = prog.description.ar.toString().trim();
-
-            if (!nameStr) {
-              throw new Error(`${t('row')} ${index + 1}: Program name cannot be empty`);
-            }
-            if (!descEn) {
-              throw new Error(`${t('row')} ${index + 1}: English description cannot be empty`);
-            }
-            if (!descAr) {
-              throw new Error(`${t('row')} ${index + 1}: Arabic description cannot be empty`);
-            }
-
-            return {
-              id: prog.id || `prog-${Date.now()}-${index}`,
-              name: nameStr,
-              description: {
-                en: descEn,
-                ar: descAr,
-              },
-            } as AccreditationProgram;
-          });
-
-          setImportProgress(100);
-          onImport(validatedPrograms);
-          toast?.success?.(
-            `${t('imported')} ${validatedPrograms.length} ${t('programs').toLowerCase()}`
-          );
-
-          // Reset file input
-          event.target.value = '';
-        } catch (parseError) {
-          const errorMsg =
-            parseError instanceof Error ? parseError.message : t('failedToParseFile');
-          toast?.error?.(errorMsg);
-          onImportError?.(errorMsg);
-        } finally {
-          setIsImporting(false);
-          setImportProgress(0);
-        }
-      };
-
-      reader.onerror = () => {
-        const errorMsg = t('failedToReadFile');
-        toast?.error?.(errorMsg);
-        onImportError?.(errorMsg);
-        setIsImporting(false);
-        setImportProgress(0);
-      };
-
-      reader.readAsText(file);
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : t('importFailed');
-      toast?.error?.(errorMsg);
-      onImportError?.(errorMsg);
-      setIsImporting(false);
-      setImportProgress(0);
-    }
-  };
-
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       {/* Download Template Button */}
@@ -188,29 +87,14 @@ const ProgramImportExport: React.FC<ProgramImportExportProps> = ({
         {t('exportPrograms')}
       </button>
 
-      {/* Import Button */}
-      <label className="flex items-center justify-center px-4 py-2 bg-brand-primary hover:bg-sky-700 rounded-lg cursor-pointer font-medium text-sm text-white shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+      {/* Import Button — opens the import wizard */}
+      <button
+        onClick={onImportClick}
+        className="flex items-center justify-center px-4 py-2 bg-brand-primary hover:bg-sky-700 rounded-lg cursor-pointer font-medium text-sm text-white shadow-sm"
+      >
         <UploadIcon className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
-        {isImporting ? `${t('importing')} ${Math.round(importProgress)}%` : t('importPrograms')}
-        <input
-          type="file"
-          accept=".json"
-          onChange={handleImportFile}
-          disabled={isImporting}
-          className="hidden"
-          aria-label={t('selectFileToImport')}
-        />
-      </label>
-
-      {/* Progress Bar */}
-      {isImporting && (
-        <div className="w-full sm:w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <div
-            className="bg-brand-primary h-2 rounded-full transition-all duration-300"
-            style={{ width: `${importProgress}%` }}
-          />
-        </div>
-      )}
+        {t('importPrograms')}
+      </button>
     </div>
   );
 };

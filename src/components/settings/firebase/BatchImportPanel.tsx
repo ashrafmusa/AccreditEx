@@ -60,16 +60,39 @@ const BatchImportPanel: React.FC = () => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const data = JSON.parse(content);
+        const parsed = JSON.parse(content);
 
-        if (!data.collection || !Array.isArray(data.documents)) {
-          toast?.error?.('Invalid import file format. Expected: { collection, documents, documentIdField }');
+        let data: ImportFile;
+        if (Array.isArray(parsed)) {
+          // Bare array format — infer collection name from filename
+          const baseName = file.name.replace(/\.json$/i, '').replace(/_import$/, '');
+          const collectionMap: Record<string, string> = {
+            programs: 'accreditationPrograms',
+            standards: 'standards',
+            standards_smcs: 'standards',
+            departments: 'departments',
+            competencies: 'competencies',
+            risks: 'risks',
+            trainingPrograms: 'trainingPrograms',
+            documents: 'documents',
+            projects: 'projects',
+          };
+          data = {
+            collection: collectionMap[baseName] || baseName,
+            documents: parsed,
+            documentIdField: 'id',
+          };
+        } else if (parsed.collection && Array.isArray(parsed.documents)) {
+          // Wrapped object format
+          data = parsed;
+        } else {
+          toast?.error?.('Invalid import file format. Expected: [...] or { collection, documents }');
           return;
         }
 
         setFilePreview(data);
         setShowPreview(true);
-        toast?.success?.(`Loaded ${data.documents.length} documents from ${data.collection}`);
+        toast?.success?.(`Loaded ${data.documents.length} documents for ${data.collection}`);
       } catch (error) {
         toast?.error?.('Failed to parse JSON file');
         console.error('JSON parse error:', error);
@@ -88,34 +111,12 @@ const BatchImportPanel: React.FC = () => {
       return;
     }
 
-    // Validate all documents have IDs before uploading
-    const skippedDocs: string[] = [];
-    const validDocuments = data.documents.filter((doc_data: any, index: number) => {
-      const docId = data.documentIdField
-        ? doc_data[data.documentIdField]
-        : doc_data.id;
-
-      if (!docId) {
-        skippedDocs.push(`Document ${index + 1}: Missing ID field`);
-        return false;
-      }
-      return true;
-    });
-
-    if (skippedDocs.length > 0) {
-      const message = `Skipped ${skippedDocs.length} documents: ${skippedDocs.slice(0, 2).join(', ')}${skippedDocs.length > 2 ? '...' : ''}`;
-      toast?.error?.(message);
-      if (validDocuments.length === 0) {
-        return;
-      }
-    }
-
     const jobId = `${data.collection}-${Date.now()}`;
     const startTime = new Date();
     const newJob: ImportJob = {
       id: jobId,
       collectionName: data.collection,
-      documentCount: validDocuments.length,
+      documentCount: data.documents.length,
       uploadedCount: 0,
       status: 'uploading',
       progress: 0,
@@ -130,17 +131,24 @@ const BatchImportPanel: React.FC = () => {
       const batch = writeBatch(db);
       let uploadedCount = 0;
 
-      for (const doc_data of validDocuments) {
+      for (const doc_data of data.documents) {
+        // Try to get an explicit ID from the document
         const docId = data.documentIdField
           ? doc_data[data.documentIdField]
           : doc_data.id;
 
-        const docRef = doc(collectionRef, String(docId));
-        batch.set(docRef, doc_data);
+        // Use the explicit ID or let Firestore auto-generate one
+        const docRef = docId
+          ? doc(collectionRef, String(docId))
+          : doc(collectionRef);
+
+        // Remove id fields from the data to avoid storing them inside the document
+        const { [data.documentIdField || 'id']: _removedId, id: _removedId2, ...cleanData } = doc_data;
+        batch.set(docRef, cleanData);
         uploadedCount++;
 
-        if (uploadedCount % 10 === 0 || uploadedCount === validDocuments.length) {
-          const progress = Math.round((uploadedCount / validDocuments.length) * 100);
+        if (uploadedCount % 10 === 0 || uploadedCount === data.documents.length) {
+          const progress = Math.round((uploadedCount / data.documents.length) * 100);
           setImportJobs((prev) =>
             prev.map((job) =>
               job.id === jobId
@@ -169,9 +177,7 @@ const BatchImportPanel: React.FC = () => {
         )
       );
 
-      const successMsg = skippedDocs.length > 0
-        ? `✅ Imported ${uploadedCount} documents to ${data.collection} in ${duration}s (${skippedDocs.length} skipped)`
-        : `✅ Imported ${uploadedCount} documents to ${data.collection} in ${duration}s`;
+      const successMsg = `✅ Imported ${uploadedCount} documents to ${data.collection} in ${duration}s`;
       toast?.success?.(successMsg);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -188,6 +194,7 @@ const BatchImportPanel: React.FC = () => {
       );
 
       toast?.error?.(`Failed to import documents: ${errorMessage}`);
+      console.error('BatchImportPanel upload error:', error);
     } finally {
       setIsProcessing(false);
     }

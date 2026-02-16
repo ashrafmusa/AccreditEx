@@ -20,8 +20,8 @@ service cloud.firestore {
     }
     
     // Validate data size limits to prevent abuse
-    function isValidSize(data) {
-      return request.resource.size < 15000000; // 15MB limit (temporary - allow one-time migration from base64 to Cloudinary)
+    function isValidSize() {
+      return request.resource.size < 15000000; // 15MB limit
     }
     
     // Validate that required fields exist
@@ -58,7 +58,7 @@ service cloud.firestore {
     // Projects collection
     match /projects/{projectId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && hasRequiredProjectFields() && isValidSize(request.resource.data);
+      allow create: if isAuthenticated() && hasRequiredProjectFields() && isValidSize();
       allow update: if isAuthenticated();
       allow delete: if isProjectLead();
     }
@@ -74,44 +74,44 @@ service cloud.firestore {
     // Standards collection
     match /standards/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize();
       allow delete: if isAdmin();
     }
     
     // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize();
       allow delete: if isAdmin();
     }
     
     // Departments collection
     match /departments/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize();
       allow delete: if isAdmin();
     }
     
     // Training Programs collection
     match /trainingPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isProjectLead() && isValidSize(request.resource.data);
-      allow update: if isProjectLead() && isValidSize(request.resource.data);
+      allow create: if isProjectLead() && isValidSize();
+      allow update: if isProjectLead() && isValidSize();
       allow delete: if isAdmin();
     }
     
     // Competencies collection
     match /competencies/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize(request.resource.data);
+      allow create, update: if isAdmin() && isValidSize();
       allow delete: if isAdmin();
     }
     
     // Risks collection
     match /risks/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidSize(request.resource.data);
-      allow update: if isAuthenticated() && isValidSize(request.resource.data);
+      allow create: if isAuthenticated() && isValidSize();
+      allow update: if isAuthenticated() && isValidSize();
       allow delete: if isAdmin();
     }
     
@@ -124,8 +124,8 @@ service cloud.firestore {
     // Audit Findings collection
     match /auditFindings/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidSize(request.resource.data);
-      allow update: if isAuthenticated() && isValidSize(request.resource.data);
+      allow create: if isAuthenticated() && isValidSize();
+      allow update: if isAuthenticated() && isValidSize();
       allow delete: if isAdmin();
     }
     

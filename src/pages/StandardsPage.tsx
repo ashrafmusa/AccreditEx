@@ -124,12 +124,14 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
       // Validate structure before import
       const validationErrors: string[] = [];
+      const getDesc = (d: any): string => typeof d === 'string' ? d : (d?.en || '');
       const validStandards = data.filter((standard: any, index: number) => {
         if (!standard.standardId || !standard.standardId.trim()) {
           validationErrors.push(`Row ${index + 1}: standardId is required`);
           return false;
         }
-        if (!standard.description || !standard.description.trim()) {
+        const desc = getDesc(standard.description);
+        if (!desc || !desc.trim()) {
           validationErrors.push(`Row ${index + 1}: description is required`);
           return false;
         }
@@ -157,12 +159,17 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
       for (const standard of validStandards) {
         try {
+          const desc = typeof standard.description === 'string'
+            ? standard.description.trim()
+            : (standard.description?.en || '').trim();
+          // Omit any 'id' from imported data — let Firebase generate the doc ID
+          const { id: _discardId, ...rest } = standard;
           await onCreateStandard({
+            ...rest,
             standardId: standard.standardId.trim(),
-            description: standard.description.trim(),
+            description: desc,
             section: standard.section?.trim() || "",
-            criticality: standard.criticality || "medium",
-            ...standard,
+            criticality: standard.criticality || "Medium",
             programId: programId,
           });
           importCount++;

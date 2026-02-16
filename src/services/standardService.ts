@@ -8,22 +8,22 @@ export const getStandards = async (): Promise<Standard[]> => {
     const standardSnapshot = await getDocs(standardsCollection);
     return standardSnapshot.docs.map(docSnap => {
         const data = docSnap.data();
-        // Use either 'id' or 'standardId' field
         return {
-            id: data.id || docSnap.id,
+            ...data,
+            id: docSnap.id,
             standardId: data.standardId || docSnap.id,
-            ...data
         } as Standard;
     });
 };
 
 export const addStandard = async (standard: Omit<Standard, 'id'>): Promise<Standard> => {
-    const docRef = await addDoc(standardsCollection, standard);
-    const { standardId: stdId, ...restStandard } = standard;
+    // Strip any accidentally passed 'id' from the data
+    const { id: _discardId, ...cleanData } = standard as any;
+    const docRef = await addDoc(standardsCollection, cleanData);
     return {
-        id: stdId || docRef.id,
-        standardId: stdId || docRef.id,
-        ...restStandard
+        ...cleanData,
+        id: docRef.id,
+        standardId: cleanData.standardId || docRef.id,
     } as Standard;
 };
 
