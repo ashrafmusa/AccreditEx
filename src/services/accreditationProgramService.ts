@@ -10,8 +10,15 @@ export const getAccreditationPrograms = async (): Promise<AccreditationProgram[]
 };
 
 export const addAccreditationProgram = async (program: Omit<AccreditationProgram, 'id'>): Promise<AccreditationProgram> => {
-    const docRef = await addDoc(accreditationProgramsCollection, program);
-    return { id: docRef.id, ...program } as AccreditationProgram;
+    // Ensure no 'id' field leaks into document data
+    const { id: _discardId, ...cleanData } = program as any;
+    try {
+        const docRef = await addDoc(accreditationProgramsCollection, cleanData);
+        return { ...cleanData, id: docRef.id } as AccreditationProgram;
+    } catch (error) {
+        console.error('🔥 addAccreditationProgram failed:', { error, data: cleanData });
+        throw error;
+    }
 };
 
 export const updateAccreditationProgram = async (program: AccreditationProgram): Promise<void> => {

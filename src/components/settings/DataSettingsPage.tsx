@@ -53,7 +53,9 @@ const DataSettingsPage: React.FC = () => {
         // Force a reload to reflect imported data across the app
         window.location.reload();
       } catch (error) {
-        toast.error(t("importFailed"));
+        console.error("Data import failed:", error);
+        const msg = error instanceof Error ? error.message : String(error);
+        toast.error(`${t("importFailed")} ${msg}`);
       }
     }
   };

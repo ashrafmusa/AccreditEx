@@ -103,7 +103,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
               throw new Error("Invalid data");
             }
 
-            // If the imported file includes an ID, use it; otherwise Firebase will generate one
+            // Build the program data, preserving all optional fields from the import
             const programData: any = {
               name: prog.name.trim(),
               description: {
@@ -112,10 +112,13 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
               },
             };
 
-            // Only add ID if it was explicitly provided in the import file
-            if (prog.id && prog.id.trim()) {
-              programData.id = prog.id.trim();
-            }
+            // Preserve optional AccreditationProgram fields
+            if (prog.version) programData.version = prog.version;
+            if (prog.cycleStartDate) programData.cycleStartDate = prog.cycleStartDate;
+            if (prog.cycleEndDate) programData.cycleEndDate = prog.cycleEndDate;
+            if (prog.accreditingBody) programData.accreditingBody = prog.accreditingBody;
+            if (prog.country) programData.country = prog.country;
+            if (prog.status) programData.status = prog.status;
 
             return programData as AccreditationProgram;
           });
