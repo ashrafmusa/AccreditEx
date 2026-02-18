@@ -19,10 +19,7 @@ service cloud.firestore {
       return getUserRole() in ['Admin', 'ProjectLead'];
     }
     
-    // Validate data size limits to prevent abuse
-    function isValidSize() {
-      return request.resource.size < 15000000; // 15MB limit
-    }
+    // Note: Firestore enforces 1MB document size limit automatically
     
     // Validate that required fields exist
     function hasRequiredUserFields() {
@@ -58,7 +55,7 @@ service cloud.firestore {
     // Projects collection
     match /projects/{projectId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && hasRequiredProjectFields() && isValidSize();
+      allow create: if isAuthenticated() && hasRequiredProjectFields();
       allow update: if isAuthenticated();
       allow delete: if isProjectLead();
     }
@@ -74,44 +71,44 @@ service cloud.firestore {
     // Standards collection
     match /standards/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize();
+      allow create, update: if isAdmin();
       allow delete: if isAdmin();
     }
     
     // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize();
+      allow create, update: if isAdmin();
       allow delete: if isAdmin();
     }
     
     // Departments collection
     match /departments/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize();
+      allow create, update: if isAdmin();
       allow delete: if isAdmin();
     }
     
     // Training Programs collection
     match /trainingPrograms/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isProjectLead() && isValidSize();
-      allow update: if isProjectLead() && isValidSize();
+      allow create: if isProjectLead();
+      allow update: if isProjectLead();
       allow delete: if isAdmin();
     }
     
     // Competencies collection
     match /competencies/{docId} {
       allow read: if isAuthenticated();
-      allow create, update: if isAdmin() && isValidSize();
+      allow create, update: if isAdmin();
       allow delete: if isAdmin();
     }
     
     // Risks collection
     match /risks/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidSize();
-      allow update: if isAuthenticated() && isValidSize();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
       allow delete: if isAdmin();
     }
     
@@ -124,8 +121,8 @@ service cloud.firestore {
     // Audit Findings collection
     match /auditFindings/{docId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidSize();
-      allow update: if isAuthenticated() && isValidSize();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
       allow delete: if isAdmin();
     }
     

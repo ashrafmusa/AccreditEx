@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AccreditEx — AI-Native Healthcare Accreditation Platform</title>
+    <meta name="description" content="AccreditEx: The AI-powered healthcare compliance and accreditation platform. Move from annual audit panic to continuous clinical excellence.">
+    <link rel="canonical" href="https://accreditex.web.app/landing">
+    <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://accreditex.web.app/landing">
+    <meta property="og:title" content="AccreditEx — AI-Native Healthcare Accreditation Platform">
+    <meta property="og:description" content="20+ AI tools, 119 pre-loaded standards, bilingual EN/AR. Move from annual audit panic to continuous clinical excellence.">
+    <meta property="og:image" content="https://accreditex.web.app/logo.png">
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AccreditEx — AI-Native Healthcare Accreditation">
+    <meta name="twitter:description" content="AI-powered healthcare compliance platform with 20+ tools. Built by a clinical quality expert.">
+    <meta name="twitter:image" content="https://accreditex.web.app/logo.png">
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AccreditEx",
+      "url": "https://accreditex.web.app",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web",
+      "description": "AI-native healthcare accreditation and compliance platform with 20+ AI tools, 119 pre-loaded standards, and bilingual EN/AR support.",
+      "author": {
+        "@type": "Person",
+        "name": "Ashraf Abu baker Musa Ishag",
+        "jobTitle": "Founder & CEO",
+        "url": "https://linkedin.com/in/ashraf-ishag"
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "lowPrice": "500",
+        "highPrice": "2000",
+        "priceCurrency": "USD",
+        "offerCount": "3"
+      },
+      "featureList": "15+ AI-powered tools, 240+ pre-loaded standards, Document control & versioning, Risk & CAPA management, Training & competency tracking, Multi-department support, Mock survey builder, Standards library (CBAHI, JCI, DOH, ISO 15189), EN/AR bilingual, PWA offline support"
+    }
+    </script>
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #00897B;
+            --primary-dark: #00695C;
+            --primary-light: #4DB6AC;
+            --primary-glow: rgba(0, 137, 123, 0.15);
+            --secondary: #1565C0;
+            --accent: #FF6F00;
+            --text: #1a1a2e;
+            --text-secondary: #64748b;
+            --bg: #ffffff;
+            --bg-alt: #f8fafc;
+            --bg-dark: #0f172a;
+            --border: #e2e8f0;
+            --gradient-primary: linear-gradient(135deg, #00897B 0%, #004D40 100%);
+            --gradient-hero: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+            --gradient-accent: linear-gradient(135deg, #00897B 0%, #1565C0 100%);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.08);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.12);
+            --shadow-glow: 0 0 40px rgba(0,137,123,0.2);
+            --radius: 16px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        /* ═══════════════ NAVBAR ═══════════════ */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            padding: 16px 0;
+            transition: all 0.3s ease;
+            background: transparent;
+        }
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 1px 20px rgba(0,0,0,0.06);
+            padding: 10px 0;
+        }
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo {
+            font-size: 24px; font-weight: 800; letter-spacing: -1px;
+            color: white; text-decoration: none;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .navbar.scrolled .nav-logo { color: var(--primary-dark); }
+        .nav-logo-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            object-fit: contain;
+        }
+        .nav-links { display: flex; align-items: center; gap: 32px; }
+        .nav-links a {
+            color: rgba(255,255,255,0.85); text-decoration: none;
+            font-size: 14px; font-weight: 500; transition: color 0.2s;
+        }
+        .navbar.scrolled .nav-links a { color: var(--text-secondary); }
+        .nav-links a:hover { color: white; }
+        .navbar.scrolled .nav-links a:hover { color: var(--primary); }
+        .nav-cta {
+            background: var(--gradient-accent) !important;
+            color: white !important;
+            padding: 10px 24px; border-radius: 10px;
+            font-weight: 600 !important; font-size: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .nav-cta:hover { transform: translateY(-1px); box-shadow: var(--shadow-glow); }
+        .nav-menu-btn {
+            display: none; background: none; border: none;
+            color: white; font-size: 28px; cursor: pointer; padding: 4px;
+        }
+        .navbar.scrolled .nav-menu-btn { color: var(--text); }
+
+        /* ═══════════════ HERO ═══════════════ */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            background: var(--gradient-hero);
+            display: flex; align-items: center;
+            overflow: hidden;
+            padding: 120px 24px 80px;
+        }
+        .hero::before {
+            content: ''; position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse 600px 600px at 20% 50%, rgba(0,137,123,0.12) 0%, transparent 70%),
+                radial-gradient(ellipse 400px 400px at 80% 30%, rgba(21,101,192,0.08) 0%, transparent 70%);
+        }
+        .hero-grid-bg {
+            position: absolute; inset: 0; opacity: 0.03;
+            background-image:
+                linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+        .hero-inner {
+            max-width: 1200px; margin: 0 auto; width: 100%;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+            position: relative; z-index: 1;
+        }
+        .hero-content { color: white; }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(0,137,123,0.15); border: 1px solid rgba(0,137,123,0.3);
+            padding: 6px 16px; border-radius: 100px;
+            font-size: 13px; font-weight: 600; color: var(--primary-light);
+            margin-bottom: 24px;
+        }
+        .hero-badge-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--primary-light);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .hero h1 {
+            font-size: clamp(36px, 5vw, 60px); font-weight: 800;
+            line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px;
+        }
+        .hero h1 span { color: var(--primary-light); }
+        .hero-sub {
+            font-size: 18px; line-height: 1.7; color: rgba(255,255,255,0.7);
+            max-width: 500px; margin-bottom: 40px;
+        }
+        .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 28px; border-radius: 12px;
+            font-size: 15px; font-weight: 600; text-decoration: none;
+            transition: all 0.3s ease; border: none; cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--gradient-accent); color: white;
+            box-shadow: 0 4px 20px rgba(0,137,123,0.3);
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,137,123,0.4); }
+        .btn-secondary {
+            background: rgba(255,255,255,0.1); color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.15); }
+        .hero-stats {
+            display: flex; gap: 40px; margin-top: 48px; padding-top: 32px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .hero-stat-value {
+            font-size: 28px; font-weight: 800; color: white;
+        }
+        .hero-stat-label {
+            font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px;
+        }
+
+        /* Hero Visual / App Preview */
+        .hero-visual {
+            position: relative;
+        }
+        .hero-app-preview {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 80px rgba(0,0,0,0.3);
+        }
+        .preview-topbar {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+        }
+        .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .preview-dot:nth-child(1) { background: #ff5f57; }
+        .preview-dot:nth-child(2) { background: #febc2e; }
+        .preview-dot:nth-child(3) { background: #28c840; }
+        .preview-body {
+            display: grid; grid-template-columns: 180px 1fr; gap: 16px;
+        }
+        .preview-sidebar {
+            background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;
+        }
+        .preview-nav-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 10px; border-radius: 8px;
+            font-size: 12px; color: rgba(255,255,255,0.5);
+            margin-bottom: 4px;
+        }
+        .preview-nav-item.active {
+            background: rgba(0,137,123,0.2);
+            color: var(--primary-light);
+        }
+        .preview-main {
+            background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px;
+        }
+        .preview-cards {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
+        }
+        .preview-card {
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px; padding: 12px;
+        }
+        .preview-card-value {
+            font-size: 20px; font-weight: 800; color: white;
+        }
+        .preview-card-label {
+            font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 2px;
+        }
+        .preview-bar-chart {
+            display: flex; align-items: flex-end; gap: 6px; height: 60px;
+            padding-top: 8px;
+        }
+        .preview-bar {
+            flex: 1; border-radius: 4px 4px 0 0;
+            background: var(--gradient-accent); opacity: 0.6;
+            animation: barGrow 1.5s ease-out;
+        }
+        @keyframes barGrow { from { height: 0; } }
+
+        /* ═══════════════ SECTIONS ═══════════════ */
+        .section {
+            padding: 100px 24px;
+        }
+        .section-dark {
+            background: var(--bg-dark); color: white;
+        }
+        .section-alt { background: var(--bg-alt); }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: var(--primary-glow); color: var(--primary);
+            padding: 6px 16px; border-radius: 100px;
+            font-size: 13px; font-weight: 600; margin-bottom: 16px;
+        }
+        .section-dark .section-badge {
+            background: rgba(0,137,123,0.15); color: var(--primary-light);
+        }
+        .section-title {
+            font-size: clamp(28px, 4vw, 44px); font-weight: 800;
+            letter-spacing: -1px; line-height: 1.2; margin-bottom: 16px;
+        }
+        .section-sub {
+            font-size: 17px; color: var(--text-secondary);
+            max-width: 600px; line-height: 1.7;
+        }
+        .section-dark .section-sub { color: rgba(255,255,255,0.6); }
+        .section-header { margin-bottom: 60px; }
+        .section-header.center { text-align: center; }
+        .section-header.center .section-sub { margin: 0 auto; }
+
+        /* ═══════════════ PROBLEM ═══════════════ */
+        .problem-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .problem-card {
+            background: white; border-radius: var(--radius);
+            padding: 32px; border: 1px solid var(--border);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .problem-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .problem-icon {
+            width: 56px; height: 56px; border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; margin-bottom: 20px;
+        }
+        .problem-icon.red { background: #fef2f2; }
+        .problem-icon.orange { background: #fff7ed; }
+        .problem-icon.yellow { background: #fefce8; }
+        .problem-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+        .problem-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .problem-stat {
+            font-size: 36px; font-weight: 900; color: #dc2626;
+            margin-bottom: 4px;
+        }
+
+        /* ═══════════════ FEATURES ═══════════════ */
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+        }
+        .feature-card {
+            background: white; border-radius: var(--radius);
+            padding: 32px; border: 1px solid var(--border);
+            transition: all 0.3s;
+            position: relative; overflow: hidden;
+        }
+        .feature-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0;
+            height: 3px; background: var(--gradient-accent);
+            transform: scaleX(0); transition: transform 0.3s;
+            transform-origin: left;
+        }
+        .feature-card:hover::before { transform: scaleX(1); }
+        .feature-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .feature-icon {
+            width: 48px; height: 48px; border-radius: 12px;
+            background: var(--primary-glow);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; margin-bottom: 20px;
+        }
+        .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+        .feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+        .feature-list-mini {
+            list-style: none; margin-top: 12px;
+        }
+        .feature-list-mini li {
+            font-size: 13px; color: var(--text-secondary);
+            padding: 4px 0; padding-left: 20px; position: relative;
+        }
+        .feature-list-mini li::before {
+            content: '✓'; position: absolute; left: 0;
+            color: var(--primary); font-weight: 700;
+        }
+
+        /* ═══════════════ AI SECTION ═══════════════ */
+        .ai-grid {
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
+        }
+        .ai-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: var(--radius); padding: 28px;
+            transition: all 0.3s;
+        }
+        .ai-card:hover {
+            background: rgba(0,137,123,0.08);
+            border-color: rgba(0,137,123,0.2);
+            transform: translateY(-4px);
+        }
+        .ai-card-icon { font-size: 32px; margin-bottom: 16px; }
+        .ai-card h3 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 6px; }
+        .ai-card p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+
+        /* ═══════════════ MARKET ═══════════════ */
+        .market-circles {
+            display: flex; justify-content: center; align-items: center; gap: 40px;
+            margin: 60px 0 40px;
+        }
+        .market-circle {
+            width: 200px; height: 200px; border-radius: 50%;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; text-align: center; padding: 24px;
+            transition: transform 0.3s;
+        }
+        .market-circle:hover { transform: scale(1.05); }
+        .market-tam {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 3px solid var(--secondary);
+        }
+        .market-sam {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 3px solid var(--primary);
+        }
+        .market-som {
+            background: linear-gradient(135deg, #fff7ed, #fed7aa);
+            border: 3px solid var(--accent);
+        }
+        .market-label { font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+        .market-value { font-size: 36px; font-weight: 900; color: var(--text); }
+        .market-desc { font-size: 11px; color: var(--text-secondary); margin-top: 4px; }
+
+        /* ═══════════════ PRICING ═══════════════ */
+        .pricing-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px;
+            align-items: start;
+        }
+        .pricing-card {
+            background: white; border-radius: var(--radius);
+            padding: 40px 32px; border: 2px solid var(--border);
+            text-align: center; transition: all 0.3s;
+        }
+        .pricing-card.featured {
+            border-color: var(--primary);
+            box-shadow: var(--shadow-glow);
+            transform: scale(1.04);
+            position: relative;
+        }
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR'; position: absolute; top: -14px; left: 50%;
+            transform: translateX(-50%);
+            background: var(--gradient-accent); color: white;
+            padding: 6px 20px; border-radius: 100px;
+            font-size: 11px; font-weight: 700; letter-spacing: 1px;
+        }
+        .pricing-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .pricing-price {
+            font-size: 48px; font-weight: 900; color: var(--primary);
+            margin-bottom: 4px;
+        }
+        .pricing-price span { font-size: 16px; color: var(--text-secondary); font-weight: 500; }
+        .pricing-desc { font-size: 14px; color: var(--text-secondary); margin-bottom: 24px; }
+        .pricing-features { list-style: none; text-align: left; }
+        .pricing-features li {
+            padding: 10px 0; font-size: 14px; color: var(--text-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .pricing-features li::before { content: '✓'; color: var(--primary); font-weight: 700; }
+        .pricing-btn {
+            display: block; width: 100%; margin-top: 28px;
+            padding: 14px; border-radius: 12px;
+            font-size: 15px; font-weight: 600; text-decoration: none;
+            text-align: center; transition: all 0.3s;
+        }
+        .pricing-btn-primary {
+            background: var(--gradient-accent); color: white;
+        }
+        .pricing-btn-secondary {
+            background: var(--bg-alt); color: var(--text); border: 1px solid var(--border);
+        }
+
+        /* ═══════════════ COMPARISON TABLE ═══════════════ */
+        .comp-table-wrap { overflow-x: auto; margin-top: 40px; }
+        .comp-table {
+            width: 100%; border-collapse: collapse;
+            background: white; border-radius: var(--radius); overflow: hidden;
+            box-shadow: var(--shadow-md);
+        }
+        .comp-table th, .comp-table td {
+            padding: 16px 20px; text-align: left; font-size: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+        .comp-table thead th {
+            background: var(--bg-alt); font-weight: 700; color: var(--text);
+        }
+        .comp-table thead th:first-child { border-radius: 16px 0 0 0; }
+        .comp-table thead th:last-child { border-radius: 0 16px 0 0; }
+        .comp-table .yes { color: var(--primary); font-weight: 700; }
+        .comp-table .no { color: #94a3b8; }
+        .comp-table .partial { color: var(--accent); font-weight: 500; }
+
+        /* ═══════════════ TEAM ═══════════════ */
+        .team-card-modern {
+            display: flex; align-items: center; gap: 40px;
+            background: white; border-radius: var(--radius);
+            padding: 48px; border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+        }
+        .team-avatar {
+            width: 140px; height: 140px; border-radius: 50%; flex-shrink: 0;
+            object-fit: cover;
+            border: 4px solid var(--primary-light);
+            box-shadow: 0 0 30px rgba(0,137,123,0.2);
+        }
+        .team-name { font-size: 28px; font-weight: 800; margin-bottom: 4px; }
+        .team-role { font-size: 16px; color: var(--primary); font-weight: 600; margin-bottom: 20px; }
+        .team-creds { list-style: none; }
+        .team-creds li {
+            padding: 6px 0; font-size: 15px; color: var(--text-secondary);
+            display: flex; align-items: center; gap: 10px;
+        }
+
+        /* ═══════════════ CTA ═══════════════ */
+        .cta-section {
+            background: var(--gradient-hero); padding: 100px 24px;
+            text-align: center; color: white; position: relative; overflow: hidden;
+        }
+        .cta-section::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(0,137,123,0.15) 0%, transparent 70%);
+        }
+        .cta-title {
+            font-size: clamp(32px, 4vw, 52px); font-weight: 800;
+            letter-spacing: -1px; margin-bottom: 16px; position: relative;
+        }
+        .cta-sub {
+            font-size: 18px; color: rgba(255,255,255,0.6);
+            max-width: 500px; margin: 0 auto 40px; position: relative;
+        }
+        .cta-actions { display: flex; justify-content: center; gap: 16px; position: relative; }
+
+        /* ═══════════════ FOOTER ═══════════════ */
+        .footer {
+            background: var(--bg-dark); color: rgba(255,255,255,0.5);
+            padding: 60px 24px 30px;
+        }
+        .footer-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+            padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .footer-brand { font-size: 24px; font-weight: 800; color: white; margin-bottom: 12px; }
+        .footer-desc { font-size: 14px; line-height: 1.6; }
+        .footer-col-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-links { list-style: none; }
+        .footer-links li { margin-bottom: 10px; }
+        .footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a:hover { color: var(--primary-light); }
+        .footer-bottom {
+            max-width: 1200px; margin: 0 auto; padding-top: 24px;
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 13px;
+        }
+        .footer-badges { display: flex; gap: 10px; }
+        .footer-badge {
+            background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+            padding: 4px 14px; border-radius: 100px;
+            font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.6);
+        }
+
+        /* ═══════════════ RESPONSIVE ═══════════════ */
+        @media (max-width: 1024px) {
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-visual { display: none; }
+            .features-grid, .problem-grid { grid-template-columns: repeat(2, 1fr); }
+            .ai-grid { grid-template-columns: repeat(2, 1fr); }
+            .pricing-grid { grid-template-columns: 1fr; max-width: 440px; margin: 0 auto; }
+            .pricing-card.featured { transform: none; }
+            .footer-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .nav-menu-btn { display: block; }
+            .nav-links.open {
+                display: flex; flex-direction: column;
+                position: absolute; top: 100%; left: 0; right: 0;
+                background: white; padding: 20px 24px; gap: 16px;
+                box-shadow: var(--shadow-lg);
+            }
+            .nav-links.open a { color: var(--text) !important; }
+            .features-grid, .problem-grid { grid-template-columns: 1fr; }
+            .ai-grid { grid-template-columns: 1fr; }
+            .hero-stats { flex-direction: column; gap: 20px; }
+            .market-circles { flex-direction: column; }
+            .team-card-modern { flex-direction: column; text-align: center; }
+            .comp-table { font-size: 12px; }
+            .footer-grid { grid-template-columns: 1fr; }
+            .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+        }
+
+        /* ═══════════════ ANIMATIONS ═══════════════ */
+        .fade-up {
+            opacity: 0; transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        /* ═══════════════ LUCIDE ICON OVERRIDES ═══════════════ */
+        .section-badge svg { width: 14px; height: 14px; display: inline; vertical-align: -2px; margin-right: 2px; }
+        .feature-icon svg { width: 24px; height: 24px; color: var(--primary); }
+        .ai-card-icon svg { width: 32px; height: 32px; color: rgba(255,255,255,0.65); }
+        .problem-icon svg { width: 28px; height: 28px; }
+        .problem-icon.red svg { color: #dc2626; }
+        .problem-icon.orange svg { color: #ea580c; }
+        .problem-icon.yellow svg { color: #ca8a04; }
+        .team-creds svg { width: 18px; height: 18px; color: var(--primary); flex-shrink: 0; }
+        .footer-links svg { width: 14px; height: 14px; display: inline; vertical-align: -2px; margin-right: 4px; }
+        .section-dark .section-badge svg { color: var(--primary-light); }
+
+        /* ═══════════════ PDF / PITCH DECK DOWNLOAD ═══════════════ */
+        .pdf-download-fab {
+            position: fixed; bottom: 32px; right: 32px; z-index: 999;
+            background: var(--gradient-accent); color: white;
+            width: 56px; height: 56px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; cursor: pointer; border: none;
+            box-shadow: 0 4px 20px rgba(0,137,123,0.4);
+            transition: all 0.3s ease;
+        }
+        .pdf-download-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 30px rgba(0,137,123,0.5);
+        }
+        .pdf-download-fab .fab-tooltip {
+            position: absolute; right: 68px; top: 50%; transform: translateY(-50%);
+            background: var(--bg-dark); color: white;
+            padding: 8px 16px; border-radius: 8px;
+            font-size: 13px; font-weight: 600; white-space: nowrap;
+            opacity: 0; pointer-events: none; transition: opacity 0.2s;
+        }
+        .pdf-download-fab:hover .fab-tooltip { opacity: 1; }
+
+        /* Skip-to-content */
+        .skip-link {
+            position: absolute; top: -100px; left: 16px;
+            background: var(--primary); color: white;
+            padding: 8px 16px; border-radius: 8px;
+            font-size: 14px; font-weight: 600; z-index: 9999;
+            text-decoration: none;
+        }
+        .skip-link:focus { top: 16px; }
+
+        /* Pitch Deck Print / PDF Mode */
+        @media print {
+            /* === GLOBAL PRINT RESET === */
+            *, *::before, *::after { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            body { font-size: 10pt; line-height: 1.5; color: #1a1a2e; background: white; }
+            html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+            /* === HIDE NON-PRINT ELEMENTS === */
+            .navbar, .footer, .pdf-download-fab, .skip-link, .cta-section, .hero-grid-bg { display: none !important; }
+            .hero-actions, .pricing-btn, .btn { display: none !important; }
+
+            /* === PRINT COVER PAGE === */
+            .print-cover { display: flex !important; }
+
+            /* === SECTION LAYOUT === */
+            .section { padding: 28px 16px; page-break-inside: avoid; }
+            .section-alt { background: #f8fafc !important; }
+            .container { max-width: 100%; }
+            .section-header { margin-bottom: 24px; }
+            .section-title { font-size: 20pt; letter-spacing: -0.5px; }
+            .section-sub { font-size: 10pt; }
+            .section-badge { font-size: 9pt; padding: 3px 10px; }
+
+            /* === HERO (compact for PDF) === */
+            .hero { min-height: auto; padding: 36px 16px; background: #0f172a !important; }
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-visual { display: none !important; }
+            .hero h1 { font-size: 28pt; letter-spacing: -1px; }
+            .hero-sub { font-size: 10pt; max-width: 100%; }
+            .hero-stats { gap: 32px; margin-top: 20px; padding-top: 16px; flex-direction: row; }
+            .hero-stat-value { font-size: 20pt; }
+            .hero-stat-label { font-size: 8pt; }
+            .hero-badge { font-size: 9pt; }
+
+            /* === DARK SECTIONS === */
+            .section-dark { background: #0f172a !important; page-break-before: always; }
+            .section-dark .section-title { color: white !important; }
+
+            /* === GRIDS (tighter for PDF) === */
+            .features-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .feature-card { padding: 16px; font-size: 9pt; }
+            .feature-card h3 { font-size: 11pt; margin-bottom: 4px; }
+            .feature-card p { font-size: 8.5pt; line-height: 1.4; }
+            .feature-list-mini li { font-size: 8pt; padding: 2px 0; }
+            .feature-icon { width: 32px; height: 32px; margin-bottom: 8px; }
+            .feature-icon svg { width: 18px; height: 18px; }
+
+            .ai-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+            .ai-card { padding: 14px; }
+            .ai-card h3 { font-size: 9pt; }
+            .ai-card p { font-size: 8pt; line-height: 1.3; }
+            .ai-card-icon { margin-bottom: 8px; }
+            .ai-card-icon svg { width: 22px; height: 22px; }
+
+            .problem-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .problem-card { padding: 16px; }
+            .problem-stat { font-size: 24pt; }
+            .problem-card h3 { font-size: 11pt; }
+            .problem-card p { font-size: 8.5pt; }
+
+            /* === MARKET CIRCLES === */
+            .market-circles { gap: 24px; margin: 24px 0; }
+            .market-circle { width: 150px; height: 150px; padding: 16px; }
+            .market-value { font-size: 24pt; }
+            .market-label { font-size: 8pt; }
+            .market-desc { font-size: 8pt; }
+
+            /* === COMPARISON TABLE === */
+            .comp-table { font-size: 9pt; }
+            .comp-table th, .comp-table td { padding: 8px 12px; }
+
+            /* === PRICING === */
+            .pricing-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+            .pricing-card { padding: 20px 16px; }
+            .pricing-card.featured { transform: none; border-width: 2px; }
+            .pricing-name { font-size: 12pt; }
+            .pricing-price { font-size: 28pt; }
+            .pricing-features li { font-size: 8.5pt; padding: 6px 0; }
+
+            /* === TEAM === */
+            .team-card-modern { padding: 24px; gap: 24px; }
+            .team-avatar { width: 100px; height: 100px; }
+            .team-name { font-size: 16pt; }
+            .team-role { font-size: 10pt; }
+            .team-creds li { font-size: 9pt; padding: 3px 0; }
+
+            /* === ROADMAP === */
+            #team ~ .section-alt { page-break-before: always; }
+
+            /* === FAQ: open all details for print === */
+            details { border: none !important; padding: 12px 0 !important; margin-bottom: 4px !important; }
+            details[open] summary ~ p, details summary ~ p { display: block !important; }
+            details summary { font-size: 10pt; }
+            details summary span:last-child { display: none; }
+            details p { font-size: 9pt; margin-top: 8px !important; }
+
+            /* === ANIMATIONS OFF === */
+            .fade-up { opacity: 1 !important; transform: none !important; transition: none !important; }
+
+            /* === LINKS === */
+            a { color: inherit; text-decoration: none; }
+
+            /* === PAGE BREAKS === */
+            #problem { page-break-before: always; }
+            #features { page-break-before: always; }
+            #market { page-break-before: always; }
+            #pricing { page-break-before: always; }
+            #team { page-break-before: always; }
+            #faq { page-break-before: always; }
+
+            /* === PRINT-ONLY ELEMENTS === */
+            .print-only { display: block !important; }
+            .print-source { display: block !important; font-size: 8pt; color: #94a3b8; margin-top: 8px; font-style: italic; }
+
+            /* === PAGE MARGINS (via @page) === */
+            @page { margin: 0.6in 0.5in 0.7in 0.5in; size: A4; }
+            @page :first { margin-top: 0; }
+        }
+
+        /* Hide print-only elements on screen */
+        .print-cover { display: none; }
+        .print-only { display: none; }
+        .print-source { display: none; }
+    </style>
+</head>
+<body>
+
+<!-- Skip to content (Accessibility) -->
+<a href="#problem" class="skip-link">Skip to main content</a>
+
+<!-- ═══════════════ PRINT COVER PAGE (hidden on screen) ═══════════════ -->
+<div class="print-cover" style="min-height:100vh; background:#0f172a; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:60px 40px; page-break-after:always;">
+    <img src="/logo.png" alt="AccreditEx" width="80" height="80" style="border-radius:16px; margin-bottom:32px;">
+    <h1 style="color:white; font-size:42pt; font-weight:900; letter-spacing:-2px; margin-bottom:8px;">AccreditEx</h1>
+    <p style="color:#4DB6AC; font-size:16pt; font-weight:600; margin-bottom:48px;">AI-Native Healthcare Accreditation Platform</p>
+    <div style="width:80px; height:3px; background:linear-gradient(90deg,#00897B,#1565C0); border-radius:2px; margin-bottom:48px;"></div>
+    <p style="color:rgba(255,255,255,0.5); font-size:11pt; line-height:1.8; max-width:500px;">
+        Investor Pitch Deck &bull; Confidential<br>
+        February 2026<br><br>
+        Ashraf Abu baker Musa Ishag<br>
+        Founder & CEO<br>
+        ashraf.a.m.ishag@gmail.com
+    </p>
+    <div style="margin-top:auto; padding-top:40px;">
+        <p style="color:rgba(255,255,255,0.3); font-size:8pt;">This document contains proprietary information. Distribution without written consent is prohibited.</p>
+    </div>
+</div>
+
+<!-- ═══════════════ NAVBAR ═══════════════ -->
+<nav class="navbar" id="navbar">
+    <div class="nav-inner">
+        <a href="#" class="nav-logo">
+            <img src="/logo.png" alt="AccreditEx" class="nav-logo-icon" width="36" height="36">
+            AccreditEx
+        </a>
+        <div class="nav-links" id="navLinks">
+            <a href="#features">Features</a>
+            <a href="#ai">AI Engine</a>
+            <a href="#market">Market</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#team">Team</a>
+            <a href="#faq">FAQ</a>
+            <a href="https://accreditex.web.app" class="nav-cta">Launch App →</a>
+        </div>
+        <button class="nav-menu-btn" aria-label="Toggle navigation menu" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+    </div>
+</nav>
+
+<!-- ═══════════════ HERO ═══════════════ -->
+<section class="hero" id="hero">
+    <div class="hero-grid-bg"></div>
+    <div class="hero-inner">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="hero-badge-dot"></span>
+                AI-Native Healthcare Platform
+            </div>
+            <h1>
+                From Audit Panic<br>
+                to <span>Continuous Excellence</span>
+            </h1>
+            <p class="hero-sub">
+                AccreditEx automates healthcare accreditation with AI-powered compliance tracking, 
+                real-time risk monitoring, and intelligent document management — built by a clinical quality expert.
+            </p>
+            <div class="hero-actions">
+                <a href="https://accreditex.web.app" class="btn btn-primary">
+                    Launch Platform →
+                </a>
+                <a href="#features" class="btn btn-secondary">
+                    Explore Features ↓
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div>
+                    <div class="hero-stat-value">15+</div>
+                    <div class="hero-stat-label">AI-Powered Tools</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">240+</div>
+                    <div class="hero-stat-label">Standards Loaded</div>
+                </div>
+                <div>
+                    <div class="hero-stat-value">1,043</div>
+                    <div class="hero-stat-label">Sub-Standards</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-app-preview">
+                <div class="preview-topbar">
+                    <span class="preview-dot"></span>
+                    <span class="preview-dot"></span>
+                    <span class="preview-dot"></span>
+                    <span style="flex:1; text-align:center; font-size:11px; color:rgba(255,255,255,0.3);">accreditex.web.app</span>
+                </div>
+                <div class="preview-body">
+                    <div class="preview-sidebar">
+                        <div class="preview-nav-item active">📊 Dashboard</div>
+                        <div class="preview-nav-item">📁 Projects</div>
+                        <div class="preview-nav-item">📄 Documents</div>
+                        <div class="preview-nav-item">⚠️ Risk Hub</div>
+                        <div class="preview-nav-item">🎓 Training</div>
+                        <div class="preview-nav-item">📅 Calendar</div>
+                        <div class="preview-nav-item">🤖 AI Tools</div>
+                        <div class="preview-nav-item">📊 Analytics</div>
+                        <div class="preview-nav-item">💬 Messages</div>
+                    </div>
+                    <div class="preview-main">
+                        <div class="preview-cards">
+                            <div class="preview-card">
+                                <div class="preview-card-value" style="color:#22c55e;">87%</div>
+                                <div class="preview-card-label">Compliance Rate</div>
+                            </div>
+                            <div class="preview-card">
+                                <div class="preview-card-value" style="color:#f59e0b;">12</div>
+                                <div class="preview-card-label">Open CAPAs</div>
+                            </div>
+                            <div class="preview-card">
+                                <div class="preview-card-value" style="color:#3b82f6;">5</div>
+                                <div class="preview-card-label">Active Projects</div>
+                            </div>
+                            <div class="preview-card">
+                                <div class="preview-card-value" style="color:#a855f7;">24</div>
+                                <div class="preview-card-label">Tasks Due</div>
+                            </div>
+                        </div>
+                        <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-bottom:8px;">Department Performance</div>
+                        <div class="preview-bar-chart">
+                            <div class="preview-bar" style="height:85%"></div>
+                            <div class="preview-bar" style="height:72%"></div>
+                            <div class="preview-bar" style="height:90%"></div>
+                            <div class="preview-bar" style="height:65%"></div>
+                            <div class="preview-bar" style="height:78%"></div>
+                            <div class="preview-bar" style="height:95%"></div>
+                            <div class="preview-bar" style="height:60%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ THE PROBLEM ═══════════════ -->
+<section class="section section-alt" id="problem">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="alert-triangle"></i> The Challenge</div>
+            <h2 class="section-title">The Healthcare Compliance Crisis</h2>
+            <p class="section-sub">70% of GCC healthcare facilities still rely on manual spreadsheets, paper binders, and siloed emails for accreditation compliance.</p>
+        </div>
+        <div class="problem-grid">
+            <div class="problem-card fade-up">
+                <div class="problem-icon red"><i data-lucide="clipboard-list"></i></div>
+                <div class="problem-stat">30%</div>
+                <h3>Higher Audit Failure Risk</h3>
+                <p>Human error in documentation is the #1 cause of non-conformities during accreditation surveys.</p>
+            </div>
+            <div class="problem-card fade-up">
+                <div class="problem-icon orange"><i data-lucide="flame"></i></div>
+                <div class="problem-stat">50%</div>
+                <h3>Clinician Burnout Rate</h3>
+                <p>Quality managers spend more time on paperwork than actual patient safety improvement.</p>
+            </div>
+            <div class="problem-card fade-up">
+                <div class="problem-icon yellow"><i data-lucide="alert-octagon"></i></div>
+                <div class="problem-stat">$2M+</div>
+                <h3>Cost of Non-Compliance</h3>
+                <p>Lost accreditation means lost contracts, reputation damage, and potential patient safety risks.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ FEATURES ═══════════════ -->
+<section class="section" id="features">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="building-2"></i> Platform</div>
+            <h2 class="section-title">Everything You Need for Accreditation</h2>
+            <p class="section-sub">A comprehensive platform covering every aspect of healthcare quality management — from standards tracking to team training.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="layout-dashboard"></i></div>
+                <h3>Role-Based Dashboards</h3>
+                <p>Tailored views for Admins, Project Leads, Auditors, and Team Members with real-time KPIs.</p>
+                <ul class="feature-list-mini">
+                    <li>Executive overview with overdue tasks</li>
+                    <li>Compliance trend charts</li>
+                    <li>Department performance analytics</li>
+                    <li>Quality Insights with predictive risk</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="folder-kanban"></i></div>
+                <h3>Project Management</h3>
+                <p>Full accreditation project lifecycle with checklists, evidence, PDCA cycles, and CAPA tracking.</p>
+                <ul class="feature-list-mini">
+                    <li>Template-based project creation</li>
+                    <li>Per-standard compliance checklists</li>
+                    <li>Design controls & audit logs</li>
+                    <li>Mock survey simulations</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="file-text"></i></div>
+                <h3>Document Control</h3>
+                <p>Enterprise document management with versioning, approval workflows, and template gallery.</p>
+                <ul class="feature-list-mini">
+                    <li>Rich-text editor (EN/AR bilingual)</li>
+                    <li>Version history & comparison</li>
+                    <li>Multi-step approval chains</li>
+                    <li>Template gallery (SOP, Policy, etc.)</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="shield-alert"></i></div>
+                <h3>Risk & CAPA Hub</h3>
+                <p>Integrated risk register, incident reporting, CAPA management, and effectiveness tracking.</p>
+                <ul class="feature-list-mini">
+                    <li>Risk matrix visualization</li>
+                    <li>Incident severity categorization</li>
+                    <li>Root cause analysis (5 Whys)</li>
+                    <li>CAPA closure decision engine</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="graduation-cap"></i></div>
+                <h3>Training & Competency</h3>
+                <p>Complete training management with quizzes, certificates, and competency gap tracking.</p>
+                <ul class="feature-list-mini">
+                    <li>Training programs with quizzes</li>
+                    <li>Auto-generated certificates</li>
+                    <li>Competency library & gap reports</li>
+                    <li>AI-powered training recommendations</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="building"></i></div>
+                <h3>Multi-Department</h3>
+                <p>Hospital-wide project support with AI-powered department assignment and per-department analytics.</p>
+                <ul class="feature-list-mini">
+                    <li>AI auto-assign departments to standards</li>
+                    <li>Department compliance breakdown</li>
+                    <li>Cross-department collaboration</li>
+                    <li>HIS integration support <span style="font-size:10px; background:var(--primary-glow); color:var(--primary); padding:1px 6px; border-radius:4px; font-weight:600;">Beta</span></li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="search"></i></div>
+                <h3>Audit Management</h3>
+                <p>Plan, conduct, and track internal audits with findings, mock surveys, and readiness scoring.</p>
+                <ul class="feature-list-mini">
+                    <li>Audit plan scheduler</li>
+                    <li>Finding severity classification</li>
+                    <li>Mock survey pass/fail analysis</li>
+                    <li>Assessor report pack generation</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="calendar"></i></div>
+                <h3>Calendar & Tasks</h3>
+                <p>Unified calendar aggregating all deadlines with personal task queues and notifications.</p>
+                <ul class="feature-list-mini">
+                    <li>Month, agenda & year views</li>
+                    <li>My Tasks with overdue alerts</li>
+                    <li>Real-time messaging center</li>
+                    <li>In-app notifications</li>
+                </ul>
+            </div>
+            <div class="feature-card fade-up">
+                <div class="feature-icon"><i data-lucide="globe"></i></div>
+                <h3>Standards Library</h3>
+                <p>Pre-loaded accreditation programs (CBAHI, JCI, DOH) with 240+ standards and 1,043 sub-standards.</p>
+                <ul class="feature-list-mini">
+                    <li>Cross-standard mapping</li>
+                    <li>Evidence reuse suggestions</li>
+                    <li>Bulk import/export</li>
+                    <li>Bilingual support (EN/AR)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ AI ENGINE ═══════════════ -->
+<section class="section section-dark" id="ai">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="bot"></i> AI Engine</div>
+            <h2 class="section-title" style="color:white;">15+ AI-Powered Tools Built In</h2>
+            <p class="section-sub">Not just a chatbot — a comprehensive AI system trained on healthcare accreditation that actively helps your team at every step.</p>
+        </div>
+        <div class="ai-grid">
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="message-circle"></i></div>
+                <h3>AI Assistant</h3>
+                <p>Context-aware floating chatbot available throughout the app for instant guidance.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="file-plus"></i></div>
+                <h3>Document Generator</h3>
+                <p>Generate compliant SOPs, policies, reports, and checklists from templates using AI.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="scan-search"></i></div>
+                <h3>Gap Analysis</h3>
+                <p>Analyze compliance gaps and get AI-generated action plans for non-compliant items.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="bar-chart-3"></i></div>
+                <h3>Analytics Insights</h3>
+                <p>AI analyzes your KPIs and generates executive summaries with recommendations.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="target"></i></div>
+                <h3>Root Cause Analysis</h3>
+                <p>5 Whys and Fishbone analysis to identify root causes of non-compliance.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="refresh-cw"></i></div>
+                <h3>PDCA Improvement</h3>
+                <p>AI-powered recommendations for each Plan-Do-Check-Act cycle stage.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="shield-alert"></i></div>
+                <h3>Risk Assessment</h3>
+                <p>Automated risk scoring with mitigation recommendations and priority actions.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="pen-tool"></i></div>
+                <h3>Content Improvement</h3>
+                <p>Improves clarity, structure, grammar, and professionalism of existing documents.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="languages"></i></div>
+                <h3>Translation (EN↔AR)</h3>
+                <p>Translates healthcare documents between English and Arabic preserving formatting.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="check-circle"></i></div>
+                <h3>Compliance Check</h3>
+                <p>Analyzes documents against specific standards and returns compliance scores.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="building"></i></div>
+                <h3>Dept Auto-Assignment</h3>
+                <p>AI maps standards to the most responsible hospital department automatically.</p>
+            </div>
+            <div class="ai-card fade-up">
+                <div class="ai-card-icon"><i data-lucide="graduation-cap"></i></div>
+                <h3>Training Advisor</h3>
+                <p>Suggests training programs based on role, department, and competency gaps.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ MARKET OPPORTUNITY ═══════════════ -->
+<section class="section section-alt" id="market">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="trending-up"></i> Market</div>
+            <h2 class="section-title">A $4.37B Market Ready for Disruption</h2>
+            <p class="section-sub">The Abu Dhabi DoH 2027 mandate for AI-native government creates a "buy or fail" window for healthcare facilities.</p>
+        </div>
+        <div class="market-circles fade-up">
+            <div class="market-circle market-tam">
+                <div class="market-label">TAM</div>
+                <div class="market-value">$38.5B</div>
+                <div class="market-desc">Global Health Software</div>
+            </div>
+            <div class="market-circle market-sam">
+                <div class="market-label">SAM</div>
+                <div class="market-value">$4.37B</div>
+                <div class="market-desc">Compliance & Quality (2026)</div>
+            </div>
+            <div class="market-circle market-som">
+                <div class="market-label">SOM</div>
+                <div class="market-value">5,000+</div>
+                <div class="market-desc">GCC Healthcare Facilities</div>
+            </div>
+        </div>
+        <p class="print-source">Sources: Grand View Research "Healthcare Quality Management Market" (2025); WHO EMRO Regional Health Observatory; GCC Health Council facility registry data.</p>
+    </div>
+</section>
+
+<!-- ═══════════════ COMPETITIVE ADVANTAGE ═══════════════ -->
+<section class="section" id="competitive">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="trophy"></i> Advantage</div>
+            <h2 class="section-title">Why AccreditEx Wins</h2>
+            <p class="section-sub">Practitioner-built, region-first, AI-native — designed specifically for GCC healthcare compliance.</p>
+        </div>
+        <div class="comp-table-wrap fade-up">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th>Capability</th>
+                        <th>AccreditEx</th>
+                        <th>MEG</th>
+                        <th>RLDatix</th>
+                        <th>Vastian AI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td><strong>Practitioner-Built</strong></td><td class="yes">✓ Full</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong>GCC Regional Templates</strong></td><td class="yes">✓ DOH/DHA/MOH</td><td class="partial">Partial</td><td class="no">✗</td><td class="partial">Limited</td></tr>
+                    <tr><td><strong>AI-Continuous Auditing</strong></td><td class="yes">✓ 15+ AI Tools</td><td class="partial">Basic</td><td class="partial">Basic</td><td class="yes">✓</td></tr>
+                    <tr><td><strong>Bilingual (EN/AR)</strong></td><td class="yes">✓ Full RTL</td><td class="no">✗</td><td class="no">✗</td><td class="partial">Partial</td></tr>
+                    <tr><td><strong>PWA / Offline-First</strong></td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong>Pre-loaded Standards</strong></td><td class="yes">✓ 240+ Stds / 1,043 Sub</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong>Affordable for SMEs</strong></td><td class="yes">✓ From $500/mo</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ PRICING ═══════════════ -->
+<section class="section section-alt" id="pricing">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="credit-card"></i> Pricing</div>
+            <h2 class="section-title">Scalable SaaS Pricing</h2>
+            <p class="section-sub">High-retention "sticky" model — once compliance data lives in AccreditEx, the cost of switching is prohibitively high.</p>
+        </div>
+        <div class="pricing-grid fade-up">
+            <div class="pricing-card">
+                <div class="pricing-name">Core</div>
+                <div class="pricing-price">$500<span>/mo</span></div>
+                <div class="pricing-desc">Per facility · Small labs & clinics</div>
+                <ul class="pricing-features">
+                    <li>Up to 10 users</li>
+                    <li>Compliance tracking</li>
+                    <li>Document management</li>
+                    <li>Basic AI tools</li>
+                    <li>Email support</li>
+                </ul>
+                <a href="https://accreditex.web.app" class="pricing-btn pricing-btn-secondary">Get Started</a>
+            </div>
+            <div class="pricing-card featured">
+                <div class="pricing-name">Enterprise</div>
+                <div class="pricing-price">$2,000<span>/mo</span></div>
+                <div class="pricing-desc">Per facility · Hospitals & networks</div>
+                <ul class="pricing-features">
+                    <li>Unlimited users</li>
+                    <li>Full AI predictive engine</li>
+                    <li>Advanced analytics</li>
+                    <li>Multi-department support</li>
+                    <li>HIS integration</li>
+                    <li>Priority support + SLA</li>
+                    <li>API access</li>
+                </ul>
+                <a href="https://accreditex.web.app" class="pricing-btn pricing-btn-primary">Start Free Trial</a>
+            </div>
+            <div class="pricing-card">
+                <div class="pricing-name">Custom</div>
+                <div class="pricing-price" style="font-size:32px;">Contact Us</div>
+                <div class="pricing-desc">Predictive Governance AI Add-On</div>
+                <ul class="pricing-features">
+                    <li>Premium AI features</li>
+                    <li>High-throughput centers</li>
+                    <li>Custom integrations</li>
+                    <li>Dedicated success manager</li>
+                    <li>On-premise deployment option</li>
+                </ul>
+                <a href="mailto:ashraf.a.m.ishag@gmail.com" class="pricing-btn pricing-btn-secondary">Contact Sales</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ TEAM ═══════════════ -->
+<section class="section" id="team">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="user"></i> Team</div>
+            <h2 class="section-title">The "Black Belt" Advantage</h2>
+            <p class="section-sub">A rare blend of clinical expertise, operational excellence, and full-stack technical capability.</p>
+        </div>
+        <div class="team-card-modern fade-up">
+            <img src="/CEO.jpg" alt="Ashraf Abu baker Musa Ishag — Founder & CEO" class="team-avatar" width="140" height="140" loading="lazy">
+            <div>
+                <div class="team-name">Ashraf Abu baker Musa Ishag</div>
+                <div class="team-role">Founder & CEO</div>
+                <ul class="team-creds">
+                    <li><i data-lucide="graduation-cap"></i> B.Sc. Medical Laboratory Science, ISQUA Fellow</li>
+                    <li><i data-lucide="zap"></i> Six Sigma Black Belt · Google Project Manager</li>
+                    <li><i data-lucide="building-2"></i> Licensed Lab Quality Manager (Oman/Sudan)</li>
+                    <li><i data-lucide="code"></i> Full-Stack Developer (React, TypeScript, Firebase, AI)</li>
+                    <li><i data-lucide="pen-line"></i> Published researcher </li>
+                </ul>
+            </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;" class="fade-up">
+            <div style="background:var(--bg-alt); padding:28px; border-radius:var(--radius); border:1px solid var(--border);">
+                <strong style="font-size:16px;"><i data-lucide="target" style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;"></i> Unique Positioning</strong>
+                <p style="font-size:14px; color:var(--text-secondary); margin-top:8px;">
+                    Designed by a clinical quality professional who understands healthcare compliance from the inside — not just software developers adapting generic tools.
+                </p>
+            </div>
+            <div style="background:var(--bg-alt); padding:28px; border-radius:var(--radius); border:1px solid var(--border);">
+                <strong style="font-size:16px;"><i data-lucide="users" style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;"></i> Advisory Board</strong>
+                <p style="font-size:14px; color:var(--text-secondary); margin-top:8px;">
+                    Assembling an advisory board of clinical and technical mentors from the GCC healthcare sector. Currently exploring pilot partnerships with leading hospitals in the region.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ ROADMAP ═══════════════ -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="map"></i> Roadmap</div>
+            <h2 class="section-title">The Abu Dhabi Vision</h2>
+            <p class="section-sub">Strategic roadmap aligned with Abu Dhabi Economic Vision 2030.</p>
+        </div>
+        <div style="max-width:700px; margin:0 auto;" class="fade-up">
+            <div style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+                <div style="min-width:80px;"><strong style="color:var(--primary);">2026</strong></div>
+                <div><strong>Strategic HQ at ADGM</strong><br><span style="font-size:14px; color:var(--text-secondary);">Establishing AccreditEx AI Lab at Abu Dhabi Global Market</span></div>
+            </div>
+            <div style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+                <div style="min-width:80px;"><strong style="color:var(--primary);">2026</strong></div>
+                <div><strong>National Integration</strong><br><span style="font-size:14px; color:var(--text-secondary);">API roadmap for Malaffi (UAE Health Information Exchange) integration</span></div>
+            </div>
+            <div style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+                <div style="min-width:80px;"><strong style="color:var(--primary);">2027</strong></div>
+                <div><strong>Local R&D Partnership</strong><br><span style="font-size:14px; color:var(--text-secondary);">Partnering with MBZUAI for R&D and hiring local AI talent</span></div>
+            </div>
+            <div style="display:flex; gap:24px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+                <div style="min-width:80px;"><strong style="color:var(--primary);">Long-term</strong></div>
+                <div><strong>Global Benchmark</strong><br><span style="font-size:14px; color:var(--text-secondary);">10-Year Golden Visa & making Abu Dhabi the global benchmark for AI-driven clinical safety</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ FAQ (GEO / AI Citation Optimized) ═══════════════ -->
+<section class="section" id="faq">
+    <div class="container">
+        <div class="section-header center fade-up">
+            <div class="section-badge"><i data-lucide="help-circle"></i> FAQ</div>
+            <h2 class="section-title">Frequently Asked Questions</h2>
+            <p class="section-sub">Answers to common questions about AccreditEx for healthcare quality leaders and decision-makers.</p>
+        </div>
+        <div style="max-width:760px; margin:0 auto;" class="fade-up">
+            <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">What accreditation standards does AccreditEx support? <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx comes pre-loaded with <strong>240+ standards and 1,043 sub-standards</strong> covering CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory). New standards can be imported in bulk. Cross-standard mapping helps reuse evidence across multiple accreditation bodies.</p>
+            </details>
+            <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">How does the AI engine work? <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx integrates <strong>15+ AI-powered tools</strong> directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment. The AI is context-aware and trained on healthcare accreditation knowledge.</p>
+            </details>
+            <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">Is AccreditEx suitable for small clinics or only large hospitals? <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx is designed for <strong>all facility sizes</strong>. The Core plan ($500/mo) is built for small labs and clinics with up to 10 users. The Enterprise plan ($2,000/mo) adds unlimited users, multi-department support, HIS integration, and advanced AI analytics — ideal for hospitals and healthcare networks.</p>
+            </details>
+            <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">Does it support Arabic and right-to-left (RTL) interfaces? <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">Yes. AccreditEx is <strong>fully bilingual (English/Arabic)</strong> with complete RTL layout support. The AI translation tool can translate healthcare documents between EN and AR while preserving formatting. This is essential for GCC facilities where regulatory submissions may require Arabic documentation.</p>
+            </details>
+            <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">What makes AccreditEx different from MEG, RLDatix, or Vastian? <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx is the only platform that is: (1) <strong>practitioner-built</strong> by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) <strong>GCC-first</strong> with pre-loaded regional templates for DOH, DHA, MOH, and CBAHI, (3) <strong>AI-native</strong> with 15+ integrated tools (not bolt-on chatbots), and (4) <strong>affordable</strong> starting at $500/mo with PWA offline support — features competitors price at $10K+/mo.</p>
+            </details>
+            <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; cursor:pointer;">
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">Can investors request a demo or pitch deck? <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">Absolutely. You can <strong>download the pitch deck as PDF</strong> using the download button on this page, or contact founder Ashraf Ishag directly at <a href="mailto:ashraf.a.m.ishag@gmail.com" style="color:var(--primary); font-weight:600;">ashraf.a.m.ishag@gmail.com</a> to schedule a live demo of the platform.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════ CTA ═══════════════ -->
+<section class="cta-section">
+    <h2 class="cta-title">Ready to Transform Healthcare Quality?</h2>
+    <p class="cta-sub">Join the platform that's moving healthcare from annual audit panic to continuous clinical excellence.</p>
+    <div class="cta-actions">
+        <a href="https://accreditex.web.app" class="btn btn-primary" style="font-size:17px; padding:16px 36px;">
+            Launch AccreditEx →
+        </a>
+        <a href="mailto:ashraf.a.m.ishag@gmail.com" class="btn btn-secondary" style="font-size:17px; padding:16px 36px;">
+            Contact Founder
+        </a>
+        <button onclick="window.print()" class="btn btn-secondary" style="font-size:17px; padding:16px 36px; background:rgba(255,255,255,0.08);">
+            <i data-lucide="download" style="width:18px;height:18px;display:inline;vertical-align:-3px;margin-right:4px;"></i> Download Pitch Deck
+        </button>
+    </div>
+    <div style="margin-top:40px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap; position:relative;">
+        <span class="footer-badge">CBAHI</span>
+        <span class="footer-badge">JCI</span>
+        <span class="footer-badge">ISO 15189</span>
+        <span class="footer-badge">DOH Abu Dhabi</span>
+        <span class="footer-badge">AI-Native</span>
+    </div>
+</section>
+
+<!-- ═══════════════ FOOTER ═══════════════ -->
+<footer class="footer">
+    <div class="footer-grid">
+        <div>
+            <div class="footer-brand" style="display:flex; align-items:center; gap:10px;">
+                <img src="/logo.png" alt="AccreditEx" width="32" height="32" style="border-radius:8px; object-fit:contain;">
+                AccreditEx
+            </div>
+            <p class="footer-desc">AI-Native Healthcare Accreditation Platform. Built by a clinical quality expert for healthcare facilities transitioning to continuous digital compliance.</p>
+            <p class="footer-desc" style="margin-top:12px;"><i data-lucide="map-pin" style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;"></i> Seeb, Muscat | Relocating to Abu Dhabi 2026</p>
+        </div>
+        <div>
+            <div class="footer-col-title">Platform</div>
+            <ul class="footer-links">
+                <li><a href="https://accreditex.web.app">Dashboard</a></li>
+                <li><a href="https://accreditex.web.app">Projects</a></li>
+                <li><a href="https://accreditex.web.app">Documents</a></li>
+                <li><a href="https://accreditex.web.app">Risk Hub</a></li>
+                <li><a href="https://accreditex.web.app">Training</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="footer-col-title">AI Tools</div>
+            <ul class="footer-links">
+                <li><a href="https://accreditex.web.app">AI Assistant</a></li>
+                <li><a href="https://accreditex.web.app">Document Generator</a></li>
+                <li><a href="https://accreditex.web.app">Gap Analysis</a></li>
+                <li><a href="https://accreditex.web.app">Risk Assessment</a></li>
+                <li><a href="https://accreditex.web.app">Translation</a></li>
+            </ul>
+        </div>
+        <div>
+            <div class="footer-col-title">Contact</div>
+            <ul class="footer-links">
+                <li><a href="mailto:ashraf.a.m.ishag@gmail.com"><i data-lucide="mail"></i> Email</a></li>
+                <li><a href="https://linkedin.com/in/ashraf-ishag"><i data-lucide="briefcase"></i> LinkedIn</a></li>
+                <li><a href="https://accreditex.web.app"><i data-lucide="arrow-up-right"></i> Launch App</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>© 2026 AccreditEx. All rights reserved.</span>
+        <div class="footer-badges">
+            <span class="footer-badge">React</span>
+            <span class="footer-badge">TypeScript</span>
+            <span class="footer-badge">Firebase</span>
+            <span class="footer-badge">AI-Powered</span>
+        </div>
+    </div>
+</footer>
+
+<!-- Floating PDF Download Button -->
+<button class="pdf-download-fab" id="pdfDownloadFab" aria-label="Download pitch deck as PDF">
+    <i data-lucide="download"></i>
+    <span class="fab-tooltip">Download Pitch Deck (PDF)</span>
+</button>
+
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>
+// Navbar scroll effect
+const navbar = document.getElementById('navbar');
+window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 50);
+});
+
+// Fade-up on scroll (Intersection Observer)
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// PDF / Pitch Deck download FAB
+document.getElementById('pdfDownloadFab').addEventListener('click', () => {
+    window.print();
+});
+
+// Print preparation: open all FAQ details & restore after
+let detailsState = [];
+window.addEventListener('beforeprint', () => {
+    detailsState = [];
+    document.querySelectorAll('details').forEach(d => {
+        detailsState.push(d.open);
+        d.open = true;
+    });
+});
+window.addEventListener('afterprint', () => {
+    document.querySelectorAll('details').forEach((d, i) => {
+        d.open = detailsState[i] ?? false;
+    });
+});
+
+// Smooth scroll for nav links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            document.getElementById('navLinks').classList.remove('open');
+        }
+    });
+});
+
+// Initialize Lucide SVG icons
+lucide.createIcons();
+</script>
+
+</body>
+</html>

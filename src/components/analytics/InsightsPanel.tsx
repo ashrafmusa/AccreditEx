@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import { useInsights } from '../../hooks/useAnalyticsHooks';
-import { AlertTriangle, Lightbulb, TrendingUp, CheckCircle, AlertCircle, Info } from 'lucide-react';
+import React, { useState } from "react";
+import { useInsights } from "../../hooks/useAnalyticsHooks";
+import {
+  AlertTriangle,
+  Lightbulb,
+  TrendingUp,
+  CheckCircle,
+  AlertCircle,
+  Info,
+} from "lucide-react";
 
 interface InsightsPanelProps {
   configId: string;
@@ -39,17 +46,17 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
 
   const getInsightIcon = (type: string) => {
     switch (type) {
-      case 'anomaly':
-      case 'warning':
+      case "anomaly":
+      case "warning":
         return <AlertCircle className="text-red-500" size={20} />;
-      case 'trend':
-      case 'improvement':
+      case "trend":
+      case "improvement":
         return <TrendingUp className="text-green-500" size={20} />;
-      case 'recommendation':
-      case 'suggestion':
+      case "recommendation":
+      case "suggestion":
         return <Lightbulb className="text-yellow-500" size={20} />;
-      case 'info':
-      case 'observation':
+      case "info":
+      case "observation":
         return <Info className="text-blue-500" size={20} />;
       default:
         return <CheckCircle className="text-gray-500" size={20} />;
@@ -58,39 +65,39 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
 
   const getInsightColor = (type: string) => {
     switch (type) {
-      case 'anomaly':
-      case 'warning':
-        return 'border-red-200 bg-red-50';
-      case 'trend':
-      case 'improvement':
-        return 'border-green-200 bg-green-50';
-      case 'recommendation':
-      case 'suggestion':
-        return 'border-yellow-200 bg-yellow-50';
-      case 'info':
-      case 'observation':
-        return 'border-blue-200 bg-blue-50';
+      case "anomaly":
+      case "warning":
+        return "border-red-200 bg-red-50";
+      case "trend":
+      case "improvement":
+        return "border-green-200 bg-green-50";
+      case "recommendation":
+      case "suggestion":
+        return "border-yellow-200 bg-yellow-50";
+      case "info":
+      case "observation":
+        return "border-blue-200 bg-blue-50";
       default:
-        return 'border-gray-200 bg-gray-50';
+        return "border-gray-200 bg-gray-50";
     }
   };
 
   const getInsightTextColor = (type: string) => {
     switch (type) {
-      case 'anomaly':
-      case 'warning':
-        return 'text-red-900';
-      case 'trend':
-      case 'improvement':
-        return 'text-green-900';
-      case 'recommendation':
-      case 'suggestion':
-        return 'text-yellow-900';
-      case 'info':
-      case 'observation':
-        return 'text-blue-900';
+      case "anomaly":
+      case "warning":
+        return "text-red-900";
+      case "trend":
+      case "improvement":
+        return "text-green-900";
+      case "recommendation":
+      case "suggestion":
+        return "text-yellow-900";
+      case "info":
+      case "observation":
+        return "text-blue-900";
       default:
-        return 'text-gray-900';
+        return "text-gray-900";
     }
   };
 
@@ -101,7 +108,9 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
           <CheckCircle className="text-green-600" size={24} />
           <div>
             <h3 className="font-semibold text-green-900">All Systems Normal</h3>
-            <p className="text-sm text-green-700">No insights or anomalies detected at this time.</p>
+            <p className="text-sm text-green-700">
+              No insights or anomalies detected at this time.
+            </p>
           </div>
         </div>
       </div>
@@ -113,10 +122,12 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Lightbulb className="text-yellow-600" size={24} />
-          <h3 className="text-lg font-semibold text-gray-800">Analytics Insights</h3>
+          <h3 className="text-lg font-semibold text-gray-800">
+            Analytics Insights
+          </h3>
         </div>
         <div className="text-xs font-medium text-gray-500">
-          {insights.length} insight{insights.length !== 1 ? 's' : ''} found
+          {insights.length} insight{insights.length !== 1 ? "s" : ""} found
         </div>
       </div>
 
@@ -125,21 +136,33 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
           <div
             key={index}
             className={`border rounded-lg p-4 transition-all cursor-pointer ${getInsightColor(insight.type)}`}
-            onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+            onClick={() =>
+              setExpandedIndex(expandedIndex === index ? null : index)
+            }
           >
             <div className="flex items-start gap-3">
               <div className="mt-1">{getInsightIcon(insight.type)}</div>
               <div className="flex-1">
-                <h4 className={`font-semibold ${getInsightTextColor(insight.type)} mb-1`}>
+                <h4
+                  className={`font-semibold ${getInsightTextColor(insight.type)} mb-1`}
+                >
                   {insight.title}
                 </h4>
-                <p className={`text-sm ${getInsightTextColor(insight.type)} mb-2`}>{insight.message}</p>
+                <p
+                  className={`text-sm ${getInsightTextColor(insight.type)} mb-2`}
+                >
+                  {insight.message}
+                </p>
 
                 {expandedIndex === index && (
                   <div className="mt-3 pt-3 border-t border-current border-opacity-20">
-                    <div className="bg-white bg-opacity-50 rounded p-3">
-                      <p className="text-xs font-semibold uppercase text-gray-700 mb-1">Recommendation</p>
-                      <p className={`text-sm ${getInsightTextColor(insight.type)}`}>
+                    <div className="bg-white/50 rounded p-3">
+                      <p className="text-xs font-semibold uppercase text-gray-700 mb-1">
+                        Recommendation
+                      </p>
+                      <p
+                        className={`text-sm ${getInsightTextColor(insight.type)}`}
+                      >
                         {insight.recommendation}
                       </p>
                     </div>
@@ -158,7 +181,9 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
       </div>
 
       <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-        <p className="text-xs text-gray-600">Click on any insight to view recommendations</p>
+        <p className="text-xs text-gray-600">
+          Click on any insight to view recommendations
+        </p>
         <button
           onClick={refresh}
           className="px-3 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"

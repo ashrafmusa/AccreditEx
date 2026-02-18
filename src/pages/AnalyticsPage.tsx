@@ -30,10 +30,16 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
   const [departmentFilter, setDepartmentFilter] = useState("all");
 
   const filteredProjects = useMemo(() => {
-    return projects.filter(
-      (p) => programFilter === "all" || p.programId === programFilter,
-    );
-  }, [projects, programFilter]);
+    return projects.filter((p) => {
+      const matchesProgram =
+        programFilter === "all" || p.programId === programFilter;
+      const matchesDept =
+        departmentFilter === "all" ||
+        p.departmentId === departmentFilter ||
+        (p.departmentIds || []).includes(departmentFilter);
+      return matchesProgram && matchesDept;
+    });
+  }, [projects, programFilter, departmentFilter]);
 
   const allChecklistItems = useMemo(() => {
     return filteredProjects.flatMap((p) => p.checklist);
@@ -53,11 +59,22 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
     const complianceRate =
       totalTasks > 0 ? Math.round((compliantTasks / totalTasks) * 100) : 0;
 
+    // Calculate real CAPA resolution rate from project data
+    const allCapas = filteredProjects.flatMap((p) => p.capaReports || []);
+    const totalCapas = allCapas.length;
+    const resolvedCapas = allCapas.filter(
+      (c) => c.status === "Closed" || c.status === "Resolved",
+    ).length;
+    const capaResolutionRate =
+      totalCapas > 0 ? Math.round((resolvedCapas / totalCapas) * 100) : 0;
+
     return {
       overdueTasks,
       activeProjects,
       complianceRate,
-      capaResolutionRate: 62, // Mock data for now as per existing code
+      capaResolutionRate,
+      totalCapas,
+      resolvedCapas,
     };
   }, [allChecklistItems, filteredProjects]);
 
@@ -107,6 +124,20 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
               </option>
             ))}
           </select>
+          <select
+            value={departmentFilter}
+            onChange={(e) => setDepartmentFilter(e.target.value)}
+            className="border border-brand-border dark:border-dark-brand-border rounded-lg py-2 px-3 focus:ring-brand-primary focus:border-brand-primary bg-brand-surface dark:bg-dark-brand-surface text-sm"
+          >
+            <option value="all">
+              {t("allDepartments") || "All Departments"}
+            </option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name.en || d.name.ar}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -142,8 +173,8 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
             <KpiCard
               title={t("capaResolutionRate")}
               value={kpis.capaResolutionRate}
-              total={50}
-              completed={31}
+              total={kpis.totalCapas}
+              completed={kpis.resolvedCapas}
               description={t("resolved")}
               color="#f97316"
             />

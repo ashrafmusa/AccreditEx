@@ -68,7 +68,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
       role="dialog"
       aria-modal="true"
     >
@@ -362,7 +362,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
 
         {/* Delete Confirmation Dialog */}
         {showDeleteConfirm && (
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
             <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
                 {t("deleteCapaConfirmTitle")}

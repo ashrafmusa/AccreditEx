@@ -43,7 +43,7 @@ const GenerateReportModal: FC<GenerateReportModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
+      className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
       onClick={onClose}
     >
       <div

@@ -13,7 +13,9 @@ interface AISuggestionModalProps {
     | "root-cause"
     | "improvements"
     | "risk-assessment"
-    | "compliance-check";
+    | "compliance-check"
+    | "readiness-check";
+  footer?: React.ReactNode;
 }
 
 const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
@@ -22,6 +24,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
   title,
   content,
   type = "improvements",
+  footer,
 }) => {
   const toast = useToast();
 
@@ -44,6 +47,8 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
         return "⚠️";
       case "compliance-check":
         return "✅";
+      case "readiness-check":
+        return "🏁";
       default:
         return "🤖";
     }
@@ -54,7 +59,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
         <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75 dark:bg-gray-900 dark:bg-opacity-75"
+          className="fixed inset-0 transition-opacity bg-gray-500/75 dark:bg-gray-900/75"
           onClick={onClose}
         />
 
@@ -67,7 +72,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
         </span>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div className="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
           {/* Header */}
           <div className="bg-gradient-to-r from-rose-600 to-cyan-600 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -169,12 +174,16 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
               <ClipboardDocumentListIcon className="w-4 h-4" />
               Copy to Clipboard
             </button>
-            <button
-              onClick={onClose}
-              className="px-6 py-2 text-sm bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-pink-600 hover:to-cyan-700 transition-colors font-semibold"
-            >
-              Close
-            </button>
+            {footer ? (
+              footer
+            ) : (
+              <button
+                onClick={onClose}
+                className="px-6 py-2 text-sm bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-pink-600 hover:to-cyan-700 transition-colors font-semibold"
+              >
+                Close
+              </button>
+            )}
           </div>
         </div>
       </div>

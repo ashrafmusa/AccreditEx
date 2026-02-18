@@ -44,6 +44,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { exportDashboardMetricsToCSV } from "@/utils/exportUtils";
+import { statusToTranslationKey } from "@/utils/complianceUtils";
 import {
   calculateAssessorPackExportMetrics,
   getAssessorPackExportAudit,
@@ -369,11 +370,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
 
       const pieChartData = Object.entries(statusCounts).map(
         ([name, value]) => ({
-          name:
-            t(
-              (name.charAt(0).toLowerCase() +
-                name.slice(1).replace(/\s/g, "")) as any,
-            ) || name,
+          name: t(statusToTranslationKey(name) as any) || name,
           value,
         }),
       );

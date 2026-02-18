@@ -364,6 +364,18 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
               ? (transitioningItem.item as CAPAReport).pdcaStage || "Plan"
               : (transitioningItem.item as PDCACycle).currentStage
           }
+          cycleTitle={
+            transitioningItem.type === "capa"
+              ? (transitioningItem.item as CAPAReport).title ||
+                (transitioningItem.item as CAPAReport).description ||
+                "CAPA"
+              : (transitioningItem.item as PDCACycle).title
+          }
+          cycleDescription={
+            transitioningItem.type === "capa"
+              ? (transitioningItem.item as CAPAReport).description || ""
+              : (transitioningItem.item as PDCACycle).description || ""
+          }
           onConfirm={handleConfirmTransition}
           onCancel={() => {
             setShowTransitionForm(false);

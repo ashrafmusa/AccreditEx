@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "accreditex",
     "public": "dist",
     "ignore": [
       "firebase.json",
@@ -7,6 +8,14 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/landing",
+        "destination": "/landing.html"
+      },
+      {
+        "source": "/landing.html",
+        "destination": "/landing.html"
+      },
       {
         "source": "**",
         "destination": "/index.html"

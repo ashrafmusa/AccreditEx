@@ -60,6 +60,8 @@ export const en = {
     partiallyCompliant: 'Partially Compliant',
     nonCompliant: 'Non-Compliant',
     notApplicable: 'Not Applicable',
+    notStarted: 'Not Started',
+    complianceProgress: 'Compliance Progress',
     noChecklistItemsFound: 'No checklist items match the current filters.',
     unassigned: 'Unassigned',
     dueDate: 'Due Date',

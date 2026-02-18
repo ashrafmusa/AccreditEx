@@ -34,7 +34,7 @@ const DOCXViewerModal: React.FC<DOCXViewerModalProps> = ({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 bg-black bg-opacity-60 z-50 flex justify-center items-center backdrop-blur-sm"
+      className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center backdrop-blur-sm"
       onClick={onClose}
     >
       <div

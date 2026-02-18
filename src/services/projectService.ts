@@ -101,9 +101,17 @@ export const updateProject = async (projectId: string, updates: Partial<Project>
     // Remove id field - Firestore doesn't allow updating document ID
     const { id, ...cleanUpdates } = updates;
 
+    // Strip undefined values — Firestore rejects them
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(cleanUpdates)) {
+      if (value !== undefined) {
+        sanitized[key] = value;
+      }
+    }
+
     const docRef = doc(db, 'projects', projectId);
     await updateDoc(docRef, {
-      ...cleanUpdates,
+      ...sanitized,
       updatedAt: Timestamp.now().toDate().toISOString()
     });
 

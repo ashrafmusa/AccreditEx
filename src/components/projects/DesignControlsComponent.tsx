@@ -53,6 +53,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   const [aiChecking, setAiChecking] = useState(false);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiModalContent, setAiModalContent] = useState("");
+  const [aiFillingRow, setAiFillingRow] = useState<number | null>(null);
 
   useEffect(() => {
     setControls(JSON.parse(JSON.stringify(project.designControls || [])));
@@ -118,6 +119,96 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
       console.error("AI compliance check error:", error);
     } finally {
       setAiChecking(false);
+    }
+  };
+
+  const handleAIFillRow = async (index: number) => {
+    if (aiFillingRow !== null) return;
+    setAiFillingRow(index);
+    try {
+      const row = controls[index];
+      const emptyFields: string[] = [];
+      if (!row.requirement.trim()) emptyFields.push("requirement");
+      if (!row.policyProcess.trim()) emptyFields.push("policyProcess");
+      if (!row.implementationEvidence.trim())
+        emptyFields.push("implementationEvidence");
+      if (!row.outcomeKPI.trim()) emptyFields.push("outcomeKPI");
+      if (!row.auditFindings.trim()) emptyFields.push("auditFindings");
+
+      if (emptyFields.length === 0) {
+        toast.info("All fields already filled for this row.");
+        return;
+      }
+
+      const contextParts = [
+        `Project: ${project.name}`,
+        row.requirement ? `Requirement: ${row.requirement}` : "",
+        row.policyProcess ? `Policy/Process: ${row.policyProcess}` : "",
+        row.implementationEvidence
+          ? `Implementation Evidence: ${row.implementationEvidence}`
+          : "",
+        row.auditFindings ? `Audit Findings: ${row.auditFindings}` : "",
+        row.outcomeKPI ? `Outcome KPI: ${row.outcomeKPI}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const prompt = `You are a healthcare accreditation expert. For this design control row in project "${project.name}", generate content ONLY for the empty fields listed below.
+
+Existing context:
+${contextParts}
+
+Empty fields to fill: ${emptyFields.join(", ")}
+
+Respond with EXACTLY these sections (only for empty fields), using the exact headers:
+${emptyFields.includes("requirement") ? "### Requirement\n(suggested standard requirement text)\n" : ""}
+${emptyFields.includes("policyProcess") ? "### PolicyProcess\n(suggested policy/process description)\n" : ""}
+${emptyFields.includes("implementationEvidence") ? "### ImplementationEvidence\n(suggested implementation evidence)\n" : ""}
+${emptyFields.includes("auditFindings") ? "### AuditFindings\n(suggested audit findings)\n" : ""}
+${emptyFields.includes("outcomeKPI") ? "### OutcomeKPI\n(suggested measurable KPI)\n" : ""}
+
+Keep each section concise (2-3 sentences). Use healthcare accreditation terminology.`;
+
+      const chatResult = await aiAgentService.chat(prompt, true);
+      const responseText = chatResult.response || "";
+
+      const newControls = [...controls];
+      const parseSection = (header: string): string => {
+        const regex = new RegExp(
+          `###\\s*${header}\\s*\\n([\\s\\S]*?)(?=###|$)`,
+        );
+        const match = responseText.match(regex);
+        return match ? match[1].trim() : "";
+      };
+
+      if (emptyFields.includes("requirement")) {
+        const val = parseSection("Requirement");
+        if (val) newControls[index].requirement = val;
+      }
+      if (emptyFields.includes("policyProcess")) {
+        const val = parseSection("PolicyProcess");
+        if (val) newControls[index].policyProcess = val;
+      }
+      if (emptyFields.includes("implementationEvidence")) {
+        const val = parseSection("ImplementationEvidence");
+        if (val) newControls[index].implementationEvidence = val;
+      }
+      if (emptyFields.includes("auditFindings")) {
+        const val = parseSection("AuditFindings");
+        if (val) newControls[index].auditFindings = val;
+      }
+      if (emptyFields.includes("outcomeKPI")) {
+        const val = parseSection("OutcomeKPI");
+        if (val) newControls[index].outcomeKPI = val;
+      }
+
+      setControls(newControls);
+      toast.success("AI filled empty fields for this row.");
+    } catch (error) {
+      console.error("AI fill row error:", error);
+      toast.error("Failed to generate AI suggestions for this row.");
+    } finally {
+      setAiFillingRow(null);
     }
   };
 
@@ -448,12 +539,44 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
                     </td>
                     <td className="p-2 align-middle">
                       {!isFinalized && (
-                        <button
-                          onClick={() => removeRow(index)}
-                          className="p-1 text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="w-5 h-5" />
-                        </button>
+                        <div className="flex flex-col gap-1 items-center">
+                          <button
+                            onClick={() => handleAIFillRow(index)}
+                            disabled={aiFillingRow !== null}
+                            title="AI Fill Empty Fields"
+                            className="p-1 text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-cyan-600 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
+                          >
+                            {aiFillingRow === index ? (
+                              <svg
+                                className="animate-spin h-5 w-5 text-cyan-600"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                  fill="none"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                />
+                              </svg>
+                            ) : (
+                              <span className="text-lg">🤖</span>
+                            )}
+                          </button>
+                          <button
+                            onClick={() => removeRow(index)}
+                            className="p-1 text-red-500 hover:text-red-700"
+                          >
+                            <TrashIcon className="w-5 h-5" />
+                          </button>
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -490,7 +613,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
       />
       {/* File Uploader Modal */}
       {showUploader && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
             <h3 className="text-lg font-semibold mb-4">
               {t("uploadDocument") || "Upload Document"}

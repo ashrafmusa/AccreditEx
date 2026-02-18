@@ -18,6 +18,7 @@ import { inputClasses, labelClasses } from "@/components/ui/constants";
 import DatePicker from "@/components/ui/DatePicker";
 import TemplateSelector from "@/components/projects/TemplateSelector";
 import { Button, ErrorMessage } from "@/components/ui";
+import { aiAgentService } from "@/services/aiAgentService";
 
 interface CreateProjectPageProps {
   navigation:
@@ -33,8 +34,12 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
   const { t } = useTranslation();
   const { addProject, projects, updateProject } = useProjectStore();
   const { users } = useUserStore();
-  const { accreditationPrograms, projectTemplates, getTemplatesByProgram } =
-    useAppStore();
+  const {
+    accreditationPrograms,
+    projectTemplates,
+    getTemplatesByProgram,
+    standards,
+  } = useAppStore();
   const toast = useToast();
 
   const isEditMode = navigation.view === "editProject";
@@ -46,6 +51,9 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
   const [description, setDescription] = useState("");
   const [programId, setProgramId] = useState("");
   const [leadId, setLeadId] = useState("");
+  const [departmentId, setDepartmentId] = useState("");
+  const [departmentIds, setDepartmentIds] = useState<string[]>([]);
+  const [teamMemberIds, setTeamMemberIds] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date | undefined>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>();
 
@@ -58,6 +66,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
   // Validation state
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
 
   useEffect(() => {
     if (isEditMode && existingProject) {
@@ -65,6 +74,12 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
       setDescription(existingProject.description || "");
       setProgramId(existingProject.programId);
       setLeadId(existingProject.projectLead?.id || "");
+      setDepartmentId(existingProject.departmentId || "");
+      setDepartmentIds(
+        existingProject.departmentIds ||
+          (existingProject.departmentId ? [existingProject.departmentId] : []),
+      );
+      setTeamMemberIds(existingProject.teamMembers || []);
       setStartDate(new Date(existingProject.startDate));
       setEndDate(
         existingProject.endDate ? new Date(existingProject.endDate) : undefined,
@@ -72,6 +87,46 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
       setShowTemplateSelector(false);
     }
   }, [isEditMode, existingProject]);
+
+  const handleAIGenerateDescription = async () => {
+    if (isGeneratingDesc) return;
+    if (!name.trim()) {
+      toast.error("Please enter a project name first.");
+      return;
+    }
+    setIsGeneratingDesc(true);
+    try {
+      const selectedProgram = accreditationPrograms.find(
+        (p) => p.id === programId,
+      );
+      const prompt = `You are a healthcare accreditation expert. Generate a professional project description for this accreditation project.
+
+Project Name: ${name.trim()}
+${selectedProgram ? `Program: ${selectedProgram.name}` : ""}
+${selectedTemplate ? `Template: ${selectedTemplate.name} (${selectedTemplate.checklist.length} checklist items, category: ${selectedTemplate.category})` : ""}
+
+Write a clear, professional 2-3 sentence project description that:
+- States the project's objective and scope
+- Mentions the accreditation standards being addressed
+- Highlights expected outcomes
+
+Return ONLY the description text, no headers or formatting.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      // Clean up any markdown formatting the AI might add
+      const cleanDesc = (response.response || "")
+        .replace(/^#+\s*/gm, "")
+        .replace(/\*\*/g, "")
+        .trim();
+      setDescription(cleanDesc.slice(0, 1000));
+      toast.success("AI generated project description.");
+    } catch (error) {
+      console.error("AI description generation error:", error);
+      toast.error("Failed to generate description. Please try again.");
+    } finally {
+      setIsGeneratingDesc(false);
+    }
+  };
 
   // Validation function
   const validateForm = (): boolean => {
@@ -160,6 +215,9 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
           description,
           programId,
           projectLead: users.find((u) => u.id === leadId)!,
+          teamMembers: teamMemberIds,
+          departmentId: departmentId || undefined,
+          departmentIds: departmentIds.length > 0 ? departmentIds : undefined,
           startDate: startDate!.toISOString().split("T")[0],
           endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
         };
@@ -169,21 +227,68 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
         );
         setNavigation({ view: "projectDetail", projectId: existingProject.id });
       } else {
-        // Convert template checklist to proper ChecklistItem format
-        const convertedChecklist =
-          selectedTemplate?.checklist.map((templateItem, index) => ({
-            id: `item-${Date.now()}-${index}`,
-            item: templateItem.title,
-            standardId: templateItem.category || `STD-${index + 1}`,
-            status: ComplianceStatus.NotStarted,
-            assignedTo: null,
-            dueDate: null,
-            actionPlan: templateItem.description || "",
-            notes: "",
-            evidenceFiles: [],
-            comments: [],
-            linkedFhirResources: [],
-          })) || [];
+        // Convert template checklist OR generate from standards
+        let convertedChecklist: any[] = [];
+
+        if (selectedTemplate?.checklist?.length) {
+          // Use template checklist
+          convertedChecklist = selectedTemplate.checklist.map(
+            (templateItem, index) => ({
+              id: `item-${Date.now()}-${index}`,
+              item: templateItem.title,
+              standardId: templateItem.category || `STD-${index + 1}`,
+              status: ComplianceStatus.NotStarted,
+              assignedTo: null,
+              dueDate: null,
+              actionPlan: templateItem.description || "",
+              notes: "",
+              evidenceFiles: [],
+              comments: [],
+              linkedFhirResources: [],
+            }),
+          );
+        } else {
+          // Generate checklist from standards matching the selected program
+          const programStandards = standards.filter(
+            (s) => s.programId === programId,
+          );
+          let itemIndex = 0;
+          for (const standard of programStandards) {
+            if (standard.subStandards && standard.subStandards.length > 0) {
+              // Each sub-standard becomes a checklist item
+              for (const sub of standard.subStandards) {
+                convertedChecklist.push({
+                  id: `item-${Date.now()}-${itemIndex++}`,
+                  item: sub.description,
+                  standardId: standard.standardId,
+                  status: ComplianceStatus.NotStarted,
+                  assignedTo: null,
+                  dueDate: null,
+                  actionPlan: "",
+                  notes: "",
+                  evidenceFiles: [],
+                  comments: [],
+                  linkedFhirResources: [],
+                });
+              }
+            } else {
+              // Standard without sub-standards becomes a single checklist item
+              convertedChecklist.push({
+                id: `item-${Date.now()}-${itemIndex++}`,
+                item: standard.description,
+                standardId: standard.standardId,
+                status: ComplianceStatus.NotStarted,
+                assignedTo: null,
+                dueDate: null,
+                actionPlan: "",
+                notes: "",
+                evidenceFiles: [],
+                comments: [],
+                linkedFhirResources: [],
+              });
+            }
+          }
+        }
 
         const projectLead = users.find((u) => u.id === leadId);
         if (!projectLead) {
@@ -211,6 +316,9 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
           description: description || "",
           programId,
           projectLead: cleanProjectLead,
+          teamMembers: teamMemberIds,
+          departmentId: departmentId || undefined,
+          departmentIds: departmentIds.length > 0 ? departmentIds : undefined,
           startDate: startDate!.toISOString().split("T")[0],
           endDate: endDate ? endDate.toISOString().split("T")[0] : undefined,
           status: "Not Started" as ProjectStatus,
@@ -350,9 +458,41 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
           </div>
 
           <div>
-            <label htmlFor="description" className={labelClasses}>
-              {t("projectDescription")}
-            </label>
+            <div className="flex items-center justify-between">
+              <label htmlFor="description" className={labelClasses}>
+                {t("projectDescription")}
+              </label>
+              <button
+                type="button"
+                onClick={handleAIGenerateDescription}
+                disabled={isGeneratingDesc || !name.trim()}
+                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 mb-1"
+              >
+                {isGeneratingDesc ? (
+                  <>
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>{" "}
+                    Generating...
+                  </>
+                ) : (
+                  <>🤖 AI Generate</>
+                )}
+              </button>
+            </div>
             <textarea
               id="description"
               value={description}
@@ -423,6 +563,134 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
             </div>
           </div>
 
+          {/* Department Assignment */}
+          <div>
+            <label htmlFor="department" className={labelClasses}>
+              {t("department") || "Department"}
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+              Primary department for this project (backward compatible).
+            </p>
+            <select
+              id="department"
+              value={departmentId}
+              onChange={(e) => setDepartmentId(e.target.value)}
+              className={inputClasses}
+            >
+              <option value="">
+                {t("noDepartment") || "— No Department —"}
+              </option>
+              {(useAppStore.getState().departments || []).map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name.en || d.name.ar}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Multi-Department Assignment (Hospital-Wide Projects) */}
+          <div>
+            <label className={labelClasses}>
+              🏢 Departments (Hospital-Wide)
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              For hospital-wide accreditation projects, select all departments
+              involved. AI can auto-assign standards to departments in the
+              checklist view.
+            </p>
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg max-h-48 overflow-y-auto bg-white dark:bg-gray-800">
+              {(useAppStore.getState().departments || [])
+                .filter((d) => d.isActive !== false)
+                .map((d) => (
+                  <label
+                    key={d.id}
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={departmentIds.includes(d.id)}
+                      onChange={() => {
+                        setDepartmentIds((prev) =>
+                          prev.includes(d.id)
+                            ? prev.filter((id) => id !== d.id)
+                            : [...prev, d.id],
+                        );
+                      }}
+                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                    />
+                    <span className="text-sm text-gray-900 dark:text-white">
+                      {d.name.en || d.name.ar}
+                    </span>
+                  </label>
+                ))}
+            </div>
+            {departmentIds.length > 0 && (
+              <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+                {departmentIds.length} department
+                {departmentIds.length > 1 ? "s" : ""} selected
+              </p>
+            )}
+          </div>
+
+          {/* Team Members Multi-Select */}
+          <div>
+            <label className={labelClasses}>
+              {t("teamMembers") || "Team Members"}
+            </label>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              Select users who will work on this project. They can be assigned
+              to checklist items.
+            </p>
+            <div className="border border-gray-300 dark:border-gray-600 rounded-lg max-h-48 overflow-y-auto bg-white dark:bg-gray-800">
+              {users
+                .filter((u) => u.id !== leadId && u.isActive !== false)
+                .map((u) => (
+                  <label
+                    key={u.id}
+                    className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={teamMemberIds.includes(u.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setTeamMemberIds([...teamMemberIds, u.id]);
+                        } else {
+                          setTeamMemberIds(
+                            teamMemberIds.filter((id) => id !== u.id),
+                          );
+                        }
+                      }}
+                      className="rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+                    />
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-7 h-7 rounded-full bg-sky-500 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                        {u.name
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {u.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {u.role}
+                          {u.department ? ` • ${u.department}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                ))}
+            </div>
+            {teamMemberIds.length > 0 && (
+              <p className="text-xs text-brand-primary mt-1 font-medium">
+                {teamMemberIds.length} member
+                {teamMemberIds.length !== 1 ? "s" : ""} selected
+              </p>
+            )}
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className={labelClasses}>{t("startDate")}</label>
@@ -466,7 +734,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
 
       {/* Template Preview Modal */}
       {previewTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">

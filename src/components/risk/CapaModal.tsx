@@ -67,7 +67,7 @@ const CapaModal: FC<CapaModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm"
+      className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
       aria-labelledby="capa-modal-title"

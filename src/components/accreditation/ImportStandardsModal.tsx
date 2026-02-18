@@ -9,6 +9,7 @@ interface ImportStandardsModalProps {
   onImport: (programId: string) => void;
   fileContent: string;
   programs: AccreditationProgram[];
+  isImporting?: boolean;
 }
 
 const ImportStandardsModal: FC<ImportStandardsModalProps> = ({
@@ -17,6 +18,7 @@ const ImportStandardsModal: FC<ImportStandardsModalProps> = ({
   onImport,
   fileContent,
   programs,
+  isImporting = false,
 }) => {
   const { t, dir } = useTranslation();
   const { toast } = useToast();
@@ -63,7 +65,7 @@ const ImportStandardsModal: FC<ImportStandardsModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
+      className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
       onClick={onClose}
     >
       <div
@@ -114,10 +116,10 @@ const ImportStandardsModal: FC<ImportStandardsModalProps> = ({
             </button>
             <button
               type="submit"
-              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-sky-700"
-              disabled={!selectedProgramId}
+              className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-sky-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={!selectedProgramId || isImporting}
             >
-              {t("importData")}
+              {isImporting ? t("importing") || "Importing..." : t("importData")}
             </button>
           </div>
         </form>
