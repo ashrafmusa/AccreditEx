@@ -1,0 +1,13 @@
+{
+  "projects": {},
+  "targets": {
+    "accreditex-79c08": {
+      "hosting": {
+        "accreditex": [
+          "accreditex"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

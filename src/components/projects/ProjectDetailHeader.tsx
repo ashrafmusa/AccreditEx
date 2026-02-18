@@ -25,7 +25,9 @@ const ProjectDetailHeader: React.FC<Props> = ({
   const isFinalized = project.status === ProjectStatus.Finalized;
   const canModify =
     currentUser.role === UserRole.Admin ||
-    currentUser.id === project.projectLead?.id;
+    currentUser.id === project.projectLead?.id ||
+    (currentUser.role === UserRole.ProjectLead &&
+      project.teamMembers?.includes(currentUser.id));
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">

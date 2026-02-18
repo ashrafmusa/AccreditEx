@@ -14,8 +14,6 @@ import { PlusIcon } from "../components/icons";
 import EmptyState from "../components/common/EmptyState";
 import { ShieldCheckIcon } from "../components/icons";
 import { Button } from "@/components/ui";
-import { auth, db } from "@/firebase/firebaseConfig";
-import { collection, addDoc } from "firebase/firestore";
 
 interface AccreditationHubPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -72,20 +70,6 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
     mode: "add" | "replace",
   ) => {
     try {
-      // Debug: log auth state
-      const user = auth.currentUser;
-      console.log("🔑 Auth state:", {
-        uid: user?.uid,
-        email: user?.email,
-        isAnonymous: user?.isAnonymous,
-        hasUser: !!user,
-      });
-
-      if (!user) {
-        toast.error("Not authenticated. Please log in again.");
-        return;
-      }
-
       if (mode === "replace") {
         for (const prog of accreditationPrograms) {
           await deleteProgram(prog.id);
@@ -99,42 +83,10 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
         try {
           const { id: _discardId, ...programData } =
             prog as AccreditationProgram & { id?: string };
-          console.log("📦 Importing:", prog.name, programData);
-
-          // Direct Firebase write with timeout to catch hanging promises
-          const colRef = collection(db, "accreditationPrograms");
-          const writePromise = addDoc(colRef, programData);
-          const timeoutPromise = new Promise((_, reject) =>
-            setTimeout(
-              () =>
-                reject(
-                  new Error(
-                    "Firebase write timed out after 15s — likely a permission error. Check Firestore rules.",
-                  ),
-                ),
-              15000,
-            ),
-          );
-
-          const docRef = (await Promise.race([
-            writePromise,
-            timeoutPromise,
-          ])) as any;
-          console.log("✅ Written doc:", docRef.id);
-
-          // Update local store state
-          const newProgram = {
-            ...programData,
-            id: docRef.id,
-          } as AccreditationProgram;
-          useAppStore.setState((state) => ({
-            accreditationPrograms: [...state.accreditationPrograms, newProgram],
-          }));
+          await addProgram(programData);
           successCount++;
         } catch (error) {
-          const errMsg = error instanceof Error ? error.message : String(error);
-          console.error("❌ Failed:", prog.name, errMsg, error);
-          alert(`Import error for "${prog.name}":\n${errMsg}`);
+          console.error("Failed to import program:", prog.name, error);
           failCount++;
         }
       }

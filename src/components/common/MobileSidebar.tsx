@@ -226,7 +226,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   return (
     <>
       <div
-        className={`fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity sm:hidden ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+        className={`fixed inset-0 bg-black/50 z-30 transition-opacity sm:hidden ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
         onClick={() => setIsOpen(false)}
         aria-hidden="true"
       ></div>

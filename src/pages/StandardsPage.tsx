@@ -5,6 +5,7 @@ import {
   User,
   UserRole,
   StandardCriticality,
+  ComplianceStatus,
 } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/useToast";
@@ -15,6 +16,8 @@ import {
   PlusIcon,
   SearchIcon,
   FunnelIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
 } from "@/components/icons";
 import StandardAccordion from "@/components/accreditation/StandardAccordion";
 import StandardModal from "@/components/accreditation/StandardModal";
@@ -22,6 +25,7 @@ import ImportStandardsModal from "@/components/accreditation/ImportStandardsModa
 import RestrictedFeatureIndicator from "@/components/common/RestrictedFeatureIndicator";
 import { Button, Input } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import { useProjectStore } from "@/stores/useProjectStore";
 import {
   exportStandardsGovernanceLog,
   getStandardsGovernanceStatus,
@@ -65,6 +69,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
   const [showFilters, setShowFilters] = useState(false);
 
   const [fileContent, setFileContent] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
   const [governanceRefreshKey, setGovernanceRefreshKey] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const canModify = currentUser.role === UserRole.Admin;
@@ -106,6 +111,8 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
   }, [standards, searchTerm, riskFilter]);
 
   const handleImportStandards = async (programId: string) => {
+    if (isImporting) return;
+    setIsImporting(true);
     try {
       const raw = JSON.parse(fileContent);
       // Accept both plain array and wrapped { documents: [...] } format
@@ -124,7 +131,8 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
       // Validate structure before import
       const validationErrors: string[] = [];
-      const getDesc = (d: any): string => typeof d === 'string' ? d : (d?.en || '');
+      const getDesc = (d: any): string =>
+        typeof d === "string" ? d : d?.en || "";
       const validStandards = data.filter((standard: any, index: number) => {
         if (!standard.standardId || !standard.standardId.trim()) {
           validationErrors.push(`Row ${index + 1}: standardId is required`);
@@ -159,9 +167,10 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
       for (const standard of validStandards) {
         try {
-          const desc = typeof standard.description === 'string'
-            ? standard.description.trim()
-            : (standard.description?.en || '').trim();
+          const desc =
+            typeof standard.description === "string"
+              ? standard.description.trim()
+              : (standard.description?.en || "").trim();
           // Omit any 'id' from imported data — let Firebase generate the doc ID
           const { id: _discardId, ...rest } = standard;
           await onCreateStandard({
@@ -207,6 +216,8 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
           : t("failedToImportStandards") || "Failed to import standards";
       toast.error(errorMsg);
       console.error("Standards import failed:", error);
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -270,6 +281,8 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Reset file input so re-selecting the same file triggers onChange
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
     try {
       if (!file.name.endsWith(".json")) {
@@ -308,6 +321,74 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
     setRiskFilter("all");
     setSearchTerm("");
   };
+
+  // Cross-project standard compliance analytics
+  const { projects } = useProjectStore();
+  const standardComplianceMap = useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        standardId: string;
+        description: string;
+        section: string;
+        total: number;
+        compliant: number;
+        partial: number;
+        nonCompliant: number;
+        notStarted: number;
+        projectCount: number;
+      }
+    >();
+
+    // Only consider projects for this program
+    const programProjects = projects.filter(
+      (p) => p.programId === program.id && p.archived !== true,
+    );
+
+    for (const proj of programProjects) {
+      for (const item of proj.checklist) {
+        if (!item.standardId) continue;
+        if (!map.has(item.standardId)) {
+          const std = standards.find((s) => s.standardId === item.standardId);
+          map.set(item.standardId, {
+            standardId: item.standardId,
+            description: std?.description || item.standardId,
+            section: std?.section || "",
+            total: 0,
+            compliant: 0,
+            partial: 0,
+            nonCompliant: 0,
+            notStarted: 0,
+            projectCount: 0,
+          });
+        }
+        const entry = map.get(item.standardId)!;
+        entry.total++;
+        if (item.status === ComplianceStatus.Compliant) entry.compliant++;
+        else if (item.status === ComplianceStatus.PartiallyCompliant)
+          entry.partial++;
+        else if (item.status === ComplianceStatus.NonCompliant)
+          entry.nonCompliant++;
+        else if (item.status === ComplianceStatus.NotStarted)
+          entry.notStarted++;
+      }
+    }
+
+    // Count distinct projects per standard
+    for (const proj of programProjects) {
+      const standardsInProject = new Set(
+        proj.checklist.map((i) => i.standardId),
+      );
+      standardsInProject.forEach((sid) => {
+        const entry = map.get(sid);
+        if (entry) entry.projectCount++;
+      });
+    }
+
+    return Array.from(map.values()).sort(
+      (a, b) => b.nonCompliant - a.nonCompliant,
+    );
+  }, [projects, program.id, standards]);
 
   const handleSetBaseline = () => {
     saveStandardsBaseline(program.id, standards);
@@ -496,6 +577,121 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
         </div>
       </div>
 
+      {/* Cross-Project Standard Compliance Analytics */}
+      {standardComplianceMap.length > 0 && (
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  📊 Organization-Wide Standard Compliance
+                </p>
+                <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+                  Compliance status for each standard aggregated across all{" "}
+                  {
+                    projects.filter(
+                      (p) => p.programId === program.id && p.archived !== true,
+                    ).length
+                  }{" "}
+                  active projects in this program.
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-2">
+              <div className="rounded-lg border border-slate-200 dark:border-slate-700 p-3">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Standards Tracked
+                </p>
+                <p className="text-xl font-semibold text-slate-900 dark:text-slate-100">
+                  {standardComplianceMap.length}
+                </p>
+              </div>
+              <div className="rounded-lg border border-green-200 dark:border-green-800 p-3 bg-green-50/50 dark:bg-green-900/10">
+                <p className="text-xs text-green-600 dark:text-green-400">
+                  Fully Compliant Standards
+                </p>
+                <p className="text-xl font-semibold text-green-700 dark:text-green-300">
+                  {
+                    standardComplianceMap.filter(
+                      (s) =>
+                        s.total > 0 &&
+                        s.nonCompliant === 0 &&
+                        s.partial === 0 &&
+                        s.notStarted === 0,
+                    ).length
+                  }
+                </p>
+              </div>
+              <div className="rounded-lg border border-red-200 dark:border-red-800 p-3 bg-red-50/50 dark:bg-red-900/10">
+                <p className="text-xs text-red-600 dark:text-red-400">
+                  Standards with Non-Compliance
+                </p>
+                <p className="text-xl font-semibold text-red-700 dark:text-red-300">
+                  {
+                    standardComplianceMap.filter((s) => s.nonCompliant > 0)
+                      .length
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="space-y-2 max-h-64 overflow-y-auto">
+              {standardComplianceMap.slice(0, 15).map((s) => {
+                const rate =
+                  s.total > 0 ? Math.round((s.compliant / s.total) * 100) : 0;
+                return (
+                  <div
+                    key={s.standardId}
+                    className="flex items-center gap-3 px-3 py-2 rounded-lg border border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750"
+                  >
+                    <div className="shrink-0 w-10">
+                      {s.nonCompliant > 0 ? (
+                        <ExclamationTriangleIcon className="w-5 h-5 text-red-500" />
+                      ) : rate === 100 ? (
+                        <CheckCircleIcon className="w-5 h-5 text-green-500" />
+                      ) : (
+                        <CheckCircleIcon className="w-5 h-5 text-amber-500" />
+                      )}
+                    </div>
+                    <div className="grow min-w-0">
+                      <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">
+                        {s.standardId}
+                        {s.section ? ` — ${s.section}` : ""}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                        {s.description.slice(0, 100)}
+                      </p>
+                    </div>
+                    <div className="shrink-0 flex items-center gap-3 text-xs">
+                      <span className="text-green-600 dark:text-green-400 font-medium">
+                        {s.compliant}✓
+                      </span>
+                      {s.partial > 0 && (
+                        <span className="text-amber-600 dark:text-amber-400 font-medium">
+                          {s.partial}◐
+                        </span>
+                      )}
+                      {s.nonCompliant > 0 && (
+                        <span className="text-red-600 dark:text-red-400 font-medium">
+                          {s.nonCompliant}✗
+                        </span>
+                      )}
+                      {s.notStarted > 0 && (
+                        <span className="text-slate-400 font-medium">
+                          {s.notStarted}○
+                        </span>
+                      )}
+                      <span className="text-slate-500 px-2 py-0.5 bg-slate-100 dark:bg-slate-700 rounded">
+                        {rate}%
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 space-y-4">
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1">
@@ -584,6 +780,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
           onImport={handleImportStandards}
           fileContent={fileContent}
           programs={[program]}
+          isImporting={isImporting}
         />
       )}
     </div>

@@ -169,7 +169,7 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center backdrop-blur-sm"
+      className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center backdrop-blur-sm"
       onClick={onClose}
     >
       <div
@@ -488,7 +488,7 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
 
       {/* File Uploader Modal */}
       {showUploader && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
             <h3 className="text-lg font-semibold mb-4">
               {t("uploadDocument") || "Upload Document"}

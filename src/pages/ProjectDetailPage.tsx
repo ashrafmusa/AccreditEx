@@ -16,6 +16,8 @@ import AuditLogComponent from "@/components/audits/AuditLogComponent";
 import SurveyListComponent from "@/components/projects/SurveyListComponent";
 import PDCACycleManager from "@/components/projects/PDCACycleManager";
 import { Button } from "@/components/ui";
+import { aiAgentService } from "@/services/aiAgentService";
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
 
 interface ProjectDetailPageProps {
   navigation: { view: "projectDetail"; projectId: string };
@@ -42,6 +44,9 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
   const [isSigning, setIsSigning] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [localLoading, setLocalLoading] = useState(true);
+  const [isCheckingReadiness, setIsCheckingReadiness] = useState(false);
+  const [readinessModalOpen, setReadinessModalOpen] = useState(false);
+  const [readinessContent, setReadinessContent] = useState("");
 
   // Shared data cache - prevents duplicate fetches when switching tabs
   const [cachedData, setCachedData] = useState({
@@ -131,6 +136,69 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
   }
 
   const program = accreditationPrograms.find((p) => p.id === project.programId);
+
+  const handleReadinessCheck = async () => {
+    setIsCheckingReadiness(true);
+    try {
+      const checklist = project.checklist || [];
+      const totalItems = checklist.length;
+      const compliant = checklist.filter(
+        (i: any) => i.status === "Compliant",
+      ).length;
+      const nonCompliant = checklist.filter(
+        (i: any) => i.status === "Non-Compliant",
+      ).length;
+      const partial = checklist.filter(
+        (i: any) => i.status === "Partially Compliant",
+      ).length;
+      const notStarted = checklist.filter(
+        (i: any) => i.status === "Not Started",
+      ).length;
+      const missingEvidence = checklist.filter(
+        (i: any) => !i.evidenceIds || i.evidenceIds.length === 0,
+      ).length;
+      const openCAPAs = (project.capaReports || []).filter(
+        (c: any) => c.status !== "Closed",
+      ).length;
+      const designControls = project.designControls || [];
+      const dcNotApplicable = designControls.filter(
+        (d: any) => !d.requirement?.trim(),
+      ).length;
+
+      const prompt = `You are a healthcare accreditation finalization advisor. A project manager wants to FINALIZE this project. Analyze the data below and provide a readiness assessment.
+
+## Project: ${project.name}
+- Total Checklist Items: ${totalItems}
+- Compliant: ${compliant}
+- Non-Compliant: ${nonCompliant}
+- Partially Compliant: ${partial}
+- Not Started: ${notStarted}
+- Items Missing Evidence: ${missingEvidence}
+- Open CAPAs (not closed): ${openCAPAs}
+- Design Controls: ${designControls.length} (${dcNotApplicable} with empty requirements)
+- PDCA Cycles: ${(project.pdcaCycles || []).length}
+
+Provide:
+1. **Overall Readiness Score** (Ready / Almost Ready / Not Ready)
+2. **Critical Blockers** - things that MUST be resolved before finalization
+3. **Warnings** - issues that should ideally be addressed
+4. **Recommendations** - suggestions for improvement
+
+Be specific and actionable. If the project looks ready, say so clearly.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      setReadinessContent(response.response);
+      setReadinessModalOpen(true);
+    } catch (error) {
+      console.error("Readiness check error:", error);
+      toast.error(
+        "AI readiness check failed. You can still proceed to finalize.",
+      );
+      setIsSigning(true);
+    } finally {
+      setIsCheckingReadiness(false);
+    }
+  };
 
   const handleFinalize = async () => {
     try {
@@ -257,9 +325,35 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
             project={project}
             programName={program?.name || "Unknown Program"}
             currentUser={currentUser}
-            onFinalize={() => setIsSigning(true)}
+            onFinalize={() => handleReadinessCheck()}
             onGenerateReport={() => setIsGeneratingReport(true)}
           />
+          {isCheckingReadiness && (
+            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-rose-900/20 dark:to-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+              <svg
+                className="animate-spin h-5 w-5 text-cyan-600"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                />
+              </svg>
+              <span className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
+                🤖 AI is analyzing project readiness for finalization...
+              </span>
+            </div>
+          )}
           {renderContent()}
         </div>
       </main>
@@ -282,6 +376,33 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
           onGenerate={handleGenerateReport}
         />
       )}
+
+      <AISuggestionModal
+        isOpen={readinessModalOpen}
+        onClose={() => setReadinessModalOpen(false)}
+        title="🤖 AI Finalization Readiness Check"
+        content={readinessContent}
+        type="readiness-check"
+        footer={
+          <div className="flex gap-3 justify-end mt-4">
+            <button
+              onClick={() => setReadinessModalOpen(false)}
+              className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              Go Back & Fix Issues
+            </button>
+            <button
+              onClick={() => {
+                setReadinessModalOpen(false);
+                setIsSigning(true);
+              }}
+              className="px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-sky-700 font-semibold"
+            >
+              Proceed to Finalize
+            </button>
+          </div>
+        }
+      />
     </div>
   );
 };

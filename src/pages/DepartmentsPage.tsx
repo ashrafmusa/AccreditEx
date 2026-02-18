@@ -12,7 +12,12 @@ import { useToast } from "../hooks/useToast";
 import DepartmentCard from "../components/departments/DepartmentCard";
 import DepartmentModal from "../components/departments/DepartmentModal";
 import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
-import { BuildingOffice2Icon, PlusIcon, UsersIcon } from "../components/icons";
+import {
+  BuildingOffice2Icon,
+  PlusIcon,
+  UsersIcon,
+  FolderIcon,
+} from "../components/icons";
 import StatCard from "../components/common/StatCard";
 import { Button } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
@@ -141,6 +146,25 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
     }
   };
 
+  // Count projects linked to departments
+  const deptProjectCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const dept of departments) {
+      const userIds = new Set(
+        users.filter((u) => u.departmentId === dept.id).map((u) => u.id),
+      );
+      const count = projects.filter(
+        (p) =>
+          p.departmentId === dept.id ||
+          (p.departmentIds || []).includes(dept.id) ||
+          (p.projectLead && userIds.has(p.projectLead.id)) ||
+          p.teamMembers?.some((id) => userIds.has(id)),
+      ).length;
+      counts.set(dept.id, count);
+    }
+    return counts;
+  }, [departments, users, projects]);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -173,7 +197,7 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
         <RestrictedFeatureIndicator featureName="Department Management" />
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <StatCard
           title={t("totalDepartments")}
           value={departments.length}
@@ -183,6 +207,17 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
           title={t("totalStaffAssigned")}
           value={users.filter((u) => u.departmentId).length}
           icon={UsersIcon}
+        />
+        <StatCard
+          title={t("linkedProjects") || "Linked Projects"}
+          value={
+            projects.filter(
+              (p) =>
+                p.departmentId ||
+                (p.departmentIds && p.departmentIds.length > 0),
+            ).length
+          }
+          icon={FolderIcon}
         />
       </div>
 

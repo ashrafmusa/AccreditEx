@@ -70,6 +70,8 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://accreditex.web.app",
+        "https://accreditex.firebaseapp.com",
         "https://accreditex-79c08.web.app",
         "https://accreditex-79c08.firebaseapp.com",
         "http://localhost:5173",

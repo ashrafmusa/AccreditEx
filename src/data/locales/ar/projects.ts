@@ -60,6 +60,8 @@ export const ar = {
     partiallyCompliant: 'ممتثل جزئيًا',
     nonCompliant: 'غير ممتثل',
     notApplicable: 'لا ينطبق',
+    notStarted: 'لم يبدأ',
+    complianceProgress: 'تقدم الامتثال',
     noChecklistItemsFound: 'لا توجد عناصر في قائمة المراجعة تطابق الفلاتر الحالية.',
     unassigned: 'غير معين',
     dueDate: 'تاريخ الاستحقاق',

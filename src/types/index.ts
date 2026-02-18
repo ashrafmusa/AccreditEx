@@ -421,6 +421,8 @@ export interface Project {
   finalizationDate?: string;
   pdcaCycles?: PDCACycle[];
   teamMembers?: string[];
+  departmentId?: string;
+  departmentIds?: string[];
 }
 
 export interface Comment {
@@ -566,6 +568,7 @@ export interface ChecklistItem {
   notes: string;
   evidenceFiles: string[];
   comments: Comment[];
+  departmentId?: string;
 }
 
 export interface DesignControlItem {

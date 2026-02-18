@@ -40,7 +40,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     bulkUpdateStatus,
   } = useProjectStore();
   const { currentUser, users } = useUserStore();
-  const { accreditationPrograms } = useAppStore();
+  const { accreditationPrograms, departments } = useAppStore();
   const toast = useToast();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,6 +48,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     "all",
   );
   const [programFilter, setProgramFilter] = useState<string>("all");
+  const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<{ start: string; end: string }>({
     start: "",
@@ -100,6 +101,11 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       const matchesProgram =
         programFilter === "all" || p.programId === programFilter;
 
+      const matchesDepartment =
+        departmentFilter === "all" ||
+        p.departmentId === departmentFilter ||
+        (p.departmentIds || []).includes(departmentFilter);
+
       const matchesAssignee =
         assigneeFilter === "all" ||
         p.projectLead?.id === assigneeFilter ||
@@ -115,6 +121,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         matchesSearch &&
         matchesStatus &&
         matchesProgram &&
+        matchesDepartment &&
         matchesAssignee &&
         matchesDate
       );
@@ -124,6 +131,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     searchTerm,
     statusFilter,
     programFilter,
+    departmentFilter,
     assigneeFilter,
     dateFilter,
     showArchived,
@@ -254,6 +262,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const clearFilters = () => {
     setStatusFilter("all");
     setProgramFilter("all");
+    setDepartmentFilter("all");
     setAssigneeFilter("all");
     setDateFilter({ start: "", end: "" });
     setSearchTerm("");
@@ -341,6 +350,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
           </Button>
           {(statusFilter !== "all" ||
             programFilter !== "all" ||
+            departmentFilter !== "all" ||
             assigneeFilter !== "all" ||
             dateFilter.start ||
             dateFilter.end) && (
@@ -390,6 +400,25 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                   <option key={status} value={status}>
                     {t(status.replace(/\s/g, "").toLowerCase() as any) ||
                       status}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                {t("department") || "Department"}
+              </label>
+              <select
+                value={departmentFilter}
+                onChange={(e) => setDepartmentFilter(e.target.value)}
+                className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+              >
+                <option value="all">
+                  {t("allDepartments") || "All Departments"}
+                </option>
+                {departments.map((d) => (
+                  <option key={d.id} value={d.id}>
+                    {d.name.en || d.name.ar}
                   </option>
                 ))}
               </select>
@@ -487,6 +516,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             searchTerm ||
             statusFilter !== "all" ||
             programFilter !== "all" ||
+            departmentFilter !== "all" ||
             assigneeFilter !== "all"
               ? t("noProjectsFound")
               : t("noProjects")
@@ -495,6 +525,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             searchTerm ||
             statusFilter !== "all" ||
             programFilter !== "all" ||
+            departmentFilter !== "all" ||
             assigneeFilter !== "all"
               ? t("tryAdjustingSearch")
               : t("createFirstProject")
