@@ -25,6 +25,7 @@ import {
   Cog6ToothIcon,
   SparklesIcon,
 } from "@/components/icons";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const VisualSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -75,6 +76,7 @@ const VisualSettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
 
   const handleChange = (updater: (s: typeof settings) => typeof settings) => {
     const newSettings = updater(settings);

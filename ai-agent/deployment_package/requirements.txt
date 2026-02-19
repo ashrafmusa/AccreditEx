@@ -8,3 +8,4 @@ structlog==24.4.0
 aiofiles==24.1.0
 httpx==0.28.1
 python-multipart
+slowapi==0.1.9

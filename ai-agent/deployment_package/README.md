@@ -1,5 +1,7 @@
 # AccreditEx AI Agent Deployment (Groq Edition)
 
+> **✅ DEPLOYED** — Live at https://accreditex.onrender.com (Feb 19, 2026). Integrated with frontend at https://accreditex.web.app.
+
 ## Overview
 This package contains the deployment files for the AccreditEx AI Agent on Render.com.
 It is configured to use **Groq** for high-performance, free AI inference using the Llama 3 model.

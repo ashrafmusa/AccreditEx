@@ -22,6 +22,7 @@ import {
   AdvancedToggle,
   EnhancedSelect,
 } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const NotificationSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -53,6 +54,7 @@ const NotificationSettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
   const stats = getStats();
 
   const handleNotificationChange = (field: keyof typeof notifications) => {

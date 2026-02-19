@@ -23,6 +23,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { prefetchRoute } from "@/services/routePrefetchService";
 import UserAvatar from "./UserAvatar";
 
 interface MobileSidebarProps {
@@ -284,6 +285,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
               <li key={item.key}>
                 <button
                   onClick={() => handleNavigate(item.nav)}
+                  onPointerEnter={() => prefetchRoute(item.nav.view)}
                   className={`w-full text-left flex items-center px-4 py-3 my-1 rounded-lg transition-colors duration-200 ${isActive(item.key) ? "bg-brand-primary text-white" : "text-gray-300 hover:bg-white/10 hover:text-white"}`}
                 >
                   <item.icon className="h-6 w-6 ltr:mr-3 rtl:ml-3" />
@@ -297,6 +299,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
               <li key={item.key}>
                 <button
                   onClick={() => handleNavigate(item.nav)}
+                  onPointerEnter={() => prefetchRoute(item.nav.view)}
                   className={`w-full text-left flex items-center px-4 py-3 my-1 rounded-lg transition-colors duration-200 ${isActive(item.key) ? "bg-brand-primary text-white" : "text-gray-300 hover:bg-white/10 hover:text-white"}`}
                 >
                   <item.icon className="h-6 w-6 ltr:mr-3 rtl:ml-3" />

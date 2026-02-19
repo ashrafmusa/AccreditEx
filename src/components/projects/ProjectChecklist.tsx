@@ -188,6 +188,93 @@ Please provide:
     }
   };
 
+  // A-2 Enhancement: Structured AI gap detection — flags at-risk items with risk tags in notes
+  const [isFlaggingRisks, setIsFlaggingRisks] = useState(false);
+
+  const handleAIFlagRisks = async () => {
+    if (isFlaggingRisks || project.checklist.length === 0) return;
+    setIsFlaggingRisks(true);
+    try {
+      // Build a compact list of non-compliant / partial / no-evidence items
+      const atRiskItems = project.checklist.filter(
+        (i) =>
+          i.status === ComplianceStatus.NonCompliant ||
+          i.status === ComplianceStatus.PartiallyCompliant ||
+          (i.evidenceFiles.length === 0 &&
+            i.status !== ComplianceStatus.NotApplicable &&
+            i.status !== ComplianceStatus.Compliant) ||
+          (i.dueDate &&
+            new Date(i.dueDate) < new Date() &&
+            i.status !== ComplianceStatus.Compliant),
+      );
+
+      if (atRiskItems.length === 0) {
+        toast.info("No at-risk items found — all items appear healthy.");
+        setIsFlaggingRisks(false);
+        return;
+      }
+
+      const itemList = atRiskItems
+        .slice(0, 50)
+        .map(
+          (item, i) =>
+            `${i + 1}. ID:${item.id} | [${item.status}] ${item.standardId}: ${item.item.slice(0, 100)}${item.evidenceFiles.length === 0 ? " [NO EVIDENCE]" : ""}${item.dueDate && new Date(item.dueDate) < new Date() ? " [OVERDUE]" : ""}`,
+        )
+        .join("\n");
+
+      const prompt = `You are a healthcare accreditation risk analyst. Analyze these at-risk checklist items and assign a risk level and brief risk note to each.
+
+Project: ${project.name}
+At-risk items (${atRiskItems.length} total${atRiskItems.length > 50 ? ", showing first 50" : ""}):
+${itemList}
+
+For each item, respond ONLY in this format:
+ITEM <number>:
+RISK: <CRITICAL|HIGH|MEDIUM>
+NOTE: <Brief 1-sentence risk explanation and recommended action>
+
+Assess risk based on: compliance status severity, evidence gaps, overdue status, and potential impact on accreditation.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      const text = response.response || "";
+
+      // Parse and apply risk flags
+      const flagPattern =
+        /ITEM\s*(\d+):\s*\n?RISK:\s*(CRITICAL|HIGH|MEDIUM)\s*\n?NOTE:\s*(.+?)(?=\nITEM|\n\n|$)/gi;
+      let flagMatch;
+      let flaggedCount = 0;
+
+      while ((flagMatch = flagPattern.exec(text)) !== null) {
+        const idx = parseInt(flagMatch[1]) - 1;
+        if (idx >= 0 && idx < atRiskItems.length) {
+          const item = atRiskItems[idx];
+          const riskTag = `[⚠️ AI Risk: ${flagMatch[2]}] ${flagMatch[3].trim()}`;
+          // Prepend risk tag to existing notes, avoid duplicating
+          const existingNotes = item.notes || "";
+          const cleanedNotes = existingNotes
+            .replace(/\[⚠️ AI Risk:.*?\]\s*.*?(?=\n|$)/g, "")
+            .trim();
+          const newNotes = cleanedNotes
+            ? `${riskTag}\n${cleanedNotes}`
+            : riskTag;
+          await updateChecklistItem(project.id, item.id, {
+            notes: newNotes,
+          });
+          flaggedCount++;
+        }
+      }
+
+      toast.success(
+        `AI flagged ${flaggedCount} items with risk levels and recommendations.`,
+      );
+    } catch (error) {
+      toast.error("Failed to flag at-risk items");
+      console.error("AI risk flagging error:", error);
+    } finally {
+      setIsFlaggingRisks(false);
+    }
+  };
+
   // AI Auto-Assign Departments to checklist items
   const handleAIAssignDepartments = async () => {
     if (
@@ -657,6 +744,35 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
               </>
             ) : (
               <>🤖 AI Gap Analysis</>
+            )}
+          </button>
+          <button
+            onClick={handleAIFlagRisks}
+            disabled={isFlaggingRisks || project.checklist.length === 0}
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-amber-600 to-red-600 text-white rounded-lg hover:from-amber-700 hover:to-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+          >
+            {isFlaggingRisks ? (
+              <>
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    fill="none"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  />
+                </svg>
+                Flagging Risks...
+              </>
+            ) : (
+              <>⚠️ AI Flag Risks</>
             )}
           </button>
           {departments.length > 0 && (

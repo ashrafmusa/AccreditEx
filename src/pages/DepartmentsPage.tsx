@@ -4,7 +4,6 @@ import {
   User,
   Project,
   NavigationState,
-  UserRole,
   ComplianceStatus,
 } from "../types";
 import { useTranslation } from "../hooks/useTranslation";
@@ -24,6 +23,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useProjectStore } from "@/stores/useProjectStore";
+import { usePermission } from "@/hooks/usePermission";
 
 interface DepartmentsPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -44,7 +44,7 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = ({ setNavigation }) => {
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const canModify = currentUser.role === UserRole.Admin;
+  const { isAdmin: canModify } = usePermission();
 
   // Keyboard shortcuts
   useKeyboardShortcuts({

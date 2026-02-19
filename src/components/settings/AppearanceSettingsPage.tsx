@@ -21,6 +21,7 @@ import {
   AdvancedToggle,
   EnhancedSelect,
 } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const AppearanceSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -46,6 +47,7 @@ const AppearanceSettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
 
   const applyCustomColors = (colors: typeof appearance.customColors) => {
     const root = document.documentElement;
@@ -56,13 +58,13 @@ const AppearanceSettingsPage: React.FC = () => {
   };
 
   const handleAppearanceChange = (
-    updater: (prev: typeof appearance) => typeof appearance
+    updater: (prev: typeof appearance) => typeof appearance,
   ) => {
     const newAppearance = updater(appearance);
     setAppearance(newAppearance);
     setHasChanges(
       JSON.stringify(newAppearance) !==
-        JSON.stringify(appSettings?.appearance || appearance)
+        JSON.stringify(appSettings?.appearance || appearance),
     );
   };
 
@@ -306,8 +308,8 @@ const AppearanceSettingsPage: React.FC = () => {
                 appearance.cardStyle === "elevated"
                   ? "shadow-md bg-white dark:bg-gray-800"
                   : appearance.cardStyle === "outlined"
-                  ? "border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
-                  : "bg-gray-100 dark:bg-gray-700"
+                    ? "border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
+                    : "bg-gray-100 dark:bg-gray-700"
               }`}
             >
               <p className="text-sm text-gray-700 dark:text-gray-300">

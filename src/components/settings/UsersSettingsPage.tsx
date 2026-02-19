@@ -15,6 +15,7 @@ import {
   ExclamationTriangleIcon,
 } from "@/components/icons";
 import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const UsersSettingsPage: React.FC = () => {
   const { isAdmin, AdminOnly } = useAdminGuard();
@@ -37,6 +38,7 @@ const UsersSettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
 
   const handleUsersSettingsChange = (
     field: keyof typeof usersSettings,

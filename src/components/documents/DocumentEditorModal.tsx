@@ -147,6 +147,17 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
     }
   }, [document.content]);
 
+  // --- Protect against browser close/refresh with unsaved changes ---
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
   // --- Autosave timer ---
   useEffect(() => {
     if (!isEditMode) return;

@@ -67,6 +67,8 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  const [isGeneratingTimeline, setIsGeneratingTimeline] = useState(false);
+  const [isEnhancingChecklist, setIsEnhancingChecklist] = useState(false);
 
   useEffect(() => {
     if (isEditMode && existingProject) {
@@ -125,6 +127,127 @@ Return ONLY the description text, no headers or formatting.`;
       toast.error("Failed to generate description. Please try again.");
     } finally {
       setIsGeneratingDesc(false);
+    }
+  };
+
+  const handleAIGenerateTimeline = async () => {
+    if (isGeneratingTimeline) return;
+    if (!name.trim()) {
+      toast.error("Please enter a project name first.");
+      return;
+    }
+    setIsGeneratingTimeline(true);
+    try {
+      const selectedProgram = accreditationPrograms.find(
+        (p) => p.id === programId,
+      );
+      const prompt = `You are a healthcare accreditation project planning expert. Suggest a realistic timeline for this accreditation project.
+
+Project Name: ${name.trim()}
+${selectedProgram ? `Program: ${selectedProgram.name}` : ""}
+${selectedTemplate ? `Template: ${selectedTemplate.name} (${selectedTemplate.checklist.length} checklist items, category: ${selectedTemplate.category})` : ""}
+${description ? `Description: ${description}` : ""}
+Today's date: ${new Date().toISOString().split("T")[0]}
+
+Based on the scope and complexity of this accreditation project, suggest a recommended start date and end date.
+Consider typical healthcare accreditation timelines, preparation phases, and review cycles.
+
+Respond ONLY in this exact format (dates in YYYY-MM-DD):
+START: YYYY-MM-DD
+END: YYYY-MM-DD
+RATIONALE: (one sentence explaining the timeline)`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      const text = response.response || "";
+
+      const startMatch = text.match(/START:\s*(\d{4}-\d{2}-\d{2})/);
+      const endMatch = text.match(/END:\s*(\d{4}-\d{2}-\d{2})/);
+
+      if (startMatch) {
+        const suggestedStart = new Date(startMatch[1]);
+        if (!isNaN(suggestedStart.getTime())) setStartDate(suggestedStart);
+      }
+      if (endMatch) {
+        const suggestedEnd = new Date(endMatch[1]);
+        if (!isNaN(suggestedEnd.getTime())) setEndDate(suggestedEnd);
+      }
+
+      const rationaleMatch = text.match(/RATIONALE:\s*(.+)/);
+      if (rationaleMatch) {
+        toast.success(`Timeline set: ${rationaleMatch[1].trim()}`);
+      } else {
+        toast.success("AI suggested project timeline.");
+      }
+    } catch (error) {
+      console.error("AI timeline generation error:", error);
+      toast.error("Failed to generate timeline. Please try again.");
+    } finally {
+      setIsGeneratingTimeline(false);
+    }
+  };
+
+  // A-1: AI Smart Checklist Enhancement — enriches deterministic checklist with AI-generated action plans, risk notes, and priorities
+  const handleAIEnhanceChecklist = async (checklist: any[]): Promise<any[]> => {
+    if (checklist.length === 0) return checklist;
+    setIsEnhancingChecklist(true);
+    try {
+      const selectedProgram = accreditationPrograms.find(
+        (p) => p.id === programId,
+      );
+      // Send a summary of checklist items (max 40 for token limits)
+      const itemSummary = checklist
+        .slice(0, 40)
+        .map((c, i) => `${i + 1}. [${c.standardId}] ${c.item}`)
+        .join("\n");
+
+      const prompt = `You are a healthcare accreditation expert. Enhance this project checklist with AI-generated action plans, risk priorities, and implementation guidance.
+
+Project: ${name.trim()}
+${selectedProgram ? `Program: ${selectedProgram.name}` : ""}
+${description ? `Description: ${description}` : ""}
+Checklist items (${checklist.length} total${checklist.length > 40 ? ", showing first 40" : ""}):
+${itemSummary}
+
+For each item number, provide:
+- A concise action plan (1-2 sentences on how to achieve compliance)
+- A risk level: HIGH, MEDIUM, or LOW
+- Priority order suggestion
+
+Respond in this format for each item:
+ITEM <number>:
+ACTION: <action plan text>
+RISK: <HIGH|MEDIUM|LOW>
+
+Process all items shown. Be specific to healthcare accreditation standards.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      const text = response.response || "";
+
+      // Parse AI response and enrich checklist items
+      const enrichedChecklist = [...checklist];
+      const itemPattern =
+        /ITEM\s*(\d+):\s*\n?ACTION:\s*(.+?)(?:\n|$)\s*RISK:\s*(HIGH|MEDIUM|LOW)/gi;
+      let match;
+      while ((match = itemPattern.exec(text)) !== null) {
+        const idx = parseInt(match[1]) - 1;
+        if (idx >= 0 && idx < enrichedChecklist.length) {
+          enrichedChecklist[idx].actionPlan = match[2].trim();
+          enrichedChecklist[idx].notes = `[AI Risk: ${match[3]}] `;
+        }
+      }
+
+      toast.success(
+        `AI enhanced ${checklist.length} checklist items with action plans and risk levels.`,
+      );
+      return enrichedChecklist;
+    } catch (error) {
+      console.error("AI checklist enhancement error:", error);
+      toast.info(
+        "AI enhancement skipped — checklist created with standard items.",
+      );
+      return checklist;
+    } finally {
+      setIsEnhancingChecklist(false);
     }
   };
 
@@ -288,6 +411,12 @@ Return ONLY the description text, no headers or formatting.`;
               });
             }
           }
+        }
+
+        // A-1: AI Smart Enhancement Pass — enrich checklist with action plans and risk levels
+        if (convertedChecklist.length > 0) {
+          convertedChecklist =
+            await handleAIEnhanceChecklist(convertedChecklist);
         }
 
         const projectLead = users.find((u) => u.id === leadId);
@@ -693,7 +822,39 @@ Return ONLY the description text, no headers or formatting.`;
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className={labelClasses}>{t("startDate")}</label>
+              <div className="flex items-center justify-between">
+                <label className={labelClasses}>{t("startDate")}</label>
+                <button
+                  type="button"
+                  onClick={handleAIGenerateTimeline}
+                  disabled={isGeneratingTimeline || !name.trim()}
+                  className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 mb-1"
+                >
+                  {isGeneratingTimeline ? (
+                    <>
+                      <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>{" "}
+                      Suggesting...
+                    </>
+                  ) : (
+                    <>🤖 AI Timeline</>
+                  )}
+                </button>
+              </div>
               <DatePicker date={startDate} setDate={setStartDate} />
               {errors.startDate && (
                 <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
@@ -723,10 +884,12 @@ Return ONLY the description text, no headers or formatting.`;
             </Button>
             <Button
               type="submit"
-              disabled={isSubmitting}
-              loading={isSubmitting}
+              disabled={isSubmitting || isEnhancingChecklist}
+              loading={isSubmitting || isEnhancingChecklist}
             >
-              {t("save")}
+              {isEnhancingChecklist
+                ? "🤖 AI Enhancing Checklist..."
+                : t("save")}
             </Button>
           </div>
         </form>

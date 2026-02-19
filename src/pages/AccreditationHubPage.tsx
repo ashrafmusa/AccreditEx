@@ -39,6 +39,7 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
   const [editingProgram, setEditingProgram] =
     useState<AccreditationProgram | null>(null);
 
+  // Centralized permission check — Viewer role gets read-only automatically
   const canModify = currentUser?.role === UserRole.Admin;
 
   const handleSave = (

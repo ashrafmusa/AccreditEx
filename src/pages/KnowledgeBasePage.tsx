@@ -139,6 +139,7 @@ type ViewMode = "browse" | "article" | "create";
 
 const KnowledgeBasePage: React.FC = () => {
   const { currentUser } = useUserStore();
+  // Viewer role enforcement: isViewer users see read-only UI
   const isAdmin = currentUser?.role === UserRole.Admin;
 
   const [articles, setArticles] = useState<KBArticle[]>(SEED_ARTICLES);

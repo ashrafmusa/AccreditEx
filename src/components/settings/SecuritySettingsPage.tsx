@@ -18,6 +18,7 @@ import {
   EnhancedInput,
   SliderInput,
 } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const SecuritySettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -28,6 +29,7 @@ const SecuritySettingsPage: React.FC = () => {
   const [policy, setPolicy] = useState(appSettings!.passwordPolicy);
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
 
   const handlePolicyChange = (
     updater: (prev: typeof policy) => typeof policy,

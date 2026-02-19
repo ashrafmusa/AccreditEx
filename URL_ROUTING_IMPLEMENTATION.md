@@ -4,6 +4,8 @@
 
 URL routing has been successfully integrated into AccreditEx while **maintaining 100% backward compatibility** with the existing `NavigationState` system.
 
+> **Updated February 19, 2026:** Route count expanded to **34 routes** (28 primary + 6 legacy redirects). New routes added for Lab Operations (`/lab-operations`), Knowledge Base (`/knowledge-base`), Performance Evaluation (`/performance`), and Quality Rounding (`/quality-rounding`). Router files: `AppRouter.tsx` + `routes.ts` (247 lines).
+
 ## What Was Added
 
 ### New Files Created
@@ -12,7 +14,7 @@ URL routing has been successfully integrated into AccreditEx while **maintaining
    - Route configuration mapping `NavigationState` to URL paths
    - `navigationStateToPath()` - Converts state to URL
    - `pathToNavigationState()` - Converts URL to state
-   - All 25+ routes configured
+   - All 34 routes configured (28 primary + 6 legacy redirects)
 
 2. **`src/router/AppRouter.tsx`**
    - BrowserRouter wrapper component
@@ -137,8 +139,23 @@ NavigationRail and MobileSidebar components unchanged
 | `{ view: "departmentDetail", departmentId: "d1" }` | `/departments/d1` |
 | `{ view: "trainingDetail", trainingId: "t1" }` | `/training/t1` |
 | `{ view: "standards", programId: "p1" }` | `/programs/p1/standards` |
+| `{ view: "knowledgeBase" }` | `/knowledge-base` |
+| `{ view: "labOperations" }` | `/lab-operations` |
 
-**Plus 15+ more routes!**
+**Plus 20+ more routes including legacy redirects!**
+
+### New Routes (Feb 19, 2026)
+
+| URL Path | View | Notes |
+|----------|------|-------|
+| `/lab-operations` | labOperations | 5-tab Lab Operations hub |
+| `/knowledge-base` | knowledgeBase | Searchable knowledge base |
+| `/performance` | trainingHub (redirect) | Legacy route |
+| `/quality-rounding` | auditHub (redirect) | Legacy route |
+| `/quality-insights` | analyticsHub (redirect) | Legacy route |
+| `/reports` | analyticsHub (redirect) | Legacy route |
+| `/competencies` | trainingHub (redirect) | Legacy route |
+| `/ai-document-generator` | documentControl (redirect) | Legacy route |
 
 ## Testing Checklist
 
@@ -240,7 +257,7 @@ NavigationState ← pathToNavigationState ← URL changes (back/forward)
 
 ## Migration Status
 
-✅ **COMPLETE** - Zero Breaking Changes
+✅ **COMPLETE** - Zero Breaking Changes - Deployed to https://accreditex.web.app (Feb 19, 2026)
 
 All code changes are **additive only**:
 - No deleted code

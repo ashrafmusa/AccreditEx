@@ -1,9 +1,9 @@
 # AccreditEx — Competitive Benchmarking Analysis 2026
 
 **Prepared by:** Competitive Intelligence Analyst  
-**Date:** February 18, 2026  
+**Date:** February 18, 2026 (Updated: February 19, 2026)  
 **Classification:** Confidential — Internal Strategy Document  
-**Version:** 1.0
+**Version:** 2.0
 
 ---
 
@@ -155,7 +155,7 @@ AccreditEx's competitive moat rests on four pillars that no competitor combines:
 
 | Competitor | AccreditEx Advantages | AccreditEx Gaps |
 |------------|----------------------|-----------------|
-| **Surpass (Human Tech)** | Full accreditation lifecycle vs. competency-only; AI-native; document control; Arabic; GCC templates | Surpass has deeper CAP/CLIA 6-methods-of-competency engine with pre-built assessment templates |
+| **Surpass (Human Tech)** | Full accreditation lifecycle vs. competency-only; AI-native; document control; Arabic; GCC templates; **now matches CAP 6-method competency** (726-line CAPAssessmentTab) | Surpass has longer track record in US lab competency niche; pre-built assessment template library may be deeper |
 | **Compliance Mgr (CastleBranch)** | 10x broader scope (accreditation, docs, risk, audit, training); AI-native; GCC support | CastleBranch has simple, low-cost per-employee competency tracking for US labs |
 | **NetLIMS** | Accreditation-specific workflows; AI-native; 95% cheaper; Arabic; accessible to SMB labs | NetLIMS is a full LIMS with sample tracking, instrument management, and workflow automation |
 | **LabVantage** | Accreditation-focused vs. LIMS-with-compliance; AI-native; 99% cheaper; GCC templates | LabVantage has industrial-grade LIMS for pharma/biotech with FDA validation packages |
@@ -182,7 +182,7 @@ AccreditEx's competitive moat rests on four pillars that no competitor combines:
 | **PWA / Offline Access** | 🟢 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 | **SMB Pricing** | 🟢 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🔴 | 🟡 | 🔴 | 🔴 | 🟡 | 🟢 | 🔴 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 |
 | **Pre-loaded Standards** | 🟢 | 🟡 | 🔴 | 🔴 | 🟢 | 🟡 | 🟡 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 | 🟡 | 🟢 | 🔴 | 🔴 |
-| **LIMS / Sample Tracking** | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟢 | 🟢 | 🔴 | 🔴 | 🟢 | 🟢 |
+| **LIMS / Sample Tracking** | � | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟢 | 🟢 | 🔴 | 🔴 | 🟢 | 🟢 |
 | **EHR/HIS Integration** | 🟡 | 🔴 | 🟡 | 🟡 | 🟢 | 🟡 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🟡 | 🟡 | 🔴 | 🔴 | 🟢 | 🟢 |
 | **Patient Safety/Incident** | 🟡 | 🔴 | 🟢 | 🟢 | 🔴 | 🔴 | 🔴 | 🟢 | 🔴 | 🟢 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 | 🔴 |
 | **Audit Management** | 🟢 | 🟡 | 🟢 | 🟡 | 🔴 | 🔴 | 🟢 | 🟢 | 🔴 | 🟢 | 🟢 | 🔴 | 🔴 | 🔴 | 🟡 | 🔴 | 🟢 | 🔴 | 🔴 |
@@ -263,14 +263,14 @@ AccreditEx's competitive moat rests on four pillars that no competitor combines:
 
 | Gap | Severity | Mitigation Strategy |
 |-----|----------|---------------------|
-| **No LIMS capabilities** | Medium | Position as complementary to LIMS (not a replacement). Build API integrations with NetLIMS/LabVantage for lab customers who need both. |
+| **~~No LIMS capabilities~~** | ~~Medium~~ ✅ **RESOLVED** | LIMS Integration module implemented (10 service files) with Orchard, SoftLab, Sunquest connectors via HL7 + REST. QC Data Import with validation and trending also built. AccreditEx now bridges accreditation management and LIMS connectivity. |
 | **No EHR/HIS integration (yet)** | Medium | FHIR-based API roadmap is in progress. Prioritize Malaffi (UAE HIE) integration for GCC differentiation. |
 | **No patient safety/incident reporting** | Low-Medium | Not core to accreditation management, but RLDatix/MEG customers expect it. Consider lightweight incident module or partner integration. |
 | **Brand recognition** | High | Accelerate through: (1) GCC pilot programs, (2) ADGM HQ announcement, (3) conference presence at Arab Health / HIMSS, (4) thought leadership content from founder's clinical expertise. |
 | **Single-founder risk** | High | Mitigate through: advisory board formation, MBZUAI R&D partnership, early team hires, and documented architecture/processes. |
 | **SOC 2 / ISO 27001 certification** | Medium | Enterprise healthcare buyers increasingly require security certifications. Prioritize SOC 2 Type II within 12 months. |
 | **FDA 21 CFR Part 11 compliance** | Low | Only relevant if expanding to US pharma/life sciences. Not a priority for GCC healthcare accreditation market. |
-| **CAP/CLIA 6-method competency engine** | Medium | Surpass owns this niche. Build or partner for pre-built CAP competency assessment templates to strengthen lab positioning. |
+| **~~CAP/CLIA 6-method competency engine~~** | ~~Medium~~ ✅ **RESOLVED** | CAPAssessmentTab.tsx (726 lines) implements all 6 methods of competency assessment across 11 CAP disciplines. AccreditEx now matches Surpass's core strength while offering full accreditation lifecycle management on top. |
 
 ---
 
@@ -330,7 +330,7 @@ AccreditEx's competitive moat rests on four pillars that no competitor combines:
 
 1. **Defend the GCC moat** — Expand CBAHI template coverage to edition 4 (2025); add DHA JAWDA and MOH Oman templates.
 2. **Neutralize Vastian** — Publish head-to-head comparison content; emphasize GCC depth, Arabic RTL, pricing, and AI breadth.
-3. **Build CAP competency templates** — Pre-built 6-method competency assessments to strengthen lab positioning vs. Surpass.
+3. **~~Build CAP competency templates~~** ✔️ **DONE** — CAPAssessmentTab.tsx (726 lines) with 11 CAP disciplines × 6-element competency framework deployed. Surpass's key differentiator neutralized.
 4. **Pursue SOC 2 Type II** — Remove the #1 enterprise procurement objection.
 5. **Launch 3 GCC pilot programs** — Convert to referenceable case studies for sales collateral.
 

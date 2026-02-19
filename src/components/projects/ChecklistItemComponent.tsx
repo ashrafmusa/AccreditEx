@@ -73,6 +73,8 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
   const [aiModalMode, setAiModalMode] = useState<
     "default" | "evidence-advisor"
   >("default");
+  const [showAiNotesBanner, setShowAiNotesBanner] = useState(false);
+  const [isAutoGeneratingNotes, setIsAutoGeneratingNotes] = useState(false);
   const navigate = useNavigate();
 
   // Safely get standardId with fallback
@@ -1132,6 +1134,16 @@ Action Plan: ${item.actionPlan || "None"}`;
                     ...editedItem,
                     status: newStatus,
                   });
+                  // A-3: Auto-trigger AI notes suggestion for non-compliant statuses
+                  if (
+                    (newStatus === ComplianceStatus.NonCompliant ||
+                      newStatus === ComplianceStatus.PartiallyCompliant) &&
+                    item.status !== newStatus
+                  ) {
+                    setShowAiNotesBanner(true);
+                  } else {
+                    setShowAiNotesBanner(false);
+                  }
                 }}
                 className="w-full p-2 border rounded text-sm"
               >
@@ -1141,6 +1153,73 @@ Action Plan: ${item.actionPlan || "None"}`;
                   </option>
                 ))}
               </select>
+            </div>
+          )}
+
+          {/* A-3: AI Notes/Findings Banner — auto-triggered on non-compliant status change */}
+          {showAiNotesBanner && isEditing && (
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-rose-50 dark:from-amber-900/20 dark:to-rose-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+              <span className="text-amber-600">🤖</span>
+              <p className="text-sm text-amber-800 dark:text-amber-300 grow">
+                Status changed to non-compliant — would you like AI to generate
+                findings notes and a suggested action plan?
+              </p>
+              <button
+                onClick={async () => {
+                  setIsAutoGeneratingNotes(true);
+                  setShowAiNotesBanner(false);
+                  try {
+                    const currentStatus = editedItem.status || item.status;
+                    const prompt = `Generate concise, professional audit findings notes AND a corrective action plan for this non-compliant checklist item. 
+
+Section 1 - FINDINGS (2-3 sentences): Describe the gap/deficiency based on the requirement and current status.
+Section 2 - ACTION PLAN (2-4 bullet points): List specific corrective actions needed.
+
+Standard: ${item.standardId}
+Requirement: ${item.item}
+Status: ${currentStatus}
+Evidence: ${item.evidenceFiles.length} documents attached
+Existing Notes: ${item.notes || "None"}`;
+                    const response = await aiAgentService.chat(prompt, true);
+                    const text = response.response || "";
+                    // Split into notes and action plan
+                    const actionMatch = text.match(
+                      /(?:ACTION\s*PLAN|CORRECTIVE\s*ACTION|Section\s*2)[:\s-]*([\s\S]*)/i,
+                    );
+                    const findingsMatch = text.match(
+                      /(?:FINDINGS|Section\s*1)[:\s-]*([\s\S]*?)(?=(?:ACTION\s*PLAN|CORRECTIVE\s*ACTION|Section\s*2)|$)/i,
+                    );
+                    const notes = findingsMatch
+                      ? findingsMatch[1].trim()
+                      : text.split("\n").slice(0, 3).join("\n").trim();
+                    const actionPlan = actionMatch ? actionMatch[1].trim() : "";
+                    setEditedItem((prev) => ({
+                      ...prev,
+                      notes: notes || prev.notes,
+                      ...(actionPlan ? { actionPlan } : {}),
+                    }));
+                    toast.success(
+                      "AI pre-filled findings notes" +
+                        (actionPlan ? " and action plan" : "") +
+                        " — review and save.",
+                    );
+                  } catch {
+                    toast.error("AI notes generation failed");
+                  } finally {
+                    setIsAutoGeneratingNotes(false);
+                  }
+                }}
+                disabled={isAutoGeneratingNotes}
+                className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-md hover:from-amber-600 hover:to-rose-600 disabled:opacity-50 whitespace-nowrap"
+              >
+                {isAutoGeneratingNotes ? "Generating..." : "✨ Generate"}
+              </button>
+              <button
+                onClick={() => setShowAiNotesBanner(false)}
+                className="text-gray-400 hover:text-gray-600 text-sm"
+              >
+                ✕
+              </button>
             </div>
           )}
 

@@ -21,6 +21,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useArrowNavigation } from "@/hooks/useArrowNavigation";
+import { prefetchRoute } from "@/services/routePrefetchService";
 
 interface NavigationRailProps {
   setNavigation: (state: NavigationState) => void;
@@ -46,6 +47,7 @@ const NavItem: React.FC<{
   <li>
     <button
       onClick={onClick}
+      onPointerEnter={() => prefetchRoute(item.nav.view)}
       id={`nav-item-${item.key}`}
       aria-label={item.label}
       aria-current={isActive ? "page" : undefined}

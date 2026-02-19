@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   LearningPath,
   LearningPathStep,
@@ -16,6 +16,7 @@ import {
   ClockIcon,
 } from "@/components/icons";
 import { useUserStore } from "@/stores/useUserStore";
+import { aiAgentService } from "@/services/aiAgentService";
 
 // ── Seed data: 4 built-in learning paths ──────────────────
 
@@ -359,6 +360,46 @@ const LearningPathsTab: React.FC = () => {
     LearningPath["category"] | "all"
   >("all");
 
+  // ── AI Training Recommendations ───────────────────────
+  const [aiRecommendations, setAiRecommendations] = useState<string | null>(
+    null,
+  );
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const fetchAiRecommendations = useCallback(async () => {
+    if (aiLoading) return;
+    setAiLoading(true);
+    setAiError(null);
+    setAiRecommendations(null);
+    try {
+      const result = await aiAgentService.getTrainingRecommendations({
+        role: currentUser?.role || "TeamMember",
+        department: currentUser?.department || "General",
+        competency_gaps: [],
+      });
+      setAiRecommendations(
+        typeof result === "string"
+          ? result
+          : result?.recommendations ||
+              result?.response ||
+              JSON.stringify(result, null, 2),
+      );
+    } catch (err: any) {
+      // Fallback to chat endpoint if dedicated endpoint is not available
+      try {
+        const fallback = await aiAgentService.chat(
+          `Based on my role as ${currentUser?.role || "TeamMember"} in the ${currentUser?.department || "General"} department, recommend training priorities and learning paths for healthcare accreditation readiness. Be specific and actionable.`,
+        );
+        setAiRecommendations(fallback.response);
+      } catch {
+        setAiError(err.message || "Failed to get AI recommendations");
+      }
+    } finally {
+      setAiLoading(false);
+    }
+  }, [currentUser, aiLoading]);
+
   const filteredPaths = useMemo(
     () =>
       categoryFilter === "all"
@@ -448,7 +489,46 @@ const LearningPathsTab: React.FC = () => {
         >
           My Progress ({myEnrolled.length})
         </Button>
+        <div className="flex-1" />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={fetchAiRecommendations}
+          disabled={aiLoading}
+          className="flex items-center gap-1.5 text-brand-primary"
+        >
+          <AcademicCapIcon className="h-4 w-4" />
+          {aiLoading ? "Analyzing..." : "AI Recommendations"}
+        </Button>
       </div>
+
+      {/* ── AI Recommendations Panel ─────────────────── */}
+      {(aiRecommendations || aiError) && (
+        <Card className="p-5 border-brand-primary/30 bg-brand-primary/5 dark:bg-brand-primary/10">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-sm font-semibold text-brand-primary flex items-center gap-2">
+              <AcademicCapIcon className="h-5 w-5" />
+              AI Training Recommendations
+            </h3>
+            <button
+              onClick={() => {
+                setAiRecommendations(null);
+                setAiError(null);
+              }}
+              className="text-gray-400 hover:text-gray-600 text-xs"
+            >
+              Dismiss
+            </button>
+          </div>
+          {aiError ? (
+            <p className="text-sm text-red-600 dark:text-red-400">{aiError}</p>
+          ) : (
+            <div className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary whitespace-pre-wrap leading-relaxed">
+              {aiRecommendations}
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* ── Catalog View ───────────────────────────────── */}
       {view === "catalog" && (
