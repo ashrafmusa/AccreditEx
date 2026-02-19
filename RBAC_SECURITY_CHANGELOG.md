@@ -2,7 +2,7 @@
 
 **Date:** February 18, 2026  
 **Audit Reference:** `RBAC_SECURITY_AUDIT_2026.md`  
-**Status:** Implementation complete — requires key rotation (manual) and deploy
+**Status:** Implementation complete — requires key rotation (manual). All other fixes deployed to https://accreditex.web.app on Feb 19, 2026.
 
 ---
 
@@ -237,4 +237,5 @@ When a user with a legacy document ID (e.g., `user-5`) logs in after this fix:
 
 ---
 
-*Generated: February 18, 2026*
+*Generated: February 18, 2026*  
+*Updated: February 19, 2026 — Deployment confirmed to https://accreditex.web.app. All fixes except C-3 (manual key rotation) are live in production.*

@@ -18,7 +18,7 @@ The AccreditEx RBAC system contains **3 CRITICAL**, **4 HIGH**, and **3 MEDIUM**
 | **HIGH** | 4 | ⚠️ Requires urgent remediation — no fixes applied yet |
 | **MEDIUM** | 3 | Should be addressed in next sprint |
 
-> **⚠️ Update (Feb 19, 2026):** All P0 feature gaps have been closed (Quality Rounding, Near-Miss, Trending, Performance Eval, Audit Log). Navigation consolidated from 17→12 sidebar items. However, **no RBAC security findings have been remediated yet**. All 10 findings remain open. The security remediation items below should be prioritized alongside P1 feature work.
+> **⚠️ Update (Feb 19, 2026):** All P0 feature gaps have been closed (Quality Rounding, Near-Miss, Trending, Performance Eval, Audit Log). Navigation consolidated from 17→12 sidebar items. Additionally, all P1 (10/10) and P2 (6/7) roadmap features are now implemented and deployed, including Lab Operations (5-tab hub), Knowledge Base, CAP Assessment, LIMS Integration, QC Data Import, Tracer Worksheets, and more. NavigationView now has **25 values** (not 23 as noted below). SettingsSection now has **19 values** (including `limsIntegration`, `departments`). **For RBAC security remediation status, see `RBAC_SECURITY_CHANGELOG.md`** which documents 9 fixes applied (C-1, C-2, H-1 through H-4, M-1, M-2). C-3 (secret rotation) still requires manual action. All changes deployed to https://accreditex.web.app on Feb 19, 2026.
 
 ---
 
@@ -49,7 +49,7 @@ The AccreditEx RBAC system contains **3 CRITICAL**, **4 HIGH**, and **3 MEDIUM**
 | **Client-side component guards** | `useAdminGuard` + inline checks | Bypassable via DevTools |
 | **Client-side store checks** | `updateUser` in useUserStore | Bypassable via DevTools |
 
-> **Codebase Update (Feb 19):** `NavigationView` type cleaned from 32→23 values. Dead views removed (`risk`, `accreditation`, `projectOverview`, `users`, `analytics`, `qualityInsights`, `reports`, `myTasks`, `competencies`, `aiDocumentGenerator`). New consolidated views added (`analyticsHub`). Admin-only views in `MainRouter.tsx` still enforced client-side only.
+> **Codebase Update (Feb 19):** `NavigationView` type now has **25 values** (was 32 at initial audit, cleaned to 23, then expanded to 25 with new P2 features). New views added: `knowledgeBase`, `labOperations`. Dead views removed (`risk`, `accreditation`, `projectOverview`, `users`, `analytics`, `qualityInsights`, `reports`, `myTasks`, `competencies`, `aiDocumentGenerator`). Consolidated views added (`analyticsHub`). Full URL routing implemented via React Router DOM 7.13.0 with 34 routes (28 primary + 6 legacy redirects). 7 Zustand stores (up from 3). Admin-only views in `MainRouter.tsx` still enforced client-side only.
 
 ---
 

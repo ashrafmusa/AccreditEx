@@ -8,6 +8,7 @@ import { getUsers } from '@/services/userService';
 import { deviceSessionService } from '@/services/deviceSessionService';
 import { handleError, AppError, AuthenticationError } from '@/services/errorHandling';
 import { logger } from '@/services/logger';
+import { analytics } from '@/services/analyticsTrackingService';
 // Security fix (2026-02-18): Secure user creation with Auth UID alignment
 import { createUserSecurely } from '@/services/secureUserService';
 
@@ -53,6 +54,9 @@ export const useUserStore = create<UserState>((set, get) => ({
           deviceSessionService.createOrUpdateSession(user.id).catch(err =>
             logger.warn('Failed to track session', err)
           );
+
+          // Track login event
+          analytics.trackLogin('email');
 
           return user;
         }

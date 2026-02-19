@@ -31,6 +31,7 @@ import {
   AdvancedToggle,
   EnhancedInput,
 } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 // Password strength calculator
 const calculatePasswordStrength = (
@@ -73,6 +74,7 @@ const ProfileSettingsPage: React.FC = () => {
   const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});

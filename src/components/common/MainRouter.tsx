@@ -7,6 +7,7 @@ import EmptyState from "@/components/common/EmptyState";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import { LockClosedIcon } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { analytics } from "@/services/analyticsTrackingService";
 
 // Performance Optimization: Lazy load all page components
 // This reduces the main bundle from 4.39MB to under 500KB
@@ -176,6 +177,11 @@ const MainRouter: React.FC<MainRouterProps> = ({
       setUnauthorizedAttempt(false);
     }
   }, [navigation, currentUser, setNavigation]);
+
+  // ── Analytics: track page/view changes ────────────────
+  useEffect(() => {
+    analytics.trackPageView(navigation.view);
+  }, [navigation.view]);
 
   // Standalone pages (no main layout context needed beyond navigation)
   if (navigation.view === "certificate") {

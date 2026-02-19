@@ -1,5 +1,7 @@
 # 🚀 Firebase Integration Deployment Guide
 
+> **✅ DEPLOYED** — Firebase integration is live on Render.com at https://accreditex.onrender.com. Steps below retained for reference.
+
 ## What's Enhanced
 
 Your AI agent now has **direct Firebase database access** for:

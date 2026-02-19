@@ -1,5 +1,7 @@
 # Deployment Pre-flight Checklist
 
+> **✅ DEPLOYED** — AI Agent is live at https://accreditex.onrender.com (as of Feb 19, 2026). Checklist retained as reference for future re-deployments.
+
 ## ✅ Pre-Deployment Checklist
 
 ### 1. Local Testing

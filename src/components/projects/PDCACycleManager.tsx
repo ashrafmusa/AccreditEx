@@ -9,6 +9,7 @@ import { PlusIcon, FunnelIcon } from "../icons";
 import PDCACycleCard from "./PDCACycleCard";
 import PDCAStageTransitionForm from "./PDCAStageTransitionForm";
 import PDCACycleDetailModal from "./PDCACycleDetailModal";
+import { aiAgentService } from "@/services/aiAgentService";
 
 interface PDCACycleManagerProps {
   project: Project;
@@ -41,6 +42,90 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
     owner?: string;
     dueDate?: string;
   }>({});
+  const [isAISuggesting, setIsAISuggesting] = useState(false);
+  const [aiCycleTitle, setAiCycleTitle] = useState("");
+  const [aiCycleDesc, setAiCycleDesc] = useState("");
+
+  // A-14: AI-powered PDCA cycle setup suggestion
+  const handleAISuggestCycle = async () => {
+    if (isAISuggesting) return;
+    setIsAISuggesting(true);
+    try {
+      const existingCycles = (project.pdcaCycles || [])
+        .map((c) => c.title)
+        .join(", ");
+      const existingCapas = (project.capaReports || [])
+        .map((c) => c.description)
+        .join(", ");
+      const prompt = `You are a healthcare accreditation PDCA improvement expert. Suggest a new PDCA cycle for this project.
+
+Project: ${project.name}
+Existing PDCA Cycles: ${existingCycles || "None"}
+Existing CAPAs: ${existingCapas || "None"}
+
+Based on the project context and gaps not yet covered by existing cycles, suggest a NEW improvement cycle.
+
+Respond ONLY in this exact format:
+### Title
+(A concise, specific PDCA cycle title - max 100 chars)
+
+### Description
+(A detailed description of the improvement objective, scope, and expected outcomes - 3-5 sentences)
+
+### Category
+(One of: Process, Quality, Safety, Efficiency, Other)
+
+### Priority
+(One of: High, Medium, Low)
+
+Use healthcare accreditation terminology. Be specific and actionable.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      const text = response.response || "";
+
+      const parseSection = (header: string): string => {
+        const regex = new RegExp(
+          `###\\s*${header}\\s*\\n([\\s\\S]*?)(?=###|$)`,
+        );
+        const match = text.match(regex);
+        return match ? match[1].trim() : "";
+      };
+
+      const title = parseSection("Title");
+      const desc = parseSection("Description");
+
+      if (title) setAiCycleTitle(title.slice(0, 100));
+      if (desc) setAiCycleDesc(desc.slice(0, 500));
+
+      // Also try to set category and priority via DOM
+      const category = parseSection("Category");
+      const priority = parseSection("Priority");
+      const categorySelect = document.querySelector(
+        'select[name="category"]',
+      ) as HTMLSelectElement;
+      const prioritySelect = document.querySelector(
+        'select[name="priority"]',
+      ) as HTMLSelectElement;
+      if (
+        categorySelect &&
+        ["Process", "Quality", "Safety", "Efficiency", "Other"].includes(
+          category,
+        )
+      ) {
+        categorySelect.value = category;
+      }
+      if (prioritySelect && ["High", "Medium", "Low"].includes(priority)) {
+        prioritySelect.value = priority;
+      }
+
+      toast.success("AI suggested PDCA cycle setup.");
+    } catch (error) {
+      console.error("AI PDCA cycle suggestion error:", error);
+      toast.error("Failed to generate AI suggestion.");
+    } finally {
+      setIsAISuggesting(false);
+    }
+  };
 
   // Combine Cycles and CAPAs
   type PDCAItem =
@@ -388,9 +473,41 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
       {showNewCycleModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-dark-brand-surface rounded-lg max-w-2xl w-full p-6">
-            <h2 className="text-xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
-              {t("newPDCACycle") || "New PDCA Cycle"}
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
+                {t("newPDCACycle") || "New PDCA Cycle"}
+              </h2>
+              <button
+                type="button"
+                onClick={handleAISuggestCycle}
+                disabled={isAISuggesting}
+                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1.5 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {isAISuggesting ? (
+                  <>
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>{" "}
+                    Suggesting...
+                  </>
+                ) : (
+                  <>🤖 AI Suggest</>
+                )}
+              </button>
+            </div>
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -486,6 +603,8 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                   <input
                     type="text"
                     name="title"
+                    value={aiCycleTitle}
+                    onChange={(e) => setAiCycleTitle(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-lg ${
                       formErrors.title
                         ? "border-red-500 focus:ring-red-500"
@@ -505,6 +624,8 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                   <textarea
                     name="description"
                     rows={3}
+                    value={aiCycleDesc}
+                    onChange={(e) => setAiCycleDesc(e.target.value)}
                     className={`w-full px-3 py-2 border rounded-lg ${
                       formErrors.description
                         ? "border-red-500 focus:ring-red-500"
@@ -610,6 +731,8 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
                   onClick={() => {
                     setShowNewCycleModal(false);
                     setFormErrors({});
+                    setAiCycleTitle("");
+                    setAiCycleDesc("");
                   }}
                   className="flex-1 py-2 px-4 border rounded-lg hover:bg-gray-50"
                 >

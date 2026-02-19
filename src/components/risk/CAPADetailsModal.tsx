@@ -6,6 +6,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useToast } from "@/hooks/useToast";
 import { evaluateCapaCompleteness } from "@/services/tqmReadinessService";
+import { aiAgentService } from "@/services/aiAgentService";
 
 interface CAPADetailsModalProps {
   isOpen: boolean;
@@ -27,6 +28,9 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [editedCapa, setEditedCapa] = useState<CAPAReport>(capa);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isAIPreFilling, setIsAIPreFilling] = useState(false);
+  const [isAIReviewing, setIsAIReviewing] = useState(false);
+  const [aiReviewResult, setAiReviewResult] = useState<string | null>(null);
 
   const isAdmin = currentUser?.role === "Admin";
 
@@ -60,6 +64,101 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
     } catch (error: any) {
       console.error("Delete CAPA error:", error);
       toast.error(error?.message || t("failedToDeleteCapa"));
+    }
+  };
+
+  // A-5: AI pre-fill root cause, corrective action, preventive action
+  const handleAIPreFill = async () => {
+    if (isAIPreFilling) return;
+    setIsAIPreFilling(true);
+    try {
+      const prompt = `You are a healthcare accreditation CAPA expert. Analyze this CAPA and suggest root cause analysis, corrective actions, and preventive actions.
+
+CAPA Description: ${editedCapa.description || "Not provided"}
+Current Root Cause: ${editedCapa.rootCause || "Not yet analyzed"}
+Current Stage: ${editedCapa.pdcaStage || "Plan"}
+Project: ${project?.name || "Unknown"}
+
+Respond with EXACTLY these three sections:
+### RootCause
+(Provide a thorough root cause analysis using 5-Why or Fishbone methodology. 3-5 sentences.)
+
+### CorrectiveAction
+(Provide specific, actionable corrective actions with timelines. 3-5 bullet points.)
+
+### PreventiveAction
+(Provide systemic preventive measures to avoid recurrence. 2-4 bullet points.)
+
+Use healthcare accreditation terminology. Be specific and actionable.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      const text = response.response || "";
+
+      const parseSection = (header: string): string => {
+        const regex = new RegExp(
+          `###\\s*${header}\\s*\\n([\\s\\S]*?)(?=###|$)`,
+        );
+        const match = text.match(regex);
+        return match ? match[1].trim() : "";
+      };
+
+      const rootCause = parseSection("RootCause");
+      const corrective = parseSection("CorrectiveAction");
+      const preventive = parseSection("PreventiveAction");
+
+      setEditedCapa((prev) => ({
+        ...prev,
+        rootCause: rootCause || prev.rootCause,
+        correctiveAction: corrective || prev.correctiveAction,
+        preventiveAction: preventive || prev.preventiveAction,
+      }));
+      toast.success("AI pre-filled CAPA fields.");
+    } catch (error) {
+      console.error("AI CAPA pre-fill error:", error);
+      toast.error("Failed to generate AI suggestions.");
+    } finally {
+      setIsAIPreFilling(false);
+    }
+  };
+
+  // A-15: AI effectiveness verification review
+  const handleAIEffectivenessReview = async () => {
+    if (isAIReviewing) return;
+    setIsAIReviewing(true);
+    setAiReviewResult(null);
+    try {
+      const prompt = `You are a healthcare accreditation quality expert. Review this CAPA for effectiveness and completeness.
+
+CAPA Description: ${capa.description || "N/A"}
+Root Cause: ${capa.rootCause || "Not defined"}
+Corrective Action: ${capa.correctiveAction || "Not defined"}
+Preventive Action: ${capa.preventiveAction || "Not defined"}
+Current PDCA Stage: ${capa.pdcaStage || "Plan"}
+Status: ${capa.status || "Open"}
+Project: ${project?.name || "Unknown"}
+
+Evaluate the following:
+1. Is the root cause analysis thorough enough?
+2. Are corrective actions specific and measurable?
+3. Are preventive actions systemic (not just reactive)?
+4. Is the CAPA ready for closure?
+
+Provide:
+- An effectiveness score (0-100%)
+- A recommendation: CLOSE, NEEDS_REVISION, or REOPEN
+- Specific gaps or missing elements (if any)
+- Suggested improvements
+
+Format your response clearly with headers.`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      setAiReviewResult(response.response || "No review generated.");
+      toast.success("AI effectiveness review complete.");
+    } catch (error) {
+      console.error("AI effectiveness review error:", error);
+      toast.error("Failed to generate effectiveness review.");
+    } finally {
+      setIsAIReviewing(false);
     }
   };
 
@@ -98,6 +197,45 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* AI Pre-fill banner in edit mode */}
+          {isEditing && (
+            <div className="flex items-center justify-between bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 border border-rose-200 dark:border-pink-800 rounded-lg p-3">
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                🤖 Use AI to pre-fill root cause, corrective &amp; preventive
+                actions
+              </span>
+              <button
+                type="button"
+                onClick={handleAIPreFill}
+                disabled={isAIPreFilling}
+                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1.5 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {isAIPreFilling ? (
+                  <>
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>{" "}
+                    Analyzing...
+                  </>
+                ) : (
+                  "🤖 AI Pre-fill"
+                )}
+              </button>
+            </div>
+          )}
           {/* Warning if project not found */}
           {!project && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-4">
@@ -279,6 +417,55 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                   {new Date(capa.updatedAt).toLocaleDateString()}
                 </span>
               </div>
+            )}
+          </div>
+
+          {/* AI Effectiveness Review (A-15) */}
+          <div className="border border-rose-200 dark:border-pink-800 rounded-md p-4 bg-gradient-to-r from-rose-50/50 to-cyan-50/50 dark:from-pink-900/10 dark:to-cyan-900/10">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                🤖 AI Effectiveness Review
+              </p>
+              <button
+                type="button"
+                onClick={handleAIEffectivenessReview}
+                disabled={isAIReviewing}
+                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+              >
+                {isAIReviewing ? (
+                  <>
+                    <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
+                    </svg>{" "}
+                    Reviewing...
+                  </>
+                ) : (
+                  "Run Review"
+                )}
+              </button>
+            </div>
+            {aiReviewResult ? (
+              <div className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap max-h-48 overflow-y-auto bg-white/60 dark:bg-gray-800/60 p-3 rounded">
+                {aiReviewResult}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Run an AI review to assess CAPA completeness, root cause
+                quality, and closure readiness.
+              </p>
             )}
           </div>
 

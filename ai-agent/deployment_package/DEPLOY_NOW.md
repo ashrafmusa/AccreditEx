@@ -1,5 +1,7 @@
 # 🚀 Quick Deploy to Render.com
 
+> **✅ DEPLOYED** — AI Agent is live at https://accreditex.onrender.com (as of Feb 19, 2026). Integrated with https://accreditex.web.app via `aiAgentService.ts`. Steps below retained as reference for re-deployment.
+
 ## ✅ Pre-Deployment Validation Complete!
 
 All modules are working correctly:

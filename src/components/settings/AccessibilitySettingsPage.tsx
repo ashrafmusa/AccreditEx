@@ -17,6 +17,7 @@ import {
   EnhancedSelect,
   SliderInput,
 } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const AccessibilitySettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -38,6 +39,7 @@ const AccessibilitySettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
 
   useEffect(() => {
     const root = document.documentElement;

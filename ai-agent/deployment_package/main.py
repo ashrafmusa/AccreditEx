@@ -9,6 +9,9 @@ from fastapi.responses import StreamingResponse, JSONResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any, AsyncGenerator
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 import uvicorn
 import os
 import logging
@@ -34,6 +37,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Rate limiter setup
+limiter = Limiter(key_func=get_remote_address)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -65,6 +71,10 @@ app = FastAPI(
         }
     ]
 )
+
+# Add rate limiter to app
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS - Production Ready
 app.add_middleware(
@@ -210,7 +220,8 @@ async def health_check():
     summary="Chat with AI Assistant",
     description="Send a message to the AI assistant and receive streaming response with context awareness"
 )
-async def chat(request: ChatRequest):
+@limiter.limit("30/minute")
+async def chat(request: Request, chat_request: ChatRequest):
     """
     Chat with the AI agent (streaming response)
     Accepts optional context for context-aware responses including forms and templates
@@ -223,13 +234,13 @@ async def chat(request: ChatRequest):
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
-        performance_monitor.log_info("chat_request_received", message_preview=request.message[:100])
+        performance_monitor.log_info("chat_request_received", message_preview=chat_request.message[:100])
         
         # Log enhanced context information
-        if request.context and request.context.get('current_data'):
-            data = request.context['current_data']
+        if chat_request.context and chat_request.context.get('current_data'):
+            data = chat_request.context['current_data']
             logger.info(f"📊 Context received:")
-            logger.info(f"  - User role: {request.context.get('user_role', 'Unknown')}")
+            logger.info(f"  - User role: {chat_request.context.get('user_role', 'Unknown')}")
             logger.info(f"  - Templates available: {len(data.get('available_templates', []))}")
             logger.info(f"  - Forms available: {len(data.get('available_forms', []))}")
             logger.info(f"  - AI instructions: {data.get('ai_instructions', {}).get('context_awareness', 'none')}")
@@ -239,9 +250,9 @@ async def chat(request: ChatRequest):
             full_response = ""
             chunk_count = 0
             async for chunk in agent.chat(
-                message=request.message,
-                thread_id=request.thread_id,
-                context=request.context
+                message=chat_request.message,
+                thread_id=chat_request.thread_id,
+                context=chat_request.context
             ):
                 full_response += chunk
                 chunk_count += 1
@@ -273,7 +284,9 @@ async def chat(request: ChatRequest):
 
 # Document compliance endpoint
 @app.post("/check-compliance", dependencies=[Depends(verify_api_key)])
+@limiter.limit("20/minute")
 async def check_compliance(
+    request: Request,
     document_type: str,
     standard: str,
     content_summary: str,
@@ -297,7 +310,9 @@ async def check_compliance(
 
 # Risk assessment endpoint
 @app.post("/assess-risk", dependencies=[Depends(verify_api_key)])
+@limiter.limit("20/minute")
 async def assess_risk(
+    request: Request,
     area: str,
     current_status: str,
     upcoming_review_date: str,
@@ -321,7 +336,9 @@ async def assess_risk(
 
 # Training recommendations endpoint
 @app.post("/training-recommendations", dependencies=[Depends(verify_api_key)])
+@limiter.limit("15/minute")
 async def get_training_recommendations(
+    request: Request,
     role: str,
     competency_gaps: list,
     accreditation_focus: str,
@@ -345,7 +362,8 @@ async def get_training_recommendations(
 
 # NEW: Project Insights endpoint
 @app.post("/api/ai/insights", dependencies=[Depends(verify_api_key)])
-async def get_project_insights(project_id: str, user_id: str):
+@limiter.limit("20/minute")
+async def get_project_insights(request: Request, project_id: str, user_id: str):
     """Get AI-generated insights for a specific project"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
@@ -368,7 +386,8 @@ async def get_project_insights(project_id: str, user_id: str):
 
 # NEW: AI-powered document search endpoint
 @app.get("/api/ai/search", dependencies=[Depends(verify_api_key)])
-async def search_documents_ai(query: str, user_id: str, document_type: Optional[str] = None):
+@limiter.limit("30/minute")
+async def search_documents_ai(request: Request, query: str, user_id: str, document_type: Optional[str] = None):
     """AI-powered document search with relevance ranking"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
@@ -458,7 +477,9 @@ async def get_training_status_ai(user_id: str):
 
 # Upload report to Firebase Storage (bypasses browser CORS)
 @app.post("/upload-report", dependencies=[Depends(verify_api_key)])
+@limiter.limit("10/minute")
 async def upload_report(
+    request: Request,
     project_id: str = File(...),
     file_data: str = File(...),
     file_name: str = File(...)

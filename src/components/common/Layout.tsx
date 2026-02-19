@@ -5,6 +5,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 import MobileSidebar from "@/components/common/MobileSidebar";
 import NavigationRail from "@/components/common/NavigationRail";
 import CommandPalette from "@/components/common/CommandPalette";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import { useBreadcrumbs } from "@/hooks/useBreadcrumbs";
 // FIX: Corrected import path for notification service
 import { getNotificationsForUser } from "@/services/notificationServiceFirebase";
 import { useUserStore } from "@/stores/useUserStore";
@@ -38,6 +40,9 @@ const Layout: React.FC<LayoutProps> = ({
   const accreditationPrograms = useAppStore(
     (state) => state.accreditationPrograms,
   );
+
+  // Breadcrumbs from navigation state
+  const breadcrumbItems = useBreadcrumbs(navigation);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -145,7 +150,15 @@ const Layout: React.FC<LayoutProps> = ({
             className="flex-1 overflow-y-auto p-4 sm:p-5 md:p-6 bg-brand-background dark:bg-dark-brand-background page-enter-active scroll-smooth overscroll-contain touch-pan-y"
             style={{ WebkitOverflowScrolling: "touch" }}
           >
-            <div className="max-w-7xl mx-auto">{children}</div>
+            <div className="max-w-7xl mx-auto">
+              {breadcrumbItems.length > 0 && (
+                <Breadcrumbs
+                  items={breadcrumbItems}
+                  setNavigation={setNavigation}
+                />
+              )}
+              {children}
+            </div>
           </main>
         </div>
       </div>

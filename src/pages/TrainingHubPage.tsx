@@ -70,6 +70,7 @@ const TrainingHubPage: React.FC<TrainingHubPageProps> = ({ setNavigation }) => {
   const [aiModalContent, setAiModalContent] = useState("");
   const [aiModalTitle, setAiModalTitle] = useState("");
 
+  // Permission check: Viewer users get read-only UI
   const isAdmin = currentUser?.role === UserRole.Admin;
 
   const handleAIAnalyze = async () => {

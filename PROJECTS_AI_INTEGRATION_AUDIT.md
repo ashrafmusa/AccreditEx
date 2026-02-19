@@ -1,7 +1,26 @@
 # AccreditEx — Projects System & AI Integration Audit
 
-**Date:** February 16, 2026  
+**Date:** February 16, 2026 (Updated: February 19, 2026)  
 **Purpose:** Understand how Projects work end-to-end, identify AI integration gaps across all project phases, and plan smooth AI-powered workflows.
+
+---
+
+## 📝 UPDATE NOTE — February 19, 2026
+
+> **Since this audit was written, the following AI-adjacent features have been implemented:**
+>
+> | Feature | Component | Lines | Impact on This Audit |
+> |---------|-----------|-------|---------------------|
+> | **RCA Tools** | RCAToolTab.tsx | 666 | Addresses Phase 5 "AI CAPA Pre-fill" gap — new Fishbone + Five-Why analysis tools |
+> | **CAP Assessment** | CAPAssessmentTab.tsx | 726 | New 11-discipline × 6-element competency assessment framework |
+> | **Escalation Service** | escalationService.ts | 261 | Automated escalation workflows with configurable rules |
+> | **QC Data Import** | qcDataImportService.ts + QCDataImportTab.tsx | 962 | Lab QC data import with validation and trending |
+> | **LIMS Integration** | src/services/limsIntegration/ | ~770 | Multi-vendor LIMS connectivity (Orchard, SoftLab, Sunquest) |
+> | **Tracer Worksheets** | TracerWorksheetTab.tsx | 931 | Interactive CAP/JCI tracer tool for survey prep |
+>
+> **Files Inventory Update:** Types now 7 files (added labOps.ts, templates.ts, customization.ts), Stores now 7 (added useLabOpsStore, useAIChatStore, useHISIntegrationStore, useCustomizationStore), Services now 95+ (root 67 + hisIntegration 18 + limsIntegration 10).
+>
+> **Unused Endpoints Status:** `assessRisk()` is now used in SurveyReportPage. `getTrainingRecommendations()` planned for Learning Paths integration. `checkCompliance()` integration prioritized for Phase 2.
 
 ---
 

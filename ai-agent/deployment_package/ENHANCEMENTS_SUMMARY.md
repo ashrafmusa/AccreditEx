@@ -4,7 +4,8 @@
 This document summarizes the comprehensive enhancements made to the AccreditEx AI Agent based on best practices from the `.agent` framework.
 
 **Implementation Date:** February 1, 2026  
-**Version:** 2.1.0 (Enhanced)
+**Version:** 2.1.0 (Enhanced)  
+**Deployment:** ✅ Live at https://accreditex.onrender.com (Feb 19, 2026)
 
 ---
 

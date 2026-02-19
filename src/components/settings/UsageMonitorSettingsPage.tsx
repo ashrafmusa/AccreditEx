@@ -15,6 +15,7 @@ import {
   ExclamationTriangleIcon,
 } from "@/components/icons";
 import { SettingsPanel, FormGroup, AdvancedToggle, SliderInput } from "./index";
+import { useBeforeUnload } from "@/hooks/useBeforeUnload";
 
 const UsageMonitorSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -35,6 +36,7 @@ const UsageMonitorSettingsPage: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  useBeforeUnload(hasChanges);
   const [dismissedAlert, setDismissedAlert] = useState(false);
 
   const handleUsageMonitorChange = (
