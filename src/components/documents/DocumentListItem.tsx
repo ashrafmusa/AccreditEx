@@ -80,19 +80,19 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
     return (
       <div className="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-800 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
         <div className="flex items-center gap-2 flex-1 min-w-0">
-          <span className="text-xl flex-shrink-0">{fileIcon}</span>
+          <span className="text-xl shrink-0">{fileIcon}</span>
           <span className="text-sm font-medium text-gray-900 dark:text-white truncate">
             {displayName}
           </span>
           {fileExtension && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase flex-shrink-0">
+            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase shrink-0">
               {fileExtension}
             </span>
           )}
         </div>
 
         {showActions && (
-          <div className="flex items-center gap-1 flex-shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
             {canViewDocument(document) && onView && (
               <button
                 onClick={handleView}
@@ -129,7 +129,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
   return (
     <div className="flex items-start justify-between p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3 flex-1 min-w-0">
-        <span className="text-3xl flex-shrink-0">{fileIcon}</span>
+        <span className="text-3xl shrink-0">{fileIcon}</span>
 
         <div className="flex-1 min-w-0">
           <h4 className="text-base font-medium text-gray-900 dark:text-white truncate">
@@ -178,7 +178,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
       </div>
 
       {showActions && (
-        <div className="flex items-center gap-2 flex-shrink-0 ms-4">
+        <div className="flex items-center gap-2 shrink-0 ms-4">
           {canViewDocument(document) && onView && (
             <button
               onClick={handleView}

@@ -32,6 +32,10 @@ import { en as hisIntegrationEn } from './en/his-integration';
 import { ar as hisIntegrationAr } from './ar/his-integration';
 import { en as auditEn } from './en/audit';
 import { ar as auditAr } from './ar/audit';
+import { en as performanceEn } from './en/performance';
+import { ar as performanceAr } from './ar/performance';
+import { roundingEn } from './en/rounding';
+import { roundingAr } from './ar/rounding';
 
 export const locales = {
   en: {
@@ -52,6 +56,8 @@ export const locales = {
     ...messagingEn,
     ...hisIntegrationEn,
     ...auditEn,
+    ...performanceEn,
+    ...roundingEn,
   },
   ar: {
     ...commonAr,
@@ -71,5 +77,7 @@ export const locales = {
     ...messagingAr,
     ...hisIntegrationAr,
     ...auditAr,
+    ...performanceAr,
+    ...roundingAr,
   }
 };

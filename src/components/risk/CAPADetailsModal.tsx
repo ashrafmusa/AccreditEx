@@ -173,7 +173,7 @@ const CAPADetailsModal: React.FC<CAPADetailsModalProps> = ({
                 placeholder={t("defineCorrectiveActionPlaceholder")}
               />
             ) : (
-              <div className="text-gray-900 dark:text-white bg-gradient-to-br from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 p-4 rounded-md border border-rose-200 dark:border-pink-700 whitespace-pre-wrap">
+              <div className="text-gray-900 dark:text-white bg-linear-to-br from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 p-4 rounded-md border border-rose-200 dark:border-pink-700 whitespace-pre-wrap">
                 {capa.correctiveAction}
               </div>
             )}

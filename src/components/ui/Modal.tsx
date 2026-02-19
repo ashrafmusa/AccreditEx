@@ -79,7 +79,7 @@ const Modal: FC<ModalProps> = ({
         onClick={(e) => e.stopPropagation()}
         dir={dir}
       >
-        <header className="p-6 border-b dark:border-dark-border flex justify-between items-center flex-shrink-0">
+        <header className="p-6 border-b dark:border-dark-border flex justify-between items-center shrink-0">
           <h3
             id="modal-title"
             className="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100"

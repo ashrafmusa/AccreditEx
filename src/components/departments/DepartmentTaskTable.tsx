@@ -56,7 +56,7 @@ const DepartmentTaskTable: React.FC<DepartmentTaskTableProps> = ({
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">
       <div className="p-4 border-b dark:border-dark-brand-border">
-        <div className="relative flex-grow max-w-sm">
+        <div className="relative grow max-w-sm">
           <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"

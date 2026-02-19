@@ -329,7 +329,7 @@ Be specific and actionable. If the project looks ready, say so clearly.`;
             onGenerateReport={() => setIsGeneratingReport(true)}
           />
           {isCheckingReadiness && (
-            <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-rose-900/20 dark:to-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg">
+            <div className="flex items-center gap-3 p-4 bg-linear-to-r from-rose-50 to-cyan-50 dark:from-rose-900/20 dark:to-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-lg">
               <svg
                 className="animate-spin h-5 w-5 text-cyan-600"
                 viewBox="0 0 24 24"

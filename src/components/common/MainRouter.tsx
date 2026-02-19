@@ -14,9 +14,8 @@ import { useTranslation } from "@/hooks/useTranslation";
 // Core Dashboard (high priority - load first)
 const DashboardPage = lazy(() => import("@/pages/DashboardPage"));
 
-// Analytics and Reporting (heavy components with charts)
-const AnalyticsPage = lazy(() => import("@/pages/AnalyticsPage"));
-const QualityInsightsPage = lazy(() => import("@/pages/QualityInsightsPage"));
+// Analytics and Reporting (merged into AnalyticsHub)
+const AnalyticsHubPage = lazy(() => import("@/pages/AnalyticsHubPage"));
 
 // Project Management
 const ProjectListPage = lazy(() => import("@/pages/ProjectListPage"));
@@ -25,7 +24,6 @@ const CreateProjectPage = lazy(() => import("@/pages/CreateProjectPage"));
 
 // Standards and Requirements
 const StandardsPage = lazy(() => import("@/pages/StandardsPage"));
-const MyTasksPage = lazy(() => import("@/pages/MyTasksPage"));
 
 // Calendar and Events
 const CalendarPage = lazy(() => import("@/pages/CalendarPage"));
@@ -63,16 +61,15 @@ const SurveyReportPage = lazy(() => import("@/pages/SurveyReportPage"));
 // Data and Communication
 const DataHubPage = lazy(() => import("@/pages/DataHubPage"));
 const MessagingPage = lazy(() => import("@/pages/MessagingPage"));
-const AIDocumentGeneratorPage = lazy(
-  () => import("@/pages/AIDocumentGeneratorPage"),
-);
 
-// Accreditation, Competencies, and Reports (promoted from settings)
+// Accreditation (promoted from settings)
 const AccreditationHubPage = lazy(() => import("@/pages/AccreditationHubPage"));
-const CompetencyLibraryPage = lazy(
-  () => import("@/components/competencies/CompetencyLibraryPage"),
-);
-const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
+
+// Knowledge Base
+const KnowledgeBasePage = lazy(() => import("@/pages/KnowledgeBasePage"));
+
+// Lab Operations
+const LabOperationsPage = lazy(() => import("@/pages/LabOperationsPage"));
 
 // Loading component for lazy-loaded routes
 const RouteLoadingFallback: React.FC = () => <LoadingScreen />;
@@ -109,7 +106,6 @@ const MainRouter: React.FC<MainRouterProps> = ({
     addProcessMap,
     deleteDocument,
     approveDocument,
-    addDepartment,
     updateDepartment,
     deleteDepartment,
     addStandard,
@@ -286,19 +282,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
     switch (navigation.view) {
       case "dashboard":
         return <DashboardPage setNavigation={setNavigation} />;
-      case "analytics":
-        return <AnalyticsPage setNavigation={setNavigation} />;
-      case "qualityInsights":
-        return (
-          <QualityInsightsPage
-            projects={projects}
-            risks={risks}
-            users={users}
-            departments={departments}
-            competencies={competencies}
-            userTrainingStatuses={userTrainingStatuses}
-          />
-        );
+      case "analyticsHub":
+        return <AnalyticsHubPage setNavigation={setNavigation} />;
       case "calendar":
         return <CalendarPage setNavigation={setNavigation} />;
       case "riskHub":
@@ -364,27 +349,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
           />
         );
       }
-      case "myTasks":
-        return (
-          <MyTasksPage
-            projects={projects}
-            currentUser={currentUser}
-            programs={accreditationPrograms}
-          />
-        );
       case "departments":
-        return (
-          <DepartmentsPage
-            departments={departments}
-            users={users}
-            projects={projects}
-            currentUser={currentUser}
-            setNavigation={setNavigation}
-            onCreateDepartment={addDepartment}
-            onUpdateDepartment={updateDepartment}
-            onDeleteDepartment={deleteDepartment}
-          />
-        );
+        return <DepartmentsPage setNavigation={setNavigation} />;
       case "departmentDetail": {
         const department = departments.find(
           (d) => d.id === navigation.departmentId,
@@ -454,14 +420,12 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <DataHubPage />;
       case "messaging":
         return <MessagingPage setNavigation={setNavigation} />;
-      case "aiDocumentGenerator":
-        return <AIDocumentGeneratorPage />;
       case "accreditationHub":
         return <AccreditationHubPage setNavigation={setNavigation} />;
-      case "competencies":
-        return <CompetencyLibraryPage />;
-      case "reports":
-        return <ReportsPage />;
+      case "knowledgeBase":
+        return <KnowledgeBasePage />;
+      case "labOperations":
+        return <LabOperationsPage />;
       default:
         return <DashboardPage setNavigation={setNavigation} />;
     }

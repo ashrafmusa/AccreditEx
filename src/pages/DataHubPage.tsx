@@ -1,10 +1,15 @@
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import {
   CircleStackIcon,
   ShareIcon,
   ServerStackIcon,
+  BeakerIcon,
 } from "../components/icons";
+
+const QCDataImportTab = lazy(
+  () => import("@/components/data-hub/QCDataImportTab"),
+);
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
@@ -32,7 +37,7 @@ const CodeBlock: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 const DataHubPage: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
-  const [activeTab, setActiveTab] = useState<"data" | "his">("data");
+  const [activeTab, setActiveTab] = useState<"data" | "his" | "qc">("data");
   const projects = useProjectStore((state) => state.projects);
   const users = useUserStore((state) => state.users);
   const { documents, standards } = useAppStore();
@@ -112,6 +117,20 @@ const DataHubPage: React.FC = () => {
             <div className="flex items-center space-x-2">
               <ServerStackIcon className="h-5 w-5" />
               <span>HIS Integration</span>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("qc")}
+            className={`py-3 px-1 border-b-2 font-medium transition ${
+              activeTab === "qc"
+                ? "border-brand-primary text-brand-primary"
+                : "border-transparent text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary"
+            }`}
+          >
+            <div className="flex items-center space-x-2">
+              <BeakerIcon className="h-5 w-5" />
+              <span>QC Data Import</span>
             </div>
           </button>
         </div>
@@ -196,6 +215,17 @@ const DataHubPage: React.FC = () => {
 
       {/* HIS Integration Tab */}
       {activeTab === "his" && <IntegrationDashboard />}
+
+      {/* QC Data Import Tab */}
+      {activeTab === "qc" && (
+        <Suspense
+          fallback={
+            <div className="animate-pulse h-64 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+          }
+        >
+          <QCDataImportTab />
+        </Suspense>
+      )}
     </div>
   );
 };

@@ -42,7 +42,7 @@ const Toast: FC<{ message: ToastMessage; onDismiss: (id: number) => void }> = ({
     <div
       className={`flex items-center p-4 rounded-lg shadow-lg text-white ${BG_COLORS[message.type]}`}
     >
-      <div className="flex-shrink-0">{ICONS[message.type]}</div>
+      <div className="shrink-0">{ICONS[message.type]}</div>
       <div className="mx-3 text-sm font-medium">{message.message}</div>
       <button
         onClick={() => onDismiss(message.id)}

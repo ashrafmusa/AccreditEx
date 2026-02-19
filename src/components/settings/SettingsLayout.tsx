@@ -28,6 +28,10 @@ const SettingsAuditLogViewer = lazy(() => import("./SettingsAuditLogViewer"));
 const SettingsVersionHistory = lazy(() => import("./SettingsVersionHistory"));
 const SettingsPresetsPanel = lazy(() => import("./SettingsPresetsPanel"));
 const BulkUserImport = lazy(() => import("./BulkUserImport"));
+const DepartmentsPage = lazy(() => import("@/pages/DepartmentsPage"));
+const LIMSIntegrationSettingsPage = lazy(
+  () => import("./LIMSIntegrationSettingsPage"),
+);
 import {
   Cog6ToothIcon,
   UserCircleIcon,
@@ -49,6 +53,8 @@ import {
   DocumentDuplicateIcon,
   StarIcon,
   ArrowUpTrayIcon,
+  BuildingOffice2Icon,
+  BeakerIcon,
 } from "@/components/icons";
 
 interface SettingsLayoutProps {
@@ -177,6 +183,20 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       adminOnly: true,
       category: t("admin"),
     },
+    {
+      id: "departments",
+      label: t("departments"),
+      icon: BuildingOffice2Icon,
+      adminOnly: true,
+      category: t("admin"),
+    },
+    {
+      id: "limsIntegration",
+      label: "LIMS Integration",
+      icon: BeakerIcon,
+      adminOnly: true,
+      category: t("admin"),
+    },
     ...(isAdmin
       ? [
           {
@@ -236,7 +256,11 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       case "firebaseUsage":
         return isAdmin ? <UsageMonitorPage /> : <ProfileSettingsPage />;
       case "users":
-        return <UsersPage setNavigation={setNavigation} />;
+        return isAdmin ? (
+          <UsersPage setNavigation={setNavigation} />
+        ) : (
+          <ProfileSettingsPage />
+        );
       case "accreditationHub":
         return <AccreditationHubPage setNavigation={setNavigation} />;
       case "competencies":
@@ -247,6 +271,18 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         return isAdmin ? <SettingsAuditLogViewer /> : <ProfileSettingsPage />;
       case "bulkUserImport":
         return isAdmin ? <BulkUserImport /> : <ProfileSettingsPage />;
+      case "departments":
+        return isAdmin ? (
+          <DepartmentsPage setNavigation={setNavigation} />
+        ) : (
+          <ProfileSettingsPage />
+        );
+      case "limsIntegration":
+        return isAdmin ? (
+          <LIMSIntegrationSettingsPage />
+        ) : (
+          <ProfileSettingsPage />
+        );
       case "firebaseSetup":
         return isAdmin ? <FirebaseSetupPage /> : <ProfileSettingsPage />;
       case "about":

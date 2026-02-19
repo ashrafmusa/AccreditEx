@@ -64,7 +64,7 @@ const CustomStartNode = ({ data, selected }: any) => (
         ${selected ? "border-emerald-400 ring-2 ring-emerald-200/60 dark:ring-emerald-800/40 shadow-md" : "border-emerald-200 dark:border-emerald-700 hover:shadow-md"}`}
     >
       <div className="flex items-center justify-center gap-2.5">
-        <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+        <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
         <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
           {data.label}
         </span>
@@ -83,7 +83,7 @@ const CustomEndNode = ({ data, selected }: any) => (
         ${selected ? "border-rose-400 ring-2 ring-rose-200/60 dark:ring-rose-800/40 shadow-md" : "border-rose-200 dark:border-rose-700 hover:shadow-md"}`}
     >
       <div className="flex items-center justify-center gap-2.5">
-        <div className="w-2 h-2 rounded-full bg-rose-500 flex-shrink-0" />
+        <div className="w-2 h-2 rounded-full bg-rose-500 shrink-0" />
         <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
           {data.label}
         </span>
@@ -96,7 +96,7 @@ const CustomProcessNode = ({ data, selected }: any) => (
   <div className="group relative">
     <Handle type="target" position={Position.Top} className={handleClass} />
     <div
-      className={`relative px-7 py-3.5 rounded-lg shadow-sm min-w-[160px] text-center transition-all duration-150
+      className={`relative px-7 py-3.5 rounded-lg shadow-sm min-w-40 text-center transition-all duration-150
         bg-white dark:bg-slate-800 border overflow-hidden
         ${selected ? "border-blue-400 ring-2 ring-blue-200/60 dark:ring-blue-800/40 shadow-md" : "border-slate-200 dark:border-slate-600 hover:shadow-md"}`}
     >
@@ -1381,19 +1381,19 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
     <>
       {/* ─── Unified Slim Header ──────────────────────────────────────────── */}
       <header
-        className={`h-12 px-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-4 flex-shrink-0 relative z-20 ${glass}`}
+        className={`h-12 px-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-4 shrink-0 relative z-20 ${glass}`}
       >
         {/* Left: title */}
-        <div className="flex items-center gap-2.5 min-w-0 flex-shrink">
+        <div className="flex items-center gap-2.5 min-w-0 shrink">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
             {documentData.name[lang]}
           </h3>
-          <span className="text-[11px] text-slate-400 flex-shrink-0">
+          <span className="text-[11px] text-slate-400 shrink-0">
             v{documentData.currentVersion}
           </span>
           {hasChanges && (
             <span
-              className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0"
+              className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse shrink-0"
               title={t("unsavedChanges") || "Unsaved changes"}
             />
           )}
@@ -1598,7 +1598,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
         </div>
 
         {/* Right: Help + Save + Close */}
-        <div className="flex items-center gap-1.5 flex-shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setShowHelp(true)}
             className="p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -1624,7 +1624,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
       </header>
 
       {/* ─── Canvas ───────────────────────────────────────────────────────── */}
-      <main className="flex-grow overflow-hidden relative">
+      <main className="grow overflow-hidden relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -1641,7 +1641,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
           fitView
           snapToGrid={snapToGrid}
           snapGrid={[20, 20]}
-          className="!bg-slate-50 dark:!bg-slate-900"
+          className="bg-slate-50! dark:bg-slate-900!"
           defaultEdgeOptions={defaultEdgeOpts}
           deleteKeyCode={null}
         >
@@ -1652,7 +1652,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
             variant={BackgroundVariant.Dots}
           />
           <Controls
-            className={`!${glass} !rounded-lg`}
+            className={`!${glass} rounded-lg!`}
             showInteractive={false}
           />
           <MiniMap
@@ -1668,7 +1668,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                   return "#60a5fa";
               }
             }}
-            className={`!bg-white/70 dark:!bg-slate-800/70 !backdrop-blur-md !border !border-slate-200/50 dark:!border-slate-700/50 !rounded-lg !shadow-sm`}
+            className={`bg-white/70! dark:bg-slate-800/70! backdrop-blur-md! border! border-slate-200/50! dark:border-slate-700/50! rounded-lg! shadow-sm!`}
             maskColor="rgba(0, 0, 0, 0.04)"
           />
         </ReactFlow>
@@ -1827,7 +1827,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                     className="flex items-start gap-2 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors"
                   >
                     <div
-                      className={`w-2 h-2 rounded-full ${typeColor[s.type] || "bg-blue-400"} mt-1.5 flex-shrink-0`}
+                      className={`w-2 h-2 rounded-full ${typeColor[s.type] || "bg-blue-400"} mt-1.5 shrink-0`}
                     />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
@@ -1839,7 +1839,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                     </div>
                     <button
                       onClick={() => handleAddSuggestedNode(s)}
-                      className="flex-shrink-0 px-2 py-1 text-[11px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                      className="shrink-0 px-2 py-1 text-[11px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
                     >
                       {t("add") || "Add"}
                     </button>
@@ -1853,7 +1853,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
 
       {/* ─── Compact Footer ───────────────────────────────────────────────── */}
       <footer
-        className={`h-9 px-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400 flex-shrink-0 ${glass}`}
+        className={`h-9 px-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between text-[11px] text-slate-400 shrink-0 ${glass}`}
       >
         <div className="flex items-center gap-4">
           <span>

@@ -59,7 +59,7 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
         {t("capaRootCause")}
       </h3>
       {totalCapas > 0 ? (
-        <div className="flex-grow min-h-0">
+        <div className="grow min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -111,7 +111,7 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="flex items-center justify-center flex-grow">
+        <div className="flex items-center justify-center grow">
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
             {t("noDataAvailable")}
           </p>

@@ -167,7 +167,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
             <ul className="space-y-2">
               {content.keyActions.items.map((actionKey, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-5 h-5 bg-brand-primary text-white rounded-full flex items-center justify-center text-xs font-medium mt-0.5">
+                  <span className="shrink-0 w-5 h-5 bg-brand-primary text-white rounded-full flex items-center justify-center text-xs font-medium mt-0.5">
                     {index + 1}
                   </span>
                   <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
@@ -186,7 +186,7 @@ export const ContextualHelp: React.FC<ContextualHelpProps> = ({
             <ul className="space-y-2">
               {content.tips.items.map((tipKey, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-2 h-2 bg-brand-secondary rounded-full mt-2"></span>
+                  <span className="shrink-0 w-2 h-2 bg-brand-secondary rounded-full mt-2"></span>
                   <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
                     {t(tipKey)}
                   </span>

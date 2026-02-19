@@ -2,9 +2,43 @@ export type Language = 'en' | 'ar';
 export type Direction = 'ltr' | 'rtl';
 export type Theme = 'light' | 'dark';
 
-export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport';
+export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration';
 
-export type NavigationView = 'dashboard' | 'analytics' | 'qualityInsights' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'projectOverview' | 'createProject' | 'editProject' | 'standards' | 'myTasks' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditation' | 'accreditationHub' | 'dataHub' | 'messaging' | 'aiDocumentGenerator' | 'users' | 'competencies' | 'reports';
+export type NavigationView = 'dashboard' | 'analyticsHub' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations';
+
+// ── Knowledge Base Types ──────────────────────────────────
+
+export type KBArticleCategory =
+  | 'best_practice' | 'policy_guidance' | 'regulatory_update'
+  | 'clinical_protocol' | 'safety_alert' | 'how_to' | 'faq';
+
+export const KB_CATEGORY_LABELS: Record<KBArticleCategory, string> = {
+  best_practice: 'Best Practice',
+  policy_guidance: 'Policy Guidance',
+  regulatory_update: 'Regulatory Update',
+  clinical_protocol: 'Clinical Protocol',
+  safety_alert: 'Safety Alert',
+  how_to: 'How-To Guide',
+  faq: 'FAQ',
+};
+
+export interface KBArticle {
+  id: string;
+  title: string;
+  category: KBArticleCategory;
+  summary: string;
+  content: string;
+  tags: string[];
+  author: string;
+  authorId: string;
+  relatedStandardIds?: string[];
+  relatedDocumentIds?: string[];
+  publishedAt: string;
+  updatedAt: string;
+  viewCount?: number;
+  helpful?: number;
+  isPinned?: boolean;
+}
 
 export interface NavigationState {
   view: NavigationView;
@@ -286,9 +320,213 @@ export interface User {
   lastLogin?: string;
   supervisorId?: string;
   phone?: string;
+  licenses?: UserLicense[];
+  personnelDocuments?: PersonnelDocument[];
 }
 
+export interface UserLicense {
+  id: string;
+  name: string;
+  licenseNumber: string;
+  issuingAuthority: string;
+  issueDate: string;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'pending_renewal' | 'suspended';
+  category?: 'professional' | 'facility' | 'regulatory' | 'specialty';
+  evidenceDocumentIds?: string[];
+  renewalReminderDays?: number;
+  notes?: string;
+}
+
+// ── CE Credit Management ──────────────────────────────────
+
+export type CECreditCategory =
+  | 'CME' | 'CNE' | 'CEU' | 'CPE' | 'MOC' | 'Other';
+
+export const CE_CATEGORY_LABELS: Record<CECreditCategory, string> = {
+  CME: 'Continuing Medical Education',
+  CNE: 'Continuing Nursing Education',
+  CEU: 'Continuing Education Unit',
+  CPE: 'Continuing Pharmacy Education',
+  MOC: 'Maintenance of Certification',
+  Other: 'Other',
+};
+
+export interface CECredit {
+  id: string;
+  userId: string;
+  title: string;
+  provider: string;
+  category: CECreditCategory;
+  credits: number;
+  completionDate: string;
+  expiryDate?: string;
+  certificateUrl?: string;
+  accreditationNumber?: string;
+  notes?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+}
+
+export interface CERequirement {
+  id: string;
+  role: UserRole;
+  category: CECreditCategory;
+  requiredCredits: number;
+  cyclePeriodMonths: number;
+  description?: string;
+}
+
+// ── Learning Paths ────────────────────────────────────────
+
+export type LearningPathStepType = 'training' | 'external_ce' | 'assessment' | 'reading';
+
+export interface CEProviderInfo {
+  providerName: string;
+  providerUrl?: string;
+  accreditationId?: string;
+  creditCategory: CECreditCategory;
+  credits: number;
+}
+
+export interface LearningPathStep {
+  id: string;
+  order: number;
+  title: string;
+  type: LearningPathStepType;
+  description?: string;
+  trainingProgramId?: string;
+  externalProvider?: CEProviderInfo;
+  estimatedMinutes?: number;
+  requiredForCompletion: boolean;
+}
+
+export interface LearningPath {
+  id: string;
+  title: string;
+  description: string;
+  category: 'onboarding' | 'compliance' | 'clinical' | 'safety' | 'leadership' | 'technical';
+  steps: LearningPathStep[];
+  targetRoles?: UserRole[];
+  estimatedHours?: number;
+  ceCreditsTotal?: number;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+  isPublished: boolean;
+}
+
+export const LEARNING_PATH_CATEGORY_LABELS: Record<LearningPath['category'], string> = {
+  onboarding: 'Onboarding',
+  compliance: 'Compliance',
+  clinical: 'Clinical Skills',
+  safety: 'Safety',
+  leadership: 'Leadership',
+  technical: 'Technical',
+};
+
+export interface UserLearningPathProgress {
+  userId: string;
+  learningPathId: string;
+  stepsCompleted: string[];
+  startedAt: string;
+  completedAt?: string;
+  earnedCredits: number;
+}
+
+// ── Personnel File Management ─────────────────────────────
+
+export type PersonnelDocCategory =
+  | 'national_id' | 'passport' | 'medical_clearance' | 'background_check'
+  | 'resume_cv' | 'educational_certificate' | 'professional_license'
+  | 'employment_contract' | 'job_description' | 'emergency_contact'
+  | 'orientation_checklist' | 'confidentiality_agreement' | 'other';
+
+export interface PersonnelDocument {
+  id: string;
+  category: PersonnelDocCategory;
+  name: string;
+  status: 'missing' | 'uploaded' | 'verified' | 'expired';
+  fileUrl?: string;
+  fileName?: string;
+  uploadedAt?: string;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  expiryDate?: string;
+  notes?: string;
+}
+
+export const PERSONNEL_DOC_LABELS: Record<PersonnelDocCategory, string> = {
+  national_id: 'National ID / Government ID',
+  passport: 'Passport',
+  medical_clearance: 'Medical Clearance',
+  background_check: 'Background Check',
+  resume_cv: 'Resume / CV',
+  educational_certificate: 'Educational Certificate',
+  professional_license: 'Professional License',
+  employment_contract: 'Employment Contract',
+  job_description: 'Signed Job Description',
+  emergency_contact: 'Emergency Contact Form',
+  orientation_checklist: 'Orientation Checklist',
+  confidentiality_agreement: 'Confidentiality Agreement',
+  other: 'Other',
+};
+
 export type UserCompetency = User['competencies'] extends (infer T)[] | undefined ? T : never;
+
+// ── CAP Competency Assessment Types ──
+
+export type CAPAssessmentMethod =
+  | 'direct_observation'
+  | 'monitoring_recording'
+  | 'specimen_testing'
+  | 'problem_solving'
+  | 'procedure_maintenance'
+  | 'training_assessment';
+
+export const CAP_METHOD_LABELS: Record<CAPAssessmentMethod, string> = {
+  direct_observation: 'Direct Observation',
+  monitoring_recording: 'Monitoring Recording/Reporting',
+  specimen_testing: 'Specimen/Sample Testing',
+  problem_solving: 'Problem Solving',
+  procedure_maintenance: 'Procedures & Instrument Maintenance',
+  training_assessment: 'Assessment of Training Materials',
+};
+
+export type CAPTestingPhase = 'pre_analytical' | 'analytical' | 'post_analytical';
+
+export const CAP_PHASE_LABELS: Record<CAPTestingPhase, string> = {
+  pre_analytical: 'Pre-Analytical',
+  analytical: 'Analytical',
+  post_analytical: 'Post-Analytical',
+};
+
+export type CAPAssessmentStatus = 'scheduled' | 'in_progress' | 'completed' | 'overdue';
+
+export interface CAPAssessment {
+  id: string;
+  userId: string;
+  assessorId: string;
+  competencyId: string;
+  method: CAPAssessmentMethod;
+  testingPhase: CAPTestingPhase;
+  labDiscipline?: string;
+  scheduledDate: string;
+  completedDate?: string;
+  score?: number;           // 1-5
+  result?: 'competent' | 'needs_improvement' | 'not_competent';
+  findings?: string;
+  correctiveAction?: string;
+  evidenceDocumentIds?: string[];
+  status: CAPAssessmentStatus;
+  createdAt: string;
+}
+
+export const CAP_LAB_DISCIPLINES = [
+  'Chemistry', 'Hematology', 'Microbiology', 'Blood Bank',
+  'Urinalysis', 'Coagulation', 'Immunology', 'Molecular',
+  'Histology', 'Cytology', 'Point of Care',
+] as const;
 
 export interface AccreditationProgram {
   id: string;
@@ -308,6 +546,7 @@ export interface AppDocument {
   id: string;
   name: LocalizedString;
   type: 'Policy' | 'Procedure' | 'Report' | 'Evidence' | 'Process Map';
+  documentNumber?: string;  // Sequential document number (e.g., POL-001, PRC-042)
   isControlled: boolean;
   status: 'Draft' | 'Under Review' | 'Pending Review' | 'Approved' | 'Rejected' | 'Obsolete';
   content: LocalizedString | null;
@@ -459,7 +698,9 @@ export interface IncidentReport {
   id: string;
   incidentDate: string;
   location: string;
-  type: 'Patient Safety' | 'Staff Injury' | 'Facility Issue' | 'Medication Error' | 'Other';
+  type: 'Patient Safety' | 'Staff Injury' | 'Facility Issue' | 'Medication Error' | 'Near-Miss'
+  | 'Specimen Error' | 'Equipment Malfunction' | 'Result Reporting Error' | 'Biosafety Exposure' | 'Proficiency Testing Failure'
+  | 'Other';
   severity: 'Minor' | 'Moderate' | 'Severe' | 'Sentinel Event';
   description: string;
   status: 'Open' | 'Under Investigation' | 'Closed';
@@ -470,6 +711,39 @@ export interface IncidentReport {
   rootCause?: string;
   department?: string;
   linkedRiskIds?: string[];
+  // Near-miss specific fields
+  contributingFactors?: string;
+  potentialConsequences?: string;
+  preventiveActionTaken?: string;
+}
+
+// ── Escalation Rules ──────────────────────────────────────
+
+export interface EscalationRule {
+  id: string;
+  name: string;
+  triggerSeverity: IncidentReport['severity'];
+  triggerTypes: IncidentReport['type'][];  // empty = all types
+  notifyRoles: UserRole[];
+  notifyDepartmentHead: boolean;
+  notifySupervisor: boolean;
+  notificationPriority: 'low' | 'normal' | 'high' | 'critical';
+  responseTimeHours: number;
+  enabled: boolean;
+}
+
+export interface EscalationEvent {
+  id: string;
+  incidentId: string;
+  ruleId: string;
+  ruleName: string;
+  severity: IncidentReport['severity'];
+  triggeredAt: string;
+  recipientIds: string[];
+  recipientNames: string[];
+  notificationPriority: 'low' | 'normal' | 'high' | 'critical';
+  responseTimeHours: number;
+  status: 'sent' | 'acknowledged' | 'expired';
 }
 
 export interface AuditPlan {
@@ -613,6 +887,57 @@ export interface MockSurvey {
   updatedAt: string;
 }
 
+// ── Tracer Methodology ────────────────────────────────────
+
+export type TracerType = 'patient' | 'system' | 'program';
+
+export const TRACER_TYPE_LABELS: Record<TracerType, string> = {
+  patient: 'Patient Tracer',
+  system: 'System Tracer',
+  program: 'Program-Specific Tracer',
+};
+
+export interface TracerStep {
+  id: string;
+  order: number;
+  department: string;
+  area: string;
+  checkpoints: TracerCheckpoint[];
+}
+
+export interface TracerCheckpoint {
+  id: string;
+  question: string;
+  standardRef?: string;
+  result?: 'compliant' | 'partial' | 'non_compliant' | 'not_observed';
+  findings?: string;
+  evidenceNotes?: string;
+}
+
+export interface TracerTemplate {
+  id: string;
+  name: string;
+  tracerType: TracerType;
+  description: string;
+  steps: TracerStep[];
+  programRef?: string;
+  createdAt: string;
+}
+
+export interface TracerSession {
+  id: string;
+  templateId: string;
+  tracerType: TracerType;
+  title: string;
+  surveyorId: string;
+  date: string;
+  steps: TracerStep[];
+  overallFindings?: string;
+  status: 'planned' | 'in_progress' | 'completed';
+  createdAt: string;
+  completedAt?: string;
+}
+
 export type PDCAStageName = 'Plan' | 'Do' | 'Check' | 'Act';
 export type PDCAStage = PDCAStageName | 'Completed';
 
@@ -694,6 +1019,56 @@ export interface CAPAReport {
     approvedBy: string;
     approvedAt: string;
   };
+  rcaData?: RootCauseAnalysisData;
+}
+
+// ── Root Cause Analysis (Fishbone / 5-Why) ────────────────
+
+export interface FishboneCause {
+  id: string;
+  text: string;
+  subCauses?: FishboneCause[];
+}
+
+export type FishboneCategory = 'man' | 'machine' | 'method' | 'material' | 'measurement' | 'environment';
+
+export const FISHBONE_CATEGORY_LABELS: Record<FishboneCategory, string> = {
+  man: 'People',
+  machine: 'Equipment',
+  method: 'Process',
+  material: 'Materials',
+  measurement: 'Measurement',
+  environment: 'Environment',
+};
+
+export interface FishboneAnalysis {
+  id: string;
+  problemStatement: string;
+  categories: Record<FishboneCategory, FishboneCause[]>;
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+}
+
+export interface FiveWhyStep {
+  whyNumber: number;
+  question: string;
+  answer: string;
+}
+
+export interface FiveWhyAnalysis {
+  id: string;
+  triggerCauseId?: string;
+  steps: FiveWhyStep[];
+  rootCauseConclusion: string;
+  createdAt: string;
+}
+
+export interface RootCauseAnalysisData {
+  fishbone?: FishboneAnalysis;
+  fiveWhys?: FiveWhyAnalysis[];
+  linkedCapaIds?: string[];
+  linkedRiskIds?: string[];
 }
 
 export interface ProjectCard {
@@ -849,4 +1224,128 @@ export interface DocumentTemplate {
   tags?: string[];
   content?: string;
   type?: string;
+}
+
+// Performance Evaluation
+export type EvaluationPeriod = 'annual' | 'semi-annual' | 'quarterly' | 'probation';
+export type EvaluationStatus = 'Draft' | 'In Progress' | 'Pending Review' | 'Completed';
+
+export interface CompetencyRating {
+  competencyId: string;
+  competencyName: string;
+  rating: number; // 1-5
+  comments?: string;
+}
+
+export interface PerformanceGoal {
+  id: string;
+  title: string;
+  description?: string;
+  targetDate?: string;
+  status: 'Not Started' | 'In Progress' | 'Achieved' | 'Partially Achieved' | 'Not Achieved';
+  weight?: number; // percentage 0-100
+  selfAssessment?: number; // 1-5
+  managerAssessment?: number; // 1-5
+}
+
+export interface PerformanceEvaluation {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  evaluatorId: string;
+  evaluatorName: string;
+  department?: string;
+  jobTitle?: string;
+  period: EvaluationPeriod;
+  periodLabel: string; // e.g. "2025 Annual Review"
+  startDate: string;
+  endDate: string;
+  status: EvaluationStatus;
+  overallRating?: number; // 1-5
+  competencyRatings: CompetencyRating[];
+  goals: PerformanceGoal[];
+  strengths?: string;
+  areasForImprovement?: string;
+  developmentPlan?: string;
+  employeeComments?: string;
+  evaluatorComments?: string;
+  employeeSignedAt?: string;
+  evaluatorSignedAt?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// ─── Quality Rounding ──────────────────────────────────────────────
+
+export type RoundingStatus = 'Scheduled' | 'In Progress' | 'Completed' | 'Overdue' | 'Cancelled';
+export type RoundingFrequency = 'Daily' | 'Weekly' | 'Biweekly' | 'Monthly' | 'Quarterly';
+export type ObservationResult = 'Compliant' | 'Non-Compliant' | 'Partial' | 'N/A';
+export type RoundingFindingSeverity = 'Critical' | 'Major' | 'Minor' | 'Observation';
+
+export interface RoundingTemplateItem {
+  id: string;
+  category: string;
+  question: string;
+  description?: string;
+  expectedEvidence?: string;
+  weight?: number; // 0-100
+  order: number;
+}
+
+export interface RoundingTemplate {
+  id: string;
+  name: string;
+  description?: string;
+  department?: string;
+  category: string; // e.g. 'Infection Control', 'Patient Safety', 'Environment'
+  items: RoundingTemplateItem[];
+  isActive: boolean;
+  createdBy: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface RoundingObservation {
+  itemId: string;
+  question: string;
+  result: ObservationResult;
+  notes?: string;
+  evidenceUrl?: string;
+  findingSeverity?: RoundingFindingSeverity;
+}
+
+export interface RoundingFinding {
+  id: string;
+  roundId: string;
+  observation: RoundingObservation;
+  severity: RoundingFindingSeverity;
+  description: string;
+  assignedTo?: string;
+  assignedToName?: string;
+  capaId?: string; // link to CAPA system
+  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
+  dueDate?: string;
+  resolvedAt?: string;
+  createdAt: string;
+}
+
+export interface QualityRound {
+  id: string;
+  templateId: string;
+  templateName: string;
+  department: string;
+  area?: string; // specific area/unit within department
+  scheduledDate: string;
+  completedDate?: string;
+  status: RoundingStatus;
+  frequency: RoundingFrequency;
+  rounderId: string;
+  rounderName: string;
+  observations: RoundingObservation[];
+  findings: RoundingFinding[];
+  overallScore?: number; // 0-100 percentage
+  complianceRate?: number; // percentage of compliant items
+  notes?: string;
+  createdAt: string;
+  updatedAt?: string;
 }

@@ -21,31 +21,25 @@ import {
 import StatCard from "../components/common/StatCard";
 import { Button } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import { useAppStore } from "@/stores/useAppStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { useProjectStore } from "@/stores/useProjectStore";
 
 interface DepartmentsPageProps {
-  departments: Department[];
-  users: User[];
-  projects: Project[];
-  currentUser: User;
   setNavigation: (state: NavigationState) => void;
-  onCreateDepartment: (dept: Omit<Department, "id">) => Promise<void>;
-  onUpdateDepartment: (dept: Department) => Promise<void>;
-  onDeleteDepartment: (deptId: string) => Promise<void>;
 }
 
-const DepartmentsPage: React.FC<DepartmentsPageProps> = (props) => {
+const DepartmentsPage: React.FC<DepartmentsPageProps> = ({ setNavigation }) => {
   const { t } = useTranslation();
   const { showToast } = useToast();
   const {
     departments,
-    users,
-    projects,
-    currentUser,
-    setNavigation,
-    onCreateDepartment,
-    onUpdateDepartment,
-    onDeleteDepartment,
-  } = props;
+    addDepartment: onCreateDepartment,
+    updateDepartment: onUpdateDepartment,
+    deleteDepartment: onDeleteDepartment,
+  } = useAppStore();
+  const { users, currentUser } = useUserStore();
+  const { projects } = useProjectStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingDept, setEditingDept] = useState<Department | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);

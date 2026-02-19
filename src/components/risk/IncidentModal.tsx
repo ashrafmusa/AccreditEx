@@ -30,6 +30,9 @@ const IncidentModal: FC<IncidentModalProps> = ({
   const [rootCause, setRootCause] = useState("");
   const [investigatorId, setInvestigatorId] = useState("");
   const [department, setDepartment] = useState("");
+  const [contributingFactors, setContributingFactors] = useState("");
+  const [potentialConsequences, setPotentialConsequences] = useState("");
+  const [preventiveActionTaken, setPreventiveActionTaken] = useState("");
 
   useEffect(() => {
     if (existingReport) {
@@ -42,6 +45,9 @@ const IncidentModal: FC<IncidentModalProps> = ({
       setRootCause(existingReport.rootCause || "");
       setInvestigatorId(existingReport.investigatorId || "");
       setDepartment(existingReport.department || "");
+      setContributingFactors(existingReport.contributingFactors || "");
+      setPotentialConsequences(existingReport.potentialConsequences || "");
+      setPreventiveActionTaken(existingReport.preventiveActionTaken || "");
     } else {
       setIncidentDate(new Date());
       setLocation("");
@@ -52,6 +58,9 @@ const IncidentModal: FC<IncidentModalProps> = ({
       setRootCause("");
       setInvestigatorId("");
       setDepartment("");
+      setContributingFactors("");
+      setPotentialConsequences("");
+      setPreventiveActionTaken("");
     }
   }, [existingReport, isOpen]);
 
@@ -71,6 +80,9 @@ const IncidentModal: FC<IncidentModalProps> = ({
       ...(rootCause ? { rootCause } : {}),
       ...(investigatorId ? { investigatorId } : {}),
       ...(department ? { department } : {}),
+      ...(contributingFactors ? { contributingFactors } : {}),
+      ...(potentialConsequences ? { potentialConsequences } : {}),
+      ...(preventiveActionTaken ? { preventiveActionTaken } : {}),
     };
 
     if (isEditMode) {
@@ -146,6 +158,20 @@ const IncidentModal: FC<IncidentModalProps> = ({
                   <option value="Facility Issue">{t("facilityIssue")}</option>
                   <option value="Medication Error">
                     {t("medicationError")}
+                  </option>
+                  <option value="Near-Miss">{t("nearMiss")}</option>
+                  <option value="Specimen Error">{t("specimenError")}</option>
+                  <option value="Equipment Malfunction">
+                    {t("equipmentMalfunction")}
+                  </option>
+                  <option value="Result Reporting Error">
+                    {t("resultReportingError")}
+                  </option>
+                  <option value="Biosafety Exposure">
+                    {t("biosafetyExposure")}
+                  </option>
+                  <option value="Proficiency Testing Failure">
+                    {t("proficiencyTestingFailure")}
                   </option>
                   <option value="Other">{t("other")}</option>
                 </select>
@@ -237,6 +263,58 @@ const IncidentModal: FC<IncidentModalProps> = ({
                   rows={3}
                   className={inputClasses}
                 />
+              </div>
+            )}
+            {type === "Near-Miss" && (
+              <div className="space-y-4 p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
+                <p className="text-sm font-medium text-amber-800 dark:text-amber-300">
+                  {t("nearMissDetails")}
+                </p>
+                <div>
+                  <label htmlFor="contributingFactors" className={labelClasses}>
+                    {t("contributingFactors")}
+                  </label>
+                  <textarea
+                    id="contributingFactors"
+                    value={contributingFactors}
+                    onChange={(e) => setContributingFactors(e.target.value)}
+                    rows={2}
+                    className={inputClasses}
+                    placeholder={t("contributingFactorsPlaceholder")}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="potentialConsequences"
+                    className={labelClasses}
+                  >
+                    {t("potentialConsequences")}
+                  </label>
+                  <textarea
+                    id="potentialConsequences"
+                    value={potentialConsequences}
+                    onChange={(e) => setPotentialConsequences(e.target.value)}
+                    rows={2}
+                    className={inputClasses}
+                    placeholder={t("potentialConsequencesPlaceholder")}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="preventiveActionTaken"
+                    className={labelClasses}
+                  >
+                    {t("preventiveActionTaken")}
+                  </label>
+                  <textarea
+                    id="preventiveActionTaken"
+                    value={preventiveActionTaken}
+                    onChange={(e) => setPreventiveActionTaken(e.target.value)}
+                    rows={2}
+                    className={inputClasses}
+                    placeholder={t("preventiveActionTakenPlaceholder")}
+                  />
+                </div>
               </div>
             )}
           </div>

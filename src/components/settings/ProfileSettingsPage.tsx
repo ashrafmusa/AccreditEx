@@ -387,7 +387,7 @@ const ProfileSettingsPage: React.FC = () => {
                   <span className="font-semibold">
                     {t("department") || "Department"}:
                   </span>{" "}
-                  <span className="break-words">
+                  <span className="wrap-break-word">
                     {userDepartment ? userDepartment.name.en : t("unassigned")}
                   </span>
                 </p>
