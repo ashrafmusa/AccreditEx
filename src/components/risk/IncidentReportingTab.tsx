@@ -99,37 +99,45 @@ const IncidentReportingTab: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-dark-brand-border">
-              {sortedReports.map((report) => (
-                <tr key={report.id}>
-                  <td className="px-6 py-4">
-                    {new Date(report.incidentDate).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4 font-medium">{report.type}</td>
-                  <td className="px-6 py-4 text-sm">{report.severity}</td>
-                  <td className="px-6 py-4 text-sm">{report.status}</td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end items-center gap-2">
-                      <button
-                        onClick={() => {
-                          setEditingReport(report);
-                          setIsModalOpen(true);
-                        }}
-                        className="p-1 hover:text-brand-primary"
-                        aria-label={t("editIncident")}
-                      >
-                        <PencilIcon className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(report.id)}
-                        className="p-1 hover:text-red-600"
-                        aria-label={t("deleteIncident")}
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {sortedReports.map((report) => {
+                const typeColorClass =
+                  report.type === "Near-Miss"
+                    ? "text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full text-xs font-semibold inline-block"
+                    : "";
+                return (
+                  <tr key={report.id}>
+                    <td className="px-6 py-4">
+                      {new Date(report.incidentDate).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 font-medium">
+                      <span className={typeColorClass}>{report.type}</span>
+                    </td>
+                    <td className="px-6 py-4 text-sm">{report.severity}</td>
+                    <td className="px-6 py-4 text-sm">{report.status}</td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end items-center gap-2">
+                        <button
+                          onClick={() => {
+                            setEditingReport(report);
+                            setIsModalOpen(true);
+                          }}
+                          className="p-1 hover:text-brand-primary"
+                          aria-label={t("editIncident")}
+                        >
+                          <PencilIcon className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(report.id)}
+                          className="p-1 hover:text-red-600"
+                          aria-label={t("deleteIncident")}
+                        >
+                          <TrashIcon className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </TableContainer>

@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Project } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SearchIcon, ClipboardDocumentListIcon } from "@/components/icons";
 import { TableContainer, EmptyState } from "@/components/ui";
+import { getRecentActivityLogs } from "@/services/activityLogService";
 
 interface AuditLogComponentProps {
   project: Project;
@@ -12,22 +13,43 @@ interface ActivityLogEntry {
   id: string;
   timestamp: string;
   user: string;
-  action: { [lang: string]: string };
+  action: string | { [lang: string]: string };
+  details?: string;
+  type?: string;
 }
 
 const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
   const { t, lang } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [activityLogData, setActivityLogData] = useState<ActivityLogEntry[]>(
+    [],
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Empty activity log for now - can be extended to show project-specific audit trail
-  const activityLogData: ActivityLogEntry[] = [];
+  const fetchLogs = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const logs = await getRecentActivityLogs(100);
+      setActivityLogData(logs);
+    } catch (error) {
+      console.error("Failed to fetch activity logs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLogs();
+  }, [fetchLogs]);
 
   const filteredLog = useMemo(() => {
     return activityLogData.filter((log: ActivityLogEntry) => {
       const searchLower = searchTerm.toLowerCase();
+      const actionText =
+        typeof log.action === "string" ? log.action : log.action?.[lang] || "";
       return (
         log.user.toLowerCase().includes(searchLower) ||
-        (log.action[lang] || "").toLowerCase().includes(searchLower)
+        actionText.toLowerCase().includes(searchLower)
       );
     });
   }, [activityLogData, searchTerm, lang]);
@@ -76,27 +98,47 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-dark-brand-surface divide-y divide-gray-200 dark:divide-dark-brand-border">
-            {filteredLog.map((log: ActivityLogEntry) => (
-              <tr
-                key={log.id}
-                className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
-              >
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  {new Date(log.timestamp).toLocaleString(
-                    lang === "ar" ? "ar-OM" : "en-US",
-                    { dateStyle: "medium", timeStyle: "short" },
-                  )}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
-                  {log.user}
-                </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
-                    {log.action[lang]}
-                  </p>
+            {isLoading ? (
+              <tr>
+                <td
+                  colSpan={3}
+                  className="px-6 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
+                    {t("loading")}...
+                  </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              filteredLog.map((log: ActivityLogEntry) => {
+                const actionText =
+                  typeof log.action === "string"
+                    ? log.action
+                    : log.action?.[lang] || "";
+                return (
+                  <tr
+                    key={log.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(log.timestamp).toLocaleString(
+                        lang === "ar" ? "ar-OM" : "en-US",
+                        { dateStyle: "medium", timeStyle: "short" },
+                      )}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
+                      {log.user}
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
+                        {actionText}
+                      </p>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </TableContainer>

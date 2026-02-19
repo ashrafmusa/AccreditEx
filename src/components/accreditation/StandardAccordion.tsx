@@ -29,7 +29,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({
       className={`bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border dark:border-dark-brand-border`}
     >
       <div className="w-full text-left p-5 focus:outline-none flex justify-between items-start gap-4">
-        <div className="flex-grow">
+        <div className="grow">
           <p className="font-bold text-brand-primary dark:text-sky-400">
             {standard.standardId}
           </p>
@@ -65,7 +65,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({
           </div>
         </div>
 
-        <div className="flex-shrink-0 flex flex-col items-end space-y-2">
+        <div className="shrink-0 flex flex-col items-end space-y-2">
           {hasDocuments && (
             <button
               onClick={() => setShowDocuments(!showDocuments)}
@@ -119,7 +119,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({
                   href={doc.fileUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex-shrink-0 ltr:ml-2 rtl:mr-2"
+                  className="text-sm text-blue-600 dark:text-blue-400 hover:underline shrink-0 ltr:ml-2 rtl:mr-2"
                 >
                   {t("download") || "Download"}
                 </a>

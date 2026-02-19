@@ -57,6 +57,9 @@ const DocumentMetadataModal = lazy(
 const PDFViewerModal = lazy(
   () => import("../components/documents/PDFViewerModal"),
 );
+const AIDocumentGenerator = lazy(
+  () => import("../components/ai/AIDocumentGenerator"),
+);
 
 // --- Quick Filter Types ---
 type QuickFilterKey =
@@ -187,6 +190,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     !currentUser || currentUser.role !== UserRole.Admin,
   );
   const canModify = currentUser.role === UserRole.Admin;
+  const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   // --- New state additions ---
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -766,7 +770,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-blue-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
-                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
                         <DocumentTextIcon className="w-5 h-5 text-blue-500" />
                       </div>
                       <div className="text-start">
@@ -787,7 +791,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-teal-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
-                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
                         <ArrowPathIcon className="w-5 h-5 text-teal-500" />
                       </div>
                       <div className="text-start">
@@ -807,7 +811,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-orange-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
-                      <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-orange-50 dark:bg-orange-900/30 flex items-center justify-center">
                         <DocumentPlusIcon className="w-5 h-5 text-orange-500" />
                       </div>
                       <div className="text-start">
@@ -816,6 +820,27 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                         </div>
                         <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
                           {t("uploadEvidenceDesc") || "Upload supporting files"}
+                        </div>
+                      </div>
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setShowAIGenerator(true);
+                        setIsAddMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-purple-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                    >
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                        <ArrowTrendingUpIcon className="w-5 h-5 text-purple-500" />
+                      </div>
+                      <div className="text-start">
+                        <div className="font-medium">
+                          {t("aiDocumentGenerator") || "AI Generate"}
+                        </div>
+                        <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                          {t("aiDocumentGeneratorDescription") ||
+                            "Generate documents with AI"}
                         </div>
                       </div>
                     </button>
@@ -925,7 +950,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     setActiveQuickFilter(filter.key);
                     setSelectedDocIds(new Set());
                   }}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border flex-shrink-0
+                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border shrink-0
                     ${
                       isActive
                         ? "bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/25 scale-[1.02]"
@@ -935,7 +960,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                   <FilterIcon className="w-4 h-4" />
                   {filter.label}
                   <span
-                    className={`inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full text-xs font-bold
+                    className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-bold
                       ${
                         isActive
                           ? "bg-white/25 text-white"
@@ -1116,6 +1141,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                           )}
                           <td className="px-6 py-4">
                             <div className="font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
+                              {doc.documentNumber && (
+                                <span className="inline-block mr-2 px-1.5 py-0.5 text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                                  {doc.documentNumber}
+                                </span>
+                              )}
                               {doc.name[lang]}
                             </div>
                             {doc.category && (
@@ -1216,11 +1246,16 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
                     {/* Card Content */}
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex-shrink-0">
+                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 shrink-0">
                         <DocumentTextIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary truncate">
+                          {doc.documentNumber && (
+                            <span className="mr-1.5 px-1.5 py-0.5 text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                              {doc.documentNumber}
+                            </span>
+                          )}
                           {doc.name[lang]}
                         </h4>
                         {doc.category && (
@@ -1412,6 +1447,43 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             fileName={viewingPDF.name[lang]}
           />
         </Suspense>
+      )}
+
+      {showAIGenerator && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-dark-brand-surface rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4 p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
+                {t("aiDocumentGenerator") || "AI Document Generator"}
+              </h2>
+              <button
+                onClick={() => setShowAIGenerator(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            <Suspense
+              fallback={<div className="py-8 text-center">Loading...</div>}
+            >
+              <AIDocumentGenerator
+                onDocumentGenerated={(response) => {
+                  console.log("Document generated:", response);
+                  setShowAIGenerator(false);
+                }}
+                context={{
+                  userRole: currentUser.role,
+                  departmentId: currentUser.departmentId || "",
+                }}
+                preferences={{
+                  tone: "professional",
+                  length: "comprehensive",
+                  format: "markdown",
+                }}
+              />
+            </Suspense>
+          </div>
+        </div>
       )}
     </div>
   );

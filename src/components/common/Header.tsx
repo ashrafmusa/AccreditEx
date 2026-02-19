@@ -44,7 +44,7 @@ const Header: React.FC<HeaderProps> = ({
   }, []);
 
   return (
-    <header className="h-16 bg-brand-surface dark:bg-dark-brand-surface border-b border-brand-border dark:border-dark-brand-border flex items-center justify-between px-4 sm:px-6 flex-shrink-0 shadow-sm">
+    <header className="h-16 bg-brand-surface dark:bg-dark-brand-surface border-b border-brand-border dark:border-dark-brand-border flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-sm">
       <div className="flex items-center gap-4">
         <button
           onClick={onToggleMobileMenu}

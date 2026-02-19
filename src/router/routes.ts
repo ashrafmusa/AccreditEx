@@ -21,8 +21,7 @@ export const routes: RouteConfig[] = [
     // Dashboard and Analytics
     { path: "/", view: "dashboard", requiresAuth: true },
     { path: "/dashboard", view: "dashboard", requiresAuth: true },
-    { path: "/analytics", view: "analytics", requiresAuth: true },
-    { path: "/quality-insights", view: "qualityInsights", requiresAuth: true },
+    { path: "/analytics", view: "analyticsHub", requiresAuth: true },
 
     // Calendar and Planning
     { path: "/calendar", view: "calendar", requiresAuth: true },
@@ -43,8 +42,8 @@ export const routes: RouteConfig[] = [
     // Standards
     { path: "/programs/:programId/standards", view: "standards", requiresAuth: true },
 
-    // Tasks
-    { path: "/tasks", view: "myTasks", requiresAuth: true },
+    // Tasks (redirects to dashboard)
+    { path: "/tasks", view: "dashboard", requiresAuth: true },
 
     // Departments
     { path: "/departments", view: "departments", requiresAuth: true, requiresAdmin: true },
@@ -72,15 +71,22 @@ export const routes: RouteConfig[] = [
     // Messaging
     { path: "/messages", view: "messaging", requiresAuth: true },
 
-    // AI Tools
-    { path: "/ai-document-generator", view: "aiDocumentGenerator", requiresAuth: true },
-
-    // Accreditation and Competencies (promoted from settings)
+    // Accreditation (promoted from settings)
     { path: "/accreditation", view: "accreditationHub", requiresAuth: true },
-    { path: "/competencies", view: "competencies", requiresAuth: true },
 
-    // Reports
-    { path: "/reports", view: "reports", requiresAuth: true },
+    // Knowledge Base
+    { path: "/knowledge-base", view: "knowledgeBase", requiresAuth: true },
+
+    // Lab Operations
+    { path: "/lab-operations", view: "labOperations", requiresAuth: true },
+
+    // Redirect legacy standalone routes to parent hubs
+    { path: "/performance", view: "trainingHub", requiresAuth: true },
+    { path: "/quality-rounding", view: "auditHub", requiresAuth: true },
+    { path: "/quality-insights", view: "analyticsHub", requiresAuth: true },
+    { path: "/reports", view: "analyticsHub", requiresAuth: true },
+    { path: "/competencies", view: "trainingHub", requiresAuth: true },
+    { path: "/ai-document-generator", view: "documentControl", requiresAuth: true },
 ];
 
 /**
@@ -90,10 +96,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
     switch (state.view) {
         case "dashboard":
             return "/dashboard";
-        case "analytics":
+        case "analyticsHub":
             return "/analytics";
-        case "qualityInsights":
-            return "/quality-insights";
         case "calendar":
             return "/calendar";
         case "riskHub":
@@ -112,8 +116,6 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return state.projectId ? `/projects/${state.projectId}/edit` : "/projects";
         case "standards":
             return state.programId ? `/programs/${state.programId}/standards` : "/dashboard";
-        case "myTasks":
-            return "/tasks";
         case "departments":
             return "/departments";
         case "departmentDetail":
@@ -138,14 +140,12 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/data";
         case "messaging":
             return "/messages";
-        case "aiDocumentGenerator":
-            return "/ai-document-generator";
         case "accreditationHub":
             return "/accreditation";
-        case "competencies":
-            return "/competencies";
-        case "reports":
-            return "/reports";
+        case "knowledgeBase":
+            return "/knowledge-base";
+        case "labOperations":
+            return "/lab-operations";
         default:
             return "/dashboard";
     }
@@ -165,22 +165,26 @@ export const pathToNavigationState = (
 
     // Static routes (exact match)
     if (path === "/" || path === "/dashboard") return { view: "dashboard" };
-    if (path === "/analytics") return { view: "analytics" };
-    if (path === "/quality-insights") return { view: "qualityInsights" };
+    if (path === "/analytics") return { view: "analyticsHub" };
     if (path === "/calendar") return { view: "calendar" };
     if (path === "/risk") return { view: "riskHub" };
     if (path === "/audit") return { view: "auditHub" };
     if (path === "/documents") return { view: "documentControl" };
-    if (path === "/tasks") return { view: "myTasks" };
+    if (path === "/tasks") return { view: "dashboard" };
     if (path === "/departments") return { view: "departments" };
     if (path === "/settings") return { view: "settings" };
     if (path === "/training") return { view: "trainingHub" };
     if (path === "/data") return { view: "dataHub" };
     if (path === "/messages") return { view: "messaging" };
-    if (path === "/ai-document-generator") return { view: "aiDocumentGenerator" };
     if (path === "/accreditation") return { view: "accreditationHub" };
-    if (path === "/competencies") return { view: "competencies" };
-    if (path === "/reports") return { view: "reports" };
+    if (path === "/knowledge-base") return { view: "knowledgeBase" };
+    if (path === "/lab-operations") return { view: "labOperations" };
+    if (path === "/quality-insights") return { view: "analyticsHub" };
+    if (path === "/reports") return { view: "analyticsHub" };
+    if (path === "/competencies") return { view: "trainingHub" };
+    if (path === "/ai-document-generator") return { view: "documentControl" };
+    if (path === "/performance") return { view: "trainingHub" };
+    if (path === "/quality-rounding") return { view: "auditHub" };
     if (path === "/projects") return { view: "projects" };
     if (path === "/projects/create") return { view: "createProject" };
 

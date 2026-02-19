@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AccreditEx — AI-Native Healthcare Accreditation Platform</title>
-    <meta name="description" content="AccreditEx: The AI-powered healthcare compliance and accreditation platform. Move from annual audit panic to continuous clinical excellence.">
+    <meta name="description" content="AccreditEx: The AI-powered healthcare compliance and accreditation platform with 15+ AI tools, 240+ pre-loaded standards, and bilingual EN/AR support. Move from annual audit panic to continuous clinical excellence.">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+    <meta name="theme-color" content="#00897B">
     <link rel="canonical" href="https://accreditex.web.app/landing">
     <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -15,17 +17,23 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://accreditex.web.app/landing">
     <meta property="og:title" content="AccreditEx — AI-Native Healthcare Accreditation Platform">
-    <meta property="og:description" content="20+ AI tools, 119 pre-loaded standards, bilingual EN/AR. Move from annual audit panic to continuous clinical excellence.">
+    <meta property="og:description" content="15+ AI tools, 240+ pre-loaded standards (1,043 sub-standards), bilingual EN/AR. Move from annual audit panic to continuous clinical excellence.">
     <meta property="og:image" content="https://accreditex.web.app/logo.png">
+    <meta property="og:site_name" content="AccreditEx">
+    <meta property="og:locale" content="en_US">
+    <meta name="author" content="Ashraf Abu baker Musa Ishag">
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="AccreditEx — AI-Native Healthcare Accreditation">
-    <meta name="twitter:description" content="AI-powered healthcare compliance platform with 20+ tools. Built by a clinical quality expert.">
+    <meta name="twitter:description" content="AI-powered healthcare compliance platform with 15+ tools, 240+ standards. Built by a clinical quality expert.">
     <meta name="twitter:image" content="https://accreditex.web.app/logo.png">
-    <!-- Fonts -->
+    <!-- Fonts: preconnect + preload critical weight -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Async font loading: eliminates render-blocking CSS -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap"></noscript>
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
     {
@@ -35,7 +43,7 @@
       "url": "https://accreditex.web.app",
       "applicationCategory": "HealthApplication",
       "operatingSystem": "Web",
-      "description": "AI-native healthcare accreditation and compliance platform with 20+ AI tools, 119 pre-loaded standards, and bilingual EN/AR support.",
+      "description": "AI-native healthcare accreditation and compliance platform with 15+ AI tools, 240+ pre-loaded standards (1,043 sub-standards), and bilingual EN/AR support.",
       "author": {
         "@type": "Person",
         "name": "Ashraf Abu baker Musa Ishag",
@@ -50,6 +58,55 @@
         "offerCount": "3"
       },
       "featureList": "15+ AI-powered tools, 240+ pre-loaded standards, Document control & versioning, Risk & CAPA management, Training & competency tracking, Multi-department support, Mock survey builder, Standards library (CBAHI, JCI, DOH, ISO 15189), EN/AR bilingual, PWA offline support"
+    }
+    </script>
+    <!-- FAQPage Schema for Rich Snippets -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What accreditation standards does AccreditEx support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AccreditEx comes pre-loaded with 240+ standards and 1,043 sub-standards covering CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory). New standards can be imported in bulk. Cross-standard mapping helps reuse evidence across multiple accreditation bodies."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the AI engine work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AccreditEx integrates 15+ AI-powered tools directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is AccreditEx suitable for small clinics or only large hospitals?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AccreditEx is designed for all facility sizes. The Core plan ($500/mo) is built for small labs and clinics with up to 10 users. The Enterprise plan ($2,000/mo) adds unlimited users, multi-department support, HIS integration, and advanced AI analytics — ideal for hospitals and healthcare networks."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does it support Arabic and right-to-left (RTL) interfaces?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. AccreditEx is fully bilingual (English/Arabic) with complete RTL layout support. The AI translation tool can translate healthcare documents between EN and AR while preserving formatting."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What makes AccreditEx different from competitors?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AccreditEx is the only platform that is: (1) practitioner-built by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) GCC-first with pre-loaded regional templates for DOH, DHA, MOH, and CBAHI, (3) AI-native with 15+ integrated tools, and (4) affordable starting at $500/mo with PWA offline support."
+          }
+        }
+      ]
     }
     </script>
     <style>
@@ -81,7 +138,7 @@
         html { scroll-behavior: smooth; }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Inter', 'Noto Sans Arabic', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             color: var(--text);
             line-height: 1.7;
@@ -182,7 +239,7 @@
             font-size: clamp(36px, 5vw, 60px); font-weight: 800;
             line-height: 1.1; letter-spacing: -2px; margin-bottom: 24px;
         }
-        .hero h1 span { color: var(--primary-light); }
+        .hero h1 .hero-highlight { color: var(--primary-light); }
         .hero-sub {
             font-size: 18px; line-height: 1.7; color: rgba(255,255,255,0.7);
             max-width: 500px; margin-bottom: 40px;
@@ -212,7 +269,7 @@
             font-size: 28px; font-weight: 800; color: white;
         }
         .hero-stat-label {
-            font-size: 13px; color: rgba(255,255,255,0.5); margin-top: 4px;
+            font-size: 13px; color: rgba(255,255,255,0.65); margin-top: 4px;
         }
 
         /* Hero Visual / App Preview */
@@ -226,6 +283,8 @@
             padding: 24px;
             backdrop-filter: blur(20px);
             box-shadow: 0 20px 80px rgba(0,0,0,0.3);
+            aspect-ratio: 4/3;
+            contain: layout style;
         }
         .preview-topbar {
             display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
@@ -389,7 +448,7 @@
         }
         .ai-card-icon { font-size: 32px; margin-bottom: 16px; }
         .ai-card h3 { font-size: 15px; font-weight: 700; color: white; margin-bottom: 6px; }
-        .ai-card p { font-size: 13px; color: rgba(255,255,255,0.5); line-height: 1.5; }
+        .ai-card p { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.5; }
 
         /* ═══════════════ MARKET ═══════════════ */
         .market-circles {
@@ -531,7 +590,7 @@
 
         /* ═══════════════ FOOTER ═══════════════ */
         .footer {
-            background: var(--bg-dark); color: rgba(255,255,255,0.5);
+            background: var(--bg-dark); color: rgba(255,255,255,0.65);
             padding: 60px 24px 30px;
         }
         .footer-grid {
@@ -544,7 +603,7 @@
         .footer-col-title { font-size: 14px; font-weight: 700; color: white; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
         .footer-links { list-style: none; }
         .footer-links li { margin-bottom: 10px; }
-        .footer-links a { color: rgba(255,255,255,0.5); text-decoration: none; font-size: 14px; transition: color 0.2s; }
+        .footer-links a { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 14px; transition: color 0.2s; }
         .footer-links a:hover { color: var(--primary-light); }
         .footer-bottom {
             max-width: 1200px; margin: 0 auto; padding-top: 24px;
@@ -586,6 +645,10 @@
             .comp-table { font-size: 12px; }
             .footer-grid { grid-template-columns: 1fr; }
             .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+            .trust-bar div[style*="gap:40px"] { gap: 20px !important; }
+            .trust-bar div[style*="width:1px"] { display: none; }
+            .hero-trust { flex-direction: column; gap: 8px !important; }
+            .cta-actions { flex-direction: column; align-items: center; }
         }
 
         /* ═══════════════ ANIMATIONS ═══════════════ */
@@ -594,6 +657,44 @@
             transition: opacity 0.6s ease, transform 0.6s ease;
         }
         .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+        /* FAQ smooth open/close animation */
+        details summary { cursor: pointer; user-select: none; }
+        details summary span:last-child {
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        details[open] summary span:last-child { transform: rotate(45deg); }
+        details p {
+            animation: fadeSlideDown 0.3s ease;
+        }
+        @keyframes fadeSlideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pricing featured card pulse glow */
+        .pricing-card.featured {
+            animation: pricingGlow 3s ease-in-out infinite alternate;
+        }
+        @keyframes pricingGlow {
+            0% { box-shadow: 0 20px 60px rgba(0,137,123,0.15); }
+            100% { box-shadow: 0 20px 60px rgba(0,137,123,0.35); }
+        }
+
+        /* AI card hover lift */
+        .ai-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .ai-card:hover { transform: translateY(-6px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+
+        /* Problem stat counter animation */
+        .problem-stat { transition: color 0.3s ease; }
+        .problem-card:hover .problem-stat { color: var(--primary); }
+
+        /* Smooth scroll indicator */
+        @keyframes scrollBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(8px); }
+        }
 
         /* ═══════════════ LUCIDE ICON OVERRIDES ═══════════════ */
         .section-badge svg { width: 14px; height: 14px; display: inline; vertical-align: -2px; margin-right: 2px; }
@@ -639,6 +740,16 @@
             text-decoration: none;
         }
         .skip-link:focus { top: 16px; }
+
+        /* Focus-visible outlines for keyboard navigation */
+        :focus-visible {
+            outline: 3px solid var(--primary);
+            outline-offset: 2px;
+            border-radius: 4px;
+        }
+        a:focus:not(:focus-visible), button:focus:not(:focus-visible) {
+            outline: none;
+        }
 
         /* Pitch Deck Print / PDF Mode */
         @media print {
@@ -763,16 +874,108 @@
         .print-cover { display: none; }
         .print-only { display: none; }
         .print-source { display: none; }
+
+        /* ═══════════════ LANGUAGE SWITCHER ═══════════════ */
+        .lang-switch-btn {
+            background: rgba(255,255,255,0.12);
+            color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+        .lang-switch-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .navbar.scrolled .lang-switch-btn {
+            background: var(--bg-alt);
+            color: var(--text);
+            border-color: var(--border);
+        }
+        .navbar.scrolled .lang-switch-btn:hover {
+            background: var(--primary-glow);
+            color: var(--primary);
+        }
+
+        /* ═══════════════ RTL SUPPORT ═══════════════ */
+        [dir="rtl"] body {
+            font-family: 'Noto Sans Arabic', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        [dir="rtl"] { text-align: right; }
+        [dir="rtl"] .section-header.center { text-align: center; }
+        [dir="rtl"] .nav-inner { flex-direction: row-reverse; }
+        [dir="rtl"] .nav-links { flex-direction: row-reverse; }
+        [dir="rtl"] .nav-logo { flex-direction: row-reverse; }
+        [dir="rtl"] .hero-badge { flex-direction: row-reverse; }
+        [dir="rtl"] .hero-actions { flex-direction: row-reverse; }
+        [dir="rtl"] .hero-trust { flex-direction: row-reverse !important; }
+        [dir="rtl"] .hero-stats { flex-direction: row-reverse; }
+        [dir="rtl"] .hero-inner { direction: rtl; }
+        [dir="rtl"] .btn { flex-direction: row-reverse; }
+        [dir="rtl"] .feature-list-mini li { padding-left: 0; padding-right: 20px; }
+        [dir="rtl"] .feature-list-mini li::before { left: auto; right: 0; }
+        [dir="rtl"] .feature-card::before { transform-origin: right; }
+        [dir="rtl"] .pricing-features { text-align: right; }
+        [dir="rtl"] .pricing-features li { flex-direction: row-reverse; }
+        [dir="rtl"] .pricing-features li::before { content: '✓'; }
+        [dir="rtl"] .pricing-card.featured::before { content: 'الأكثر شيوعاً'; }
+        [dir="rtl"] .team-card-modern { flex-direction: row-reverse; }
+        [dir="rtl"] .team-creds li { flex-direction: row-reverse; }
+        [dir="rtl"] .comp-table th, [dir="rtl"] .comp-table td { text-align: right; }
+        [dir="rtl"] .footer-grid { direction: rtl; }
+        [dir="rtl"] .footer-bottom { flex-direction: row-reverse; }
+        [dir="rtl"] .footer-links { text-align: right; }
+        [dir="rtl"] .cta-actions { flex-direction: row-reverse; }
+        [dir="rtl"] .section-badge svg { margin-right: 0; margin-left: 2px; }
+        [dir="rtl"] .footer-links svg { margin-right: 0; margin-left: 4px; }
+        [dir="rtl"] .preview-body { direction: rtl; }
+        [dir="rtl"] .preview-nav-item { flex-direction: row-reverse; }
+        [dir="rtl"] .pdf-download-fab { right: auto; left: 32px; }
+        [dir="rtl"] .pdf-download-fab .fab-tooltip { right: auto; left: 68px; }
+        [dir="rtl"] .skip-link { left: auto; right: 16px; }
+        /* Roadmap timeline: flip border from left to right */
+        [dir="rtl"] .roadmap-item { border-left: none !important; border-right: 3px solid var(--primary) !important; padding-left: 0 !important; padding-right: 32px !important; }
+        [dir="rtl"] .roadmap-dot { left: auto !important; right: -9px !important; }
+        /* RTL responsive overrides */
+        @media (max-width: 768px) {
+            [dir="rtl"] .nav-links.open { text-align: right; }
+            [dir="rtl"] .hero-stats { flex-direction: column; }
+            [dir="rtl"] .team-card-modern { flex-direction: column; text-align: center; }
+            [dir="rtl"] .cta-actions { flex-direction: column; }
+            [dir="rtl"] .hero-trust { flex-direction: column !important; }
+        }
+
+        /* ═══════════════ PERFORMANCE: CONTENT-VISIBILITY ═══════════════ */
+        #problem, #features, #ai, #market, #competitive, #pricing, #team, #faq, .cta-section, .footer {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 800px;
+        }
+        .trust-bar {
+            content-visibility: auto;
+            contain-intrinsic-size: auto 140px;
+        }
+
+        /* ═══════════════ REDUCED MOTION ═══════════════ */
+        @media (prefers-reduced-motion: reduce) {
+            .fade-up { transition: none !important; opacity: 1 !important; transform: none !important; }
+            * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+            html { scroll-behavior: auto; }
+        }
     </style>
 </head>
 <body>
 
 <!-- Skip to content (Accessibility) -->
-<a href="#problem" class="skip-link">Skip to main content</a>
+<a href="#main-content" class="skip-link" data-i18n="skip_link">Skip to main content</a>
 
 <!-- ═══════════════ PRINT COVER PAGE (hidden on screen) ═══════════════ -->
 <div class="print-cover" style="min-height:100vh; background:#0f172a; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center; padding:60px 40px; page-break-after:always;">
-    <img src="/logo.png" alt="AccreditEx" width="80" height="80" style="border-radius:16px; margin-bottom:32px;">
+    <img src="/logo.png" alt="AccreditEx" width="80" height="80" loading="lazy" style="border-radius:16px; margin-bottom:32px;">
     <h1 style="color:white; font-size:42pt; font-weight:900; letter-spacing:-2px; margin-bottom:8px;">AccreditEx</h1>
     <p style="color:#4DB6AC; font-size:16pt; font-weight:600; margin-bottom:48px;">AI-Native Healthcare Accreditation Platform</p>
     <div style="width:80px; height:3px; background:linear-gradient(90deg,#00897B,#1565C0); border-radius:2px; margin-bottom:48px;"></div>
@@ -789,62 +992,76 @@
 </div>
 
 <!-- ═══════════════ NAVBAR ═══════════════ -->
-<nav class="navbar" id="navbar">
+<nav class="navbar" id="navbar" role="navigation" aria-label="Main navigation">
     <div class="nav-inner">
         <a href="#" class="nav-logo">
             <img src="/logo.png" alt="AccreditEx" class="nav-logo-icon" width="36" height="36">
             AccreditEx
         </a>
         <div class="nav-links" id="navLinks">
-            <a href="#features">Features</a>
-            <a href="#ai">AI Engine</a>
-            <a href="#market">Market</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#team">Team</a>
-            <a href="#faq">FAQ</a>
-            <a href="https://accreditex.web.app" class="nav-cta">Launch App →</a>
+            <a href="#features" data-i18n="nav_features">Features</a>
+            <a href="#ai" data-i18n="nav_ai">AI Engine</a>
+            <a href="#market" data-i18n="nav_market">Market</a>
+            <a href="#pricing" data-i18n="nav_pricing">Pricing</a>
+            <a href="#team" data-i18n="nav_team">Team</a>
+            <a href="#faq" data-i18n="nav_faq">FAQ</a>
+            <a href="https://accreditex.web.app" class="nav-cta" data-i18n="nav_cta">Launch App →</a>
         </div>
-        <button class="nav-menu-btn" aria-label="Toggle navigation menu" onclick="document.getElementById('navLinks').classList.toggle('open')">☰</button>
+        <button class="lang-switch-btn" id="langSwitchBtn" onclick="toggleLanguage()" aria-label="Switch to Arabic">العربية</button>
+        <button class="nav-menu-btn" id="navMenuBtn" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="navLinks" onclick="toggleMobileNav()">☰</button>
     </div>
 </nav>
 
 <!-- ═══════════════ HERO ═══════════════ -->
+<main id="main-content">
 <section class="hero" id="hero">
     <div class="hero-grid-bg"></div>
     <div class="hero-inner">
         <div class="hero-content">
             <div class="hero-badge">
                 <span class="hero-badge-dot"></span>
-                AI-Native Healthcare Platform
+                <span data-i18n="hero_badge">AI-Native Healthcare Platform</span>
             </div>
-            <h1>
+            <h1 data-i18n-html="hero_title">
                 From Audit Panic<br>
-                to <span>Continuous Excellence</span>
+                to <span class="hero-highlight">Continuous Excellence</span>
             </h1>
-            <p class="hero-sub">
+            <p class="hero-sub" data-i18n="hero_sub">
                 AccreditEx automates healthcare accreditation with AI-powered compliance tracking, 
                 real-time risk monitoring, and intelligent document management — built by a clinical quality expert.
             </p>
             <div class="hero-actions">
-                <a href="https://accreditex.web.app" class="btn btn-primary">
-                    Launch Platform →
+                <a href="https://accreditex.web.app" class="btn btn-primary" data-i18n="hero_btn_trial">
+                    Start Free Trial →
                 </a>
-                <a href="#features" class="btn btn-secondary">
+                <a href="#features" class="btn btn-secondary" data-i18n="hero_btn_features">
                     Explore Features ↓
                 </a>
+            </div>
+            <!-- Trust Badges -->
+            <div class="hero-trust" style="display:flex; gap:20px; flex-wrap:wrap; margin-top:28px; align-items:center;">
+                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.5);">
+                    <span style="color:#22c55e; font-size:16px;">&#9679;</span> <span data-i18n="hero_trust_1">No credit card required</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.5);">
+                    <span style="color:#22c55e; font-size:16px;">&#9679;</span> <span data-i18n="hero_trust_2">SOC 2-ready infrastructure</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.5);">
+                    <span style="color:#22c55e; font-size:16px;">&#9679;</span> <span data-i18n="hero_trust_3">HIPAA-aligned architecture</span>
+                </div>
             </div>
             <div class="hero-stats">
                 <div>
                     <div class="hero-stat-value">15+</div>
-                    <div class="hero-stat-label">AI-Powered Tools</div>
+                    <div class="hero-stat-label" data-i18n="hero_stat_label_1">AI-Powered Tools</div>
                 </div>
                 <div>
                     <div class="hero-stat-value">240+</div>
-                    <div class="hero-stat-label">Standards Loaded</div>
+                    <div class="hero-stat-label" data-i18n="hero_stat_label_2">Standards Loaded</div>
                 </div>
                 <div>
                     <div class="hero-stat-value">1,043</div>
-                    <div class="hero-stat-label">Sub-Standards</div>
+                    <div class="hero-stat-label" data-i18n="hero_stat_label_3">Sub-Standards</div>
                 </div>
             </div>
         </div>
@@ -858,36 +1075,36 @@
                 </div>
                 <div class="preview-body">
                     <div class="preview-sidebar">
-                        <div class="preview-nav-item active">📊 Dashboard</div>
-                        <div class="preview-nav-item">📁 Projects</div>
-                        <div class="preview-nav-item">📄 Documents</div>
-                        <div class="preview-nav-item">⚠️ Risk Hub</div>
-                        <div class="preview-nav-item">🎓 Training</div>
-                        <div class="preview-nav-item">📅 Calendar</div>
-                        <div class="preview-nav-item">🤖 AI Tools</div>
-                        <div class="preview-nav-item">📊 Analytics</div>
-                        <div class="preview-nav-item">💬 Messages</div>
+                        <div class="preview-nav-item active" data-i18n="preview_dashboard">📊 Dashboard</div>
+                        <div class="preview-nav-item" data-i18n="preview_projects">📁 Projects</div>
+                        <div class="preview-nav-item" data-i18n="preview_documents">📄 Documents</div>
+                        <div class="preview-nav-item" data-i18n="preview_riskhub">⚠️ Risk Hub</div>
+                        <div class="preview-nav-item" data-i18n="preview_training">🎓 Training</div>
+                        <div class="preview-nav-item" data-i18n="preview_calendar">📅 Calendar</div>
+                        <div class="preview-nav-item" data-i18n="preview_ai_tools">🤖 AI Tools</div>
+                        <div class="preview-nav-item" data-i18n="preview_analytics">📊 Analytics</div>
+                        <div class="preview-nav-item" data-i18n="preview_messages">💬 Messages</div>
                     </div>
                     <div class="preview-main">
                         <div class="preview-cards">
                             <div class="preview-card">
                                 <div class="preview-card-value" style="color:#22c55e;">87%</div>
-                                <div class="preview-card-label">Compliance Rate</div>
+                                <div class="preview-card-label" data-i18n="preview_compliance">Compliance Rate</div>
                             </div>
                             <div class="preview-card">
                                 <div class="preview-card-value" style="color:#f59e0b;">12</div>
-                                <div class="preview-card-label">Open CAPAs</div>
+                                <div class="preview-card-label" data-i18n="preview_capas">Open CAPAs</div>
                             </div>
                             <div class="preview-card">
                                 <div class="preview-card-value" style="color:#3b82f6;">5</div>
-                                <div class="preview-card-label">Active Projects</div>
+                                <div class="preview-card-label" data-i18n="preview_active">Active Projects</div>
                             </div>
                             <div class="preview-card">
                                 <div class="preview-card-value" style="color:#a855f7;">24</div>
-                                <div class="preview-card-label">Tasks Due</div>
+                                <div class="preview-card-label" data-i18n="preview_tasks">Tasks Due</div>
                             </div>
                         </div>
-                        <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-bottom:8px;">Department Performance</div>
+                        <div style="font-size:10px; color:rgba(255,255,255,0.3); margin-bottom:8px;" data-i18n="preview_dept_perf">Department Performance</div>
                         <div class="preview-bar-chart">
                             <div class="preview-bar" style="height:85%"></div>
                             <div class="preview-bar" style="height:72%"></div>
@@ -904,143 +1121,176 @@
     </div>
 </section>
 
+<!-- ═══════════════ TRUST BAR ═══════════════ -->
+<section class="trust-bar" aria-label="Supported accreditation standards" style="background:var(--bg-alt); padding:40px 24px; border-bottom:1px solid var(--border);">
+    <div style="max-width:1200px; margin:0 auto; text-align:center;">
+        <p style="font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:2px; color:var(--text-secondary); margin-bottom:24px;" data-i18n="trust_bar_title">Supporting Accreditation Standards From</p>
+        <div style="display:flex; justify-content:center; align-items:center; gap:40px; flex-wrap:wrap;">
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                <span style="font-size:24px; font-weight:800; color:var(--primary);">CBAHI</span>
+                <span style="font-size:11px; color:var(--text-secondary);" data-i18n="trust_bar_cbahi">Saudi Arabia</span>
+            </div>
+            <div style="width:1px; height:40px; background:var(--border);"></div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                <span style="font-size:24px; font-weight:800; color:var(--secondary);">JCI</span>
+                <span style="font-size:11px; color:var(--text-secondary);" data-i18n="trust_bar_jci">International</span>
+            </div>
+            <div style="width:1px; height:40px; background:var(--border);"></div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                <span style="font-size:24px; font-weight:800; color:var(--primary-dark);">DOH</span>
+                <span style="font-size:11px; color:var(--text-secondary);" data-i18n="trust_bar_doh">Abu Dhabi</span>
+            </div>
+            <div style="width:1px; height:40px; background:var(--border);"></div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                <span style="font-size:24px; font-weight:800; color:var(--accent);">ISO 15189</span>
+                <span style="font-size:11px; color:var(--text-secondary);" data-i18n="trust_bar_iso">Laboratory</span>
+            </div>
+            <div style="width:1px; height:40px; background:var(--border);"></div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                <span style="font-size:24px; font-weight:800; color:var(--text);">DHA</span>
+                <span style="font-size:11px; color:var(--text-secondary);" data-i18n="trust_bar_dha">Dubai</span>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- ═══════════════ THE PROBLEM ═══════════════ -->
-<section class="section section-alt" id="problem">
+<section class="section section-alt" id="problem" aria-labelledby="problem-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="alert-triangle"></i> The Challenge</div>
-            <h2 class="section-title">The Healthcare Compliance Crisis</h2>
-            <p class="section-sub">70% of GCC healthcare facilities still rely on manual spreadsheets, paper binders, and siloed emails for accreditation compliance.</p>
+            <div class="section-badge"><i data-lucide="alert-triangle"></i> <span data-i18n="problem_badge">The Challenge</span></div>
+            <h2 class="section-title" id="problem-title" data-i18n="problem_title">The Healthcare Compliance Crisis</h2>
+            <p class="section-sub" data-i18n="problem_sub">70% of GCC healthcare facilities still rely on manual spreadsheets, paper binders, and siloed emails for accreditation compliance.</p>
         </div>
         <div class="problem-grid">
             <div class="problem-card fade-up">
                 <div class="problem-icon red"><i data-lucide="clipboard-list"></i></div>
-                <div class="problem-stat">30%</div>
-                <h3>Higher Audit Failure Risk</h3>
-                <p>Human error in documentation is the #1 cause of non-conformities during accreditation surveys.</p>
+                <div class="problem-stat" data-i18n="problem_stat_1">30%</div>
+                <h3 data-i18n="problem_h3_1">Higher Audit Failure Risk</h3>
+                <p data-i18n="problem_p_1">Human error in documentation is the #1 cause of non-conformities during accreditation surveys.</p>
             </div>
             <div class="problem-card fade-up">
                 <div class="problem-icon orange"><i data-lucide="flame"></i></div>
-                <div class="problem-stat">50%</div>
-                <h3>Clinician Burnout Rate</h3>
-                <p>Quality managers spend more time on paperwork than actual patient safety improvement.</p>
+                <div class="problem-stat" data-i18n="problem_stat_2">50%</div>
+                <h3 data-i18n="problem_h3_2">Clinician Burnout Rate</h3>
+                <p data-i18n="problem_p_2">Quality managers spend more time on paperwork than actual patient safety improvement.</p>
             </div>
             <div class="problem-card fade-up">
                 <div class="problem-icon yellow"><i data-lucide="alert-octagon"></i></div>
-                <div class="problem-stat">$2M+</div>
-                <h3>Cost of Non-Compliance</h3>
-                <p>Lost accreditation means lost contracts, reputation damage, and potential patient safety risks.</p>
+                <div class="problem-stat" data-i18n="problem_stat_3">$2M+</div>
+                <h3 data-i18n="problem_h3_3">Cost of Non-Compliance</h3>
+                <p data-i18n="problem_p_3">Lost accreditation means lost contracts, reputation damage, and potential patient safety risks.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ═══════════════ FEATURES ═══════════════ -->
-<section class="section" id="features">
+<section class="section" id="features" aria-labelledby="features-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="building-2"></i> Platform</div>
-            <h2 class="section-title">Everything You Need for Accreditation</h2>
-            <p class="section-sub">A comprehensive platform covering every aspect of healthcare quality management — from standards tracking to team training.</p>
+            <div class="section-badge"><i data-lucide="building-2"></i> <span data-i18n="features_badge">Platform</span></div>
+            <h2 class="section-title" id="features-title" data-i18n="features_title">Everything You Need for Accreditation</h2>
+            <p class="section-sub" data-i18n="features_sub">A comprehensive platform covering every aspect of healthcare quality management — from standards tracking to team training.</p>
         </div>
         <div class="features-grid">
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="layout-dashboard"></i></div>
-                <h3>Role-Based Dashboards</h3>
-                <p>Tailored views for Admins, Project Leads, Auditors, and Team Members with real-time KPIs.</p>
+                <h3 data-i18n="feat_1_title">Role-Based Dashboards</h3>
+                <p data-i18n="feat_1_desc">Tailored views for Admins, Project Leads, Auditors, and Team Members with real-time KPIs.</p>
                 <ul class="feature-list-mini">
-                    <li>Executive overview with overdue tasks</li>
-                    <li>Compliance trend charts</li>
-                    <li>Department performance analytics</li>
-                    <li>Quality Insights with predictive risk</li>
+                    <li data-i18n="feat_1_li1">Executive overview with overdue tasks</li>
+                    <li data-i18n="feat_1_li2">Compliance trend charts</li>
+                    <li data-i18n="feat_1_li3">Department performance analytics</li>
+                    <li data-i18n="feat_1_li4">Quality Insights with predictive risk</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="folder-kanban"></i></div>
-                <h3>Project Management</h3>
-                <p>Full accreditation project lifecycle with checklists, evidence, PDCA cycles, and CAPA tracking.</p>
+                <h3 data-i18n="feat_2_title">Project Management</h3>
+                <p data-i18n="feat_2_desc">Full accreditation project lifecycle with checklists, evidence, PDCA cycles, and CAPA tracking.</p>
                 <ul class="feature-list-mini">
-                    <li>Template-based project creation</li>
-                    <li>Per-standard compliance checklists</li>
-                    <li>Design controls & audit logs</li>
-                    <li>Mock survey simulations</li>
+                    <li data-i18n="feat_2_li1">Template-based project creation</li>
+                    <li data-i18n="feat_2_li2">Per-standard compliance checklists</li>
+                    <li data-i18n="feat_2_li3">Design controls & audit logs</li>
+                    <li data-i18n="feat_2_li4">Mock survey simulations</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="file-text"></i></div>
-                <h3>Document Control</h3>
-                <p>Enterprise document management with versioning, approval workflows, and template gallery.</p>
+                <h3 data-i18n="feat_3_title">Document Control</h3>
+                <p data-i18n="feat_3_desc">Enterprise document management with versioning, approval workflows, and template gallery.</p>
                 <ul class="feature-list-mini">
-                    <li>Rich-text editor (EN/AR bilingual)</li>
-                    <li>Version history & comparison</li>
-                    <li>Multi-step approval chains</li>
-                    <li>Template gallery (SOP, Policy, etc.)</li>
+                    <li data-i18n="feat_3_li1">Rich-text editor (EN/AR bilingual)</li>
+                    <li data-i18n="feat_3_li2">Version history & comparison</li>
+                    <li data-i18n="feat_3_li3">Multi-step approval chains</li>
+                    <li data-i18n="feat_3_li4">Template gallery (SOP, Policy, etc.)</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="shield-alert"></i></div>
-                <h3>Risk & CAPA Hub</h3>
-                <p>Integrated risk register, incident reporting, CAPA management, and effectiveness tracking.</p>
+                <h3 data-i18n="feat_4_title">Risk & CAPA Hub</h3>
+                <p data-i18n="feat_4_desc">Integrated risk register, incident reporting, CAPA management, and effectiveness tracking.</p>
                 <ul class="feature-list-mini">
-                    <li>Risk matrix visualization</li>
-                    <li>Incident severity categorization</li>
-                    <li>Root cause analysis (5 Whys)</li>
-                    <li>CAPA closure decision engine</li>
+                    <li data-i18n="feat_4_li1">Risk matrix visualization</li>
+                    <li data-i18n="feat_4_li2">Incident severity categorization</li>
+                    <li data-i18n="feat_4_li3">Root cause analysis (5 Whys)</li>
+                    <li data-i18n="feat_4_li4">CAPA closure decision engine</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="graduation-cap"></i></div>
-                <h3>Training & Competency</h3>
-                <p>Complete training management with quizzes, certificates, and competency gap tracking.</p>
+                <h3 data-i18n="feat_5_title">Training & Competency</h3>
+                <p data-i18n="feat_5_desc">Complete training management with quizzes, certificates, and competency gap tracking.</p>
                 <ul class="feature-list-mini">
-                    <li>Training programs with quizzes</li>
-                    <li>Auto-generated certificates</li>
-                    <li>Competency library & gap reports</li>
-                    <li>AI-powered training recommendations</li>
+                    <li data-i18n="feat_5_li1">Training programs with quizzes</li>
+                    <li data-i18n="feat_5_li2">Auto-generated certificates</li>
+                    <li data-i18n="feat_5_li3">Competency library & gap reports</li>
+                    <li data-i18n="feat_5_li4">AI-powered training recommendations</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="building"></i></div>
-                <h3>Multi-Department</h3>
-                <p>Hospital-wide project support with AI-powered department assignment and per-department analytics.</p>
+                <h3 data-i18n="feat_6_title">Multi-Department</h3>
+                <p data-i18n="feat_6_desc">Hospital-wide project support with AI-powered department assignment and per-department analytics.</p>
                 <ul class="feature-list-mini">
-                    <li>AI auto-assign departments to standards</li>
-                    <li>Department compliance breakdown</li>
-                    <li>Cross-department collaboration</li>
-                    <li>HIS integration support <span style="font-size:10px; background:var(--primary-glow); color:var(--primary); padding:1px 6px; border-radius:4px; font-weight:600;">Beta</span></li>
+                    <li data-i18n="feat_6_li1">AI auto-assign departments to standards</li>
+                    <li data-i18n="feat_6_li2">Department compliance breakdown</li>
+                    <li data-i18n="feat_6_li3">Cross-department collaboration</li>
+                    <li data-i18n-html="feat_6_li4">HIS integration support <span style="font-size:10px; background:var(--primary-glow); color:var(--primary); padding:1px 6px; border-radius:4px; font-weight:600;">Beta</span></li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="search"></i></div>
-                <h3>Audit Management</h3>
-                <p>Plan, conduct, and track internal audits with findings, mock surveys, and readiness scoring.</p>
+                <h3 data-i18n="feat_7_title">Audit Management</h3>
+                <p data-i18n="feat_7_desc">Plan, conduct, and track internal audits with findings, mock surveys, and readiness scoring.</p>
                 <ul class="feature-list-mini">
-                    <li>Audit plan scheduler</li>
-                    <li>Finding severity classification</li>
-                    <li>Mock survey pass/fail analysis</li>
-                    <li>Assessor report pack generation</li>
+                    <li data-i18n="feat_7_li1">Audit plan scheduler</li>
+                    <li data-i18n="feat_7_li2">Finding severity classification</li>
+                    <li data-i18n="feat_7_li3">Mock survey pass/fail analysis</li>
+                    <li data-i18n="feat_7_li4">Assessor report pack generation</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="calendar"></i></div>
-                <h3>Calendar & Tasks</h3>
-                <p>Unified calendar aggregating all deadlines with personal task queues and notifications.</p>
+                <h3 data-i18n="feat_8_title">Calendar & Tasks</h3>
+                <p data-i18n="feat_8_desc">Unified calendar aggregating all deadlines with personal task queues and notifications.</p>
                 <ul class="feature-list-mini">
-                    <li>Month, agenda & year views</li>
-                    <li>My Tasks with overdue alerts</li>
-                    <li>Real-time messaging center</li>
-                    <li>In-app notifications</li>
+                    <li data-i18n="feat_8_li1">Month, agenda & year views</li>
+                    <li data-i18n="feat_8_li2">My Tasks with overdue alerts</li>
+                    <li data-i18n="feat_8_li3">Real-time messaging center</li>
+                    <li data-i18n="feat_8_li4">In-app notifications</li>
                 </ul>
             </div>
             <div class="feature-card fade-up">
                 <div class="feature-icon"><i data-lucide="globe"></i></div>
-                <h3>Standards Library</h3>
-                <p>Pre-loaded accreditation programs (CBAHI, JCI, DOH) with 240+ standards and 1,043 sub-standards.</p>
+                <h3 data-i18n="feat_9_title">Standards Library</h3>
+                <p data-i18n="feat_9_desc">Pre-loaded accreditation programs (CBAHI, JCI, DOH) with 240+ standards and 1,043 sub-standards.</p>
                 <ul class="feature-list-mini">
-                    <li>Cross-standard mapping</li>
-                    <li>Evidence reuse suggestions</li>
-                    <li>Bulk import/export</li>
-                    <li>Bilingual support (EN/AR)</li>
+                    <li data-i18n="feat_9_li1">Cross-standard mapping</li>
+                    <li data-i18n="feat_9_li2">Evidence reuse suggestions</li>
+                    <li data-i18n="feat_9_li3">Bulk import/export</li>
+                    <li data-i18n="feat_9_li4">Bilingual support (EN/AR)</li>
                 </ul>
             </div>
         </div>
@@ -1048,101 +1298,101 @@
 </section>
 
 <!-- ═══════════════ AI ENGINE ═══════════════ -->
-<section class="section section-dark" id="ai">
+<section class="section section-dark" id="ai" aria-labelledby="ai-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="bot"></i> AI Engine</div>
-            <h2 class="section-title" style="color:white;">15+ AI-Powered Tools Built In</h2>
-            <p class="section-sub">Not just a chatbot — a comprehensive AI system trained on healthcare accreditation that actively helps your team at every step.</p>
+            <div class="section-badge"><i data-lucide="bot"></i> <span data-i18n="ai_badge">AI Engine</span></div>
+            <h2 class="section-title" id="ai-title" style="color:white;" data-i18n="ai_title">15+ AI-Powered Tools Built In</h2>
+            <p class="section-sub" data-i18n="ai_sub">Not just a chatbot — a comprehensive AI system trained on healthcare accreditation that actively helps your team at every step.</p>
         </div>
         <div class="ai-grid">
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="message-circle"></i></div>
-                <h3>AI Assistant</h3>
-                <p>Context-aware floating chatbot available throughout the app for instant guidance.</p>
+                <h3 data-i18n="ai_1_title">AI Assistant</h3>
+                <p data-i18n="ai_1_desc">Context-aware floating chatbot available throughout the app for instant guidance.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="file-plus"></i></div>
-                <h3>Document Generator</h3>
-                <p>Generate compliant SOPs, policies, reports, and checklists from templates using AI.</p>
+                <h3 data-i18n="ai_2_title">Document Generator</h3>
+                <p data-i18n="ai_2_desc">Generate compliant SOPs, policies, reports, and checklists from templates using AI.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="scan-search"></i></div>
-                <h3>Gap Analysis</h3>
-                <p>Analyze compliance gaps and get AI-generated action plans for non-compliant items.</p>
+                <h3 data-i18n="ai_3_title">Gap Analysis</h3>
+                <p data-i18n="ai_3_desc">Analyze compliance gaps and get AI-generated action plans for non-compliant items.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="bar-chart-3"></i></div>
-                <h3>Analytics Insights</h3>
-                <p>AI analyzes your KPIs and generates executive summaries with recommendations.</p>
+                <h3 data-i18n="ai_4_title">Analytics Insights</h3>
+                <p data-i18n="ai_4_desc">AI analyzes your KPIs and generates executive summaries with recommendations.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="target"></i></div>
-                <h3>Root Cause Analysis</h3>
-                <p>5 Whys and Fishbone analysis to identify root causes of non-compliance.</p>
+                <h3 data-i18n="ai_5_title">Root Cause Analysis</h3>
+                <p data-i18n="ai_5_desc">5 Whys and Fishbone analysis to identify root causes of non-compliance.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="refresh-cw"></i></div>
-                <h3>PDCA Improvement</h3>
-                <p>AI-powered recommendations for each Plan-Do-Check-Act cycle stage.</p>
+                <h3 data-i18n="ai_6_title">PDCA Improvement</h3>
+                <p data-i18n="ai_6_desc">AI-powered recommendations for each Plan-Do-Check-Act cycle stage.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="shield-alert"></i></div>
-                <h3>Risk Assessment</h3>
-                <p>Automated risk scoring with mitigation recommendations and priority actions.</p>
+                <h3 data-i18n="ai_7_title">Risk Assessment</h3>
+                <p data-i18n="ai_7_desc">Automated risk scoring with mitigation recommendations and priority actions.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="pen-tool"></i></div>
-                <h3>Content Improvement</h3>
-                <p>Improves clarity, structure, grammar, and professionalism of existing documents.</p>
+                <h3 data-i18n="ai_8_title">Content Improvement</h3>
+                <p data-i18n="ai_8_desc">Improves clarity, structure, grammar, and professionalism of existing documents.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="languages"></i></div>
-                <h3>Translation (EN↔AR)</h3>
-                <p>Translates healthcare documents between English and Arabic preserving formatting.</p>
+                <h3 data-i18n="ai_9_title">Translation (EN↔AR)</h3>
+                <p data-i18n="ai_9_desc">Translates healthcare documents between English and Arabic preserving formatting.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="check-circle"></i></div>
-                <h3>Compliance Check</h3>
-                <p>Analyzes documents against specific standards and returns compliance scores.</p>
+                <h3 data-i18n="ai_10_title">Compliance Check</h3>
+                <p data-i18n="ai_10_desc">Analyzes documents against specific standards and returns compliance scores.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="building"></i></div>
-                <h3>Dept Auto-Assignment</h3>
-                <p>AI maps standards to the most responsible hospital department automatically.</p>
+                <h3 data-i18n="ai_11_title">Dept Auto-Assignment</h3>
+                <p data-i18n="ai_11_desc">AI maps standards to the most responsible hospital department automatically.</p>
             </div>
             <div class="ai-card fade-up">
                 <div class="ai-card-icon"><i data-lucide="graduation-cap"></i></div>
-                <h3>Training Advisor</h3>
-                <p>Suggests training programs based on role, department, and competency gaps.</p>
+                <h3 data-i18n="ai_12_title">Training Advisor</h3>
+                <p data-i18n="ai_12_desc">Suggests training programs based on role, department, and competency gaps.</p>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ═══════════════ MARKET OPPORTUNITY ═══════════════ -->
-<section class="section section-alt" id="market">
+<section class="section section-alt" id="market" aria-labelledby="market-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="trending-up"></i> Market</div>
-            <h2 class="section-title">A $4.37B Market Ready for Disruption</h2>
-            <p class="section-sub">The Abu Dhabi DoH 2027 mandate for AI-native government creates a "buy or fail" window for healthcare facilities.</p>
+            <div class="section-badge"><i data-lucide="trending-up"></i> <span data-i18n="market_badge">Market</span></div>
+            <h2 class="section-title" id="market-title" data-i18n="market_title">A $4.37B Market Ready for Disruption</h2>
+            <p class="section-sub" data-i18n="market_sub">The Abu Dhabi DoH 2027 mandate for AI-native government creates a "buy or fail" window for healthcare facilities.</p>
         </div>
         <div class="market-circles fade-up">
             <div class="market-circle market-tam">
-                <div class="market-label">TAM</div>
+                <div class="market-label" data-i18n="market_tam_label">TAM</div>
                 <div class="market-value">$38.5B</div>
-                <div class="market-desc">Global Health Software</div>
+                <div class="market-desc" data-i18n="market_tam_desc">Global Health Software</div>
             </div>
             <div class="market-circle market-sam">
-                <div class="market-label">SAM</div>
+                <div class="market-label" data-i18n="market_sam_label">SAM</div>
                 <div class="market-value">$4.37B</div>
-                <div class="market-desc">Compliance & Quality (2026)</div>
+                <div class="market-desc" data-i18n="market_sam_desc">Compliance & Quality (2026)</div>
             </div>
             <div class="market-circle market-som">
-                <div class="market-label">SOM</div>
+                <div class="market-label" data-i18n="market_som_label">SOM</div>
                 <div class="market-value">5,000+</div>
-                <div class="market-desc">GCC Healthcare Facilities</div>
+                <div class="market-desc" data-i18n="market_som_desc">GCC Healthcare Facilities</div>
             </div>
         </div>
         <p class="print-source">Sources: Grand View Research "Healthcare Quality Management Market" (2025); WHO EMRO Regional Health Observatory; GCC Health Council facility registry data.</p>
@@ -1150,18 +1400,18 @@
 </section>
 
 <!-- ═══════════════ COMPETITIVE ADVANTAGE ═══════════════ -->
-<section class="section" id="competitive">
+<section class="section" id="competitive" aria-labelledby="competitive-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="trophy"></i> Advantage</div>
-            <h2 class="section-title">Why AccreditEx Wins</h2>
-            <p class="section-sub">Practitioner-built, region-first, AI-native — designed specifically for GCC healthcare compliance.</p>
+            <div class="section-badge"><i data-lucide="trophy"></i> <span data-i18n="comp_badge">Advantage</span></div>
+            <h2 class="section-title" id="competitive-title" data-i18n="comp_title">Why AccreditEx Wins</h2>
+            <p class="section-sub" data-i18n="comp_sub">Practitioner-built, region-first, AI-native — designed specifically for GCC healthcare compliance.</p>
         </div>
         <div class="comp-table-wrap fade-up">
             <table class="comp-table">
                 <thead>
                     <tr>
-                        <th>Capability</th>
+                        <th data-i18n="comp_th_capability">Capability</th>
                         <th>AccreditEx</th>
                         <th>MEG</th>
                         <th>RLDatix</th>
@@ -1169,13 +1419,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr><td><strong>Practitioner-Built</strong></td><td class="yes">✓ Full</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
-                    <tr><td><strong>GCC Regional Templates</strong></td><td class="yes">✓ DOH/DHA/MOH</td><td class="partial">Partial</td><td class="no">✗</td><td class="partial">Limited</td></tr>
-                    <tr><td><strong>AI-Continuous Auditing</strong></td><td class="yes">✓ 15+ AI Tools</td><td class="partial">Basic</td><td class="partial">Basic</td><td class="yes">✓</td></tr>
-                    <tr><td><strong>Bilingual (EN/AR)</strong></td><td class="yes">✓ Full RTL</td><td class="no">✗</td><td class="no">✗</td><td class="partial">Partial</td></tr>
-                    <tr><td><strong>PWA / Offline-First</strong></td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
-                    <tr><td><strong>Pre-loaded Standards</strong></td><td class="yes">✓ 240+ Stds / 1,043 Sub</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
-                    <tr><td><strong>Affordable for SMEs</strong></td><td class="yes">✓ From $500/mo</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong data-i18n="comp_practitioner">Practitioner-Built</strong></td><td class="yes" data-i18n="comp_full">✓ Full</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong data-i18n="comp_gcc">GCC Regional Templates</strong></td><td class="yes" data-i18n="comp_gcc_val">✓ DOH/DHA/MOH</td><td class="partial" data-i18n="comp_partial">Partial</td><td class="no">✗</td><td class="partial" data-i18n="comp_limited">Limited</td></tr>
+                    <tr><td><strong data-i18n="comp_ai_audit">AI-Continuous Auditing</strong></td><td class="yes" data-i18n="comp_ai_val">✓ 15+ AI Tools</td><td class="partial" data-i18n="comp_basic">Basic</td><td class="partial" data-i18n="comp_basic2">Basic</td><td class="yes">✓</td></tr>
+                    <tr><td><strong data-i18n="comp_bilingual">Bilingual (EN/AR)</strong></td><td class="yes" data-i18n="comp_bilingual_val">✓ Full RTL</td><td class="no">✗</td><td class="no">✗</td><td class="partial" data-i18n="comp_partial2">Partial</td></tr>
+                    <tr><td><strong data-i18n="comp_pwa">PWA / Offline-First</strong></td><td class="yes">✓</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong data-i18n="comp_standards">Pre-loaded Standards</strong></td><td class="yes" data-i18n="comp_standards_val">✓ 240+ Stds / 1,043 Sub</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
+                    <tr><td><strong data-i18n="comp_affordable">Affordable for SMEs</strong></td><td class="yes" data-i18n="comp_affordable_val">✓ From $500/mo</td><td class="no">✗</td><td class="no">✗</td><td class="no">✗</td></tr>
                 </tbody>
             </table>
         </div>
@@ -1183,91 +1433,91 @@
 </section>
 
 <!-- ═══════════════ PRICING ═══════════════ -->
-<section class="section section-alt" id="pricing">
+<section class="section section-alt" id="pricing" aria-labelledby="pricing-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="credit-card"></i> Pricing</div>
-            <h2 class="section-title">Scalable SaaS Pricing</h2>
-            <p class="section-sub">High-retention "sticky" model — once compliance data lives in AccreditEx, the cost of switching is prohibitively high.</p>
+            <div class="section-badge"><i data-lucide="credit-card"></i> <span data-i18n="pricing_badge">Pricing</span></div>
+            <h2 class="section-title" id="pricing-title" data-i18n="pricing_title">Scalable SaaS Pricing</h2>
+            <p class="section-sub" data-i18n="pricing_sub">Enterprise-grade data management with seamless scaling — built so your compliance data grows with you.</p>
         </div>
         <div class="pricing-grid fade-up">
             <div class="pricing-card">
-                <div class="pricing-name">Core</div>
-                <div class="pricing-price">$500<span>/mo</span></div>
-                <div class="pricing-desc">Per facility · Small labs & clinics</div>
+                <div class="pricing-name" data-i18n="pricing_core">Core</div>
+                <div class="pricing-price">$500<span data-i18n="pricing_core_price_suffix">/mo</span></div>
+                <div class="pricing-desc" data-i18n="pricing_core_desc">Per facility · Small labs & clinics</div>
                 <ul class="pricing-features">
-                    <li>Up to 10 users</li>
-                    <li>Compliance tracking</li>
-                    <li>Document management</li>
-                    <li>Basic AI tools</li>
-                    <li>Email support</li>
+                    <li data-i18n="pricing_core_f1">Up to 10 users</li>
+                    <li data-i18n="pricing_core_f2">Compliance tracking</li>
+                    <li data-i18n="pricing_core_f3">Document management</li>
+                    <li data-i18n="pricing_core_f4">Basic AI tools</li>
+                    <li data-i18n="pricing_core_f5">Email support</li>
                 </ul>
-                <a href="https://accreditex.web.app" class="pricing-btn pricing-btn-secondary">Get Started</a>
+                <a href="https://accreditex.web.app" class="pricing-btn pricing-btn-secondary" data-i18n="pricing_core_btn">Get Started</a>
             </div>
             <div class="pricing-card featured">
-                <div class="pricing-name">Enterprise</div>
-                <div class="pricing-price">$2,000<span>/mo</span></div>
-                <div class="pricing-desc">Per facility · Hospitals & networks</div>
+                <div class="pricing-name" data-i18n="pricing_enterprise">Enterprise</div>
+                <div class="pricing-price">$2,000<span data-i18n="pricing_core_price_suffix">/mo</span></div>
+                <div class="pricing-desc" data-i18n="pricing_ent_desc">Per facility · Hospitals & networks</div>
                 <ul class="pricing-features">
-                    <li>Unlimited users</li>
-                    <li>Full AI predictive engine</li>
-                    <li>Advanced analytics</li>
-                    <li>Multi-department support</li>
-                    <li>HIS integration</li>
-                    <li>Priority support + SLA</li>
-                    <li>API access</li>
+                    <li data-i18n="pricing_ent_f1">Unlimited users</li>
+                    <li data-i18n="pricing_ent_f2">Full AI predictive engine</li>
+                    <li data-i18n="pricing_ent_f3">Advanced analytics</li>
+                    <li data-i18n="pricing_ent_f4">Multi-department support</li>
+                    <li data-i18n="pricing_ent_f5">HIS integration</li>
+                    <li data-i18n="pricing_ent_f6">Priority support + SLA</li>
+                    <li data-i18n="pricing_ent_f7">API access</li>
                 </ul>
-                <a href="https://accreditex.web.app" class="pricing-btn pricing-btn-primary">Start Free Trial</a>
+                <a href="https://accreditex.web.app" class="pricing-btn pricing-btn-primary" data-i18n="pricing_ent_btn">Start Free Trial</a>
             </div>
             <div class="pricing-card">
-                <div class="pricing-name">Custom</div>
-                <div class="pricing-price" style="font-size:32px;">Contact Us</div>
-                <div class="pricing-desc">Predictive Governance AI Add-On</div>
+                <div class="pricing-name" data-i18n="pricing_custom">Custom</div>
+                <div class="pricing-price" style="font-size:32px;" data-i18n="pricing_custom_price">Contact Us</div>
+                <div class="pricing-desc" data-i18n="pricing_custom_desc">Predictive Governance AI Add-On</div>
                 <ul class="pricing-features">
-                    <li>Premium AI features</li>
-                    <li>High-throughput centers</li>
-                    <li>Custom integrations</li>
-                    <li>Dedicated success manager</li>
-                    <li>On-premise deployment option</li>
+                    <li data-i18n="pricing_custom_f1">Premium AI features</li>
+                    <li data-i18n="pricing_custom_f2">High-throughput centers</li>
+                    <li data-i18n="pricing_custom_f3">Custom integrations</li>
+                    <li data-i18n="pricing_custom_f4">Dedicated success manager</li>
+                    <li data-i18n="pricing_custom_f5">On-premise deployment option</li>
                 </ul>
-                <a href="mailto:ashraf.a.m.ishag@gmail.com" class="pricing-btn pricing-btn-secondary">Contact Sales</a>
+                <a href="mailto:ashraf.a.m.ishag@gmail.com" class="pricing-btn pricing-btn-secondary" data-i18n="pricing_custom_btn">Contact Sales</a>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ═══════════════ TEAM ═══════════════ -->
-<section class="section" id="team">
+<section class="section" id="team" aria-labelledby="team-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="user"></i> Team</div>
-            <h2 class="section-title">The "Black Belt" Advantage</h2>
-            <p class="section-sub">A rare blend of clinical expertise, operational excellence, and full-stack technical capability.</p>
+            <div class="section-badge"><i data-lucide="user"></i> <span data-i18n="team_badge">Team</span></div>
+            <h2 class="section-title" id="team-title" data-i18n="team_title">The "Black Belt" Advantage</h2>
+            <p class="section-sub" data-i18n="team_sub">A rare blend of clinical expertise, operational excellence, and full-stack technical capability.</p>
         </div>
         <div class="team-card-modern fade-up">
             <img src="/CEO.jpg" alt="Ashraf Abu baker Musa Ishag — Founder & CEO" class="team-avatar" width="140" height="140" loading="lazy">
             <div>
-                <div class="team-name">Ashraf Abu baker Musa Ishag</div>
-                <div class="team-role">Founder & CEO</div>
+                <div class="team-name" data-i18n="team_name">Ashraf Abu baker Musa Ishag</div>
+                <div class="team-role" data-i18n="team_role">Founder & CEO</div>
                 <ul class="team-creds">
-                    <li><i data-lucide="graduation-cap"></i> B.Sc. Medical Laboratory Science, ISQUA Fellow</li>
-                    <li><i data-lucide="zap"></i> Six Sigma Black Belt · Google Project Manager</li>
-                    <li><i data-lucide="building-2"></i> Licensed Lab Quality Manager (Oman/Sudan)</li>
-                    <li><i data-lucide="code"></i> Full-Stack Developer (React, TypeScript, Firebase, AI)</li>
-                    <li><i data-lucide="pen-line"></i> Published researcher </li>
+                    <li><i data-lucide="graduation-cap"></i> <span data-i18n="team_cred_1">B.Sc. Medical Laboratory Science, ISQUA Fellow</span></li>
+                    <li><i data-lucide="zap"></i> <span data-i18n="team_cred_2">Six Sigma Black Belt · Google Project Manager</span></li>
+                    <li><i data-lucide="building-2"></i> <span data-i18n="team_cred_3">Licensed Lab Quality Manager (Oman/Sudan)</span></li>
+                    <li><i data-lucide="code"></i> <span data-i18n="team_cred_4">Full-Stack Developer (React, TypeScript, Firebase, AI)</span></li>
+                    <li><i data-lucide="pen-line"></i> <span data-i18n="team_cred_5">Published researcher</span> </li>
                 </ul>
             </div>
         </div>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:32px;" class="fade-up">
             <div style="background:var(--bg-alt); padding:28px; border-radius:var(--radius); border:1px solid var(--border);">
-                <strong style="font-size:16px;"><i data-lucide="target" style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;"></i> Unique Positioning</strong>
-                <p style="font-size:14px; color:var(--text-secondary); margin-top:8px;">
+                <strong style="font-size:16px;"><i data-lucide="target" style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;"></i> <span data-i18n="team_positioning_title">Unique Positioning</span></strong>
+                <p style="font-size:14px; color:var(--text-secondary); margin-top:8px;" data-i18n="team_positioning_desc">
                     Designed by a clinical quality professional who understands healthcare compliance from the inside — not just software developers adapting generic tools.
                 </p>
             </div>
             <div style="background:var(--bg-alt); padding:28px; border-radius:var(--radius); border:1px solid var(--border);">
-                <strong style="font-size:16px;"><i data-lucide="users" style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;"></i> Advisory Board</strong>
-                <p style="font-size:14px; color:var(--text-secondary); margin-top:8px;">
+                <strong style="font-size:16px;"><i data-lucide="users" style="width:16px;height:16px;display:inline;vertical-align:-2px;margin-right:4px;"></i> <span data-i18n="team_advisory_title">Advisory Board</span></strong>
+                <p style="font-size:14px; color:var(--text-secondary); margin-top:8px;" data-i18n="team_advisory_desc">
                     Assembling an advisory board of clinical and technical mentors from the GCC healthcare sector. Currently exploring pilot partnerships with leading hospitals in the region.
                 </p>
             </div>
@@ -1279,88 +1529,100 @@
 <section class="section section-alt">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="map"></i> Roadmap</div>
-            <h2 class="section-title">The Abu Dhabi Vision</h2>
-            <p class="section-sub">Strategic roadmap aligned with Abu Dhabi Economic Vision 2030.</p>
+            <div class="section-badge"><i data-lucide="map"></i> <span data-i18n="roadmap_badge">Roadmap</span></div>
+            <h2 class="section-title" data-i18n="roadmap_title">The Abu Dhabi Vision</h2>
+            <p class="section-sub" data-i18n="roadmap_sub">Strategic roadmap aligned with Abu Dhabi Economic Vision 2030.</p>
         </div>
         <div style="max-width:700px; margin:0 auto;" class="fade-up">
-            <div style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
-                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+            <div class="roadmap-item" style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div class="roadmap-dot" style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
                 <div style="min-width:80px;"><strong style="color:var(--primary);">2026</strong></div>
-                <div><strong>Strategic HQ at ADGM</strong><br><span style="font-size:14px; color:var(--text-secondary);">Establishing AccreditEx AI Lab at Abu Dhabi Global Market</span></div>
+                <div><strong data-i18n="roadmap_1_title">Strategic HQ at ADGM</strong><br><span style="font-size:14px; color:var(--text-secondary);" data-i18n="roadmap_1_desc">Establishing AccreditEx AI Lab at Abu Dhabi Global Market</span></div>
             </div>
-            <div style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
-                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+            <div class="roadmap-item" style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div class="roadmap-dot" style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
                 <div style="min-width:80px;"><strong style="color:var(--primary);">2026</strong></div>
-                <div><strong>National Integration</strong><br><span style="font-size:14px; color:var(--text-secondary);">API roadmap for Malaffi (UAE Health Information Exchange) integration</span></div>
+                <div><strong data-i18n="roadmap_2_title">National Integration</strong><br><span style="font-size:14px; color:var(--text-secondary);" data-i18n="roadmap_2_desc">API roadmap for Malaffi (UAE Health Information Exchange) integration</span></div>
             </div>
-            <div style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
-                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+            <div class="roadmap-item" style="display:flex; gap:24px; margin-bottom:32px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div class="roadmap-dot" style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
                 <div style="min-width:80px;"><strong style="color:var(--primary);">2027</strong></div>
-                <div><strong>Local R&D Partnership</strong><br><span style="font-size:14px; color:var(--text-secondary);">Partnering with MBZUAI for R&D and hiring local AI talent</span></div>
+                <div><strong data-i18n="roadmap_3_title">Local R&D Partnership</strong><br><span style="font-size:14px; color:var(--text-secondary);" data-i18n="roadmap_3_desc">Partnering with MBZUAI for R&D and hiring local AI talent</span></div>
             </div>
-            <div style="display:flex; gap:24px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
-                <div style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
-                <div style="min-width:80px;"><strong style="color:var(--primary);">Long-term</strong></div>
-                <div><strong>Global Benchmark</strong><br><span style="font-size:14px; color:var(--text-secondary);">10-Year Golden Visa & making Abu Dhabi the global benchmark for AI-driven clinical safety</span></div>
+            <div class="roadmap-item" style="display:flex; gap:24px; padding-left:32px; border-left:3px solid var(--primary); position:relative;">
+                <div class="roadmap-dot" style="position:absolute; left:-9px; top:2px; width:16px; height:16px; background:var(--primary); border-radius:50%;"></div>
+                <div style="min-width:80px;"><strong style="color:var(--primary);" data-i18n="roadmap_longterm">Long-term</strong></div>
+                <div><strong data-i18n="roadmap_4_title">Global Benchmark</strong><br><span style="font-size:14px; color:var(--text-secondary);" data-i18n="roadmap_4_desc">10-Year Golden Visa & making Abu Dhabi the global benchmark for AI-driven clinical safety</span></div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- ═══════════════ FAQ (GEO / AI Citation Optimized) ═══════════════ -->
-<section class="section" id="faq">
+<section class="section" id="faq" aria-labelledby="faq-title">
     <div class="container">
         <div class="section-header center fade-up">
-            <div class="section-badge"><i data-lucide="help-circle"></i> FAQ</div>
-            <h2 class="section-title">Frequently Asked Questions</h2>
-            <p class="section-sub">Answers to common questions about AccreditEx for healthcare quality leaders and decision-makers.</p>
+            <div class="section-badge"><i data-lucide="help-circle"></i> <span data-i18n="faq_badge">FAQ</span></div>
+            <h2 class="section-title" id="faq-title" data-i18n="faq_title">Frequently Asked Questions</h2>
+            <p class="section-sub" data-i18n="faq_sub">Answers to common questions about AccreditEx for healthcare quality leaders and decision-makers.</p>
         </div>
         <div style="max-width:760px; margin:0 auto;" class="fade-up">
             <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
-                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">What accreditation standards does AccreditEx support? <span style="color:var(--primary); font-size:20px;">+</span></summary>
-                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx comes pre-loaded with <strong>240+ standards and 1,043 sub-standards</strong> covering CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory). New standards can be imported in bulk. Cross-standard mapping helps reuse evidence across multiple accreditation bodies.</p>
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;"><span data-i18n="faq_q1">What accreditation standards does AccreditEx support?</span> <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;" data-i18n-html="faq_a1">AccreditEx comes pre-loaded with <strong>240+ standards and 1,043 sub-standards</strong> covering CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory). New standards can be imported in bulk. Cross-standard mapping helps reuse evidence across multiple accreditation bodies.</p>
             </details>
             <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
-                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">How does the AI engine work? <span style="color:var(--primary); font-size:20px;">+</span></summary>
-                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx integrates <strong>15+ AI-powered tools</strong> directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment. The AI is context-aware and trained on healthcare accreditation knowledge.</p>
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;"><span data-i18n="faq_q2">How does the AI engine work?</span> <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;" data-i18n-html="faq_a2">AccreditEx integrates <strong>15+ AI-powered tools</strong> directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment. The AI is context-aware and trained on healthcare accreditation knowledge.</p>
             </details>
             <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
-                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">Is AccreditEx suitable for small clinics or only large hospitals? <span style="color:var(--primary); font-size:20px;">+</span></summary>
-                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx is designed for <strong>all facility sizes</strong>. The Core plan ($500/mo) is built for small labs and clinics with up to 10 users. The Enterprise plan ($2,000/mo) adds unlimited users, multi-department support, HIS integration, and advanced AI analytics — ideal for hospitals and healthcare networks.</p>
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;"><span data-i18n="faq_q3">Is AccreditEx suitable for small clinics or only large hospitals?</span> <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;" data-i18n-html="faq_a3">AccreditEx is designed for <strong>all facility sizes</strong>. The Core plan ($500/mo) is built for small labs and clinics with up to 10 users. The Enterprise plan ($2,000/mo) adds unlimited users, multi-department support, HIS integration, and advanced AI analytics — ideal for hospitals and healthcare networks.</p>
             </details>
             <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
-                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">Does it support Arabic and right-to-left (RTL) interfaces? <span style="color:var(--primary); font-size:20px;">+</span></summary>
-                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">Yes. AccreditEx is <strong>fully bilingual (English/Arabic)</strong> with complete RTL layout support. The AI translation tool can translate healthcare documents between EN and AR while preserving formatting. This is essential for GCC facilities where regulatory submissions may require Arabic documentation.</p>
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;"><span data-i18n="faq_q4">Does it support Arabic and right-to-left (RTL) interfaces?</span> <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;" data-i18n-html="faq_a4">Yes. AccreditEx is <strong>fully bilingual (English/Arabic)</strong> with complete RTL layout support. The AI translation tool can translate healthcare documents between EN and AR while preserving formatting. This is essential for GCC facilities where regulatory submissions may require Arabic documentation.</p>
             </details>
             <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; margin-bottom:16px; cursor:pointer;">
-                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">What makes AccreditEx different from MEG, RLDatix, or Vastian? <span style="color:var(--primary); font-size:20px;">+</span></summary>
-                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">AccreditEx is the only platform that is: (1) <strong>practitioner-built</strong> by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) <strong>GCC-first</strong> with pre-loaded regional templates for DOH, DHA, MOH, and CBAHI, (3) <strong>AI-native</strong> with 15+ integrated tools (not bolt-on chatbots), and (4) <strong>affordable</strong> starting at $500/mo with PWA offline support — features competitors price at $10K+/mo.</p>
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;"><span data-i18n="faq_q5">What makes AccreditEx different from MEG, RLDatix, or Vastian?</span> <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;" data-i18n-html="faq_a5">AccreditEx is the only platform that is: (1) <strong>practitioner-built</strong> by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) <strong>GCC-first</strong> with pre-loaded regional templates for DOH, DHA, MOH, and CBAHI, (3) <strong>AI-native</strong> with 15+ integrated tools (not bolt-on chatbots), and (4) <strong>affordable</strong> starting at $500/mo with PWA offline support — features competitors price at $10K+/mo.</p>
             </details>
             <details style="background:white; border:1px solid var(--border); border-radius:var(--radius); padding:24px; cursor:pointer;">
-                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;">Can investors request a demo or pitch deck? <span style="color:var(--primary); font-size:20px;">+</span></summary>
-                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;">Absolutely. You can <strong>download the pitch deck as PDF</strong> using the download button on this page, or contact founder Ashraf Ishag directly at <a href="mailto:ashraf.a.m.ishag@gmail.com" style="color:var(--primary); font-weight:600;">ashraf.a.m.ishag@gmail.com</a> to schedule a live demo of the platform.</p>
+                <summary style="font-weight:700; font-size:16px; list-style:none; display:flex; justify-content:space-between; align-items:center;"><span data-i18n="faq_q6">Can investors request a demo or pitch deck?</span> <span style="color:var(--primary); font-size:20px;">+</span></summary>
+                <p style="margin-top:16px; font-size:15px; color:var(--text-secondary); line-height:1.7;" data-i18n-html="faq_a6">Absolutely. You can <strong>download the pitch deck as PDF</strong> using the download button on this page, or contact founder Ashraf Ishag directly at <a href="mailto:ashraf.a.m.ishag@gmail.com" style="color:var(--primary); font-weight:600;">ashraf.a.m.ishag@gmail.com</a> to schedule a live demo of the platform.</p>
             </details>
         </div>
     </div>
 </section>
 
 <!-- ═══════════════ CTA ═══════════════ -->
-<section class="cta-section">
-    <h2 class="cta-title">Ready to Transform Healthcare Quality?</h2>
-    <p class="cta-sub">Join the platform that's moving healthcare from annual audit panic to continuous clinical excellence.</p>
+<section class="cta-section" aria-label="Call to action">
+    <h2 class="cta-title" data-i18n="cta_title">Ready to Transform Healthcare Quality?</h2>
+    <p class="cta-sub" data-i18n="cta_sub">Join the platform that's moving healthcare from annual audit panic to continuous clinical excellence.</p>
     <div class="cta-actions">
-        <a href="https://accreditex.web.app" class="btn btn-primary" style="font-size:17px; padding:16px 36px;">
-            Launch AccreditEx →
+        <a href="https://accreditex.web.app" class="btn btn-primary" style="font-size:17px; padding:16px 36px;" data-i18n="cta_btn_trial">
+            Start Free Trial →
         </a>
-        <a href="mailto:ashraf.a.m.ishag@gmail.com" class="btn btn-secondary" style="font-size:17px; padding:16px 36px;">
+        <a href="mailto:ashraf.a.m.ishag@gmail.com" class="btn btn-secondary" style="font-size:17px; padding:16px 36px;" data-i18n="cta_btn_contact">
             Contact Founder
         </a>
         <button onclick="window.print()" class="btn btn-secondary" style="font-size:17px; padding:16px 36px; background:rgba(255,255,255,0.08);">
-            <i data-lucide="download" style="width:18px;height:18px;display:inline;vertical-align:-3px;margin-right:4px;"></i> Download Pitch Deck
+            <i data-lucide="download" style="width:18px;height:18px;display:inline;vertical-align:-3px;margin-right:4px;"></i> <span data-i18n="cta_btn_deck">Download Pitch Deck</span>
         </button>
     </div>
-    <div style="margin-top:40px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap; position:relative;">
+    <!-- Trust Indicators -->
+    <div style="margin-top:32px; display:flex; justify-content:center; gap:24px; flex-wrap:wrap; position:relative;">
+        <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.5);">
+            <span style="color:#22c55e; font-size:14px;">&#10003;</span> <span data-i18n="cta_trust_1">14-day free trial</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.5);">
+            <span style="color:#22c55e; font-size:14px;">&#10003;</span> <span data-i18n="cta_trust_2">No credit card required</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.5);">
+            <span style="color:#22c55e; font-size:14px;">&#10003;</span> <span data-i18n="cta_trust_3">Setup in under 5 minutes</span>
+        </div>
+    </div>
+    <div style="margin-top:24px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap; position:relative;">
         <span class="footer-badge">CBAHI</span>
         <span class="footer-badge">JCI</span>
         <span class="footer-badge">ISO 15189</span>
@@ -1370,47 +1632,47 @@
 </section>
 
 <!-- ═══════════════ FOOTER ═══════════════ -->
-<footer class="footer">
+<footer class="footer" role="contentinfo">
     <div class="footer-grid">
         <div>
             <div class="footer-brand" style="display:flex; align-items:center; gap:10px;">
                 <img src="/logo.png" alt="AccreditEx" width="32" height="32" style="border-radius:8px; object-fit:contain;">
                 AccreditEx
             </div>
-            <p class="footer-desc">AI-Native Healthcare Accreditation Platform. Built by a clinical quality expert for healthcare facilities transitioning to continuous digital compliance.</p>
-            <p class="footer-desc" style="margin-top:12px;"><i data-lucide="map-pin" style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;"></i> Seeb, Muscat | Relocating to Abu Dhabi 2026</p>
+            <p class="footer-desc" data-i18n="footer_desc">AI-Native Healthcare Accreditation Platform. Built by a clinical quality expert for healthcare facilities transitioning to continuous digital compliance.</p>
+            <p class="footer-desc" style="margin-top:12px;"><i data-lucide="map-pin" style="width:14px;height:14px;display:inline;vertical-align:-2px;margin-right:2px;"></i> <span data-i18n="footer_location">Seeb, Muscat | Relocating to Abu Dhabi 2026</span></p>
         </div>
         <div>
-            <div class="footer-col-title">Platform</div>
+            <div class="footer-col-title" data-i18n="footer_platform">Platform</div>
             <ul class="footer-links">
-                <li><a href="https://accreditex.web.app">Dashboard</a></li>
-                <li><a href="https://accreditex.web.app">Projects</a></li>
-                <li><a href="https://accreditex.web.app">Documents</a></li>
-                <li><a href="https://accreditex.web.app">Risk Hub</a></li>
-                <li><a href="https://accreditex.web.app">Training</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_dashboard">Dashboard</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_projects">Projects</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_documents">Documents</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_riskhub">Risk Hub</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_training">Training</a></li>
             </ul>
         </div>
         <div>
-            <div class="footer-col-title">AI Tools</div>
+            <div class="footer-col-title" data-i18n="footer_ai_tools">AI Tools</div>
             <ul class="footer-links">
-                <li><a href="https://accreditex.web.app">AI Assistant</a></li>
-                <li><a href="https://accreditex.web.app">Document Generator</a></li>
-                <li><a href="https://accreditex.web.app">Gap Analysis</a></li>
-                <li><a href="https://accreditex.web.app">Risk Assessment</a></li>
-                <li><a href="https://accreditex.web.app">Translation</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_ai_assistant">AI Assistant</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_doc_gen">Document Generator</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_gap_analysis">Gap Analysis</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_risk_assess">Risk Assessment</a></li>
+                <li><a href="https://accreditex.web.app" data-i18n="footer_translation">Translation</a></li>
             </ul>
         </div>
         <div>
-            <div class="footer-col-title">Contact</div>
+            <div class="footer-col-title" data-i18n="footer_contact">Contact</div>
             <ul class="footer-links">
-                <li><a href="mailto:ashraf.a.m.ishag@gmail.com"><i data-lucide="mail"></i> Email</a></li>
-                <li><a href="https://linkedin.com/in/ashraf-ishag"><i data-lucide="briefcase"></i> LinkedIn</a></li>
-                <li><a href="https://accreditex.web.app"><i data-lucide="arrow-up-right"></i> Launch App</a></li>
+                <li><a href="mailto:ashraf.a.m.ishag@gmail.com"><i data-lucide="mail"></i> <span data-i18n="footer_email">Email</span></a></li>
+                <li><a href="https://linkedin.com/in/ashraf-ishag"><i data-lucide="briefcase"></i> <span data-i18n="footer_linkedin">LinkedIn</span></a></li>
+                <li><a href="https://accreditex.web.app"><i data-lucide="arrow-up-right"></i> <span data-i18n="footer_launch">Launch App</span></a></li>
             </ul>
         </div>
     </div>
     <div class="footer-bottom">
-        <span>© 2026 AccreditEx. All rights reserved.</span>
+        <span data-i18n="footer_copyright">© 2026 AccreditEx. All rights reserved.</span>
         <div class="footer-badges">
             <span class="footer-badge">React</span>
             <span class="footer-badge">TypeScript</span>
@@ -1419,30 +1681,426 @@
         </div>
     </div>
 </footer>
+</main>
 
 <!-- Floating PDF Download Button -->
 <button class="pdf-download-fab" id="pdfDownloadFab" aria-label="Download pitch deck as PDF">
     <i data-lucide="download"></i>
-    <span class="fab-tooltip">Download Pitch Deck (PDF)</span>
+    <span class="fab-tooltip" data-i18n="fab_tooltip">Download Pitch Deck (PDF)</span>
 </button>
 
-<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script src="/lucide.min.js"></script>
 <script>
+// ═══════════════ ARABIC TRANSLATIONS ═══════════════
+const arTranslations = {
+    // Nav
+    nav_features: "المزايا",
+    nav_ai: "محرك الذكاء الاصطناعي",
+    nav_market: "السوق",
+    nav_pricing: "الأسعار",
+    nav_team: "الفريق",
+    nav_faq: "الأسئلة الشائعة",
+    nav_cta: "← تشغيل التطبيق",
+    skip_link: "تخطي إلى المحتوى الرئيسي",
+    // Hero
+    hero_badge: "منصة رعاية صحية مدعومة بالذكاء الاصطناعي",
+    hero_title: 'من ذعر التدقيق<br>إلى <span class="hero-highlight">التميز المستمر</span>',
+    hero_sub: "يقوم AccreditEx بأتمتة الاعتماد الصحي من خلال تتبع الامتثال المدعوم بالذكاء الاصطناعي، ومراقبة المخاطر الآنية، وإدارة المستندات الذكية — بُني بواسطة خبير في الجودة السريرية.",
+    hero_btn_trial: "← ابدأ التجربة المجانية",
+    hero_btn_features: "↓ استكشف المزايا",
+    hero_trust_1: "لا حاجة لبطاقة ائتمان",
+    hero_trust_2: "بنية تحتية جاهزة لمعايير SOC 2",
+    hero_trust_3: "هيكلية متوائمة مع HIPAA",
+    hero_stat_label_1: "أدوات مدعومة بالذكاء الاصطناعي",
+    hero_stat_label_2: "معيار محمّل",
+    hero_stat_label_3: "معيار فرعي",
+    // Trust Bar
+    trust_bar_title: "ندعم معايير الاعتماد من",
+    trust_bar_cbahi: "المملكة العربية السعودية",
+    trust_bar_jci: "دولي",
+    trust_bar_doh: "أبوظبي",
+    trust_bar_iso: "المختبرات",
+    trust_bar_dha: "دبي",
+    // Problem
+    problem_badge: "التحدي",
+    problem_title: "أزمة الامتثال في الرعاية الصحية",
+    problem_sub: "70% من مرافق الرعاية الصحية في دول مجلس التعاون الخليجي لا تزال تعتمد على الجداول اليدوية والملفات الورقية والبريد الإلكتروني المنفصل لإدارة امتثال الاعتماد.",
+    problem_stat_1: "30%",
+    problem_h3_1: "ارتفاع مخاطر الفشل في التدقيق",
+    problem_p_1: "الخطأ البشري في التوثيق هو السبب الأول لعدم المطابقة أثناء زيارات الاعتماد.",
+    problem_stat_2: "50%",
+    problem_h3_2: "معدل الإرهاق الوظيفي للكوادر السريرية",
+    problem_p_2: "يقضي مديرو الجودة وقتاً أطول في الأعمال الورقية بدلاً من التحسين الفعلي لسلامة المرضى.",
+    problem_stat_3: "$2M+",
+    problem_h3_3: "تكلفة عدم الامتثال",
+    problem_p_3: "فقدان الاعتماد يعني خسارة العقود، وتضرر السمعة، ومخاطر محتملة على سلامة المرضى.",
+    // Features
+    features_badge: "المنصة",
+    features_title: "كل ما تحتاجه للاعتماد",
+    features_sub: "منصة شاملة تغطي كل جوانب إدارة جودة الرعاية الصحية — من تتبع المعايير إلى تدريب الفريق.",
+    feat_1_title: "لوحات معلومات حسب الأدوار",
+    feat_1_desc: "عروض مخصصة للمسؤولين وقادة المشاريع والمدققين وأعضاء الفريق مع مؤشرات أداء رئيسية آنية.",
+    feat_1_li1: "نظرة عامة تنفيذية مع المهام المتأخرة",
+    feat_1_li2: "مخططات اتجاهات الامتثال",
+    feat_1_li3: "تحليلات أداء الأقسام",
+    feat_1_li4: "رؤى الجودة مع التنبؤ بالمخاطر",
+    feat_2_title: "إدارة المشاريع",
+    feat_2_desc: "دورة حياة كاملة لمشاريع الاعتماد مع قوائم التحقق والأدلة ودورات PDCA وتتبع CAPA.",
+    feat_2_li1: "إنشاء مشاريع قائمة على القوالب",
+    feat_2_li2: "قوائم تحقق الامتثال حسب المعيار",
+    feat_2_li3: "ضوابط التصميم وسجلات التدقيق",
+    feat_2_li4: "محاكاة المسوح التدريبية",
+    feat_3_title: "ضبط المستندات",
+    feat_3_desc: "إدارة مستندات مؤسسية مع التحكم في الإصدارات وسير عمل الموافقات ومعرض القوالب.",
+    feat_3_li1: "محرر نصوص غني (ثنائي اللغة EN/AR)",
+    feat_3_li2: "سجل الإصدارات والمقارنة",
+    feat_3_li3: "سلاسل موافقات متعددة المراحل",
+    feat_3_li4: "معرض القوالب (SOP، سياسات، إلخ.)",
+    feat_4_title: "مركز المخاطر وCAPA",
+    feat_4_desc: "سجل مخاطر متكامل، والإبلاغ عن الحوادث، وإدارة CAPA، وتتبع الفعالية.",
+    feat_4_li1: "تصور مصفوفة المخاطر",
+    feat_4_li2: "تصنيف شدة الحوادث",
+    feat_4_li3: "تحليل السبب الجذري (5 لماذا)",
+    feat_4_li4: "محرك قرار إغلاق CAPA",
+    feat_5_title: "التدريب والكفاءات",
+    feat_5_desc: "إدارة تدريب متكاملة مع اختبارات وشهادات وتتبع فجوات الكفاءة.",
+    feat_5_li1: "برامج تدريبية مع اختبارات",
+    feat_5_li2: "شهادات مُولّدة تلقائياً",
+    feat_5_li3: "مكتبة الكفاءات وتقارير الفجوات",
+    feat_5_li4: "توصيات تدريبية مدعومة بالذكاء الاصطناعي",
+    feat_6_title: "متعدد الأقسام",
+    feat_6_desc: "دعم مشاريع على مستوى المستشفى مع تعيين الأقسام بالذكاء الاصطناعي وتحليلات لكل قسم.",
+    feat_6_li1: "تعيين تلقائي للأقسام وفق المعايير بالذكاء الاصطناعي",
+    feat_6_li2: "تحليل تفصيلي لامتثال الأقسام",
+    feat_6_li3: "تعاون بين الأقسام",
+    feat_6_li4: 'دعم التكامل مع نظام المعلومات الصحية HIS <span style="font-size:10px; background:var(--primary-glow); color:var(--primary); padding:1px 6px; border-radius:4px; font-weight:600;">تجريبي</span>',
+    feat_7_title: "إدارة التدقيق",
+    feat_7_desc: "تخطيط وتنفيذ وتتبع التدقيق الداخلي مع الملاحظات والمسوح التدريبية ودرجات الجاهزية.",
+    feat_7_li1: "جدولة خطة التدقيق",
+    feat_7_li2: "تصنيف شدة الملاحظات",
+    feat_7_li3: "تحليل النجاح/الرسوب في المسوح التدريبية",
+    feat_7_li4: "إعداد حزمة تقارير المقيّمين",
+    feat_8_title: "التقويم والمهام",
+    feat_8_desc: "تقويم موحد يجمع جميع المواعيد النهائية مع قوائم مهام شخصية وإشعارات.",
+    feat_8_li1: "عرض شهري وجدول أعمال وسنوي",
+    feat_8_li2: "مهامي مع تنبيهات التأخر",
+    feat_8_li3: "مركز مراسلات آني",
+    feat_8_li4: "إشعارات داخل التطبيق",
+    feat_9_title: "مكتبة المعايير",
+    feat_9_desc: "برامج اعتماد محمّلة مسبقاً (CBAHI, JCI, DOH) تتضمن أكثر من 240 معياراً و1,043 معياراً فرعياً.",
+    feat_9_li1: "ربط المعايير المتقاطعة",
+    feat_9_li2: "اقتراحات إعادة استخدام الأدلة",
+    feat_9_li3: "استيراد/تصدير مجمّع",
+    feat_9_li4: "دعم ثنائي اللغة (EN/AR)",
+    // AI
+    ai_badge: "محرك الذكاء الاصطناعي",
+    ai_title: "أكثر من 15 أداة ذكاء اصطناعي مدمجة",
+    ai_sub: "ليس مجرد روبوت محادثة — بل نظام ذكاء اصطناعي شامل مدرّب على اعتماد الرعاية الصحية يساعد فريقك فعلياً في كل خطوة.",
+    ai_1_title: "المساعد الذكي",
+    ai_1_desc: "روبوت محادثة عائم واعٍ بالسياق متاح في جميع أنحاء التطبيق للتوجيه الفوري.",
+    ai_2_title: "مولّد المستندات",
+    ai_2_desc: "إنشاء إجراءات تشغيل قياسية وسياسات وتقارير وقوائم تحقق متوافقة من القوالب باستخدام الذكاء الاصطناعي.",
+    ai_3_title: "تحليل الفجوات",
+    ai_3_desc: "تحليل فجوات الامتثال والحصول على خطط عمل مُولّدة بالذكاء الاصطناعي للعناصر غير المتوافقة.",
+    ai_4_title: "رؤى التحليلات",
+    ai_4_desc: "يحلل الذكاء الاصطناعي مؤشرات الأداء الرئيسية ويولّد ملخصات تنفيذية مع توصيات.",
+    ai_5_title: "تحليل السبب الجذري",
+    ai_5_desc: "تحليل 5 لماذا ومخطط عظمة السمكة لتحديد الأسباب الجذرية لعدم الامتثال.",
+    ai_6_title: "تحسين PDCA",
+    ai_6_desc: "توصيات مدعومة بالذكاء الاصطناعي لكل مرحلة من مراحل دورة خطّط-نفّذ-تحقّق-صحّح.",
+    ai_7_title: "تقييم المخاطر",
+    ai_7_desc: "تقييم آلي للمخاطر مع توصيات للتخفيف وإجراءات ذات أولوية.",
+    ai_8_title: "تحسين المحتوى",
+    ai_8_desc: "تحسين الوضوح والهيكلة والنحو والاحترافية للمستندات القائمة.",
+    ai_9_title: "الترجمة (EN↔AR)",
+    ai_9_desc: "ترجمة مستندات الرعاية الصحية بين الإنجليزية والعربية مع الحفاظ على التنسيق.",
+    ai_10_title: "فحص الامتثال",
+    ai_10_desc: "تحليل المستندات مقابل معايير محددة وإرجاع درجات الامتثال.",
+    ai_11_title: "التعيين التلقائي للأقسام",
+    ai_11_desc: "يربط الذكاء الاصطناعي المعايير بالقسم الأكثر مسؤولية في المستشفى تلقائياً.",
+    ai_12_title: "مستشار التدريب",
+    ai_12_desc: "يقترح برامج تدريبية بناءً على الدور والقسم وفجوات الكفاءة.",
+    // Market
+    market_badge: "السوق",
+    market_title: "سوق بقيمة 4.37 مليار دولار جاهز للتحول",
+    market_sub: 'يُنشئ تكليف دائرة الصحة في أبوظبي لعام 2027 بتبني الذكاء الاصطناعي الحكومي نافذة "اشترِ أو افشل" لمرافق الرعاية الصحية.',
+    market_tam_label: "TAM",
+    market_tam_desc: "البرمجيات الصحية العالمية",
+    market_sam_label: "SAM",
+    market_sam_desc: "الامتثال والجودة (2026)",
+    market_som_label: "SOM",
+    market_som_desc: "مرافق الرعاية الصحية في الخليج",
+    // Competitive
+    comp_badge: "الميزة التنافسية",
+    comp_title: "لماذا يتفوق AccreditEx",
+    comp_sub: "مبني بأيدي ممارسين، إقليمي أولاً، ذكاء اصطناعي أصيل — مصمم خصيصاً لامتثال الرعاية الصحية في دول الخليج.",
+    comp_th_capability: "القدرة",
+    comp_practitioner: "مبني بأيدي ممارسين",
+    comp_full: "✓ كامل",
+    comp_gcc: "قوالب إقليمية خليجية",
+    comp_partial: "جزئي",
+    comp_limited: "محدود",
+    comp_ai_audit: "تدقيق مستمر بالذكاء الاصطناعي",
+    comp_basic: "أساسي",
+    comp_bilingual: "ثنائي اللغة (EN/AR)",
+    comp_pwa: "تطبيق ويب تقدمي / يعمل بدون اتصال",
+    comp_standards: "معايير محمّلة مسبقاً",
+    comp_affordable: "أسعار مناسبة للمنشآت الصغيرة والمتوسطة",
+    // Comparison table values (AccreditEx column)
+    comp_gcc_val: "✓ DOH/DHA/MOH",
+    comp_ai_val: "✓ أكثر من 15 أداة ذكاء اصطناعي",
+    comp_bilingual_val: "✓ RTL كامل",
+    comp_standards_val: "✓ أكثر من 240 معيار / 1,043 فرعي",
+    comp_affordable_val: "✓ من $500/شهرياً",
+    comp_basic2: "أساسي",
+    comp_partial2: "جزئي",
+    // Pricing
+    pricing_badge: "الأسعار",
+    pricing_title: "تسعير SaaS قابل للتوسع",
+    pricing_sub: 'إدارة بيانات بمستوى المؤسسات مع قابلية توسع سلسة — مصممة لتنمو مع بيانات الامتثال الخاصة بك.',
+    pricing_core: "الأساسية",
+    pricing_core_price_suffix: "/شهرياً",
+    pricing_core_desc: "لكل منشأة · المختبرات والعيادات الصغيرة",
+    pricing_core_f1: "حتى 10 مستخدمين",
+    pricing_core_f2: "تتبع الامتثال",
+    pricing_core_f3: "إدارة المستندات",
+    pricing_core_f4: "أدوات ذكاء اصطناعي أساسية",
+    pricing_core_f5: "دعم عبر البريد الإلكتروني",
+    pricing_core_btn: "ابدأ الآن",
+    pricing_enterprise: "المؤسسات",
+    pricing_ent_desc: "لكل منشأة · المستشفيات والشبكات الصحية",
+    pricing_ent_f1: "مستخدمون غير محدودين",
+    pricing_ent_f2: "محرك ذكاء اصطناعي تنبؤي كامل",
+    pricing_ent_f3: "تحليلات متقدمة",
+    pricing_ent_f4: "دعم متعدد الأقسام",
+    pricing_ent_f5: "تكامل مع نظام المعلومات الصحية HIS",
+    pricing_ent_f6: "دعم ذو أولوية + اتفاقية مستوى خدمة",
+    pricing_ent_f7: "وصول إلى واجهة برمجة التطبيقات API",
+    pricing_ent_btn: "ابدأ التجربة المجانية",
+    pricing_custom: "مخصص",
+    pricing_custom_price: "تواصل معنا",
+    pricing_custom_desc: "إضافة الحوكمة التنبؤية بالذكاء الاصطناعي",
+    pricing_custom_f1: "ميزات ذكاء اصطناعي متميزة",
+    pricing_custom_f2: "مراكز ذات إنتاجية عالية",
+    pricing_custom_f3: "تكاملات مخصصة",
+    pricing_custom_f4: "مدير نجاح عملاء مخصص",
+    pricing_custom_f5: "خيار النشر داخل المنشأة",
+    pricing_custom_btn: "تواصل مع المبيعات",
+    // Team
+    team_badge: "الفريق",
+    team_title: 'ميزة "الحزام الأسود"',
+    team_sub: "مزيج نادر من الخبرة السريرية والتميز التشغيلي والقدرة التقنية الشاملة.",
+    team_name: "أشرف أبوبكر موسى إسحاق",
+    team_role: "المؤسس والرئيس التنفيذي",
+    team_cred_1: "بكالوريوس علوم المختبرات الطبية، زميل ISQUA",
+    team_cred_2: "حزام أسود في سيجما الستة · مدير مشاريع معتمد من Google",
+    team_cred_3: "مدير جودة مختبرات مرخص (عُمان/السودان)",
+    team_cred_4: "مطور متكامل (React, TypeScript, Firebase, AI)",
+    team_cred_5: "باحث منشور",
+    team_positioning_title: "موقع فريد",
+    team_positioning_desc: "صُمم بواسطة متخصص في الجودة السريرية يفهم امتثال الرعاية الصحية من الداخل — وليس مجرد مطوري برمجيات يكيّفون أدوات عامة.",
+    team_advisory_title: "المجلس الاستشاري",
+    team_advisory_desc: "نعمل على تشكيل مجلس استشاري من المرشدين السريريين والتقنيين من قطاع الرعاية الصحية الخليجي. نستكشف حالياً شراكات تجريبية مع مستشفيات رائدة في المنطقة.",
+    // Roadmap
+    roadmap_badge: "خارطة الطريق",
+    roadmap_title: "رؤية أبوظبي",
+    roadmap_sub: "خارطة طريق استراتيجية متوائمة مع رؤية أبوظبي الاقتصادية 2030.",
+    roadmap_1_title: "مقر استراتيجي في ADGM",
+    roadmap_1_desc: "تأسيس مختبر AccreditEx للذكاء الاصطناعي في سوق أبوظبي العالمي",
+    roadmap_2_title: "التكامل الوطني",
+    roadmap_2_desc: "خارطة طريق API للتكامل مع ملفي (منصة تبادل المعلومات الصحية الإماراتية)",
+    roadmap_3_title: "شراكة بحث وتطوير محلية",
+    roadmap_3_desc: "الشراكة مع MBZUAI للبحث والتطوير واستقطاب كفاءات الذكاء الاصطناعي المحلية",
+    roadmap_longterm: "طويل المدى",
+    roadmap_4_title: "معيار عالمي",
+    roadmap_4_desc: "تأشيرة ذهبية لـ 10 سنوات وجعل أبوظبي المعيار العالمي للسلامة السريرية المدعومة بالذكاء الاصطناعي",
+    // FAQ
+    faq_badge: "الأسئلة الشائعة",
+    faq_title: "الأسئلة المتكررة",
+    faq_sub: "إجابات على الأسئلة الشائعة حول AccreditEx لقادة جودة الرعاية الصحية وصنّاع القرار.",
+    faq_q1: "ما معايير الاعتماد التي يدعمها AccreditEx؟",
+    faq_a1: 'يأتي AccreditEx محمّلاً مسبقاً بـ <strong>أكثر من 240 معياراً و1,043 معياراً فرعياً</strong> تغطي CBAHI (المملكة العربية السعودية)، JCI (الدولية)، دائرة الصحة في أبوظبي، وISO 15189 (المختبرات). يمكن استيراد معايير جديدة بشكل مجمّع. يساعد ربط المعايير المتقاطعة في إعادة استخدام الأدلة عبر هيئات اعتماد متعددة.',
+    faq_q2: "كيف يعمل محرك الذكاء الاصطناعي؟",
+    faq_a2: 'يدمج AccreditEx <strong>أكثر من 15 أداة ذكاء اصطناعي</strong> مباشرة في كل سير عمل. يشمل ذلك مساعداً ذكياً للمحادثة، وتحليل فجوات آلي، وتوليد مستندات، وتحليل السبب الجذري (5 لماذا ومخطط عظمة السمكة)، واقتراحات تحسين PDCA، وتقييم المخاطر، وتقييم الامتثال، والترجمة EN↔AR، والتعيين التلقائي للأقسام بالذكاء الاصطناعي. الذكاء الاصطناعي واعٍ بالسياق ومدرّب على معرفة اعتماد الرعاية الصحية.',
+    faq_q3: "هل AccreditEx مناسب للعيادات الصغيرة أم فقط للمستشفيات الكبيرة؟",
+    faq_a3: 'صُمم AccreditEx لـ <strong>جميع أحجام المنشآت</strong>. خطة Core ($500/شهرياً) مصممة للمختبرات والعيادات الصغيرة بحد أقصى 10 مستخدمين. خطة Enterprise ($2,000/شهرياً) تضيف مستخدمين غير محدودين، ودعم متعدد الأقسام، وتكامل HIS، وتحليلات ذكاء اصطناعي متقدمة — مثالية للمستشفيات والشبكات الصحية.',
+    faq_q4: "هل يدعم اللغة العربية وواجهة من اليمين إلى اليسار (RTL)؟",
+    faq_a4: 'نعم. AccreditEx <strong>ثنائي اللغة بالكامل (إنجليزي/عربي)</strong> مع دعم كامل لتخطيط RTL. يمكن لأداة الترجمة بالذكاء الاصطناعي ترجمة مستندات الرعاية الصحية بين EN وAR مع الحفاظ على التنسيق. هذا ضروري لمنشآت دول الخليج حيث قد تتطلب الإيداعات التنظيمية توثيقاً باللغة العربية.',
+    faq_q5: "ما الذي يميز AccreditEx عن MEG وRLDatix وVastian؟",
+    faq_a5: 'AccreditEx هو المنصة الوحيدة التي: (1) <strong>بُنيت بأيدي ممارسين</strong> بواسطة متخصص في الجودة السريرية حاصل على الحزام الأسود في سيجما الستة وشهادة ISQUA، (2) <strong>خليجية أولاً</strong> مع قوالب إقليمية محمّلة مسبقاً لدائرة الصحة وهيئة الصحة بدبي ووزارة الصحة وCBAHI، (3) <strong>ذكاء اصطناعي أصيل</strong> مع أكثر من 15 أداة مدمجة (وليس روبوتات محادثة مُلحقة)، و(4) <strong>بأسعار معقولة</strong> تبدأ من $500/شهرياً مع دعم PWA للعمل بدون اتصال — ميزات يسعّرها المنافسون بأكثر من $10K/شهرياً.',
+    faq_q6: "هل يمكن للمستثمرين طلب عرض توضيحي أو عرض تقديمي؟",
+    faq_a6: 'بالتأكيد. يمكنك <strong>تنزيل العرض التقديمي كـ PDF</strong> باستخدام زر التنزيل في هذه الصفحة، أو التواصل مع المؤسس أشرف إسحاق مباشرة على <a href="mailto:ashraf.a.m.ishag@gmail.com" style="color:var(--primary); font-weight:600;">ashraf.a.m.ishag@gmail.com</a> لجدولة عرض حي للمنصة.',
+    // CTA
+    cta_title: "هل أنت مستعد لتحويل جودة الرعاية الصحية؟",
+    cta_sub: "انضم إلى المنصة التي تنقل الرعاية الصحية من ذعر التدقيق السنوي إلى التميز السريري المستمر.",
+    cta_btn_trial: "← ابدأ التجربة المجانية",
+    cta_btn_contact: "تواصل مع المؤسس",
+    cta_btn_deck: "تنزيل العرض التقديمي",
+    cta_trust_1: "تجربة مجانية لمدة 14 يوماً",
+    cta_trust_2: "لا حاجة لبطاقة ائتمان",
+    cta_trust_3: "الإعداد في أقل من 5 دقائق",
+    // Footer
+    footer_desc: "منصة اعتماد رعاية صحية مدعومة بالذكاء الاصطناعي. بُنيت بواسطة خبير في الجودة السريرية لمرافق الرعاية الصحية التي تنتقل إلى الامتثال الرقمي المستمر.",
+    footer_location: "السيب، مسقط | الانتقال إلى أبوظبي 2026",
+    footer_platform: "المنصة",
+    footer_dashboard: "لوحة المعلومات",
+    footer_projects: "المشاريع",
+    footer_documents: "المستندات",
+    footer_riskhub: "مركز المخاطر",
+    footer_training: "التدريب",
+    footer_ai_tools: "أدوات الذكاء الاصطناعي",
+    footer_ai_assistant: "المساعد الذكي",
+    footer_doc_gen: "مولّد المستندات",
+    footer_gap_analysis: "تحليل الفجوات",
+    footer_risk_assess: "تقييم المخاطر",
+    footer_translation: "الترجمة",
+    footer_contact: "التواصل",
+    footer_email: "البريد الإلكتروني",
+    footer_linkedin: "لينكد إن",
+    footer_launch: "تشغيل التطبيق",
+    footer_copyright: "© 2026 AccreditEx. جميع الحقوق محفوظة.",
+    fab_tooltip: "تنزيل العرض التقديمي (PDF)",
+    // Preview (hero mockup)
+    preview_dashboard: "📊 لوحة المعلومات",
+    preview_projects: "📁 المشاريع",
+    preview_documents: "📄 المستندات",
+    preview_riskhub: "⚠️ مركز المخاطر",
+    preview_training: "🎓 التدريب",
+    preview_calendar: "📅 التقويم",
+    preview_ai_tools: "🤖 أدوات الذكاء الاصطناعي",
+    preview_analytics: "📊 التحليلات",
+    preview_messages: "💬 الرسائل",
+    preview_compliance: "معدل الامتثال",
+    preview_capas: "إجراءات CAPA المفتوحة",
+    preview_active: "المشاريع النشطة",
+    preview_tasks: "المهام المستحقة",
+    preview_dept_perf: "أداء الأقسام",
+};
+
+// ═══════════════ STORE ENGLISH ORIGINALS ═══════════════
+const enTexts = {};
+const enHtmls = {};
+let currentLang;
+try { currentLang = localStorage.getItem('accreditex-lang') || 'en'; } catch(e) { currentLang = 'en'; }
+
+function storeEnglishOriginals() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        enTexts[el.getAttribute('data-i18n')] = el.textContent;
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        enHtmls[el.getAttribute('data-i18n-html')] = el.innerHTML;
+    });
+}
+
+// ═══════════════ LANGUAGE TOGGLE ═══════════════
+function applyLanguage(lang) {
+    const html = document.documentElement;
+    const translations = lang === 'ar' ? arTranslations : enTexts;
+    const htmlTranslations = lang === 'ar' ? arTranslations : enHtmls;
+
+    // Set HTML dir and lang
+    html.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    html.setAttribute('lang', lang);
+
+    // Update document title
+    if (lang === 'ar') {
+        document.title = 'AccreditEx — منصة اعتماد الرعاية الصحية المدعومة بالذكاء الاصطناعي';
+    } else {
+        document.title = 'AccreditEx — AI-Native Healthcare Accreditation Platform';
+    }
+
+    // Apply text translations
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[key]) el.textContent = translations[key];
+    });
+
+    // Apply HTML translations (FAQ answers, etc.)
+    document.querySelectorAll('[data-i18n-html]').forEach(el => {
+        const key = el.getAttribute('data-i18n-html');
+        if (htmlTranslations[key]) el.innerHTML = htmlTranslations[key];
+    });
+
+    // Update language switch button
+    const langBtn = document.getElementById('langSwitchBtn');
+    if (langBtn) {
+        langBtn.textContent = lang === 'ar' ? 'English' : 'العربية';
+        langBtn.setAttribute('aria-label', lang === 'ar' ? 'Switch to English' : 'Switch to Arabic');
+    }
+
+    // Save preference
+    try { localStorage.setItem('accreditex-lang', lang); } catch(e) {}
+    currentLang = lang;
+
+    // Re-initialize Lucide icons (they may have been replaced by translations)
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function toggleLanguage() {
+    const newLang = currentLang === 'en' ? 'ar' : 'en';
+    applyLanguage(newLang);
+}
+
+// Mobile Nav Toggle with proper ARIA
+function toggleMobileNav() {
+    const navLinks = document.getElementById('navLinks');
+    const btn = document.getElementById('navMenuBtn');
+    const isOpen = navLinks.classList.toggle('open');
+    btn.setAttribute('aria-expanded', isOpen);
+    btn.textContent = isOpen ? '✕' : '☰';
+}
+
+// Close mobile nav on Escape key
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const navLinks = document.getElementById('navLinks');
+        const btn = document.getElementById('navMenuBtn');
+        if (navLinks.classList.contains('open')) {
+            navLinks.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+            btn.textContent = '☰';
+            btn.focus();
+        }
+    }
+});
+
+// Close mobile nav on click outside
+document.addEventListener('click', (e) => {
+    const navLinks = document.getElementById('navLinks');
+    const btn = document.getElementById('navMenuBtn');
+    if (navLinks.classList.contains('open') && !navLinks.contains(e.target) && e.target !== btn) {
+        navLinks.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        btn.textContent = '☰';
+    }
+});
+
 // Navbar scroll effect
 const navbar = document.getElementById('navbar');
 window.addEventListener('scroll', () => {
     navbar.classList.toggle('scrolled', window.scrollY > 50);
-});
+}, { passive: true });
 
-// Fade-up on scroll (Intersection Observer)
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
-document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+// Fade-up on scroll (Intersection Observer) with staggered delays — deferred to idle
+function setupFadeObserver() {
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                const siblings = entry.target.parentElement?.querySelectorAll('.fade-up');
+                if (siblings) {
+                    const siblingIndex = Array.from(siblings).indexOf(entry.target);
+                    entry.target.style.transitionDelay = `${siblingIndex * 0.08}s`;
+                }
+                entry.target.classList.add('visible');
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+}
+if ('requestIdleCallback' in window) { requestIdleCallback(setupFadeObserver); }
+else { setTimeout(setupFadeObserver, 50); }
 
 // PDF / Pitch Deck download FAB
 document.getElementById('pdfDownloadFab').addEventListener('click', () => {
@@ -1464,20 +2122,77 @@ window.addEventListener('afterprint', () => {
     });
 });
 
-// Smooth scroll for nav links
+// Smooth scroll for nav links (close mobile nav too)
 document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
         e.preventDefault();
         const target = document.querySelector(a.getAttribute('href'));
         if (target) {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            document.getElementById('navLinks').classList.remove('open');
+            const navLinks = document.getElementById('navLinks');
+            const btn = document.getElementById('navMenuBtn');
+            navLinks.classList.remove('open');
+            btn.setAttribute('aria-expanded', 'false');
+            btn.textContent = '☰';
         }
     });
 });
 
-// Initialize Lucide SVG icons
-lucide.createIcons();
+// Back to Top: show FAB only when scrolled down
+const fab = document.getElementById('pdfDownloadFab');
+window.addEventListener('scroll', () => {
+    if (window.scrollY > 600) {
+        fab.style.opacity = '1';
+        fab.style.pointerEvents = 'auto';
+    } else {
+        fab.style.opacity = '0';
+        fab.style.pointerEvents = 'none';
+    }
+}, { passive: true });
+
+// Animate hero stat counters on load — deferred to idle
+function animateCounters() {
+    document.querySelectorAll('.hero-stat-value').forEach(el => {
+        const text = el.textContent.trim();
+        const match = text.match(/^([\d,]+)(\+?)$/);
+        if (!match) return;
+        const target = parseInt(match[1].replace(/,/g, ''), 10);
+        const suffix = match[2] || '';
+        const duration = 1500;
+        const startTime = performance.now();
+        function update(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+            const current = Math.floor(eased * target);
+            el.textContent = current.toLocaleString() + suffix;
+            if (progress < 1) requestAnimationFrame(update);
+        }
+        requestAnimationFrame(update);
+    });
+}
+
+// Trigger counter animation when hero is visible — deferred setup
+function setupCounterObserver() {
+    const heroObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateCounters();
+                heroObserver.disconnect();
+            }
+        });
+    }, { threshold: 0.3 });
+    const heroSection = document.getElementById('hero');
+    if (heroSection) heroObserver.observe(heroSection);
+}
+if ('requestIdleCallback' in window) { requestIdleCallback(setupCounterObserver); }
+else { setTimeout(setupCounterObserver, 50); }
+
+// Initialize — self-hosted script, runs immediately
+storeEnglishOriginals();
+if (typeof lucide !== 'undefined') lucide.createIcons();
+if (currentLang === 'ar') {
+    applyLanguage('ar');
+}
 </script>
 
 </body>

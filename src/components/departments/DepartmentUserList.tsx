@@ -17,7 +17,7 @@ const DepartmentUserList: React.FC<DepartmentUserListProps> = ({ users }) => {
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {users.map((user) => (
           <div key={user.id} className="p-2 rounded-md flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary-500 to-brand-primary-700 text-white flex items-center justify-center font-bold text-sm flex-shrink-0">
+            <div className="w-10 h-10 rounded-full bg-linear-to-br from-brand-primary-500 to-brand-primary-700 text-white flex items-center justify-center font-bold text-sm shrink-0">
               {user.name
                 .split(" ")
                 .map((n) => n[0])

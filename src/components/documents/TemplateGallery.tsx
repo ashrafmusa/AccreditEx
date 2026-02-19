@@ -247,7 +247,7 @@ export const TemplateGallery: React.FC<TemplateGalleryProps> = ({
         <Dialog
           open={!!previewTemplate}
           onClose={() => setPreviewTemplate(null)}
-          className="relative z-[60]"
+          className="relative z-60"
         >
           <div
             className="fixed inset-0 bg-black/40 dark:bg-black/60"

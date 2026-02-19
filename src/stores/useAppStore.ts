@@ -22,6 +22,37 @@ import { getAudits, addAudit as addAuditToFirebase, updateAudit as updateAuditIn
 import { getCustomEvents, addCustomEvent as addCustomEventToFirebase, updateCustomEvent as updateCustomEventInFirebase, deleteCustomEvent as deleteCustomEventFromFirebase } from '@/services/customCalendarEventService';
 import { generateProjectTemplates } from '@/data/projectTemplates';
 import { useUserStore } from './useUserStore';
+import { ActivityLogger } from '@/services/activityLogService';
+import { escalationService } from '@/services/escalationService';
+
+// Document numbering prefix map
+const DOC_TYPE_PREFIX: Record<AppDocument['type'], string> = {
+  'Policy': 'POL',
+  'Procedure': 'PRC',
+  'Report': 'RPT',
+  'Evidence': 'EVD',
+  'Process Map': 'PM',
+};
+
+/** Generate a sequential document number like POL-001, PRC-042 based on existing documents of the same type */
+function generateDocumentNumber(type: AppDocument['type'], existingDocs: AppDocument[]): string {
+  const prefix = DOC_TYPE_PREFIX[type] || 'DOC';
+  // Count existing documents of the same type that have a documentNumber
+  const sameTypeDocs = existingDocs.filter(d => d.type === type);
+  // Find the highest existing number for this prefix
+  let maxNum = 0;
+  for (const doc of sameTypeDocs) {
+    if (doc.documentNumber) {
+      const match = doc.documentNumber.match(new RegExp(`^${prefix}-(\\d+)$`));
+      if (match) {
+        maxNum = Math.max(maxNum, parseInt(match[1], 10));
+      }
+    }
+  }
+  // If no numbered docs exist, start from count of same-type docs + 1
+  const nextNum = maxNum > 0 ? maxNum + 1 : sameTypeDocs.length + 1;
+  return `${prefix}-${String(nextNum).padStart(3, '0')}`;
+}
 
 interface AppState {
   documents: AppDocument[];
@@ -213,10 +244,14 @@ export const useAppStore = create<AppState>((set, get) => ({
       const uploaderName = currentUser?.name || 'Unknown';
       const now = new Date().toISOString();
 
+      // Generate sequential document number
+      const documentNumber = generateDocumentNumber(docData.type, get().documents);
+
       // Create document without ID (Firebase will generate it)
       const docWithoutId: Omit<AppDocument, 'id'> = {
         name: docData.name,
         type: docData.type,
+        documentNumber,
         isControlled: true,
         status: 'Draft',
         content: { en: '', ar: '' },
@@ -243,6 +278,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state with the same ID from Firebase
       set(state => ({ documents: [...state.documents, newDoc] }));
 
+      if (currentUser) ActivityLogger.documentUploaded(currentUser.id, currentUser.name, docData.name.en);
+
       return newDoc;
     } catch (error) {
       logger.error('Failed to add document', error);
@@ -253,10 +290,14 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const now = new Date().toISOString();
 
+      // Generate sequential document number
+      const documentNumber = generateDocumentNumber('Process Map', get().documents);
+
       // Create without ID — let Firebase generate the ID to avoid mismatch
       const docWithoutId: Omit<AppDocument, 'id'> = {
         name: docData.name,
         type: 'Process Map',
+        documentNumber,
         isControlled: true,
         status: 'Draft',
         content: null,
@@ -610,6 +651,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const newRisk = await addRiskToFirebase(riskData);
       set(state => ({ risks: [...state.risks, newRisk] }));
+      const user = useUserStore.getState().currentUser;
+      if (user) ActivityLogger.riskAdded(user.id, user.name, riskData.title);
     } catch (error) {
       handleError(error, 'addRisk');
       throw new AppError('Failed to add risk', 'OPERATION_FAILED');
@@ -638,6 +681,10 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const newReport = await addIncidentReportToFirebase(reportData);
       set(state => ({ incidentReports: [...state.incidentReports, newReport] }));
+      const user = useUserStore.getState().currentUser;
+      if (user) ActivityLogger.incidentReported(user.id, user.name, reportData.type);
+      // Trigger escalation rules for new incident
+      escalationService.evaluateIncident(newReport, true).catch(() => { });
     } catch (error) {
       handleError(error, 'addIncidentReport');
       throw new AppError('Failed to add incident report', 'OPERATION_FAILED');
@@ -647,6 +694,8 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       await updateIncidentReportInFirebase(report);
       set(state => ({ incidentReports: state.incidentReports.map(r => r.id === report.id ? report : r) }));
+      // Re-evaluate escalation rules on update (e.g. severity change)
+      escalationService.evaluateIncident(report, false).catch(() => { });
     } catch (error) {
       handleError(error, 'updateIncidentReport');
       throw new AppError('Failed to update incident report', 'OPERATION_FAILED');

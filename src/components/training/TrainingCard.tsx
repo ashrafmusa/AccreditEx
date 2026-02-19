@@ -51,7 +51,7 @@ const TrainingCard: React.FC<TrainingCardProps> = ({
             {program.title[lang]}
           </h3>
           <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${color} flex-shrink-0`}
+            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${color} shrink-0`}
           >
             {text}
           </span>

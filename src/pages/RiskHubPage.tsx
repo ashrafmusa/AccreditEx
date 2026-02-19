@@ -1,16 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, lazy, Suspense } from "react";
 import { useTranslation } from "../hooks/useTranslation";
 import { ExclamationTriangleIcon } from "../components/icons";
 import RiskRegisterTab from "../components/risk/RiskRegisterTab";
 import CapaReportsTab from "../components/risk/CapaReportsTab";
 // FIX: Corrected import path for IncidentReportingTab
 import IncidentReportingTab from "../components/risk/IncidentReportingTab";
+import IncidentTrendingTab from "../components/risk/IncidentTrendingTab";
 import EffectivenessChecksTab from "../components/risk/EffectivenessChecksTab";
 import { useAppStore } from "../stores/useAppStore";
 import { useProjectStore } from "../stores/useProjectStore";
 import { Button } from "@/components/ui";
+import LoadingScreen from "@/components/common/LoadingScreen";
 
-type RiskHubTab = "register" | "capa" | "incidents" | "checks";
+const RCAToolTab = lazy(() => import("../components/risk/RCAToolTab"));
+
+type RiskHubTab =
+  | "register"
+  | "capa"
+  | "incidents"
+  | "trending"
+  | "checks"
+  | "rca";
 
 const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
   setNavigation,
@@ -62,11 +72,25 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("incidentReporting")}
           </Button>
           <Button
+            onClick={() => setActiveTab("trending")}
+            variant={activeTab === "trending" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2"
+          >
+            {t("incidentTrending")}
+          </Button>
+          <Button
             onClick={() => setActiveTab("checks")}
             variant={activeTab === "checks" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
           >
             {t("effectivenessChecks")}
+          </Button>
+          <Button
+            onClick={() => setActiveTab("rca")}
+            variant={activeTab === "rca" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2"
+          >
+            RCA Tool
           </Button>
         </nav>
       </div>
@@ -75,11 +99,17 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
         {activeTab === "register" && <RiskRegisterTab />}
         {activeTab === "capa" && <CapaReportsTab />}
         {activeTab === "incidents" && <IncidentReportingTab />}
+        {activeTab === "trending" && <IncidentTrendingTab />}
         {activeTab === "checks" && (
           <EffectivenessChecksTab
             projects={projects}
             onUpdateCapa={updateCapa}
           />
+        )}
+        {activeTab === "rca" && (
+          <Suspense fallback={<LoadingScreen />}>
+            <RCAToolTab />
+          </Suspense>
         )}
       </div>
     </div>

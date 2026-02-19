@@ -8,6 +8,8 @@ import { getUsers } from '@/services/userService';
 import { deviceSessionService } from '@/services/deviceSessionService';
 import { handleError, AppError, AuthenticationError } from '@/services/errorHandling';
 import { logger } from '@/services/logger';
+// Security fix (2026-02-18): Secure user creation with Auth UID alignment
+import { createUserSecurely } from '@/services/secureUserService';
 
 interface UserState {
   currentUser: User | null;
@@ -75,16 +77,28 @@ export const useUserStore = create<UserState>((set, get) => ({
     await signOut(auth);
     set({ currentUser: null });
   },
+  // Security fix (2026-02-18): addUser now creates a Firebase Auth account
+  // AND stores the Firestore document keyed by Auth UID (fixes C-1 + C-2).
+  // A password reset email is sent to the new user automatically.
   addUser: async (userData) => {
     try {
-      const usersRef = collection(db, 'users');
-      const userId = `user-${Date.now()}`;
-      await setDoc(doc(usersRef, userId), { ...userData, id: userId });
-      const newUser: User = { ...userData, id: userId };
+      const currentUser = get().currentUser;
+      if (!currentUser) {
+        throw new AppError('Not authenticated', 'UNAUTHORIZED');
+      }
+      if (currentUser.role !== 'Admin') {
+        throw new AppError('Only administrators can create new users', 'UNAUTHORIZED');
+      }
+
+      const newUser = await createUserSecurely(userData, currentUser.role);
       set(state => ({ users: [...state.users, newUser] }));
+      logger.info(`[useUserStore] User created: ${newUser.email} (${newUser.id})`);
     } catch (error) {
       handleError(error, 'addUser');
-      throw new AppError('Failed to add user', 'OPERATION_FAILED');
+      throw new AppError(
+        error instanceof Error ? error.message : 'Failed to add user',
+        'OPERATION_FAILED'
+      );
     }
   },
   updateUser: async (updatedUser) => {
@@ -122,6 +136,14 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   deleteUser: async (userId) => {
     try {
+      const currentUser = get().currentUser;
+      if (!currentUser || currentUser.role !== 'Admin') {
+        throw new AppError('Only administrators can delete users', 'UNAUTHORIZED');
+      }
+      // Prevent deleting yourself
+      if (currentUser.id === userId) {
+        throw new AppError('You cannot delete your own account', 'OPERATION_FAILED');
+      }
       const userRef = doc(db, 'users', userId);
       await deleteDoc(userRef);
       set(state => ({ users: state.users.filter(u => u.id !== userId) }));

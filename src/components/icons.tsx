@@ -860,6 +860,13 @@ const iconPaths = {
       d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"
     />
   ),
+  BookOpenIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+    />
+  ),
 };
 // --- Outline Icons ---
 export const Bars3Icon = createOutlineIcon(iconPaths.Bars3Icon);
@@ -1016,6 +1023,7 @@ export const EllipsisVerticalIcon = createOutlineIcon(
 );
 export const PrinterIcon = createOutlineIcon(iconPaths.PrinterIcon);
 export const ArrowRightIcon = createOutlineIcon(iconPaths.ArrowRightIcon);
+export const BookOpenIcon = createOutlineIcon(iconPaths.BookOpenIcon);
 // --- Alias Icons ---
 export const InfoIcon = InformationCircleIcon;
 export const AlertIcon = ExclamationTriangleIcon;

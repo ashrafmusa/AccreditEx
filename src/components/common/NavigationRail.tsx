@@ -4,22 +4,18 @@ import {
   ChartPieIcon,
   FolderIcon,
   LogoIcon,
-  BuildingOffice2Icon,
   Cog6ToothIcon,
   AcademicCapIcon,
-  ClipboardDocumentCheckIcon,
   ChartBarSquareIcon,
   CalendarDaysIcon,
   ExclamationTriangleIcon,
-  UsersIcon,
   ShieldCheckIcon,
   DocumentTextIcon,
-  LightBulbIcon,
   CircleStackIcon,
   ClipboardDocumentSearchIcon,
   ChatBubbleLeftEllipsisIcon,
-  CheckBadgeIcon,
-  ChartBarIcon,
+  BookOpenIcon,
+  BeakerIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -60,7 +56,7 @@ const NavItem: React.FC<{
           : "text-slate-500 dark:text-slate-400 hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 hover:text-brand-primary"
       }`}
     >
-      <item.icon className="h-6 w-6 flex-shrink-0" />
+      <item.icon className="h-6 w-6 shrink-0" />
       <span
         className={`transition-opacity duration-200 font-semibold whitespace-nowrap ${
           isExpanded
@@ -100,16 +96,10 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: ChartPieIcon,
     },
     {
-      nav: { view: "analytics" },
-      key: "analytics",
-      label: t("analytics"),
+      nav: { view: "analyticsHub" },
+      key: "analyticsHub",
+      label: t("analyticsHub") || "Analytics",
       icon: ChartBarSquareIcon,
-    },
-    {
-      nav: { view: "qualityInsights" },
-      key: "qualityInsights",
-      label: t("qualityInsights"),
-      icon: LightBulbIcon,
     },
     {
       nav: { view: "calendar" },
@@ -128,12 +118,6 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "documentControl",
       label: t("documentControl"),
       icon: DocumentTextIcon,
-    },
-    {
-      nav: { view: "myTasks" },
-      key: "myTasks",
-      label: t("myTasks"),
-      icon: ClipboardDocumentCheckIcon,
     },
     {
       nav: { view: "messaging" },
@@ -162,13 +146,6 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       adminOnly: true,
     },
     {
-      nav: { view: "departments" },
-      key: "departments",
-      label: t("departments"),
-      icon: BuildingOffice2Icon,
-      adminOnly: true,
-    },
-    {
       nav: { view: "trainingHub" },
       key: "trainingHub",
       label: t("trainingHub"),
@@ -181,16 +158,16 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: ShieldCheckIcon,
     },
     {
-      nav: { view: "competencies" },
-      key: "competencies",
-      label: t("competencies"),
-      icon: CheckBadgeIcon,
+      nav: { view: "knowledgeBase" },
+      key: "knowledgeBase",
+      label: t("knowledgeBase") || "Knowledge Base",
+      icon: BookOpenIcon,
     },
     {
-      nav: { view: "reports" },
-      key: "reports",
-      label: t("reports"),
-      icon: ChartBarIcon,
+      nav: { view: "labOperations" },
+      key: "labOperations",
+      label: t("labOperations") || "Lab Operations",
+      icon: BeakerIcon,
     },
   ];
 
@@ -229,7 +206,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       ref={navRef}
     >
       <div
-        className={`flex items-center justify-center h-16 mb-4 flex-shrink-0 ${
+        className={`flex items-center justify-center h-16 mb-4 shrink-0 ${
           isExpanded ? "px-4" : ""
         }`}
       >
@@ -237,10 +214,10 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
           <img
             src={appSettings.logoUrl}
             alt="App Logo"
-            className="h-8 w-8 flex-shrink-0"
+            className="h-8 w-8 shrink-0"
           />
         ) : (
-          <LogoIcon className="h-8 w-8 flex-shrink-0" />
+          <LogoIcon className="h-8 w-8 shrink-0" />
         )}
         <h1
           className={`text-2xl font-bold transition-opacity duration-200 whitespace-nowrap ${

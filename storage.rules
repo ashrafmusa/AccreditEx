@@ -1,14 +1,25 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper functions
+    // =====================================================
+    // HELPER FUNCTIONS
+    // =====================================================
+    // Security fix (2026-02-18): getUserRole() now supports
+    // Firebase Custom Claims (preferred) with Firestore fallback.
+    // Also removed catch-all /documents/{allPaths=**} rule
+    // that was overriding all restrictive rules above it.
+    // See: RBAC_SECURITY_CHANGELOG.md for details.
+    // =====================================================
+    
     function isAuthenticated() {
       return request.auth != null;
     }
     
     function getUserRole() {
       return isAuthenticated() ? 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role : 
+        (request.auth.token.role != null
+          ? request.auth.token.role
+          : firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role) : 
         null;
     }
     
@@ -20,46 +31,80 @@ service firebase.storage {
       return getUserRole() in ['Admin', 'ProjectLead'];
     }
     
+    // =====================================================
+    // FILE VALIDATION HELPERS
+    // Security fix (2026-02-18): Added file type and size
+    // validation to prevent malicious uploads and cost overruns.
+    // =====================================================
+    
+    // Maximum file size: 10MB
+    function isValidFileSize() {
+      return request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Allowed content types for document uploads
+    function isAllowedDocumentType() {
+      return request.resource.contentType.matches('application/pdf')
+          || request.resource.contentType.matches('application/msword')
+          || request.resource.contentType.matches('application/vnd\\.openxmlformats-officedocument\\..*')
+          || request.resource.contentType.matches('application/vnd\\.ms-excel')
+          || request.resource.contentType.matches('application/vnd\\.ms-powerpoint')
+          || request.resource.contentType.matches('text/.*')
+          || request.resource.contentType.matches('image/.*')
+          || request.resource.contentType.matches('application/json')
+          || request.resource.contentType.matches('application/xml');
+    }
+    
+    // Allowed content types for profile/avatar uploads
+    function isAllowedImageType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+    
+    // Combined validation for document uploads
+    function isValidDocumentUpload() {
+      return isValidFileSize() && isAllowedDocumentType();
+    }
+    
     // Program documents - accessible by all authenticated users, managed by admin
     match /documents/programs/{programId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidDocumentUpload();
       allow delete: if isAdmin();
     }
     
     // Standard documents - accessible by all authenticated users, managed by admin
     match /documents/standards/{standardId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow write: if isAdmin() && isValidDocumentUpload();
       allow delete: if isAdmin();
     }
     
     // User profile documents - accessible by owner and admin
     match /documents/users/{userId}/{allFiles=**} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if request.auth.uid == userId || isAdmin();
+      allow write: if (request.auth.uid == userId || isAdmin()) && isValidFileSize() && (isAllowedDocumentType() || isAllowedImageType());
       allow delete: if isAdmin();
     }
     
     // Project documents - accessible by project members and admin
     match /documents/projects/{projectId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() || isProjectLead();
+      allow write: if (isAdmin() || isProjectLead()) && isValidDocumentUpload();
       allow delete: if isAdmin();
     }
     
-    // Reports - accessible by authenticated users
+    // Reports - accessible by authenticated users, write restricted to leads+
     match /reports/{projectId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
+      allow write: if isProjectLead() && isValidDocumentUpload();
       allow delete: if isAdmin();
     }
     
-    // General documents accessible by authenticated users
-    match /documents/{allPaths=**} {
-      allow read: if isAuthenticated();
-      allow write: if isAuthenticated();
-      allow delete: if isAdmin();
-    }
+    // Security fix (2026-02-18): REMOVED catch-all rule that was here:
+    //   match /documents/{allPaths=**} { allow write: if isAuthenticated(); }
+    // This was overriding the restrictive rules above, allowing any
+    // authenticated user to write to admin-only areas (programs, standards,
+    // other users' profile folders).
+    // Files outside the defined paths are now denied by default.
   }
 }

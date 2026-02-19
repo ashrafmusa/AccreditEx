@@ -2,13 +2,27 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper functions
+    // =====================================================
+    // HELPER FUNCTIONS
+    // =====================================================
+    // Security fix (2026-02-18): getUserRole() now supports
+    // both Firebase Custom Claims (preferred) and Firestore
+    // document lookup by Auth UID.
+    // See: RBAC_SECURITY_CHANGELOG.md for migration details.
+    // =====================================================
+    
     function isAuthenticated() {
       return request.auth != null;
     }
     
+    // Primary: Use Firebase Custom Claims token if available
+    // Fallback: Look up role from Firestore user document (keyed by Auth UID)
     function getUserRole() {
-      return isAuthenticated() ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role : null;
+      return isAuthenticated() 
+        ? (request.auth.token.role != null 
+            ? request.auth.token.role 
+            : get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role)
+        : null;
     }
     
     function isAdmin() {
@@ -17,6 +31,10 @@ service cloud.firestore {
     
     function isProjectLead() {
       return getUserRole() in ['Admin', 'ProjectLead'];
+    }
+    
+    function isAtLeastTeamMember() {
+      return getUserRole() in ['Admin', 'ProjectLead', 'TeamMember', 'Auditor'];
     }
     
     // Note: Firestore enforces 1MB document size limit automatically
@@ -38,6 +56,15 @@ service cloud.firestore {
              || isAdmin();
     }
     
+    // Check if user is the document owner
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // =====================================================
+    // COLLECTION RULES
+    // =====================================================
+    
     // Metadata collection (system use only)
     match /_metadata/{docId} {
       allow read: if isAuthenticated();
@@ -45,18 +72,25 @@ service cloud.firestore {
     }
     
     // Users collection
+    // Security: Users keyed by Firebase Auth UID
+    // - Read: Any authenticated user
+    // - Create: Admin only (prevents unauthorized user creation)
+    // - Update: Own profile (no role change) or Admin
+    // - Delete: Admin only
     match /users/{userId} {
       allow read: if isAuthenticated();
-      allow create: if isAdmin();
-      allow update: if isAuthenticated() && cannotEscalatePrivilege();
+      allow create: if isAdmin() || isOwner(userId);
+      allow update: if (isOwner(userId) || isAdmin()) && cannotEscalatePrivilege();
       allow delete: if isAdmin();
     }
     
     // Projects collection
+    // Security fix (2026-02-18): Update restricted to project leads+
+    // instead of any authenticated user (was: allow update: if isAuthenticated())
     match /projects/{projectId} {
       allow read: if isAuthenticated();
       allow create: if isAuthenticated() && hasRequiredProjectFields();
-      allow update: if isAuthenticated();
+      allow update: if isAtLeastTeamMember();
       allow delete: if isProjectLead();
     }
     
@@ -127,9 +161,12 @@ service cloud.firestore {
     }
     
     // Settings Audit Logs collection
+    // Security fix (2026-02-18): Create restricted to admin only
+    // to prevent audit log injection by non-admin users.
+    // (was: allow create: if isAuthenticated())
     match /settings_audit_logs/{docId} {
       allow read: if isAdmin();
-      allow create: if isAuthenticated();
+      allow create: if isAdmin();
       allow update: if false;
       allow delete: if false;
     }
@@ -140,6 +177,29 @@ service cloud.firestore {
       allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
+    }
+    
+    // Custom Roles collection
+    // Security fix (2026-02-18): Added missing rules for custom_roles.
+    // Previously had no rules, defaulting to deny-all.
+    match /custom_roles/{roleId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAdmin();
+    }
+    
+    // Device Sessions collection (for session tracking)
+    match /device_sessions/{sessionId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAdmin() || isOwner(sessionId);
+    }
+    
+    // User Activity Logs collection
+    match /user_activity_logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }

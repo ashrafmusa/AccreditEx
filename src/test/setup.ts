@@ -13,7 +13,6 @@ const mockEnv = {
   VITE_APP_ID: 'test-app-id',
   VITE_AI_AGENT_URL: 'http://localhost:8000',
   VITE_AI_AGENT_API_KEY: 'test-api-key',
-  VITE_GEMINI_API_KEY: 'test-gemini-key',
 };
 
 // Mock for window environment

@@ -1,10 +1,13 @@
 import React from "react";
 import { UserRole, NavigationState, Risk } from "@/types";
 import { useUserStore } from "@/stores/useUserStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useAppStore } from "@/stores/useAppStore";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import ProjectLeadDashboard from "@/components/dashboard/ProjectLeadDashboard";
 import TeamMemberDashboard from "@/components/dashboard/TeamMemberDashboard";
 import AuditorDashboard from "@/components/dashboard/AuditorDashboard";
+import MyTasksWidget from "@/components/dashboard/MyTasksWidget";
 import { useTranslation } from "@/hooks/useTranslation";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
@@ -18,6 +21,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   risks = [],
 }) => {
   const { currentUser } = useUserStore();
+  const { projects } = useProjectStore();
+  const { accreditationPrograms } = useAppStore();
   const { t } = useTranslation();
 
   if (!currentUser) {
@@ -58,7 +63,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
     }
   };
 
-  return <ErrorBoundary>{renderDashboard()}</ErrorBoundary>;
+  return (
+    <ErrorBoundary>
+      <div className="space-y-6">
+        {renderDashboard()}
+        <MyTasksWidget
+          projects={projects}
+          currentUser={currentUser}
+          programs={accreditationPrograms}
+        />
+      </div>
+    </ErrorBoundary>
+  );
 };
 
 export default DashboardPage;

@@ -658,7 +658,7 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
                       ? t("addTags") || "Add tags…"
                       : ""
                   }
-                  className="flex-1 min-w-[80px] bg-transparent border-0 p-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-0"
+                  className="flex-1 min-w-20 bg-transparent border-0 p-0 text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-0"
                 />
               </div>
               {/* Tag suggestions dropdown */}

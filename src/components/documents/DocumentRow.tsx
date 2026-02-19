@@ -259,6 +259,11 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
               </span>
             )}
             <div className="font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
+              {doc.documentNumber && (
+                <span className="inline-block mr-1.5 px-1.5 py-0.5 text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                  {doc.documentNumber}
+                </span>
+              )}
               {doc.name[lang]}
             </div>
             {hasRelationships && (

@@ -80,7 +80,7 @@ const SettingsCard: FC<SettingsCardProps> = ({
         </div>
       </div>
       {footer && (
-        <div className="bg-gradient-to-r from-gray-50 to-gray-50/50 dark:from-gray-900/50 dark:to-gray-900/20 px-6 sm:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-brand-border dark:border-dark-brand-border">
+        <div className="bg-linear-to-r from-gray-50 to-gray-50/50 dark:from-gray-900/50 dark:to-gray-900/20 px-6 sm:px-8 py-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-brand-border dark:border-dark-brand-border">
           {footer}
         </div>
       )}

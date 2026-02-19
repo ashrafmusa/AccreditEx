@@ -68,7 +68,7 @@ const UserTrainingDashboard: React.FC<Props> = ({
         </div>
         <div className="w-full h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-green-500 to-blue-500 transition-all duration-300"
+            className="h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-300"
             style={{ width: `${completionRate}%` }}
           />
         </div>
@@ -166,7 +166,7 @@ const UserTrainingDashboard: React.FC<Props> = ({
                         certificateId: status.certificateId!,
                       })
                     }
-                    className="text-xs font-semibold text-brand-primary-600 dark:text-brand-primary-400 hover:underline flex-shrink-0 ml-2"
+                    className="text-xs font-semibold text-brand-primary-600 dark:text-brand-primary-400 hover:underline shrink-0 ml-2"
                   >
                     {t("viewCertificate")}
                   </button>

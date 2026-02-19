@@ -28,7 +28,7 @@ AccreditEx is a modern, AI-powered desktop application designed to support healt
     -   **Database**: Google Firestore
 -   **State Management**: Zustand
 -   **Charting**: Recharts
--   **AI Integration**: Google Gemini API (`@google/genai`)
+-   **AI Integration**: Custom AI Agent Backend (Python FastAPI on Render)
 -   **Build System**: Vite
 
 ## Architectural Approach
@@ -39,11 +39,11 @@ AccreditEx is built on a clean, scalable, and modular architecture to ensure lon
 
 2.  **State Management (Zustand)**: Global state is managed through feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`). These stores are the primary way the UI interacts with the `BackendService` to fetch and manipulate data, providing a clean, reactive state management solution.
 
-3.  **Service Layer (`BackendService.ts`)**: The single source of truth for all application data and business logic. It encapsulates all database operations, interactions with the Gemini API, and core application logic. The frontend interacts exclusively with this service via `async` methods, keeping the UI decoupled from data management.
+3.  **Service Layer (`BackendService.ts`)**: The single source of truth for all application data and business logic. It encapsulates all database operations and core application logic. The frontend interacts exclusively with this service via `async` methods, keeping the UI decoupled from data management.
 
 4.  **Backend Layer (Firebase/Firestore)**: The application uses a live Firebase backend for authentication and Firestore for its database. All data is persisted in the cloud.
 
-5.  **AI Layer (`ai.ts`)**: This service isolates all interactions with the Google Gemini API, providing a clean interface for AI-powered features throughout the application.
+5.  **AI Layer (`ai.ts` → `aiAgentService.ts`)**: The AI facade (`ai.ts`) routes all AI requests through `aiAgentService.ts`, which communicates with the custom Python FastAPI backend hosted on Render. No direct third-party AI API calls are made from the browser.
 
 ## Project Structure
 
@@ -59,7 +59,8 @@ The project is organized into a logical and scalable structure that separates co
 ├── hooks/                # Custom React hooks
 ├── pages/                # Top-level components for each view/page of the application
 ├── services/             # Core application logic and external API communication
-│   ├── ai.ts             # Handles all communication with the Google Gemini API
+│   ├── ai.ts             # AI facade — routes all AI calls through aiAgentService
+│   ├── aiAgentService.ts # HTTP client for the Python FastAPI AI backend
 │   ├── BackendService.ts # Central service layer, talks to Firebase/Firestore
 ├── stores/               # Zustand state management stores
 ├── App.tsx               # Main application component, handles providers and initialization
@@ -88,11 +89,12 @@ To reset the application to its initial seed state, you must manually clear the 
 
 ## AI Integration
 
-AI-powered features are provided by the Google Gemini API.
+AI-powered features (15+ tools) are provided by a custom Python FastAPI backend deployed on Render.
 
--   All API calls are centralized in `services/ai.ts`.
--   The application requires a valid Google Gemini API key to be available in the execution environment.
--   **API Key Configuration**: The API key **must** be set in your `.env` file as `VITE_GEMINI_API_KEY`.
+-   The frontend AI facade (`services/ai.ts`) routes all requests through `services/aiAgentService.ts`.
+-   `aiAgentService.ts` communicates with the backend at the URL configured in `VITE_AI_AGENT_URL`.
+-   No third-party AI API keys are exposed in the browser — the backend manages all AI provider credentials server-side.
+-   **Configuration**: Set `VITE_AI_AGENT_URL` and `VITE_AI_AGENT_API_KEY` in your `.env` file.
 
 ## Contributing
 

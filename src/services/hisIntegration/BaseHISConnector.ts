@@ -260,6 +260,41 @@ export abstract class BaseHISConnector implements HISConnector {
   }
 
   /**
+   * Safe transform map — predefined transformations instead of eval/new Function.
+   * Add new transform types here as needed.
+   */
+  private static readonly SAFE_TRANSFORMS: Record<string, (value: any) => any> = {
+    'toString': (v) => String(v),
+    'toNumber': (v) => Number(v),
+    'toBoolean': (v) => Boolean(v),
+    'toUpperCase': (v) => String(v).toUpperCase(),
+    'toLowerCase': (v) => String(v).toLowerCase(),
+    'trim': (v) => String(v).trim(),
+    'toISODate': (v) => new Date(v).toISOString(),
+    'toDateString': (v) => new Date(v).toLocaleDateString(),
+    'parseJSON': (v) => JSON.parse(v),
+    'stringifyJSON': (v) => JSON.stringify(v),
+    'toArray': (v) => Array.isArray(v) ? v : [v],
+    'first': (v) => Array.isArray(v) ? v[0] : v,
+    'last': (v) => Array.isArray(v) ? v[v.length - 1] : v,
+    'count': (v) => Array.isArray(v) ? v.length : 1,
+    'toFHIRDate': (v) => { const d = new Date(v); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; },
+    'genderToFHIR': (v) => { const m: Record<string, string> = { 'M': 'male', 'F': 'female', 'm': 'male', 'f': 'female', 'male': 'male', 'female': 'female' }; return m[String(v)] || 'unknown'; },
+  };
+
+  /**
+   * Apply a safe, predefined transformation by name instead of eval/new Function.
+   */
+  protected applySafeTransform(transformName: string, value: any): any {
+    const transform = BaseHISConnector.SAFE_TRANSFORMS[transformName];
+    if (!transform) {
+      this.logError('Data mapping', `Unknown transform: "${transformName}". Available: ${Object.keys(BaseHISConnector.SAFE_TRANSFORMS).join(', ')}`);
+      return value;
+    }
+    return transform(value);
+  }
+
+  /**
    * Map data using configuration
    */
   protected mapData(sourceData: any, mappingConfig: any[]): FHIRResource {
@@ -269,11 +304,10 @@ export abstract class BaseHISConnector implements HISConnector {
       if (sourceData[mapping.sourceField] !== undefined) {
         let value = sourceData[mapping.sourceField];
 
-        // Apply transformation if provided
+        // Apply safe transformation if provided
         if (mapping.transformFn) {
           try {
-            const transformFn = new Function('value', `return ${mapping.transformFn}`);
-            value = transformFn(value);
+            value = this.applySafeTransform(mapping.transformFn, value);
           } catch (e) {
             this.logError('Data mapping', `Transform failed for ${mapping.sourceField}`);
           }

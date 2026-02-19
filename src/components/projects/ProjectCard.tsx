@@ -58,7 +58,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       className={`bg-brand-surface dark:bg-dark-brand-surface rounded-xl shadow-sm border transition-all cursor-pointer flex flex-col h-full ${selected ? "border-brand-primary ring-2 ring-brand-primary ring-opacity-50" : "border-brand-border dark:border-dark-brand-border hover:shadow-lg hover:-translate-y-1"}`}
       onClick={onSelect}
     >
-      <div className="p-5 flex-grow relative">
+      <div className="p-5 grow relative">
         <div className="flex justify-between items-start">
           <span
             className={`px-2 py-1 text-xs font-semibold rounded-full ${colorClass}`}

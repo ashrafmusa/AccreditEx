@@ -74,11 +74,12 @@ export class AIAgentService {
         // Use environment variable or empty string (backend will return proper error)
         this.apiKey = import.meta.env.VITE_AI_AGENT_API_KEY || '';
 
-        console.log('🤖 AI Agent Service initialized:', {
-            baseUrl: this.baseUrl,
-            hasApiKey: !!this.apiKey,
-            apiKeyPrefix: this.apiKey ? (this.apiKey.substring(0, 8) + '...') : 'NOT SET - Configure VITE_AI_AGENT_API_KEY'
-        });
+        if (import.meta.env.DEV) {
+            console.log('🤖 AI Agent Service initialized:', {
+                baseUrl: this.baseUrl,
+                hasApiKey: !!this.apiKey,
+            });
+        }
     }    /**
      * Get current application context for AI agent
      * Enhanced with comprehensive user and workspace data

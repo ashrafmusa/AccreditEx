@@ -161,7 +161,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-[9999] bg-gradient-to-br from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-sky-500/50 group relative cursor-pointer`}
+        className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-9999 bg-linear-to-br from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 text-white rounded-full p-4 shadow-2xl transition-all duration-300 hover:scale-110 hover:shadow-sky-500/50 group relative cursor-pointer`}
         style={{ touchAction: "manipulation" }}
         aria-label={t("openAiAssistant")}
         title={t("chatWithAiAssistant")}
@@ -183,12 +183,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   return (
     <div
-      className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-[9999] w-96 max-w-[calc(100vw-2rem)] ${
+      className={`fixed bottom-4 md:bottom-6 ${positionClasses} z-9999 w-96 max-w-[calc(100vw-2rem)] ${
         isMinimized ? "h-14" : "h-[600px] max-h-[calc(100vh-2rem)]"
       } bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 flex flex-col transition-all duration-300 backdrop-blur-sm`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 bg-gradient-to-r from-sky-600 to-cyan-600 text-white rounded-t-2xl cursor-move">
+      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 bg-linear-to-r from-sky-600 to-cyan-600 text-white rounded-t-2xl cursor-move">
         <div className="flex items-center space-x-3">
           <div className="relative">
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
@@ -235,10 +235,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       {!isMinimized && (
         <>
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gradient-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-linear-to-b from-gray-50 to-white dark:from-slate-900 dark:to-slate-800">
             {messages.length === 0 && (
               <div className="text-center text-gray-500 dark:text-gray-400 mt-8">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-sky-100 to-cyan-100 dark:from-sky-900/30 dark:to-cyan-900/30 rounded-2xl flex items-center justify-center">
+                <div className="w-16 h-16 mx-auto mb-4 bg-linear-to-br from-sky-100 to-cyan-100 dark:from-sky-900/30 dark:to-cyan-900/30 rounded-2xl flex items-center justify-center">
                   {isHealthy ? (
                     <ChatBubbleBottomCenterTextIcon className="w-8 h-8 text-sky-600 dark:text-sky-400" />
                   ) : (
@@ -292,7 +292,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                 <div
                   className={`max-w-[85%] rounded-2xl p-3 shadow-sm ${
                     message.role === "user"
-                      ? "bg-gradient-to-br from-sky-600 to-cyan-600 text-white"
+                      ? "bg-linear-to-br from-sky-600 to-cyan-600 text-white"
                       : "bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600"
                   }`}
                 >
@@ -379,7 +379,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
               <button
                 onClick={handleSend}
                 disabled={isLoading || !input.trim() || !isHealthy}
-                className="bg-gradient-to-br from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-xl px-4 transition-all duration-200 shadow-lg hover:shadow-sky-500/50 disabled:shadow-none flex items-center justify-center"
+                className="bg-linear-to-br from-sky-600 to-cyan-600 hover:from-sky-700 hover:to-cyan-700 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-xl px-4 transition-all duration-200 shadow-lg hover:shadow-sky-500/50 disabled:shadow-none flex items-center justify-center"
                 aria-label={t("sendMessage")}
                 title={t("sendMessage")}
               >
