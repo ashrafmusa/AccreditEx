@@ -129,7 +129,8 @@ const CommandPalette: FC<CommandPaletteProps> = ({
             type: "documents" as FilterType,
             name: d.name[lang] || d.name.en,
             subtitle: d.status,
-            link: () => setNavigation({ view: "documentControl" }), // Ideally open specific doc
+            link: () =>
+              setNavigation({ view: "documentControl", documentId: d.id }),
             icon: DocumentTextIcon,
           })),
       );

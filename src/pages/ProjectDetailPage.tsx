@@ -4,6 +4,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import ProjectDetailHeader from "@/components/projects/ProjectDetailHeader";
 import ProjectDetailSidebar from "@/components/projects/ProjectDetailSidebar";
@@ -39,6 +40,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
   const { currentUser } = useUserStore();
   const { accreditationPrograms, documents, standards, risks } = useAppStore();
   const toast = useToast();
+  const { t, lang } = useTranslation();
 
   const [activeView, setActiveView] = useState<ProjectDetailView>("overview");
   const [isSigning, setIsSigning] = useState(false);
@@ -287,6 +289,79 @@ Be specific and actionable. If the project looks ready, say so clearly.`;
         return (
           <ProjectChecklist project={project} onUpdateProject={updateProject} />
         );
+      case "documents": {
+        const projectDocs = documents.filter((d) => d.projectId === project.id);
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                {t("projects.documents") || "Project Documents"}{" "}
+                <span className="text-sm font-normal text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                  ({projectDocs.length})
+                </span>
+              </h2>
+              <button
+                onClick={() =>
+                  setNavigation({
+                    view: "documentControl",
+                    filter: `project:${project.id}`,
+                  })
+                }
+                className="text-sm text-brand-primary hover:underline"
+              >
+                {t("viewAllInDocControl") || "View All in Document Control →"}
+              </button>
+            </div>
+            {projectDocs.length > 0 ? (
+              <div className="grid gap-3">
+                {projectDocs.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center gap-3 p-3 bg-brand-surface dark:bg-dark-brand-surface border border-brand-border dark:border-dark-brand-border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                    onClick={() =>
+                      setNavigation({
+                        view: "documentControl",
+                        documentId: doc.id,
+                      })
+                    }
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm text-brand-text-primary dark:text-dark-brand-text-primary truncate">
+                        {doc.name[lang] || doc.name.en}
+                      </p>
+                      <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                        {doc.documentNumber} • {doc.type} •{" "}
+                        <span
+                          className={
+                            doc.status === "Approved"
+                              ? "text-green-600"
+                              : doc.status === "Draft"
+                                ? "text-gray-500"
+                                : "text-yellow-600"
+                          }
+                        >
+                          {doc.status}
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                <p className="text-sm">
+                  {t("noProjectDocuments") ||
+                    "No documents linked to this project yet."}
+                </p>
+                <p className="text-xs mt-1">
+                  {t("uploadEvidenceHint") ||
+                    "Upload evidence from checklist items to link documents."}
+                </p>
+              </div>
+            )}
+          </div>
+        );
+      }
       case "design_controls":
         return (
           <DesignControlsComponent

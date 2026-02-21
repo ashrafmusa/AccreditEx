@@ -58,6 +58,7 @@ interface DocumentEditorModalProps {
   document: AppDocument;
   onSave: (document: AppDocument) => void;
   standards: Standard[];
+  allDocuments?: AppDocument[];
   onAutoSave?: (doc: AppDocument) => void;
 }
 
@@ -68,6 +69,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
   document: documentData,
   onSave,
   standards,
+  allDocuments = [],
   onAutoSave,
 }) => {
   const { t, lang, dir } = useTranslation();
@@ -93,6 +95,8 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [showShortcutsTooltip, setShowShortcutsTooltip] = useState(false);
+  const [showLinkPicker, setShowLinkPicker] = useState(false);
+  const [linkSearchQuery, setLinkSearchQuery] = useState("");
 
   const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const contentSnapshotRef = useRef<string>(
@@ -273,6 +277,66 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
   ) => {
     setComparisonModal({ isOpen: true, version1: v1, version2: v2 });
   };
+
+  // --- Document Linking ---
+  const handleLinkDocument = () => {
+    setLinkSearchQuery("");
+    setShowLinkPicker(true);
+  };
+
+  const handleAddRelatedDocument = (docId: string) => {
+    const existing = document.relatedDocumentIds || [];
+    if (!existing.includes(docId) && docId !== document.id) {
+      setDocument((prev) => ({
+        ...prev,
+        relatedDocumentIds: [...(prev.relatedDocumentIds || []), docId],
+      }));
+      setHasUnsavedChanges(true);
+      setSaveStatus("unsaved");
+    }
+    setShowLinkPicker(false);
+  };
+
+  const handleRelatedDocumentClick = (docId: string) => {
+    // Switch to viewing the clicked related document inline — find it in allDocuments
+    const target = allDocuments.find((d) => d.id === docId);
+    if (target) {
+      // Save current document if unsaved, then switch
+      if (hasUnsavedChanges) {
+        onSave(document);
+      }
+      setDocument(target);
+      setIsEditMode(target.status === "Draft");
+      setViewingVersion("current");
+      setHasUnsavedChanges(false);
+      setSaveStatus("idle");
+      contentSnapshotRef.current = JSON.stringify(target.content);
+    }
+  };
+
+  const linkPickerDocs = useMemo(() => {
+    if (!showLinkPicker) return [];
+    const existing = new Set(document.relatedDocumentIds || []);
+    existing.add(document.id);
+    return allDocuments
+      .filter((d) => !existing.has(d.id))
+      .filter(
+        (d) =>
+          !linkSearchQuery ||
+          d.name.en.toLowerCase().includes(linkSearchQuery.toLowerCase()) ||
+          d.name.ar?.toLowerCase().includes(linkSearchQuery.toLowerCase()) ||
+          d.documentNumber
+            ?.toLowerCase()
+            .includes(linkSearchQuery.toLowerCase()),
+      )
+      .slice(0, 10);
+  }, [
+    showLinkPicker,
+    allDocuments,
+    document.id,
+    document.relatedDocumentIds,
+    linkSearchQuery,
+  ]);
 
   const handleExportToDocx = async () => {
     try {
@@ -556,8 +620,65 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
               viewingVersion={viewingVersion}
               setViewingVersion={setViewingVersion}
               onCompareVersions={handleCompareVersions}
+              onRelatedDocumentClick={handleRelatedDocumentClick}
+              onLinkDocument={handleLinkDocument}
             />
           </main>
+
+          {/* Document Link Picker Modal */}
+          {showLinkPicker && (
+            <div
+              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+              onClick={() => setShowLinkPicker(false)}
+            >
+              <div
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-5"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                  {t("linkDocument") || "Link Document"}
+                </h3>
+                <input
+                  type="text"
+                  value={linkSearchQuery}
+                  onChange={(e) => setLinkSearchQuery(e.target.value)}
+                  placeholder={t("searchDocuments") || "Search documents..."}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm mb-3 focus:ring-2 focus:ring-brand-primary focus:border-transparent"
+                  autoFocus
+                />
+                <div className="max-h-64 overflow-y-auto space-y-1">
+                  {linkPickerDocs.length > 0 ? (
+                    linkPickerDocs.map((d) => (
+                      <button
+                        key={d.id}
+                        onClick={() => handleAddRelatedDocument(d.id)}
+                        className="w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                          {d.name[lang] || d.name.en}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          {d.documentNumber} • {d.type}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                      {t("noDocumentsFound") || "No documents found"}
+                    </p>
+                  )}
+                </div>
+                <div className="mt-3 flex justify-end">
+                  <button
+                    onClick={() => setShowLinkPicker(false)}
+                    className="px-4 py-2 text-sm rounded-lg text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    {t("cancel") || "Cancel"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* ========== FOOTER ========== */}
           <footer className="bg-gray-50 dark:bg-gray-900/50 px-5 py-2.5 flex items-center border-t dark:border-dark-brand-border shrink-0 rounded-b-xl">
@@ -596,6 +717,15 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
               {document.status === "Draft" && (
                 <button
                   type="button"
+                  onClick={() => {
+                    const updatedDoc = {
+                      ...document,
+                      status: "Pending Review" as const,
+                    };
+                    onSave(updatedDoc);
+                    setSaveStatus("saved");
+                    setLastSavedAt(new Date());
+                  }}
                   className="inline-flex items-center gap-1 text-sm font-medium text-brand-primary dark:text-sky-400 hover:underline transition-colors"
                 >
                   {t("requestApproval") || "Request Approval"}

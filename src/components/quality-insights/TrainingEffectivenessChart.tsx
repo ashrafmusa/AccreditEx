@@ -18,6 +18,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTheme } from "../common/ThemeProvider";
+import {
+  CHART_COLORS,
+  getChartTheme,
+  ChartTooltip,
+  CHART_ANIMATION,
+} from "@/utils/chartTheme";
 
 interface TrainingEffectivenessChartProps {
   projects: Project[];
@@ -36,6 +42,8 @@ const TrainingEffectivenessChart: React.FC<TrainingEffectivenessChartProps> = ({
 }) => {
   const { t, lang } = useTranslation();
   const { theme } = useTheme();
+
+  const ct = getChartTheme(theme);
 
   const chartData = useMemo(() => {
     return departments
@@ -81,16 +89,6 @@ const TrainingEffectivenessChart: React.FC<TrainingEffectivenessChartProps> = ({
       );
   }, [projects, risks, departments, users, userTrainingStatuses, lang]);
 
-  const tickStyle = {
-    fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
-    fontSize: "0.75rem",
-  };
-  const tooltipStyle = {
-    borderRadius: "0.5rem",
-    background: theme === "dark" ? "#0f172a" : "#FFFFFF",
-    border: `1px solid ${theme === "dark" ? "#1e293b" : "#e2e8f0"}`,
-  };
-
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border">
       <h3 className="text-lg font-semibold mb-4 text-brand-text-primary dark:text-dark-brand-text-primary">
@@ -104,43 +102,44 @@ const TrainingEffectivenessChart: React.FC<TrainingEffectivenessChartProps> = ({
           >
             <CartesianGrid
               strokeDasharray="3 3"
-              stroke={
-                theme === "dark"
-                  ? "rgba(128,128,128,0.1)"
-                  : "rgba(128,128,128,0.2)"
-              }
+              stroke={ct.gridStroke}
               vertical={false}
             />
-            <XAxis dataKey="name" tick={tickStyle} />
+            <XAxis dataKey="name" tick={ct.tickStyle} />
             <YAxis
               yAxisId="left"
               orientation="left"
-              stroke="#EF4444"
-              tick={tickStyle}
+              stroke={CHART_COLORS.danger}
+              tick={ct.tickStyle}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
-              stroke="#22C55E"
-              tick={tickStyle}
+              stroke={CHART_COLORS.success}
+              tick={ct.tickStyle}
               unit="%"
               domain={[0, 100]}
             />
-            <Tooltip contentStyle={tooltipStyle} />
-            <Legend wrapperStyle={{ fontSize: "12px" }} />
+            <Tooltip
+              content={<ChartTooltip />}
+              cursor={{ fill: ct.cursorFill }}
+            />
+            <Legend wrapperStyle={ct.legendStyle} />
             <Bar
               yAxisId="left"
               dataKey="totalIssues"
               name={t("totalIssues")}
-              fill="#EF4444"
+              fill={CHART_COLORS.danger}
               barSize={20}
+              animationDuration={CHART_ANIMATION.duration}
             />
             <Bar
               yAxisId="right"
               dataKey="completionRate"
               name={t("trainingCompletionRate")}
-              fill="#22C55E"
+              fill={CHART_COLORS.success}
               barSize={20}
+              animationDuration={CHART_ANIMATION.duration}
             />
           </BarChart>
         </ResponsiveContainer>

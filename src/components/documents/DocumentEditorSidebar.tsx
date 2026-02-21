@@ -17,8 +17,14 @@ import {
   PlusIcon,
   XMarkIcon,
   MagnifyingGlassIcon,
+  BoltIcon,
+  ShieldCheckIcon,
+  BookOpenIcon,
+  ArrowPathIcon,
 } from "../icons";
 import { aiService } from "@/services/ai";
+import { aiWritingService } from "@/services/aiWritingService";
+import type { AICommand } from "@/services/aiWritingService";
 import { useToast } from "@/hooks/useToast";
 import { useAppStore } from "@/stores/useAppStore";
 
@@ -46,6 +52,11 @@ type AiOperation =
   | "translate"
   | "compliance"
   | "summarize"
+  | "simplify"
+  | "expand"
+  | "formalize"
+  | "fix_grammar"
+  | "add_compliance"
   | null;
 
 interface AiResult {
@@ -348,6 +359,11 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
   const [aiResults, setAiResults] = useState<AiResult[]>([]);
   const [selectedStandard, setSelectedStandard] = useState("");
   const [confidenceScore, setConfidenceScore] = useState<number | null>(null);
+  const [summaryPreview, setSummaryPreview] = useState<string | null>(null);
+  const [complianceFindings, setComplianceFindings] = useState<string | null>(
+    null,
+  );
+  const [freePrompt, setFreePrompt] = useState("");
   const [selectedVersionForComparison, setSelectedVersionForComparison] =
     useState<number | "current" | null>(null);
 
@@ -490,9 +506,9 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
             value: `${Math.abs(delta)} ${t("words") || "words"}`,
           },
         ]);
-        // Confidence score based on generation quality estimate
-        const conf = Math.min(98, 60 + Math.floor(Math.random() * 30));
-        setConfidenceScore(conf);
+        toast.success(
+          t("contentGenerated") || "Policy content generated from standard.",
+        );
       } catch {
         toast.error(t("errorGeneratingContent"));
       } finally {
@@ -513,10 +529,18 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
 
   const handleImprove = withLoading("improve", async () => {
     try {
-      const improved = await aiService.improveWriting(
-        document.content?.[lang] || "",
-        lang,
-      );
+      const currentContent = document.content?.[lang] || "";
+      if (!currentContent.trim()) {
+        toast.error(t("noContentToImprove") || "No content to improve.");
+        throw new Error();
+      }
+      const improved = await aiService.improveWriting(currentContent, lang);
+      if (!improved || !improved.trim()) {
+        toast.error(
+          t("aiReturnedEmpty") || "AI returned an empty response. Please try again.",
+        );
+        throw new Error();
+      }
       setDocument(
         (d) =>
           ({
@@ -574,11 +598,12 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
         },
       ]);
       setConfidenceScore(result.score);
-      // Show the detailed findings in a toast or as content (non-destructive)
+      // Store findings for display in panel
       if (result.findings) {
+        setComplianceFindings(result.findings);
         toast.success(
           t("complianceCheckComplete") ||
-            "Compliance check complete — see score above.",
+            "Compliance check complete — see findings below.",
         );
       }
     } catch {
@@ -591,21 +616,120 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
     try {
       const text = document.content?.[lang] || "";
       const summary = await aiService.summarizeContent(text, lang);
-      setDocument(
-        (d) =>
-          ({
-            ...d,
-            content: {
-              ...(d.content || { en: "", ar: "" }),
-              [lang]: summary,
-            },
-          }) as AppDocument,
-      );
+      // Non-destructive: show summary in preview panel instead of replacing content
+      setSummaryPreview(summary);
+      toast.success(t("summaryReady") || "Summary ready — review it below.");
     } catch {
       toast.error(t("failedToSummarize") || "Failed to summarize.");
       throw new Error();
     }
   });
+
+  /** Apply the previewed summary, replacing the current document content */
+  const applySummary = useCallback(() => {
+    if (!summaryPreview) return;
+    setDocument(
+      (d) =>
+        ({
+          ...d,
+          content: {
+            ...(d.content || { en: "", ar: "" }),
+            [lang]: summaryPreview,
+          },
+        }) as AppDocument,
+    );
+    setSummaryPreview(null);
+    toast.success(t("summaryApplied") || "Summary applied to document.");
+  }, [summaryPreview, lang, setDocument, toast, t]);
+
+  /** Prepend the summary to the beginning of the document */
+  const prependSummary = useCallback(() => {
+    if (!summaryPreview) return;
+    const existingContent = document.content?.[lang] || "";
+    const divider = '<hr style="margin: 1.5em 0;" />';
+    const summaryBlock = `<div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 1em; margin-bottom: 1em;"><h3 style="margin-top:0">${t("executiveSummary") || "Executive Summary"}</h3>${summaryPreview}</div>${divider}`;
+    setDocument(
+      (d) =>
+        ({
+          ...d,
+          content: {
+            ...(d.content || { en: "", ar: "" }),
+            [lang]: summaryBlock + existingContent,
+          },
+        }) as AppDocument,
+    );
+    setSummaryPreview(null);
+    toast.success(t("summaryPrepended") || "Summary prepended to document.");
+  }, [summaryPreview, document.content, lang, setDocument, toast, t]);
+
+  /** Free-form AI prompt — generate content from a custom instruction */
+  const handleFreePrompt = useCallback(async () => {
+    if (!freePrompt.trim()) return;
+    setActiveAiOp("generate");
+    setAiResults([]);
+    try {
+      const result = await aiWritingService.generateContent(freePrompt);
+      if (result) {
+        const existingContent = document.content?.[lang] || "";
+        setDocument(
+          (d) =>
+            ({
+              ...d,
+              content: {
+                ...(d.content || { en: "", ar: "" }),
+                [lang]: existingContent
+                  ? existingContent + "<br/>" + result
+                  : result,
+              },
+            }) as AppDocument,
+        );
+        const words = result.trim().split(/\s+/).filter(Boolean).length;
+        setAiResults([
+          {
+            type: "wordDelta",
+            label: t("addedWords") || "Added",
+            value: `${words} ${t("words") || "words"}`,
+          },
+        ]);
+        toast.success(
+          t("contentInserted") || "AI content inserted into document.",
+        );
+        setFreePrompt("");
+      }
+    } catch {
+      toast.error(t("failedToGenerate") || "Failed to generate content.");
+    } finally {
+      setActiveAiOp(null);
+    }
+  }, [freePrompt, document.content, lang, setDocument, toast, t]);
+
+  /** Generic handler for additional writing commands (simplify, expand, formalize, fix_grammar, add_compliance) */
+  const handleWritingCommand = useCallback(
+    (command: AICommand, opName: AiOperation) => {
+      return withLoading(opName!, async () => {
+        try {
+          const text = document.content?.[lang] || "";
+          const result = await aiWritingService.processText({ command, text });
+          setDocument(
+            (d) =>
+              ({
+                ...d,
+                content: {
+                  ...(d.content || { en: "", ar: "" }),
+                  [lang]: result,
+                },
+              }) as AppDocument,
+          );
+        } catch {
+          toast.error(
+            t("failedAiOperation") || `Failed to ${command.replace("_", " ")}.`,
+          );
+          throw new Error();
+        }
+      })();
+    },
+    [document.content, lang, setDocument, toast, t, withLoading],
+  );
 
   /* ---- Document mutation helpers ---- */
   const updateTags = useCallback(
@@ -746,6 +870,176 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
               disabled={activeAiOp !== null}
               onClick={handleSummarize}
             />
+
+            {/* ---- Additional AI Writing Tools ---- */}
+            <div className="border-t dark:border-gray-700 pt-2 mt-1">
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 font-semibold">
+                {t("writingTools") || "Writing Tools"}
+              </p>
+              <div className="grid grid-cols-2 gap-1.5">
+                {/* Simplify */}
+                <AiButton
+                  icon={<BookOpenIcon className="w-4 h-4" />}
+                  label={t("simplify") || "Simplify"}
+                  loading={activeAiOp === "simplify"}
+                  disabled={activeAiOp !== null}
+                  onClick={() => handleWritingCommand("simplify", "simplify")}
+                />
+                {/* Expand */}
+                <AiButton
+                  icon={<PlusIcon className="w-4 h-4" />}
+                  label={t("expand") || "Expand"}
+                  loading={activeAiOp === "expand"}
+                  disabled={activeAiOp !== null}
+                  onClick={() => handleWritingCommand("expand", "expand")}
+                />
+                {/* Formalize */}
+                <AiButton
+                  icon={<BoltIcon className="w-4 h-4" />}
+                  label={t("formalize") || "Formalize"}
+                  loading={activeAiOp === "formalize"}
+                  disabled={activeAiOp !== null}
+                  onClick={() => handleWritingCommand("formalize", "formalize")}
+                />
+                {/* Fix Grammar */}
+                <AiButton
+                  icon={<ArrowPathIcon className="w-4 h-4" />}
+                  label={t("fixGrammar") || "Fix Grammar"}
+                  loading={activeAiOp === "fix_grammar"}
+                  disabled={activeAiOp !== null}
+                  onClick={() =>
+                    handleWritingCommand("fix_grammar", "fix_grammar")
+                  }
+                />
+              </div>
+              {/* Add Compliance — full width */}
+              <div className="mt-1.5">
+                <AiButton
+                  icon={<ShieldCheckIcon className="w-4 h-4" />}
+                  label={
+                    t("addComplianceLanguage") || "Add Compliance Language"
+                  }
+                  loading={activeAiOp === "add_compliance"}
+                  disabled={activeAiOp !== null}
+                  onClick={() =>
+                    handleWritingCommand("add_compliance", "add_compliance")
+                  }
+                />
+              </div>
+            </div>
+
+            {/* Summary Preview Panel */}
+            {summaryPreview && (
+              <div className="border dark:border-gray-700 rounded-lg p-3 mt-2 bg-amber-50 dark:bg-amber-900/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                    {t("summaryPreview") || "Summary Preview"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setSummaryPreview(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <XMarkIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div
+                  className="text-xs text-gray-700 dark:text-gray-300 max-h-40 overflow-y-auto leading-relaxed prose prose-xs dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: summaryPreview }}
+                />
+                <div className="flex gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={prependSummary}
+                    className="flex-1 text-xs py-1.5 px-3 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
+                  >
+                    {t("prependToDocument") || "Prepend to Doc"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={applySummary}
+                    className="flex-1 text-xs py-1.5 px-3 rounded-md bg-amber-600 text-white hover:bg-amber-700 transition-colors font-medium"
+                  >
+                    {t("replaceContent") || "Replace"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(summaryPreview);
+                      toast.success(
+                        t("copiedToClipboard") || "Copied to clipboard.",
+                      );
+                    }}
+                    className="flex-1 text-xs py-1.5 px-3 rounded-md border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300
+                               hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors font-medium"
+                  >
+                    {t("copy") || "Copy"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Compliance Findings Panel */}
+            {complianceFindings && (
+              <div className="border dark:border-gray-700 rounded-lg p-3 mt-2 bg-blue-50 dark:bg-blue-900/10">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                    {t("complianceFindings") || "Compliance Findings"}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setComplianceFindings(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <XMarkIcon className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <div
+                  className="text-xs text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto leading-relaxed prose prose-xs dark:prose-invert"
+                  dangerouslySetInnerHTML={{ __html: complianceFindings }}
+                />
+              </div>
+            )}
+
+            {/* Free-form AI Prompt */}
+            <div className="border-t dark:border-gray-700 pt-2 mt-1">
+              <p className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5 font-semibold">
+                {t("aiPrompt") || "AI Prompt"}
+              </p>
+              <div className="flex gap-1.5">
+                <input
+                  type="text"
+                  value={freePrompt}
+                  onChange={(e) => setFreePrompt(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && freePrompt.trim()) {
+                      e.preventDefault();
+                      handleFreePrompt();
+                    }
+                  }}
+                  placeholder={
+                    t("aiPromptPlaceholder") ||
+                    "e.g. Generate a medication reconciliation procedure..."
+                  }
+                  disabled={activeAiOp !== null}
+                  className="flex-1 text-xs p-2 border rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-gray-200
+                             placeholder:text-gray-400 disabled:opacity-50 transition-opacity"
+                />
+                <button
+                  type="button"
+                  onClick={handleFreePrompt}
+                  disabled={activeAiOp !== null || !freePrompt.trim()}
+                  className="px-3 py-2 text-xs font-medium rounded-md bg-gradient-to-r from-violet-500 to-blue-500 text-white
+                             hover:from-violet-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  {activeAiOp === "generate" ? (
+                    <SparklesIcon className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <SparklesIcon className="w-3.5 h-3.5" />
+                  )}
+                </button>
+              </div>
+            </div>
 
             {/* AI result badges */}
             {(aiResults.length > 0 || confidenceScore !== null) && (

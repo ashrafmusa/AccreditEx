@@ -79,7 +79,8 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         name: { en: file.name, ar: file.name },
         type: "Evidence",
         fileUrl,
-        projectId: project.id, // Link document to project for RBAC
+        projectId: project.id,
+        tags: [`checklist:${item.id}`, `project:${project.id}`],
       } as any);
 
       console.log("✅ Firebase document created:", createdDoc.id);

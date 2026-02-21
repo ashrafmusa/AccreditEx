@@ -11,12 +11,14 @@ import {
   PieChart,
   Pie,
   Cell,
-  TooltipProps,
 } from "recharts";
 import {
-  ValueType,
-  NameType,
-} from "recharts/types/component/DefaultTooltipContent";
+  CHART_COLORS,
+  getChartTheme,
+  ChartTooltip,
+  BarGradientDef,
+  CHART_ANIMATION,
+} from "@/utils/chartTheme";
 import {
   NavigationState,
   ProjectStatus,
@@ -60,6 +62,7 @@ import DashboardHeader from "./DashboardHeader";
 import CapaListItem from "./CapaListItem";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import { FeatureDiscoveryWidget } from "./widgets/FeatureDiscoveryWidget";
+import PendingApprovalsWidget from "./PendingApprovalsWidget";
 
 interface DashboardPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -84,41 +87,7 @@ const getDefaultDashboardData = () => ({
   mitigatedRisks: 0,
 });
 
-const CustomTooltip: React.FC<
-  TooltipProps<ValueType, NameType> & { t: (key: any) => string }
-> = (props: any) => {
-  const { active, payload, label, t } = props;
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-        <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          {label}
-        </p>
-        <p className="text-sm text-brand-primary dark:text-brand-primary-400">{`${t("complianceRate")}: ${payload[0].value}%`}</p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const PieCustomTooltip: React.FC<
-  TooltipProps<ValueType, NameType> & { t: (key: any) => string }
-> = (props: any) => {
-  const { active, payload, t } = props;
-  if (active && payload && payload.length) {
-    return (
-      <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-        <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          {payload[0].name}
-        </p>
-        <p className="text-sm text-brand-primary dark:text-brand-primary-400">{`${t("projects")}: ${payload[0].value}`}</p>
-      </div>
-    );
-  }
-  return null;
-};
-
-const PIE_COLORS = ["#4f46e5", "#22c55e", "#6b7280", "#f59e0b", "#3b82f6"];
+const PIE_COLORS = CHART_COLORS.palette;
 
 const AdminDashboard: React.FC<DashboardPageProps> = ({
   setNavigation,
@@ -495,10 +464,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       return getDefaultDashboardData();
     }
   }, [projects, documents, risks, auditPlans, audits, t]);
-  const tickStyle = {
-    fill: theme === "dark" ? "#94a3b8" : "#64748b",
-    fontSize: "12px",
-  };
+  const ct = getChartTheme(theme);
 
   const handleBarClick = (data: any) => {
     if (data && data.activePayload && data.activePayload[0]) {
@@ -809,51 +775,25 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                       onClick={handleBarClick}
                     >
                       <defs>
-                        <linearGradient
-                          id="barGradient"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#818cf8"
-                            stopOpacity={0.8}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#4f46e5"
-                            stopOpacity={1}
-                          />
-                        </linearGradient>
+                        <BarGradientDef id="barGradient" />
                       </defs>
                       <CartesianGrid
                         strokeDasharray="3 3"
                         vertical={false}
-                        stroke={
-                          theme === "dark"
-                            ? "rgba(128,128,128,0.1)"
-                            : "rgba(128,128,128,0.2)"
-                        }
+                        stroke={ct.gridStroke}
                       />
                       <XAxis
                         dataKey="name"
-                        tick={tickStyle}
+                        tick={ct.tickStyle}
                         interval={0}
                         angle={-45}
                         textAnchor="end"
                         height={80}
                       />
-                      <YAxis unit="%" tick={tickStyle} />
+                      <YAxis unit="%" tick={ct.tickStyle} />
                       <Tooltip
-                        content={<CustomTooltip t={t} />}
-                        cursor={{
-                          fill:
-                            theme === "dark"
-                              ? "rgba(148, 163, 184, 0.1)"
-                              : "rgba(226, 232, 240, 0.4)",
-                        }}
+                        content={<ChartTooltip formatValue={(v) => `${v}%`} />}
+                        cursor={{ fill: ct.cursorFill }}
                       />
                       <Bar
                         dataKey="compliance"
@@ -862,6 +802,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                         barSize={30}
                         radius={[4, 4, 0, 0]}
                         style={{ cursor: "pointer" }}
+                        animationDuration={CHART_ANIMATION.duration}
                       />
                     </BarChart>
                   </ResponsiveContainer>
@@ -901,14 +842,14 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                           />
                         ))}
                       </Pie>
-                      <Tooltip content={<PieCustomTooltip t={t} />} />
-                      <Legend wrapperStyle={{ fontSize: "12px" }} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Legend wrapperStyle={ct.legendStyle} />
                       <text
                         x="50%"
                         y="50%"
                         textAnchor="middle"
                         dominantBaseline="middle"
-                        fill={theme === "dark" ? "#FFF" : "#000"}
+                        fill={ct.centerTextPrimary}
                         fontSize="24"
                         fontWeight="bold"
                       >
@@ -919,7 +860,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                         y="50%"
                         dy={20}
                         textAnchor="middle"
-                        fill={theme === "dark" ? "#94a3b8" : "#64748b"}
+                        fill={ct.centerTextSecondary}
                         fontSize="12"
                       >
                         {t("projects")}
@@ -969,6 +910,9 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 />
               )}
             </div>
+
+            {/* Pending Approvals Widget */}
+            <PendingApprovalsWidget setNavigation={setNavigation} />
           </>
         )}
       </div>

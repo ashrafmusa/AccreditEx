@@ -1,6 +1,8 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
 import { useAIChatStore } from "@/stores/useAIChatStore";
 import { useTranslation } from "@/hooks/useTranslation";
+import DOMPurify from "dompurify";
+import { marked } from "marked";
 import {
   XMarkIcon,
   PaperAirplaneIcon,
@@ -143,7 +145,18 @@ export default function AIChatPanel() {
               }`}
             >
               <p className="text-sm whitespace-pre-wrap break-words">
-                {msg.content}
+                {msg.role === "assistant" ? (
+                  <span
+                    className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(
+                        marked.parse(msg.content, { async: false }) as string,
+                      ),
+                    }}
+                  />
+                ) : (
+                  msg.content
+                )}
               </p>
               <p
                 className={`text-xs mt-1 ${

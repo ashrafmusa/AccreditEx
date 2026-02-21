@@ -42,7 +42,8 @@ const PendingApprovalsWidget: React.FC<PendingApprovalsWidgetProps> = ({
         type: "document" as const,
         status: t("pendingReview"),
         dueDate: doc.reviewDate,
-        action: () => setNavigation({ view: "documentControl" }),
+        action: () =>
+          setNavigation({ view: "documentControl", documentId: doc.id }),
       }));
 
     // Projects pending finalization
@@ -58,19 +59,20 @@ const PendingApprovalsWidget: React.FC<PendingApprovalsWidgetProps> = ({
       }));
 
     // Open CAPA reports needing closure
-    const openCapas = projects.flatMap((p) =>
-      (p.capaReports || [])
+    const openCapas = projects.flatMap((p) => {
+      const reports = p.capaReports ?? [];
+      return reports
         .filter((c) => c.status === "Open")
         .map((capa) => ({
           id: capa.id,
-          title: (capa.description || "").substring(0, 50) + "...",
+          title: (capa.description ?? "").substring(0, 50) + "...",
           type: "capa" as const,
           status: t("awaitingClosure"),
           dueDate: capa.dueDate,
           action: () =>
             setNavigation({ view: "projectDetail", projectId: p.id }),
-        })),
-    );
+        }));
+    });
 
     items.push(...pendingDocs, ...pendingProjects, ...openCapas.slice(0, 3));
 

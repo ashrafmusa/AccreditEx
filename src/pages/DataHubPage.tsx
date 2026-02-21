@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState } from "react";
+import { NavigationState } from "@/types";
 import { useTranslation } from "../hooks/useTranslation";
 import {
   CircleStackIcon,
@@ -34,7 +35,11 @@ const CodeBlock: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   </pre>
 );
 
-const DataHubPage: React.FC = () => {
+interface DataHubPageProps {
+  setNavigation?: (state: NavigationState) => void;
+}
+
+const DataHubPage: React.FC<DataHubPageProps> = ({ setNavigation }) => {
   const { t } = useTranslation();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<"data" | "his" | "qc">("data");
@@ -142,7 +147,11 @@ const DataHubPage: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard title={t("totalProjects")} value={projects.length} />
             <StatCard title={t("totalUsers")} value={users.length} />
-            <StatCard title={t("totalDocuments")} value={documents.length} />
+            <StatCard
+              title={t("totalDocuments")}
+              value={documents.length}
+              onClick={() => setNavigation?.({ view: "documentControl" })}
+            />
             <StatCard title={t("totalStandards")} value={standards.length} />
           </div>
 

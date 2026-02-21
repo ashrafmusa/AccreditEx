@@ -72,6 +72,14 @@ const KnowledgeBasePage = lazy(() => import("@/pages/KnowledgeBasePage"));
 // Lab Operations
 const LabOperationsPage = lazy(() => import("@/pages/LabOperationsPage"));
 
+// Workflow Automation
+const WorkflowAutomationPage = lazy(
+  () => import("@/pages/WorkflowAutomationPage"),
+);
+
+// Report Builder
+const ReportBuilderPage = lazy(() => import("@/pages/ReportBuilderPage"));
+
 // Loading component for lazy-loaded routes
 const RouteLoadingFallback: React.FC = () => <LoadingScreen />;
 
@@ -303,6 +311,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
             standards={standards}
             departments={departments}
             currentUser={currentUser}
+            navigation={navigation}
+            setNavigation={setNavigation}
             onUpdateDocument={updateDocument}
             onCreateDocument={async (data) => {
               await addControlledDocument(data);
@@ -423,7 +433,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
         );
       }
       case "dataHub":
-        return <DataHubPage />;
+        return <DataHubPage setNavigation={setNavigation} />;
       case "messaging":
         return <MessagingPage setNavigation={setNavigation} />;
       case "accreditationHub":
@@ -432,6 +442,10 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <KnowledgeBasePage />;
       case "labOperations":
         return <LabOperationsPage />;
+      case "workflowAutomation":
+        return <WorkflowAutomationPage />;
+      case "reportBuilder":
+        return <ReportBuilderPage />;
       default:
         return <DashboardPage setNavigation={setNavigation} />;
     }

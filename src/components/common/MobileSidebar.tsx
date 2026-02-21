@@ -19,6 +19,7 @@ import {
   CircleStackIcon,
   ClipboardDocumentSearchIcon,
   ChatBubbleLeftEllipsisIcon,
+  BoltIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -183,6 +184,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       key: "trainingHub",
       label: t("trainingHub"),
       icon: AcademicCapIcon,
+    },
+    {
+      nav: { view: "workflowAutomation" },
+      key: "workflowAutomation",
+      label: t("workflowAutomation") || "Workflow Automation",
+      icon: BoltIcon,
+      adminOnly: true,
     },
     {
       nav: { view: "settings" },

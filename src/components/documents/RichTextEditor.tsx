@@ -24,7 +24,11 @@ import {
   TableIcon,
   UndoIcon,
   RedoIcon,
+  SparklesIcon,
 } from "../icons";
+import { aiWritingService } from "@/services/aiWritingService";
+import type { AICommand } from "@/services/aiWritingService";
+import { useToast } from "@/hooks/useToast";
 
 interface RichTextEditorProps {
   content: string;
@@ -40,6 +44,8 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   placeholder = "Start typing...",
 }) => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const [aiProcessing, setAiProcessing] = React.useState<string | null>(null);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -120,6 +126,43 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       .run();
   };
 
+  /** Run an AI writing command on the currently selected text */
+  const handleAiOnSelection = async (command: AICommand, label: string) => {
+    const { from, to } = editor.state.selection;
+    const selectedText = editor.state.doc.textBetween(from, to, " ");
+    if (!selectedText.trim()) return;
+
+    setAiProcessing(command);
+    try {
+      const result = await aiWritingService.processText({
+        command,
+        text: selectedText,
+      });
+      // Replace the selection with the AI result
+      editor
+        .chain()
+        .focus()
+        .deleteRange({ from, to })
+        .insertContentAt(from, result)
+        .run();
+      toast.success(
+        `${label} ${t("appliedToSelection") || "applied to selection."}`,
+      );
+    } catch {
+      toast.error(`${t("failedTo") || "Failed to"} ${label.toLowerCase()}.`);
+    } finally {
+      setAiProcessing(null);
+    }
+  };
+
+  const AI_ACTIONS: { command: AICommand; label: string }[] = [
+    { command: "improve", label: t("improve") || "Improve" },
+    { command: "simplify", label: t("simplify") || "Simplify" },
+    { command: "expand", label: t("expand") || "Expand" },
+    { command: "formalize", label: t("formalize") || "Formalize" },
+    { command: "fix_grammar", label: t("fixGrammar") || "Fix Grammar" },
+  ];
+
   const MenuButton = ({ onClick, active, disabled, children, title }: any) => (
     <button
       onClick={onClick}
@@ -134,7 +177,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   );
 
   return (
-    <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
+    <div className="relative border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-white dark:bg-gray-800">
       {editable && (
         <div className="border-b border-gray-300 dark:border-gray-600 p-2 flex flex-wrap gap-1 bg-gray-50 dark:bg-gray-900">
           {/* Text Formatting */}
@@ -255,6 +298,98 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
       )}
       <EditorContent editor={editor} />
+
+      {/* AI Floating Toolbar — appears on text selection */}
+      {editable && (
+        <AISelectionToolbar
+          editor={editor}
+          aiProcessing={aiProcessing}
+          aiActions={AI_ACTIONS}
+          onAction={handleAiOnSelection}
+        />
+      )}
+    </div>
+  );
+};
+
+/** Custom floating toolbar that appears on text selection (no BubbleMenu dep) */
+const AISelectionToolbar: React.FC<{
+  editor: ReturnType<typeof useEditor>;
+  aiProcessing: string | null;
+  aiActions: { command: AICommand; label: string }[];
+  onAction: (command: AICommand, label: string) => void;
+}> = ({ editor, aiProcessing, aiActions, onAction }) => {
+  const [coords, setCoords] = React.useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+
+  React.useEffect(() => {
+    if (!editor) return;
+
+    const handleSelectionUpdate = () => {
+      const { from, to } = editor.state.selection;
+      if (from === to) {
+        setCoords(null);
+        return;
+      }
+      // Get bounding rect of the selection end
+      const domAtPos = editor.view.coordsAtPos(to);
+      // Position above the selection
+      const editorDom = editor.view.dom.closest(
+        ".border",
+      ) as HTMLElement | null;
+      if (!editorDom) {
+        setCoords(null);
+        return;
+      }
+      const editorRect = editorDom.getBoundingClientRect();
+      setCoords({
+        top: domAtPos.top - editorRect.top - 44,
+        left: Math.max(0, domAtPos.left - editorRect.left - 100),
+      });
+    };
+
+    editor.on("selectionUpdate", handleSelectionUpdate);
+    editor.on("blur", () => setCoords(null));
+    return () => {
+      editor.off("selectionUpdate", handleSelectionUpdate);
+      editor.off("blur", () => setCoords(null));
+    };
+  }, [editor]);
+
+  if (!coords) return null;
+
+  return (
+    <div
+      className="absolute z-50 flex items-center gap-0.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl p-1"
+      style={{ top: coords.top, left: coords.left }}
+    >
+      <span className="flex items-center gap-1 px-1.5 text-violet-500">
+        <SparklesIcon className="w-3.5 h-3.5" />
+      </span>
+      <div className="w-px h-5 bg-gray-200 dark:bg-gray-600" />
+      {aiActions.map(({ command, label }) => (
+        <button
+          key={command}
+          type="button"
+          onMouseDown={(e) => {
+            e.preventDefault(); // prevent blur
+            onAction(command, label);
+          }}
+          disabled={aiProcessing !== null}
+          title={label}
+          className={`px-2 py-1 text-xs font-medium rounded transition-colors
+            ${
+              aiProcessing === command
+                ? "bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 animate-pulse"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            }
+            disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {aiProcessing === command ? "..." : label}
+        </button>
+      ))}
     </div>
   );
 };

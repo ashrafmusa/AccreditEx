@@ -11,6 +11,7 @@ import { logger } from '@/services/logger';
 import { analytics } from '@/services/analyticsTrackingService';
 // Security fix (2026-02-18): Secure user creation with Auth UID alignment
 import { createUserSecurely } from '@/services/secureUserService';
+import { permissionService, Action, Resource } from '@/services/permissionService';
 
 interface UserState {
   currentUser: User | null;
@@ -86,20 +87,15 @@ export const useUserStore = create<UserState>((set, get) => ({
   // A password reset email is sent to the new user automatically.
   addUser: async (userData) => {
     try {
-      const currentUser = get().currentUser;
-      if (!currentUser) {
-        throw new AppError('Not authenticated', 'UNAUTHORIZED');
-      }
-      if (currentUser.role !== 'Admin') {
-        throw new AppError('Only administrators can create new users', 'UNAUTHORIZED');
-      }
+      // RBAC Guard: verify create permission + Firestore doc readiness
+      const verifiedUser = await permissionService.guard(Action.Create, Resource.User);
 
-      const newUser = await createUserSecurely(userData, currentUser.role);
+      const newUser = await createUserSecurely(userData, verifiedUser.role);
       set(state => ({ users: [...state.users, newUser] }));
       logger.info(`[useUserStore] User created: ${newUser.email} (${newUser.id})`);
     } catch (error) {
       handleError(error, 'addUser');
-      throw new AppError(
+      throw error instanceof AppError ? error : new AppError(
         error instanceof Error ? error.message : 'Failed to add user',
         'OPERATION_FAILED'
       );
@@ -140,12 +136,11 @@ export const useUserStore = create<UserState>((set, get) => ({
   },
   deleteUser: async (userId) => {
     try {
-      const currentUser = get().currentUser;
-      if (!currentUser || currentUser.role !== 'Admin') {
-        throw new AppError('Only administrators can delete users', 'UNAUTHORIZED');
-      }
+      // RBAC Guard: verify delete permission + Firestore doc readiness
+      const verifiedUser = await permissionService.guard(Action.Delete, Resource.User);
+
       // Prevent deleting yourself
-      if (currentUser.id === userId) {
+      if (verifiedUser.id === userId) {
         throw new AppError('You cannot delete your own account', 'OPERATION_FAILED');
       }
       const userRef = doc(db, 'users', userId);
@@ -153,7 +148,7 @@ export const useUserStore = create<UserState>((set, get) => ({
       set(state => ({ users: state.users.filter(u => u.id !== userId) }));
     } catch (error) {
       handleError(error, 'deleteUser');
-      throw new AppError('Failed to delete user', 'OPERATION_FAILED');
+      throw error instanceof AppError ? error : new AppError('Failed to delete user', 'OPERATION_FAILED');
     }
   },
 }));

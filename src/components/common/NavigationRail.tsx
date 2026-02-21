@@ -16,6 +16,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
   BookOpenIcon,
   BeakerIcon,
+  BoltIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
@@ -170,6 +171,12 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "labOperations",
       label: t("labOperations") || "Lab Operations",
       icon: BeakerIcon,
+    },
+    {
+      nav: { view: "workflowAutomation" },
+      key: "workflowAutomation",
+      label: t("workflowAutomation") || "Workflow Automation",
+      icon: BoltIcon,
     },
   ];
 

@@ -16,7 +16,7 @@ import DocumentListItem from "../documents/DocumentListItem";
 import FileUploader from "../documents/FileUploader";
 import PDFViewerModal from "../documents/PDFViewerModal";
 import DocumentEditorModal from "../documents/DocumentEditorModal";
-import { storageService } from "@/services/storageService";
+import { cloudinaryService } from "@/services/cloudinaryService";
 import { getDocumentViewAction } from "@/utils/documentViewingHelper";
 
 interface PDCACycleDetailModalProps {
@@ -116,7 +116,7 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
       const file = files[0];
       const documentId = `pdca-${Date.now()}`;
 
-      const fileUrl = await storageService.uploadDocument(
+      const fileUrl = await cloudinaryService.uploadFile(
         file,
         documentId,
         (progress) => setUploadProgress(progress.progress),

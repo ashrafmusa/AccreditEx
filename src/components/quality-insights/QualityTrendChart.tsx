@@ -11,6 +11,13 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
 import { Project, Risk } from "@/types";
+import {
+  getChartTheme,
+  ChartTooltip,
+  CHART_ANIMATION,
+  CHART_COLORS,
+  AreaGradientDef,
+} from "@/utils/chartTheme";
 
 interface QualityTrendChartProps {
   projects: Project[];
@@ -81,37 +88,7 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({
     });
   }, [projects, risks]);
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-lg">
-          <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-            {label}
-          </p>
-          {payload.map((entry: any, index: number) => (
-            <div key={index} className="flex items-center gap-2 text-sm">
-              <div
-                className="w-2 h-2 rounded-full"
-                style={{ backgroundColor: entry.color }}
-              />
-              <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                {entry.name === "score"
-                  ? t("qualityScore") || "Quality Score"
-                  : entry.name === "compliance"
-                    ? t("compliance") || "Compliance"
-                    : t("riskControl") || "Risk Control"}
-                :
-              </span>
-              <span className="font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
-                {entry.value}%
-              </span>
-            </div>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  const ct = getChartTheme(theme);
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
@@ -127,13 +104,19 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({
         </div>
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-sky-500"></span>
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: CHART_COLORS.primary }}
+            ></span>
             <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
               {t("qualityScore") || "Quality Score"}
             </span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="w-3 h-3 rounded-full bg-emerald-400"></span>
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: CHART_COLORS.success }}
+            ></span>
             <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
               {t("compliance") || "Compliance"}
             </span>
@@ -148,57 +131,51 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({
             margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-              </linearGradient>
-              <linearGradient id="colorCompliance" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#34d399" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#34d399" stopOpacity={0} />
-              </linearGradient>
+              <AreaGradientDef id="colorScore" color={CHART_COLORS.primary} />
+              <AreaGradientDef
+                id="colorCompliance"
+                color={CHART_COLORS.success}
+              />
             </defs>
             <CartesianGrid
               strokeDasharray="3 3"
               vertical={false}
-              stroke={
-                theme === "dark" ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"
-              }
+              stroke={ct.gridStroke}
             />
             <XAxis
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: theme === "dark" ? "#94a3b8" : "#64748b",
-                fontSize: 12,
-              }}
+              tick={ct.tickStyle}
               dy={10}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{
-                fill: theme === "dark" ? "#94a3b8" : "#64748b",
-                fontSize: 12,
-              }}
+              tick={ct.tickStyle}
               unit="%"
             />
-            <Tooltip content={<CustomTooltip />} />
+            <Tooltip
+              content={<ChartTooltip formatValue={(v) => `${v}%`} />}
+              cursor={{ fill: ct.cursorFill }}
+            />
             <Area
               type="monotone"
               dataKey="compliance"
-              stroke="#34d399"
+              stroke={CHART_COLORS.success}
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#colorCompliance)"
+              animationDuration={CHART_ANIMATION.duration}
             />
             <Area
               type="monotone"
               dataKey="score"
-              stroke="#6366f1"
+              stroke={CHART_COLORS.primary}
               strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorScore)"
+              animationDuration={CHART_ANIMATION.duration}
             />
           </AreaChart>
         </ResponsiveContainer>

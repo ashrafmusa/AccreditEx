@@ -15,6 +15,12 @@ import { ChecklistItem, ComplianceStatus } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
 import { statusToTranslationKey } from "@/utils/complianceUtils";
+import {
+  CHART_COLORS,
+  getChartTheme,
+  ChartTooltip,
+  CHART_ANIMATION,
+} from "@/utils/chartTheme";
 interface Props {
   checklistItems: ChecklistItem[];
 }
@@ -39,23 +45,13 @@ const TaskStatusDistributionChart: React.FC<Props> = ({ checklistItems }) => {
   }, [checklistItems, t]);
 
   const COLORS: Record<string, string> = {
-    [t("compliant")]: "#22c55e",
-    [t("partiallyCompliant")]: "#f97316",
-    [t("nonCompliant")]: "#ef4444",
-    [t("notApplicable")]: "#6b7280",
+    [t("compliant")]: CHART_COLORS.compliance.compliant,
+    [t("partiallyCompliant")]: CHART_COLORS.compliance.partiallyCompliant,
+    [t("nonCompliant")]: CHART_COLORS.compliance.nonCompliant,
+    [t("notApplicable")]: CHART_COLORS.compliance.notApplicable,
   };
 
-  const tickStyle = {
-    fill: theme === "dark" ? "#9CA3AF" : "#6B7280",
-    fontSize: "0.75rem",
-  };
-  const tooltipStyle = {
-    borderRadius: "0.5rem",
-    background:
-      theme === "dark" ? "rgba(15, 23, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
-    backdropFilter: "blur(4px)",
-    border: `1px solid ${theme === "dark" ? "#1e293b" : "#e2e8f0"}`,
-  };
+  const ct = getChartTheme(theme);
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border h-full flex flex-col">
@@ -72,31 +68,27 @@ const TaskStatusDistributionChart: React.FC<Props> = ({ checklistItems }) => {
             >
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke={
-                  theme === "dark"
-                    ? "rgba(128,128,128,0.1)"
-                    : "rgba(128,128,128,0.2)"
-                }
+                stroke={ct.gridStroke}
                 horizontal={false}
               />
-              <XAxis type="number" tick={tickStyle} />
+              <XAxis type="number" tick={ct.tickStyle} />
               <YAxis
                 type="category"
                 dataKey="name"
                 width={80}
-                tick={tickStyle}
+                tick={ct.tickStyle}
                 tickLine={false}
               />
               <Tooltip
-                contentStyle={tooltipStyle}
-                cursor={{
-                  fill:
-                    theme === "dark"
-                      ? "rgba(148, 163, 184, 0.1)"
-                      : "rgba(226, 232, 240, 0.4)",
-                }}
+                content={<ChartTooltip />}
+                cursor={{ fill: ct.cursorFill }}
               />
-              <Bar dataKey="count" name={t("tasks")} barSize={20}>
+              <Bar
+                dataKey="count"
+                name={t("tasks")}
+                barSize={20}
+                animationDuration={CHART_ANIMATION.duration}
+              >
                 {data.map((entry, index) => (
                   <Cell
                     key={`cell-${index}`}

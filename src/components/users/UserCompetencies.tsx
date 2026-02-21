@@ -22,7 +22,7 @@ import FileUploader from "../documents/FileUploader";
 import PDFViewerModal from "../documents/PDFViewerModal";
 import DocumentEditorModal from "../documents/DocumentEditorModal";
 import { useAppStore } from "../../stores/useAppStore";
-import { storageService } from "../../services/storageService";
+import { cloudinaryService } from "../../services/cloudinaryService";
 import { getDocumentViewAction } from "../../utils/documentViewingHelper";
 
 interface Props {
@@ -119,7 +119,7 @@ const UserCompetencies: React.FC<Props> = ({
       const file = files[0];
       const documentId = `certificate-${Date.now()}`;
 
-      const fileUrl = await storageService.uploadDocument(
+      const fileUrl = await cloudinaryService.uploadFile(
         file,
         documentId,
         (progress) => setUploadProgress(progress.progress),

@@ -20,7 +20,7 @@ import FileUploader from "@/components/documents/FileUploader";
 import PDFViewerModal from "@/components/documents/PDFViewerModal";
 import DocumentEditorModal from "@/components/documents/DocumentEditorModal";
 import { useAppStore } from "@/stores/useAppStore";
-import { storageService } from "@/services/storageService";
+import { cloudinaryService } from "@/services/cloudinaryService";
 import { getDocumentViewAction } from "@/utils/documentViewingHelper";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useToast } from "@/hooks/useToast";
@@ -55,7 +55,11 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   const [aiModalContent, setAiModalContent] = useState("");
   const [aiFillingRow, setAiFillingRow] = useState<number | null>(null);
   const [aiSuggestingDocs, setAiSuggestingDocs] = useState<number | null>(null);
-  const [aiDocSuggestions, setAiDocSuggestions] = useState<{ rowIndex: number; docIds: string[]; rationale: string } | null>(null);
+  const [aiDocSuggestions, setAiDocSuggestions] = useState<{
+    rowIndex: number;
+    docIds: string[];
+    rationale: string;
+  } | null>(null);
 
   useEffect(() => {
     setControls(JSON.parse(JSON.stringify(project.designControls || [])));
@@ -259,12 +263,18 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
         setAiDocSuggestions({
           rowIndex,
           docIds: suggestedIds,
-          rationale: rationaleMatch ? rationaleMatch[1].trim() : "AI-suggested based on requirement context.",
+          rationale: rationaleMatch
+            ? rationaleMatch[1].trim()
+            : "AI-suggested based on requirement context.",
         });
         if (suggestedIds.length > 0) {
-          toast.success(`AI found ${suggestedIds.length} relevant document(s).`);
+          toast.success(
+            `AI found ${suggestedIds.length} relevant document(s).`,
+          );
         } else {
-          toast.info("AI could not match specific documents. Try linking manually.");
+          toast.info(
+            "AI could not match specific documents. Try linking manually.",
+          );
         }
       } else {
         toast.info("AI could not determine document suggestions.");
@@ -331,7 +341,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
     try {
       const file = files[0];
       const documentId = `design-control-${Date.now()}`;
-      const fileUrl = await storageService.uploadDocument(
+      const fileUrl = await cloudinaryService.uploadFile(
         file,
         documentId,
         (progress) => setUploadProgress(progress.progress),
@@ -565,13 +575,32 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
                         </button>
                         <button
                           onClick={() => handleAISuggestDocuments(index)}
-                          disabled={isFinalized || aiSuggestingDocs !== null || documents.length === 0}
+                          disabled={
+                            isFinalized ||
+                            aiSuggestingDocs !== null ||
+                            documents.length === 0
+                          }
                           className="text-xs flex items-center gap-1 text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-cyan-600 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           {aiSuggestingDocs === index ? (
-                            <svg className="animate-spin h-3 w-3 text-cyan-600" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            <svg
+                              className="animate-spin h-3 w-3 text-cyan-600"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                                fill="none"
+                              />
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              />
                             </svg>
                           ) : (
                             <span>🤖</span>
@@ -580,32 +609,44 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
                         </button>
                       </div>
                       {/* AI Document Suggestions */}
-                      {aiDocSuggestions && aiDocSuggestions.rowIndex === index && aiDocSuggestions.docIds.length > 0 && (
-                        <div className="mt-2 p-2 bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 rounded border border-rose-200 dark:border-pink-800">
-                          <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">🤖 Suggested Documents:</p>
-                          <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
-                            {aiDocSuggestions.docIds.map((docId) => {
-                              const doc = documents.find((d) => d.id === docId);
-                              return doc ? <li key={docId}>• {doc.name.en || doc.name.ar}</li> : null;
-                            })}
-                          </ul>
-                          <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">{aiDocSuggestions.rationale}</p>
-                          <div className="flex gap-2 mt-2">
-                            <button
-                              onClick={handleApplyDocSuggestions}
-                              className="text-xs bg-brand-primary text-white px-2 py-0.5 rounded hover:bg-sky-700"
-                            >
-                              Apply
-                            </button>
-                            <button
-                              onClick={() => setAiDocSuggestions(null)}
-                              className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400"
-                            >
-                              Dismiss
-                            </button>
+                      {aiDocSuggestions &&
+                        aiDocSuggestions.rowIndex === index &&
+                        aiDocSuggestions.docIds.length > 0 && (
+                          <div className="mt-2 p-2 bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 rounded border border-rose-200 dark:border-pink-800">
+                            <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
+                              🤖 Suggested Documents:
+                            </p>
+                            <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-0.5">
+                              {aiDocSuggestions.docIds.map((docId) => {
+                                const doc = documents.find(
+                                  (d) => d.id === docId,
+                                );
+                                return doc ? (
+                                  <li key={docId}>
+                                    • {doc.name.en || doc.name.ar}
+                                  </li>
+                                ) : null;
+                              })}
+                            </ul>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 italic mt-1">
+                              {aiDocSuggestions.rationale}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <button
+                                onClick={handleApplyDocSuggestions}
+                                className="text-xs bg-brand-primary text-white px-2 py-0.5 rounded hover:bg-sky-700"
+                              >
+                                Apply
+                              </button>
+                              <button
+                                onClick={() => setAiDocSuggestions(null)}
+                                className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400"
+                              >
+                                Dismiss
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        )}
 
                       {/* Display linked documents */}
                       {row.linkedDocumentIds.length > 0 && (

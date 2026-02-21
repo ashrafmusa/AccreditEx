@@ -58,21 +58,44 @@ export interface TrainingRecommendationsRequest {
     upcoming_accreditation?: string;
 }
 
+/** Production backend URL */
+const RENDER_URL = 'https://accreditex.onrender.com';
+/** Well-known API key shared between frontend and backend */
+const KNOWN_API_KEY = 'accreditex-ai-2026';
+/** Fetch timeout in milliseconds (90 s — allows for Render cold starts) */
+const FETCH_TIMEOUT_MS = 90_000;
+/** Maximum retry attempts for network failures */
+const MAX_RETRIES = 2;
+
 export class AIAgentService {
     private baseUrl: string;
     private apiKey: string;
     private threadId: string | null = null;
 
     constructor() {
-        // Configure based on environment
-        const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+        // Detect environment at RUNTIME (not build-time) so a stale .env
+        // value like "http://localhost:8000" doesn't break production.
+        const isDevelopment =
+            window.location.hostname === 'localhost' ||
+            window.location.hostname === '127.0.0.1';
 
-        this.baseUrl = import.meta.env.VITE_AI_AGENT_URL ||
+        const envUrl =
+            import.meta.env.VITE_AI_AGENT_URL ||
             import.meta.env.VITE_AI_AGENT_BASE_URL ||
-            (isDevelopment ? 'http://localhost:8000' : 'https://accreditex.onrender.com');
+            '';
 
-        // Use environment variable or empty string (backend will return proper error)
-        this.apiKey = import.meta.env.VITE_AI_AGENT_API_KEY || '';
+        // In production, NEVER use a localhost URL — fall back to Render.
+        const envIsLocalhost = envUrl.includes('localhost') || envUrl.includes('127.0.0.1');
+
+        if (isDevelopment) {
+            this.baseUrl = envUrl || 'http://localhost:8000';
+        } else {
+            this.baseUrl = envIsLocalhost || !envUrl ? RENDER_URL : envUrl;
+        }
+
+        // API key: prefer env var, then well-known fallback.
+        this.apiKey =
+            import.meta.env.VITE_AI_AGENT_API_KEY || KNOWN_API_KEY;
 
         if (import.meta.env.DEV) {
             console.log('🤖 AI Agent Service initialized:', {
@@ -181,6 +204,39 @@ export class AIAgentService {
     }
 
     /**
+     * Fetch with timeout + automatic retry (handles Render cold-start failures).
+     */
+    private async fetchWithRetry(
+        url: string,
+        init: RequestInit,
+        retries = MAX_RETRIES,
+    ): Promise<Response> {
+        let lastError: Error | null = null;
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+            try {
+                const res = await fetch(url, { ...init, signal: controller.signal });
+                clearTimeout(timer);
+                return res;
+            } catch (err: any) {
+                clearTimeout(timer);
+                lastError = err;
+                const isNetworkError =
+                    err.name === 'AbortError' ||
+                    err.name === 'TypeError' ||
+                    err.message?.includes('Failed to fetch') ||
+                    err.message?.includes('NetworkError');
+                if (!isNetworkError || attempt >= retries) break;
+                // Wait 2s before retry (give Render time to wake up)
+                console.warn(`⏳ AI request attempt ${attempt + 1} failed, retrying in 2 s…`);
+                await new Promise(r => setTimeout(r, 2000));
+            }
+        }
+        throw lastError ?? new Error('AI Agent request failed');
+    }
+
+    /**
      * Check if AI agent is healthy
      */
     async healthCheck(): Promise<boolean> {
@@ -217,7 +273,7 @@ export class AIAgentService {
                 hasContext: !!request.context
             });
 
-            const response = await fetch(`${this.baseUrl}/chat`, {
+            const response = await this.fetchWithRetry(`${this.baseUrl}/chat`, {
                 method: 'POST',
                 headers: this.getHeaders(),
                 body: JSON.stringify(request),

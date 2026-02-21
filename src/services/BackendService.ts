@@ -11,6 +11,7 @@ import {
 import { initialData } from './initialData';
 import { aiService } from '@/services/ai';
 import { storageService } from '@/services/storageService';
+import { cloudinaryService } from '@/services/cloudinaryService';
 
 class BackendService {
     private isInitialized = false;
@@ -208,7 +209,7 @@ class BackendService {
         // 1. Upload file if present
         let fileUrl = docData.fileUrl;
         if (docData.uploadedFile) {
-            fileUrl = await storageService.uploadDocument(
+            fileUrl = await cloudinaryService.uploadFile(
                 docData.uploadedFile,
                 `doc-evidence-${Date.now()}`,
                 (progress) => console.log('Upload progress:', progress)
@@ -244,10 +245,14 @@ class BackendService {
     }
 
     async uploadDocumentFile(file: File, path: string = 'documents'): Promise<string> {
-        return await storageService.uploadDocument(file, path);
+        return await cloudinaryService.uploadFile(file, path);
     }
 
     async deleteDocumentFile(fileUrl: string): Promise<void> {
+        if (fileUrl.includes('cloudinary.com')) {
+            console.info('[Cloudinary] File deletion requires backend API — skipping.');
+            return;
+        }
         return await storageService.deleteDocument(fileUrl);
     }
 

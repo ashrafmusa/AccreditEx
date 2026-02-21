@@ -5,6 +5,7 @@ import { useUserStore } from './useUserStore';
 import { useAppStore } from './useAppStore';
 import { handleError, AppError } from '@/services/errorHandling';
 import { logger } from '@/services/logger';
+import { workflowEngine } from '@/services/workflowEngine';
 
 interface ProjectState {
   projects: Project[];
@@ -158,6 +159,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
         item.id === checklistItemId ? { ...item, ...updates } : item
       );
       await get().updateProject({ ...project, checklist: newChecklist });
+      // Trigger workflow engine for checklist item updates
+      const updatedItem = newChecklist.find(i => i.id === checklistItemId);
+      if (updatedItem) {
+        const event = updates.status ? 'status_changed' as const : 'updated' as const;
+        workflowEngine.evaluate('checklist_item', event, { ...updatedItem, projectId } as unknown as Record<string, unknown>).catch(() => { });
+      }
     }
   },
   addComment: async (projectId, checklistItemId, commentText) => {
@@ -189,6 +196,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       };
       await projectService.addCapaReport(projectId, capaData);
       await get().fetchAllProjects();
+      // Trigger workflow engine for CAPA creation
+      workflowEngine.evaluate('capa', 'created', { ...capaData, projectId, checklistItemId } as unknown as Record<string, unknown>).catch(() => { });
     }
   },
   uploadEvidence: async (projectId, checklistItemId, fileData) => {
@@ -284,6 +293,8 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
   updatePDCACycle: async (projectId: string, cycle: PDCACycle) => {
     await projectService.updatePDCACycle(projectId, cycle.id, cycle);
     await get().fetchAllProjects();
+    // Trigger workflow engine for PDCA cycle stage changes
+    workflowEngine.evaluate('pdca_cycle', 'stage_changed', { ...cycle, projectId } as unknown as Record<string, unknown>).catch(() => { });
   },
 
   getPDCACyclesByStage: (projectId: string, stage: 'Plan' | 'Do' | 'Check' | 'Act') => {

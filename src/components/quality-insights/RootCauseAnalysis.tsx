@@ -10,6 +10,12 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTheme } from "../common/ThemeProvider";
+import {
+  CHART_COLORS,
+  getChartTheme,
+  ChartTooltip,
+  CHART_ANIMATION,
+} from "@/utils/chartTheme";
 
 interface RootCauseAnalysisProps {
   projects: Project[];
@@ -22,6 +28,7 @@ const RootCauseAnalysis: React.FC<RootCauseAnalysisProps> = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const ct = getChartTheme(theme);
   const [selectedCategoryKey, setSelectedCategoryKey] = useState<string | null>(
     null,
   );
@@ -77,12 +84,7 @@ const RootCauseAnalysis: React.FC<RootCauseAnalysisProps> = ({
     );
   };
 
-  const COLORS = ["#4F46E5", "#10B981", "#F59E0B", "#EF4444", "#6366F1"];
-  const tooltipStyle = {
-    borderRadius: "0.5rem",
-    background: theme === "dark" ? "#0f172a" : "#FFFFFF",
-    border: `1px solid ${theme === "dark" ? "#1e293b" : "#e2e8f0"}`,
-  };
+  const COLORS = CHART_COLORS.palette;
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border">
@@ -103,6 +105,7 @@ const RootCauseAnalysis: React.FC<RootCauseAnalysisProps> = ({
                   outerRadius={100}
                   onClick={handlePieClick}
                   cursor="pointer"
+                  animationDuration={CHART_ANIMATION.duration}
                 >
                   {rootCauseData.map((entry, index) => (
                     <Cell
@@ -119,8 +122,8 @@ const RootCauseAnalysis: React.FC<RootCauseAnalysisProps> = ({
                     />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
-                <Legend wrapperStyle={{ fontSize: "12px" }} />
+                <Tooltip content={<ChartTooltip />} />
+                <Legend wrapperStyle={ct.legendStyle} />
               </PieChart>
             </ResponsiveContainer>
           ) : (
