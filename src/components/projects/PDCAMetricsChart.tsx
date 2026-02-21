@@ -1,51 +1,68 @@
-import React from 'react';
-import { 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
+import React from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
   ResponsiveContainer,
-  ReferenceLine
-} from 'recharts';
-import { ImprovementMetrics } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
+} from "recharts";
+import { ImprovementMetrics } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useTheme } from "@/components/common/ThemeProvider";
+import {
+  CHART_COLORS,
+  getChartTheme,
+  ChartTooltip,
+  CHART_ANIMATION,
+} from "@/utils/chartTheme";
 
 interface PDCAMetricsChartProps {
   metrics: ImprovementMetrics;
   title?: string;
 }
 
-const PDCAMetricsChart: React.FC<PDCAMetricsChartProps> = ({ metrics, title }) => {
+const PDCAMetricsChart: React.FC<PDCAMetricsChartProps> = ({
+  metrics,
+  title,
+}) => {
   const { t } = useTranslation();
+  const { theme } = useTheme();
+  const ct = getChartTheme(theme);
 
   // Transform data for chart
   // We want to group by metric name
   const data = metrics.baseline.map((baseMetric, index) => {
-    const targetMetric = metrics.target.find(m => m.metric === baseMetric.metric);
-    const actualMetric = metrics.actual?.find(m => m.metric === baseMetric.metric);
+    const targetMetric = metrics.target.find(
+      (m) => m.metric === baseMetric.metric,
+    );
+    const actualMetric = metrics.actual?.find(
+      (m) => m.metric === baseMetric.metric,
+    );
 
     return {
       name: baseMetric.metric,
       Baseline: baseMetric.value,
       Target: targetMetric?.value || 0,
       Actual: actualMetric?.value || 0,
-      unit: baseMetric.unit
+      unit: baseMetric.unit,
     };
   });
 
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
-        <p className="text-gray-500 dark:text-gray-400">{t('noMetricsDefined') || 'No metrics defined'}</p>
+        <p className="text-gray-500 dark:text-gray-400">
+          {t("noMetricsDefined") || "No metrics defined"}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-dark-brand-surface p-4 rounded-lg shadow-sm border border-brand-border dark:border-dark-brand-border">
+    <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-lg shadow-sm border border-brand-border dark:border-dark-brand-border">
       {title && (
         <h3 className="text-lg font-semibold mb-4 text-brand-text-primary dark:text-dark-brand-text-primary">
           {title}
@@ -62,31 +79,48 @@ const PDCAMetricsChart: React.FC<PDCAMetricsChartProps> = ({ metrics, title }) =
               bottom: 5,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-            <XAxis 
-              dataKey="name" 
-              stroke="#6b7280" 
-              tick={{ fill: '#6b7280' }} 
-              axisLine={{ stroke: '#e5e7eb' }}
+            <CartesianGrid
+              strokeDasharray="3 3"
+              stroke={ct.gridStroke}
+              vertical={false}
             />
-            <YAxis 
-              stroke="#6b7280" 
-              tick={{ fill: '#6b7280' }} 
-              axisLine={{ stroke: '#e5e7eb' }}
+            <XAxis
+              dataKey="name"
+              tick={ct.tickStyle}
+              tickLine={false}
+              axisLine={{ stroke: ct.gridStroke }}
             />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.95)', 
-                borderRadius: '0.5rem',
-                border: '1px solid #e5e7eb',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-              }}
-              cursor={{ fill: 'rgba(107, 114, 128, 0.1)' }}
+            <YAxis
+              tick={ct.tickStyle}
+              tickLine={false}
+              axisLine={{ stroke: ct.gridStroke }}
             />
-            <Legend wrapperStyle={{ paddingTop: '20px' }} />
-            <Bar dataKey="Baseline" fill="#94a3b8" radius={[4, 4, 0, 0]} name={t('baseline') || 'Baseline'} />
-            <Bar dataKey="Target" fill="#3b82f6" radius={[4, 4, 0, 0]} name={t('target') || 'Target'} />
-            <Bar dataKey="Actual" fill="#10b981" radius={[4, 4, 0, 0]} name={t('actual') || 'Actual'} />
+            <Tooltip
+              content={<ChartTooltip />}
+              cursor={{ fill: ct.cursorFill }}
+            />
+            <Legend wrapperStyle={{ ...ct.legendStyle, paddingTop: "20px" }} />
+            <Bar
+              dataKey="Baseline"
+              fill={CHART_COLORS.baseline}
+              radius={[4, 4, 0, 0]}
+              name={t("baseline") || "Baseline"}
+              animationDuration={CHART_ANIMATION.duration}
+            />
+            <Bar
+              dataKey="Target"
+              fill={CHART_COLORS.info}
+              radius={[4, 4, 0, 0]}
+              name={t("target") || "Target"}
+              animationDuration={CHART_ANIMATION.duration}
+            />
+            <Bar
+              dataKey="Actual"
+              fill={CHART_COLORS.success}
+              radius={[4, 4, 0, 0]}
+              name={t("actual") || "Actual"}
+              animationDuration={CHART_ANIMATION.duration}
+            />
           </BarChart>
         </ResponsiveContainer>
       </div>

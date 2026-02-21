@@ -12,7 +12,7 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 
 const AnalyticsPage = lazy(() => import("@/pages/AnalyticsPage"));
 const QualityInsightsPage = lazy(() => import("@/pages/QualityInsightsPage"));
-const ReportsPage = lazy(() => import("@/pages/ReportsPage"));
+const ReportBuilderPage = lazy(() => import("@/pages/ReportBuilderPage"));
 
 type AnalyticsHubTab = "overview" | "qualityInsights" | "reports";
 
@@ -97,7 +97,7 @@ Format your response in clear Markdown with headers and bullet points.`;
       key: "qualityInsights",
       label: t("qualityInsights") || "Quality Insights",
     },
-    { key: "reports", label: t("reports") || "Reports" },
+    { key: "reports", label: t("reportBuilder") || "Report Builder" },
   ];
 
   return (
@@ -164,7 +164,7 @@ Format your response in clear Markdown with headers and bullet points.`;
         )}
         {activeTab === "reports" && (
           <Suspense fallback={<LoadingScreen />}>
-            <ReportsPage />
+            <ReportBuilderPage />
           </Suspense>
         )}
       </div>

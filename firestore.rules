@@ -5,44 +5,53 @@ service cloud.firestore {
     // =====================================================
     // HELPER FUNCTIONS
     // =====================================================
-    // Security fix (2026-02-18): getUserRole() now supports
-    // both Firebase Custom Claims (preferred) and Firestore
-    // document lookup by Auth UID.
-    // See: RBAC_SECURITY_CHANGELOG.md for migration details.
+    // Rewritten 2026-02-20: Flattened role checks to avoid
+    // nested ternary evaluation issues.
+    // Supports: 1) Firebase Custom Claims  2) Firestore doc lookup
     // =====================================================
     
     function isAuthenticated() {
       return request.auth != null;
     }
     
-    // Primary: Use Firebase Custom Claims token if available
-    // Fallback: Look up role from Firestore user document (keyed by Auth UID)
+    // Check admin via Custom Claims (fast path, no doc reads)
+    function hasAdminClaim() {
+      return isAuthenticated() && request.auth.token.role == 'Admin';
+    }
+    
+    // Check admin via Firestore user document (fallback)
+    function hasAdminDoc() {
+      return isAuthenticated()
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+    
+    // Unified admin check: custom claim OR Firestore doc
+    function isAdmin() {
+      return hasAdminClaim() || hasAdminDoc();
+    }
+    
+    // Role lookup for non-admin roles (used by isProjectLead, isAtLeastTeamMember)
     function getUserRole() {
-      return isAuthenticated() 
-        ? (request.auth.token.role != null 
-            ? request.auth.token.role 
-            : get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role)
+      let claimRole = request.auth.token.role;
+      return isAuthenticated()
+        ? (claimRole != null
+            ? claimRole
+            : (exists(/databases/$(database)/documents/users/$(request.auth.uid))
+                ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+                : null))
         : null;
     }
     
-    function isAdmin() {
-      return getUserRole() == 'Admin';
-    }
-    
     function isProjectLead() {
-      return getUserRole() in ['Admin', 'ProjectLead'];
+      return isAdmin() || getUserRole() == 'ProjectLead';
     }
     
     function isAtLeastTeamMember() {
-      return getUserRole() in ['Admin', 'ProjectLead', 'TeamMember', 'Auditor'];
+      return isAdmin() || getUserRole() in ['ProjectLead', 'TeamMember', 'Auditor'];
     }
     
     // Note: Firestore enforces 1MB document size limit automatically
-    
-    // Validate that required fields exist
-    function hasRequiredUserFields() {
-      return request.resource.data.keys().hasAll(['email', 'name', 'role']);
-    }
     
     function hasRequiredProjectFields() {
       return request.resource.data.keys().hasAll(['name', 'programId', 'startDate']);
@@ -74,14 +83,20 @@ service cloud.firestore {
     // Users collection
     // Security: Users keyed by Firebase Auth UID
     // - Read: Any authenticated user
-    // - Create: Admin only (prevents unauthorized user creation)
+    // - Create: Admin only OR owner (for migration: isOwner matches when doc ID = auth UID)
     // - Update: Own profile (no role change) or Admin
-    // - Delete: Admin only
+    // - Delete: Admin OR own legacy doc (email match enables migration cleanup)
+    //
+    // Migration note: The email-match delete rule allows users to delete their
+    // own legacy doc (keyed by custom ID) during UID migration. This is safe
+    // because Firebase Auth guarantees email uniqueness and request.auth.token.email
+    // cannot be forged by the client.
     match /users/{userId} {
       allow read: if isAuthenticated();
       allow create: if isAdmin() || isOwner(userId);
       allow update: if (isOwner(userId) || isAdmin()) && cannotEscalatePrivilege();
-      allow delete: if isAdmin();
+      allow delete: if isAdmin() 
+                    || (isAuthenticated() && resource.data.email == request.auth.token.email);
     }
     
     // Projects collection
@@ -200,6 +215,30 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow update: if false;
       allow delete: if false;
+    }
+    
+    // Report Definitions collection (Custom Report Builder)
+    match /reportDefinitions/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Workflow Definitions collection (Workflow Automation)
+    match /workflowDefinitions/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Workflow Execution Logs collection
+    match /workflowExecutionLogs/{docId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated();
+      allow update: if false;
+      allow delete: if isAdmin();
     }
   }
 }

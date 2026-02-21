@@ -554,6 +554,31 @@ class CloudinaryService {
   }
 
   /**
+   * Upload any supported file (document, image, or raw) to Cloudinary.
+   * Automatically routes to the correct upload method based on MIME type.
+   * @param file - File to upload
+   * @param folder - Folder path in Cloudinary
+   * @param onProgress - Progress callback
+   * @param options - Upload options (skipDuplicateCheck, forceUpload)
+   * @returns Promise with uploaded file URL
+   */
+  async uploadFile(
+    file: File,
+    folder: string = 'documents',
+    onProgress?: (progress: UploadProgress) => void,
+    options?: { skipDuplicateCheck?: boolean; forceUpload?: boolean }
+  ): Promise<string> {
+    if (this.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+      return this.uploadImage(file, folder, onProgress, options);
+    }
+    if (this.ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+      return this.uploadDocument(file, folder, onProgress, options);
+    }
+    // Fallback to raw upload for any other file type
+    return this.uploadRawFile(file, folder, onProgress);
+  }
+
+  /**
    * Upload multiple files in batch
    * @param files - Array of files to upload
    * @param folder - Folder path for all files

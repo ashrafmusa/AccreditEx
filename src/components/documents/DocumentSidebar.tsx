@@ -31,6 +31,8 @@ interface DocumentSidebarProps {
   totalStorageBytes?: number;
   /** Callback when the mobile drawer close button is pressed */
   onMobileClose?: () => void;
+  /** Callback when the mobile floating open button is pressed */
+  onMobileOpen?: () => void;
   /** Whether the mobile drawer is open */
   isMobileOpen?: boolean;
 }
@@ -137,6 +139,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
   departments,
   totalStorageBytes,
   onMobileClose,
+  onMobileOpen,
   isMobileOpen = false,
 }) => {
   const { t, lang } = useTranslation();
@@ -424,14 +427,16 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
       </div>
 
       {/* ---- Mobile: floating filter button ---- */}
-      <button
-        type="button"
-        onClick={onMobileClose}
-        className="md:hidden fixed bottom-6 ltr:left-4 rtl:right-4 z-40 p-3 rounded-full bg-brand-primary text-white shadow-lg hover:bg-brand-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 transition-transform active:scale-95"
-        aria-label={t("openFilters") || "Open filters"}
-      >
-        <FunnelIcon className="h-5 w-5" />
-      </button>
+      {!isMobileOpen && (
+        <button
+          type="button"
+          onClick={onMobileOpen || onMobileClose}
+          className="md:hidden fixed bottom-6 ltr:left-4 rtl:right-4 z-40 p-3 rounded-full bg-brand-primary text-white shadow-lg hover:bg-brand-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 transition-transform active:scale-95"
+          aria-label={t("openFilters") || "Open filters"}
+        >
+          <FunnelIcon className="h-5 w-5" />
+        </button>
+      )}
 
       {/* ---- Mobile: drawer overlay ---- */}
       {isMobileOpen && (

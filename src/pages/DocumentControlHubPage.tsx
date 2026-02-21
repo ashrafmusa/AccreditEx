@@ -11,8 +11,20 @@ import { useTranslation } from "../hooks/useTranslation";
 import { useToast } from "../hooks/useToast";
 import { ContextualHelp } from "../components/common/ContextualHelp";
 import { getHelpContent } from "../data/helpContent";
-import { AppDocument, User, UserRole, Standard, Department } from "../types";
+import {
+  AppDocument,
+  User,
+  UserRole,
+  Standard,
+  Department,
+  NavigationState,
+} from "../types";
 import { useProjectStore } from "@/stores/useProjectStore";
+import {
+  permissionService,
+  Action,
+  Resource,
+} from "@/services/permissionService";
 import StatCard from "../components/common/StatCard";
 import DocumentSidebar from "../components/documents/DocumentSidebar";
 import DocumentSearch, {
@@ -36,10 +48,15 @@ import {
   ArrowTrendingUpIcon,
   CalendarIcon,
   DocumentPlusIcon,
-  HomeIcon,
   TrashIcon,
   ArrowDownTrayIcon,
   EyeIcon,
+  ShieldCheckIcon,
+  ClipboardDocumentListIcon,
+  PaperClipIcon,
+  ChartBarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
 } from "../components/icons";
 
 const DocumentEditorModal = lazy(
@@ -74,6 +91,8 @@ interface DocumentControlHubPageProps {
   standards: Standard[];
   departments: Department[];
   currentUser: User;
+  navigation?: NavigationState;
+  setNavigation?: (state: NavigationState) => void;
   onUpdateDocument: (updatedDocument: AppDocument) => Promise<void> | void;
   onCreateDocument: (data: {
     name: { en: string; ar: string };
@@ -82,6 +101,7 @@ interface DocumentControlHubPageProps {
     tags?: string[];
     category?: string;
     departmentIds?: string[];
+    content?: { en: string; ar: string };
   }) => Promise<void> | void;
   onAddProcessMap: (data: {
     name: { en: string; ar: string };
@@ -145,21 +165,58 @@ const TypeBadge: React.FC<{ type: string; t: (key: string) => string }> = ({
   );
 };
 
+// --- Type Icon Map for Grid Cards ---
+const DOC_TYPE_ICON_MAP: Record<
+  string,
+  { icon: React.ElementType; bgColor: string; iconColor: string }
+> = {
+  Policy: {
+    icon: ShieldCheckIcon,
+    bgColor: "bg-blue-50 dark:bg-blue-900/20",
+    iconColor: "text-blue-500 dark:text-blue-400",
+  },
+  Procedure: {
+    icon: ClipboardDocumentListIcon,
+    bgColor: "bg-green-50 dark:bg-green-900/20",
+    iconColor: "text-green-500 dark:text-green-400",
+  },
+  "Process Map": {
+    icon: ArrowPathIcon,
+    bgColor: "bg-teal-50 dark:bg-teal-900/20",
+    iconColor: "text-teal-500 dark:text-teal-400",
+  },
+  Evidence: {
+    icon: PaperClipIcon,
+    bgColor: "bg-amber-50 dark:bg-amber-900/20",
+    iconColor: "text-amber-500 dark:text-amber-400",
+  },
+  Report: {
+    icon: ChartBarIcon,
+    bgColor: "bg-purple-50 dark:bg-purple-900/20",
+    iconColor: "text-purple-500 dark:text-purple-400",
+  },
+};
+
 const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   documents,
   standards,
   departments,
   currentUser,
+  navigation,
+  setNavigation,
   onUpdateDocument,
   onCreateDocument,
   onAddProcessMap,
   onDeleteDocument,
   onApproveDocument,
 }) => {
-  const { t, lang, dir } = useTranslation();
+  const { t, lang } = useTranslation();
   const toast = useToast();
   const { projects } = useProjectStore();
   const [isMetaModalOpen, setIsMetaModalOpen] = useState(false);
+  const [metaModalPreselectedType, setMetaModalPreselectedType] = useState<
+    AppDocument["type"] | undefined
+  >(undefined);
   const [isProcessMapModalOpen, setIsProcessMapModalOpen] = useState(false);
   const [signingDoc, setSigningDoc] = useState<AppDocument | null>(null);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
@@ -189,7 +246,21 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [showOnlyMyDocs, setShowOnlyMyDocs] = useState(
     !currentUser || currentUser.role !== UserRole.Admin,
   );
-  const canModify = currentUser.role === UserRole.Admin;
+  const canModify = permissionService.can(
+    currentUser,
+    Action.Delete,
+    Resource.Document,
+  );
+  const canCreate = permissionService.can(
+    currentUser,
+    Action.Create,
+    Resource.Document,
+  );
+  const canApprove = permissionService.can(
+    currentUser,
+    Action.Approve,
+    Resource.Document,
+  );
   const [showAIGenerator, setShowAIGenerator] = useState(false);
 
   // --- New state additions ---
@@ -198,7 +269,29 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [activeQuickFilter, setActiveQuickFilter] =
     useState<QuickFilterKey>("all");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  useState<QuickFilterKey>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 20;
+
+  // Auto-apply filter from navigation (e.g., "overdue" from AdminDashboard)
+  useEffect(() => {
+    if (navigation?.filter === "overdue") {
+      setActiveQuickFilter("overdue");
+    }
+  }, [navigation?.filter]);
+
+  // Auto-open document from navigation (e.g., from PendingApprovalsWidget)
+  useEffect(() => {
+    if (navigation?.documentId && documents.length > 0) {
+      const targetDoc = documents.find((d) => d.id === navigation.documentId);
+      if (targetDoc) {
+        if (targetDoc.type === "Process Map") {
+          setIsProcessMapModalOpen(true);
+        } else {
+          setViewingDoc(targetDoc);
+        }
+      }
+    }
+  }, [navigation?.documentId, documents]);
 
   const handleConfirmSignature = async () => {
     if (!signingDoc) return;
@@ -263,11 +356,28 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       toast.success(
         t("documentDeletedSuccessfully") || "Document deleted successfully",
       );
-    } catch (error) {
-      const errorMsg =
-        error instanceof Error
-          ? error.message
-          : t("failedToDeleteDocument") || "Failed to delete document";
+    } catch (error: unknown) {
+      let errorMsg: string;
+      if (
+        error &&
+        typeof error === "object" &&
+        "name" in error &&
+        (error as { name: string }).name === "PermissionError"
+      ) {
+        errorMsg = (error as Error).message;
+      } else if (
+        error instanceof Error &&
+        error.message?.includes("permission")
+      ) {
+        errorMsg =
+          t("insufficientPermissions") ||
+          "Insufficient permissions. Your account may need to be re-synchronized. Try logging out and back in.";
+      } else {
+        errorMsg =
+          error instanceof Error
+            ? error.message
+            : t("failedToDeleteDocument") || "Failed to delete document";
+      }
       toast.error(errorMsg);
       console.error("Document delete failed:", error);
     } finally {
@@ -282,6 +392,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     tags?: string[];
     category?: string;
     departmentIds?: string[];
+    content?: { en: string; ar: string };
   }) => {
     try {
       if (!docData.name?.en || !docData.name?.en.trim()) {
@@ -452,6 +563,34 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     projects,
   ]);
 
+  // Reset pagination on filter/search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    activeQuickFilter,
+    activeCategory,
+    searchQuery,
+    activeFilters,
+    showOnlyMyDocs,
+  ]);
+
+  // --- Pagination ---
+  const totalPages = Math.max(
+    1,
+    Math.ceil(controlledDocuments.length / ITEMS_PER_PAGE),
+  );
+  const paginatedDocuments = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return controlledDocuments.slice(start, start + ITEMS_PER_PAGE);
+  }, [controlledDocuments, currentPage]);
+
+  // --- Collect all unique tags for search ---
+  const allTags = useMemo(() => {
+    const tags = new Set<string>();
+    documents.forEach((doc) => doc.tags?.forEach((tag) => tags.add(tag)));
+    return Array.from(tags);
+  }, [documents]);
+
   const stats = useMemo(() => {
     const allControlled = documents.filter((d) => d.isControlled);
     const now = new Date();
@@ -601,13 +740,40 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     const exportData = controlledDocuments.filter((d) =>
       selectedDocIds.has(d.id),
     );
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], {
-      type: "application/json",
+    // Export as CSV for better usability
+    const csvHeaders = [
+      "Document Number",
+      "Name (EN)",
+      "Name (AR)",
+      "Type",
+      "Status",
+      "Version",
+      "Category",
+      "Review Date",
+      "Tags",
+    ];
+    const csvRows = exportData.map((d) => [
+      d.documentNumber || "",
+      `"${(d.name.en || "").replace(/"/g, '""')}"`,
+      `"${(d.name.ar || "").replace(/"/g, '""')}"`,
+      d.type,
+      d.status,
+      `v${d.currentVersion}`,
+      d.category || "",
+      d.reviewDate ? new Date(d.reviewDate).toLocaleDateString() : "",
+      (d.tags || []).join("; "),
+    ]);
+    const csvContent = [
+      csvHeaders.join(","),
+      ...csvRows.map((r) => r.join(",")),
+    ].join("\n");
+    const blob = new Blob(["\uFEFF" + csvContent], {
+      type: "text/csv;charset=utf-8;",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `documents-export-${new Date().toISOString().split("T")[0]}.json`;
+    a.download = `documents-export-${new Date().toISOString().split("T")[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(
@@ -691,24 +857,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     setViewingDoc(doc);
   }, []);
 
-  // --- Breadcrumb Separator ---
-  const BreadcrumbSep = dir === "rtl" ? "‹" : "›";
-
   return (
     <div className="space-y-6">
-      {/* ===== Breadcrumb Trail ===== */}
-      <nav
-        className="flex items-center gap-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary"
-        aria-label="Breadcrumb"
-      >
-        <HomeIcon className="w-4 h-4" />
-        <span>{t("home") || "Home"}</span>
-        <span className="text-gray-400">{BreadcrumbSep}</span>
-        <span className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          {t("documentControl") || "Document Control"}
-        </span>
-      </nav>
-
       {/* ===== Page Header ===== */}
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
         <div className="flex items-center space-x-3 rtl:space-x-reverse self-start">
@@ -718,7 +868,14 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
                 {t("documentControl")}
               </h1>
-              <ContextualHelp content={getHelpContent("documentControl")!} />
+              <ContextualHelp
+                content={
+                  getHelpContent("documentControl") || {
+                    title: t("documentControl") || "Document Control",
+                    description: "",
+                  }
+                }
+              />
             </div>
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
               {t("documentControlHubDescription")}
@@ -761,25 +918,51 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                   className="absolute top-full ltr:right-0 rtl:left-0 mt-2 w-64 bg-white dark:bg-dark-brand-surface rounded-xl shadow-xl border border-gray-200 dark:border-dark-brand-border z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150"
                   role="menu"
                 >
-                  <div className="p-2">
+                  <div className="p-2 space-y-0.5">
+                    <p className="px-3 pt-1 pb-1.5 text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 font-semibold">
+                      {t("documents") || "Documents"}
+                    </p>
                     <button
                       role="menuitem"
                       onClick={() => {
+                        setMetaModalPreselectedType("Policy");
                         setIsMetaModalOpen(true);
                         setIsAddMenuOpen(false);
                       }}
                       className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-blue-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
                       <div className="shrink-0 w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center">
-                        <DocumentTextIcon className="w-5 h-5 text-blue-500" />
+                        <ShieldCheckIcon className="w-5 h-5 text-blue-500" />
                       </div>
                       <div className="text-start">
                         <div className="font-medium">
-                          {t("policy")}/{t("procedure")}
+                          {t("newPolicy") || "New Policy"}
                         </div>
                         <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                          {t("createControlledDoc") ||
-                            "Create a controlled document"}
+                          {t("newPolicyDesc") ||
+                            "Organizational governance policy"}
+                        </div>
+                      </div>
+                    </button>
+                    <button
+                      role="menuitem"
+                      onClick={() => {
+                        setMetaModalPreselectedType("Procedure");
+                        setIsMetaModalOpen(true);
+                        setIsAddMenuOpen(false);
+                      }}
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-purple-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                    >
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
+                        <ClipboardDocumentListIcon className="w-5 h-5 text-purple-500" />
+                      </div>
+                      <div className="text-start">
+                        <div className="font-medium">
+                          {t("newProcedure") || "New Procedure"}
+                        </div>
+                        <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                          {t("newProcedureDesc") ||
+                            "Step-by-step operational procedure"}
                         </div>
                       </div>
                     </button>
@@ -806,6 +989,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     <button
                       role="menuitem"
                       onClick={() => {
+                        setMetaModalPreselectedType("Evidence");
                         setIsMetaModalOpen(true);
                         setIsAddMenuOpen(false);
                       }}
@@ -863,6 +1047,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
           documentCounts={documentCounts}
           departments={departments}
           isMobileOpen={isMobileSidebarOpen}
+          onMobileOpen={() => setIsMobileSidebarOpen(true)}
           onMobileClose={() => setIsMobileSidebarOpen(false)}
         />
 
@@ -988,6 +1173,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               <DocumentSearch
                 onSearch={setSearchQuery}
                 onFilter={setActiveFilters}
+                resultCount={controlledDocuments.length}
+                availableTags={allTags}
               />
             </div>
             <div className="flex items-center bg-white dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-lg overflow-hidden">
@@ -1054,169 +1241,30 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               )}
             </div>
           ) : viewMode === "list" ? (
-            /* ===== List/Table View with Checkboxes ===== */
-            <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
-                  <thead className="bg-gray-50 dark:bg-gray-700">
-                    <tr>
-                      {canModify && (
-                        <th scope="col" className="px-4 py-3 w-10">
-                          <input
-                            type="checkbox"
-                            checked={
-                              selectedDocIds.size ===
-                                controlledDocuments.length &&
-                              controlledDocuments.length > 0
-                            }
-                            onChange={toggleSelectAll}
-                            className="rounded border-gray-300 dark:border-gray-600 text-brand-primary focus:ring-brand-primary"
-                          />
-                        </th>
-                      )}
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                      >
-                        {t("documentName")}
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                      >
-                        {t("type") || "Type"}
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                      >
-                        {t("status")}
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                      >
-                        {t("version")}
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                      >
-                        {t("reviewDate")}
-                      </th>
-                      <th
-                        scope="col"
-                        className="px-6 py-3 text-right rtl:text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
-                      >
-                        {t("actions")}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white dark:bg-dark-brand-surface divide-y divide-gray-200 dark:divide-dark-brand-border">
-                    {controlledDocuments.map((doc) => {
-                      const isOverdue =
-                        doc.reviewDate && new Date(doc.reviewDate) < new Date();
-                      return (
-                        <tr
-                          key={doc.id}
-                          onClick={() => handleViewDoc(doc)}
-                          className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors ${
-                            selectedDocIds.has(doc.id)
-                              ? "bg-blue-50/50 dark:bg-blue-900/10"
-                              : ""
-                          }`}
-                        >
-                          {canModify && (
-                            <td
-                              className="px-4 py-4"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedDocIds.has(doc.id)}
-                                onChange={() => toggleDocSelection(doc.id)}
-                                className="rounded border-gray-300 dark:border-gray-600 text-brand-primary focus:ring-brand-primary"
-                              />
-                            </td>
-                          )}
-                          <td className="px-6 py-4">
-                            <div className="font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
-                              {doc.documentNumber && (
-                                <span className="inline-block mr-2 px-1.5 py-0.5 text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                                  {doc.documentNumber}
-                                </span>
-                              )}
-                              {doc.name[lang]}
-                            </div>
-                            {doc.category && (
-                              <span className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                                {doc.category}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4">
-                            <TypeBadge type={doc.type} t={t} />
-                          </td>
-                          <td className="px-6 py-4">
-                            <StatusBadge status={doc.status} t={t} />
-                          </td>
-                          <td className="px-6 py-4 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                            v{doc.currentVersion}
-                          </td>
-                          <td className="px-6 py-4 text-sm">
-                            <span
-                              className={
-                                isOverdue
-                                  ? "text-red-600 dark:text-red-400 font-medium"
-                                  : "text-brand-text-secondary dark:text-dark-brand-text-secondary"
-                              }
-                            >
-                              {doc.reviewDate
-                                ? new Date(doc.reviewDate).toLocaleDateString()
-                                : "—"}
-                              {isOverdue && (
-                                <ExclamationTriangleIcon className="w-4 h-4 inline ltr:ml-1 rtl:mr-1 text-red-500" />
-                              )}
-                            </span>
-                          </td>
-                          <td
-                            className="px-6 py-4 text-right rtl:text-left"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <div className="flex items-center justify-end rtl:justify-start gap-2">
-                              {canModify && doc.status === "Pending Review" && (
-                                <button
-                                  onClick={() => setSigningDoc(doc)}
-                                  className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 text-sm font-medium"
-                                  title={t("approve") || "Approve"}
-                                >
-                                  <CheckCircleIcon className="w-5 h-5" />
-                                </button>
-                              )}
-                              {canModify && (
-                                <button
-                                  onClick={() => handleDeleteDocument(doc.id)}
-                                  className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm"
-                                  title={t("delete") || "Delete"}
-                                >
-                                  <TrashIcon className="w-5 h-5" />
-                                </button>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+            /* ===== List/Table View — using ControlledDocumentsTable ===== */
+            <ControlledDocumentsTable
+              documents={paginatedDocuments}
+              canModify={canModify}
+              onApprove={(doc) => setSigningDoc(doc)}
+              onDelete={(docId) => handleDeleteDocument(docId)}
+              onView={handleViewDoc}
+              selectedDocIds={canModify ? selectedDocIds : undefined}
+              onToggleSelect={canModify ? toggleDocSelection : undefined}
+              onSelectAll={canModify ? toggleSelectAll : undefined}
+              totalCount={controlledDocuments.length}
+            />
           ) : (
             /* ===== Grid/Card View ===== */
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {controlledDocuments.map((doc) => {
+              {paginatedDocuments.map((doc) => {
                 const isOverdue =
                   doc.reviewDate && new Date(doc.reviewDate) < new Date();
+                const typeIcon = DOC_TYPE_ICON_MAP[doc.type] || {
+                  icon: DocumentTextIcon,
+                  bgColor: "bg-blue-50 dark:bg-blue-900/20",
+                  iconColor: "text-blue-500 dark:text-blue-400",
+                };
+                const TypeIcon = typeIcon.icon;
                 return (
                   <div
                     key={doc.id}
@@ -1246,8 +1294,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
                     {/* Card Content */}
                     <div className="flex items-start gap-3 mb-3">
-                      <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 shrink-0">
-                        <DocumentTextIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                      <div
+                        className={`p-2 rounded-lg ${typeIcon.bgColor} shrink-0`}
+                      >
+                        <TypeIcon className={`w-5 h-5 ${typeIcon.iconColor}`} />
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary truncate">
@@ -1341,6 +1391,66 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               })}
             </div>
           )}
+
+          {/* ===== Pagination ===== */}
+          {controlledDocuments.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-between pt-2">
+              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                {t("showingPage") || "Page"} {currentPage} {t("of") || "of"}{" "}
+                {totalPages}
+                <span className="hidden sm:inline">
+                  {" "}
+                  &middot; {controlledDocuments.length}{" "}
+                  {t("documents") || "documents"}
+                </span>
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg border border-gray-200 dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  aria-label={t("previousPage") || "Previous page"}
+                >
+                  <ChevronLeftIcon className="w-4 h-4" />
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  let page: number;
+                  if (totalPages <= 5) {
+                    page = i + 1;
+                  } else if (currentPage <= 3) {
+                    page = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    page = totalPages - 4 + i;
+                  } else {
+                    page = currentPage - 2 + i;
+                  }
+                  return (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === page
+                          ? "bg-brand-primary text-white shadow-sm"
+                          : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-dark-brand-border"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg border border-gray-200 dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  aria-label={t("nextPage") || "Next page"}
+                >
+                  <ChevronRightIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1398,8 +1508,12 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       <Suspense fallback={null}>
         <DocumentMetadataModal
           isOpen={isMetaModalOpen}
-          onClose={() => setIsMetaModalOpen(false)}
+          onClose={() => {
+            setIsMetaModalOpen(false);
+            setMetaModalPreselectedType(undefined);
+          }}
           onSave={handleCreateDocument}
+          preselectedType={metaModalPreselectedType}
         />
       </Suspense>
 
@@ -1422,6 +1536,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             document={viewingDoc}
             onSave={handleSaveDocument}
             standards={standards}
+            allDocuments={documents}
           />
         </Suspense>
       )}
@@ -1450,8 +1565,14 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       )}
 
       {showAIGenerator && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="bg-white dark:bg-dark-brand-surface rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4 p-6">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowAIGenerator(false)}
+        >
+          <div
+            className="bg-white dark:bg-dark-brand-surface rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto m-4 p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
                 {t("aiDocumentGenerator") || "AI Document Generator"}
@@ -1467,8 +1588,29 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               fallback={<div className="py-8 text-center">Loading...</div>}
             >
               <AIDocumentGenerator
-                onDocumentGenerated={(response) => {
-                  console.log("Document generated:", response);
+                onDocumentGenerated={async (response) => {
+                  try {
+                    // Create a real document from AI-generated content
+                    const docName =
+                      response.content
+                        .match(/<h[12][^>]*>([^<]+)<\/h[12]>/i)?.[1]
+                        ?.trim() || "AI Generated Document";
+                    await onCreateDocument({
+                      name: { en: docName, ar: docName },
+                      type: "Policy",
+                      content: { en: response.content, ar: "" },
+                      tags: ["ai-generated"],
+                    });
+                    toast.success(
+                      t("aiDocumentSaved") ||
+                        "AI-generated document saved to Document Control.",
+                    );
+                  } catch {
+                    toast.error(
+                      t("failedToSaveAiDoc") ||
+                        "Failed to save AI-generated document.",
+                    );
+                  }
                   setShowAIGenerator(false);
                 }}
                 context={{

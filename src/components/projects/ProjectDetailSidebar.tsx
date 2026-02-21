@@ -8,6 +8,7 @@ import {
   ClipboardDocumentListIcon,
   ClockIcon,
   ArrowPathIcon,
+  DocumentTextIcon,
 } from "@/components/icons";
 
 interface ProjectDetailSidebarProps {
@@ -39,6 +40,11 @@ const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({
       id: "checklist",
       label: t("projects.checklist"),
       icon: ClipboardDocumentCheckIcon,
+    },
+    {
+      id: "documents",
+      label: t("projects.documents") || "Documents",
+      icon: DocumentTextIcon,
     },
     {
       id: "design_controls",

@@ -80,6 +80,12 @@ export const routes: RouteConfig[] = [
     // Lab Operations
     { path: "/lab-operations", view: "labOperations", requiresAuth: true },
 
+    // Workflow Automation
+    { path: "/workflow-automation", view: "workflowAutomation", requiresAuth: true },
+
+    // Report Builder
+    { path: "/report-builder", view: "reportBuilder", requiresAuth: true },
+
     // Redirect legacy standalone routes to parent hubs
     { path: "/performance", view: "trainingHub", requiresAuth: true },
     { path: "/quality-rounding", view: "auditHub", requiresAuth: true },
@@ -146,6 +152,10 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/knowledge-base";
         case "labOperations":
             return "/lab-operations";
+        case "workflowAutomation":
+            return "/workflow-automation";
+        case "reportBuilder":
+            return "/report-builder";
         default:
             return "/dashboard";
     }
@@ -179,6 +189,8 @@ export const pathToNavigationState = (
     if (path === "/accreditation") return { view: "accreditationHub" };
     if (path === "/knowledge-base") return { view: "knowledgeBase" };
     if (path === "/lab-operations") return { view: "labOperations" };
+    if (path === "/workflow-automation") return { view: "workflowAutomation" };
+    if (path === "/report-builder") return { view: "reportBuilder" };
     if (path === "/quality-insights") return { view: "analyticsHub" };
     if (path === "/reports") return { view: "analyticsHub" };
     if (path === "/competencies") return { view: "trainingHub" };

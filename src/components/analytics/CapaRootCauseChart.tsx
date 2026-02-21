@@ -12,6 +12,12 @@ import {
 import { Project } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
+import {
+  CHART_COLORS,
+  getChartTheme,
+  ChartTooltip,
+  CHART_ANIMATION,
+} from "@/utils/chartTheme";
 
 interface Props {
   projects: Project[];
@@ -44,14 +50,8 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
     [data],
   );
 
-  const COLORS = ["#4f46e5", "#f97316", "#22c55e", "#ef4444", "#64748b"];
-  const tooltipStyle = {
-    borderRadius: "0.5rem",
-    background:
-      theme === "dark" ? "rgba(15, 23, 42, 0.8)" : "rgba(255, 255, 255, 0.8)",
-    backdropFilter: "blur(4px)",
-    border: `1px solid ${theme === "dark" ? "#1e293b" : "#e2e8f0"}`,
-  };
+  const COLORS = CHART_COLORS.palette;
+  const ct = getChartTheme(theme);
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border h-full flex flex-col">
@@ -71,6 +71,7 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
                 innerRadius="60%"
                 outerRadius="80%"
                 paddingAngle={5}
+                animationDuration={CHART_ANIMATION.duration}
               >
                 {data.map((entry, index) => (
                   <Cell
@@ -79,9 +80,9 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
                   />
                 ))}
               </Pie>
-              <Tooltip contentStyle={tooltipStyle} />
+              <Tooltip content={<ChartTooltip />} />
               <Legend
-                wrapperStyle={{ fontSize: "12px" }}
+                wrapperStyle={ct.legendStyle}
                 layout="vertical"
                 align="right"
                 verticalAlign="middle"
@@ -91,7 +92,7 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
                 y="50%"
                 textAnchor="middle"
                 dominantBaseline="middle"
-                fill={theme === "dark" ? "#e2e8f0" : "#0f172a"}
+                fill={ct.centerTextPrimary}
                 fontSize="28"
                 fontWeight="bold"
               >
@@ -102,7 +103,7 @@ const CapaRootCauseChart: React.FC<Props> = ({ projects }) => {
                 y="50%"
                 dy={22}
                 textAnchor="middle"
-                fill={theme === "dark" ? "#94a3b8" : "#64748b"}
+                fill={ct.centerTextSecondary}
                 fontSize="12"
               >
                 {t("capaReports")}

@@ -24,6 +24,10 @@ import { generateProjectTemplates } from '@/data/projectTemplates';
 import { useUserStore } from './useUserStore';
 import { ActivityLogger } from '@/services/activityLogService';
 import { escalationService } from '@/services/escalationService';
+import { workflowEngine } from '@/services/workflowEngine';
+import { ensureUserMigrated } from '@/services/secureUserService';
+// RBAC: All permission checks go through permissionService.guard()
+import { permissionService, Action, Resource } from '@/services/permissionService';
 
 // Document numbering prefix map
 const DOC_TYPE_PREFIX: Record<AppDocument['type'], string> = {
@@ -78,7 +82,7 @@ interface AppState {
 
   // Documents
   addDocument: (doc: AppDocument) => void;
-  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<AppDocument>;
+  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], content?: { en: string; ar: string } }) => Promise<AppDocument>;
   addProcessMap: (docData: { name: { en: string; ar: string }, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<void>;
   updateDocument: (doc: AppDocument) => Promise<void>;
   deleteDocument: (docId: string) => Promise<void>;
@@ -238,7 +242,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Documents
   addDocument: (doc: AppDocument) => set(state => ({ documents: [...state.documents, doc] })),
-  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], projectId?: string }): Promise<AppDocument> => {
+  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string } }): Promise<AppDocument> => {
     try {
       const currentUser = useUserStore.getState().currentUser;
       const uploaderName = currentUser?.name || 'Unknown';
@@ -248,20 +252,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       const documentNumber = generateDocumentNumber(docData.type, get().documents);
 
       // Create document without ID (Firebase will generate it)
+      const initialContent = docData.content || { en: '', ar: '' };
       const docWithoutId: Omit<AppDocument, 'id'> = {
         name: docData.name,
         type: docData.type,
         documentNumber,
         isControlled: true,
         status: 'Draft',
-        content: { en: '', ar: '' },
+        content: initialContent,
         fileUrl: docData.fileUrl,
         currentVersion: 1,
         versionHistory: [{
           version: 1,
           date: now,
           uploadedBy: uploaderName,
-          content: { en: '', ar: '' },
+          content: initialContent,
         }],
         uploadedAt: now,
         uploadedBy: uploaderName,
@@ -327,6 +332,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   updateDocument: async (doc: AppDocument) => {
     try {
+      // RBAC Guard: verify update permission + Firestore doc readiness
+      await permissionService.guard(Action.Update, Resource.Document);
       const existingDoc = get().documents.find(d => d.id === doc.id);
       const hasContentChanged = existingDoc && (
         JSON.stringify(existingDoc.content) !== JSON.stringify(doc.content) ||
@@ -357,17 +364,35 @@ export const useAppStore = create<AppState>((set, get) => ({
       await updateDocumentInFirebase(updatedDoc);
       // Then update local state
       set(state => ({ documents: state.documents.map(d => d.id === updatedDoc.id ? updatedDoc : d) }));
+      // Trigger workflow engine for document updates
+      workflowEngine.evaluate('document', 'updated', updatedDoc as unknown as Record<string, unknown>).catch(() => { });
+      // Activity logging
+      const currentUser = useUserStore.getState().currentUser;
+      if (currentUser) ActivityLogger.documentUpdated(currentUser.id, currentUser.name, doc.name?.en || 'Unknown');
     } catch (error) {
-      logger.error('Failed to update document', error);
       throw error;
     }
   },
   deleteDocument: async (docId: string) => {
     try {
+      const docToDelete = get().documents.find(d => d.id === docId);
+
+      // ── RBAC Guard: client permission check + Firestore doc verification ──
+      const { permissionService, Action, Resource, PermissionError } = await import('@/services/permissionService');
+      const verifiedUser = await permissionService.guard(Action.Delete, Resource.Document);
+
+      console.info('[DeleteDocument] RBAC passed:', {
+        userId: verifiedUser.id,
+        role: verifiedUser.role,
+        docToDeleteId: docId,
+      });
+
       // Delete from Firebase first
       await deleteDocumentFromFirebase(docId);
       // Then update local state
       set(state => ({ documents: state.documents.filter(d => d.id !== docId) }));
+      // Activity logging
+      if (verifiedUser && docToDelete) ActivityLogger.documentDeleted(verifiedUser.id, verifiedUser.name, docToDelete.name?.en || 'Unknown');
     } catch (error) {
       logger.error('Failed to delete document', error);
       throw error;
@@ -375,11 +400,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   approveDocument: async (docId: string) => {
     try {
+      // RBAC Guard: verify approve permission + Firestore doc readiness
+      const verifiedUser = await permissionService.guard(Action.Approve, Resource.Document);
       const doc = get().documents.find(d => d.id === docId);
       if (doc) {
         const now = new Date().toISOString();
-        const currentUser = useUserStore.getState().currentUser;
-        const approverName = currentUser?.name || 'Admin';
+        const approverName = verifiedUser?.name || 'Admin';
 
         const updatedDoc: AppDocument = {
           ...doc,
@@ -391,6 +417,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         await updateDocumentInFirebase(updatedDoc);
         // Then update local state
         set(state => ({ documents: state.documents.map(d => d.id === docId ? updatedDoc : d) }));
+        // Trigger workflow engine for document approval
+        workflowEngine.evaluate('document', 'approved', updatedDoc as unknown as Record<string, unknown>).catch(() => { });
+        // Activity logging
+        if (verifiedUser) ActivityLogger.documentApproved(verifiedUser.id, verifiedUser.name, doc.name?.en || 'Unknown');
       }
     } catch (error) {
       logger.error('Failed to approve document', error);
@@ -446,6 +476,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteProgram: async (programId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Program);
       // Delete from Firebase first
       await deleteAccreditationProgram(programId);
       // Then update local state
@@ -491,6 +522,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteStandard: async (standardId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Standard);
       await deleteStandardFromFirebase(standardId);
       set(state => ({ standards: state.standards.filter(s => s.standardId !== standardId) }));
     } catch (error) {
@@ -520,6 +552,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteDepartment: async (deptId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Department);
       await deleteDepartmentFromFirebase(deptId);
       set(state => ({ departments: state.departments.filter(d => d.id !== deptId) }));
     } catch (error) {
@@ -547,6 +580,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteCompetency: async (compId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Standard);
       await deleteCompetencyFromFirebase(compId);
       set(state => ({ competencies: state.competencies.filter(c => c.id !== compId) }));
     } catch (error) {
@@ -575,6 +609,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteTrainingProgram: async (programId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Training);
       await deleteTrainingProgramFromFirebase(programId);
       set(state => ({ trainingPrograms: state.trainingPrograms.filter(p => p.id !== programId) }));
     } catch (error) {
@@ -669,6 +704,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteRisk: async (riskId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Risk);
       await deleteRiskFromFirebase(riskId);
       set(state => ({ risks: state.risks.filter(r => r.id !== riskId) }));
     } catch (error) {
@@ -685,6 +721,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (user) ActivityLogger.incidentReported(user.id, user.name, reportData.type);
       // Trigger escalation rules for new incident
       escalationService.evaluateIncident(newReport, true).catch(() => { });
+      // Trigger workflow engine for incident creation
+      workflowEngine.evaluate('incident', 'created', newReport as unknown as Record<string, unknown>).catch(() => { });
     } catch (error) {
       handleError(error, 'addIncidentReport');
       throw new AppError('Failed to add incident report', 'OPERATION_FAILED');
@@ -696,6 +734,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       set(state => ({ incidentReports: state.incidentReports.map(r => r.id === report.id ? report : r) }));
       // Re-evaluate escalation rules on update (e.g. severity change)
       escalationService.evaluateIncident(report, false).catch(() => { });
+      // Trigger workflow engine for incident updates
+      workflowEngine.evaluate('incident', 'updated', report as unknown as Record<string, unknown>).catch(() => { });
     } catch (error) {
       handleError(error, 'updateIncidentReport');
       throw new AppError('Failed to update incident report', 'OPERATION_FAILED');
@@ -703,6 +743,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteIncidentReport: async (reportId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Risk);
       await deleteIncidentReportFromFirebase(reportId);
       set(state => ({ incidentReports: state.incidentReports.filter(r => r.id !== reportId) }));
     } catch (error) {
@@ -731,6 +772,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteAuditPlan: async (planId: string) => {
     try {
+      await permissionService.guard(Action.Delete, Resource.Audit);
       await deleteAuditPlanFromFirebase(planId);
       set(state => ({ auditPlans: state.auditPlans.filter(p => p.id !== planId) }));
     } catch (error) {
@@ -765,6 +807,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
   deleteCustomEvent: async (eventId: string) => {
     try {
+      await permissionService.ensureFirestoreReady();
       await deleteCustomEventFromFirebase(eventId);
       set(state => ({ customEvents: state.customEvents.filter(e => e.id !== eventId) }));
     } catch (error) {

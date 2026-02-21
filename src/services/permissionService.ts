@@ -1,23 +1,34 @@
 /**
  * Centralized Permission Service
  * 
- * Replaces scattered isAdmin checks with a unified permission model.
- * Provides role-based access control (RBAC) with action-resource granularity.
+ * THE single source of truth for all RBAC decisions in AccreditEx.
+ * Every permission check — UI visibility, store actions, Firestore operations —
+ * MUST go through this service. No more scattered `=== 'Admin'` checks.
+ * 
+ * Architecture:
+ *   1. Client-side gate:  permissionService.can(user, Action, Resource)
+ *   2. Server-side guard: permissionService.ensureFirestoreReady() — verifies
+ *      the user doc exists at users/{auth.uid} so Firestore rules can resolve.
+ *   3. Firestore rules:   getUserRole() reads users/{auth.uid}.data.role
  * 
  * Usage:
  *   import { permissionService, Action, Resource } from '@/services/permissionService';
  *   
- *   // Check permission
+ *   // Check permission (client-side, synchronous)
  *   permissionService.can(user, Action.Create, Resource.Project)
- *   permissionService.can(user, Action.Delete, Resource.User)
+ *   permissionService.can(user, Action.Delete, Resource.Document)
+ *   
+ *   // Guard before Firestore write (async, throws on failure)
+ *   await permissionService.ensureFirestoreReady(Action.Delete, Resource.Document);
  *   
  *   // Check role
  *   permissionService.isAdmin(user)
- *   permissionService.isViewer(user)
- *   permissionService.canModify(user) // any role except Viewer
+ *   permissionService.canModify(user)
  */
 
-import { UserRole } from '@/types';
+import { UserRole, User } from '@/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 
 // ── Actions ────────────────────────────────────────────────
 
@@ -197,6 +208,176 @@ class PermissionService {
             default:
                 return 'Unknown role';
         }
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // SERVER-SIDE GUARD: ensures Firestore can resolve user role
+    // ═══════════════════════════════════════════════════════════
+
+    /**
+     * Throws if the client-side user lacks the required permission.
+     * Call this as a fast-fail before any Firestore write.
+     */
+    requirePermission(user: UserLike | null | undefined, action: Action, resource: Resource): void {
+        if (!user) {
+            throw new PermissionError('Not authenticated. Please log in.', 'NOT_AUTHENTICATED');
+        }
+        if (user.isActive === false) {
+            throw new PermissionError('Your account is deactivated.', 'ACCOUNT_INACTIVE');
+        }
+        if (!this.can(user, action, resource)) {
+            throw new PermissionError(
+                `Your role (${user.role}) does not have ${action} permission on ${resource}.`,
+                'INSUFFICIENT_ROLE',
+                { role: user.role, action, resource }
+            );
+        }
+    }
+
+    /**
+     * Ensures the current Firebase Auth user has a Firestore document at
+     * `users/{auth.uid}` with a valid role. If the doc is missing, attempts
+     * to create it from the app-state user (auto-migration).
+     * 
+     * MUST be called before any Firestore write that requires role-based
+     * security rules (delete, admin-only creates, etc.).
+     * 
+     * @returns The verified User with confirmed Firestore doc at users/{auth.uid}
+     * @throws PermissionError with actionable message if verification fails
+     */
+    async ensureFirestoreReady(): Promise<User> {
+        // 1. Check Firebase Auth
+        const auth = getAuthInstance();
+        const firebaseUser = auth.currentUser;
+        if (!firebaseUser) {
+            throw new PermissionError(
+                'Not signed in to Firebase. Please log out and log in again.',
+                'NOT_AUTHENTICATED'
+            );
+        }
+
+        // 2. Dynamically import to avoid circular dependencies
+        const { useUserStore } = await import('@/stores/useUserStore');
+        const appUser = useUserStore.getState().currentUser;
+        if (!appUser) {
+            throw new PermissionError(
+                'User session not found. Please refresh the page.',
+                'NO_SESSION'
+            );
+        }
+
+        const authUid = firebaseUser.uid;
+
+        // 3. Check if user doc exists at users/{auth.uid}
+        const uidDocRef = doc(db, 'users', authUid);
+        const uidDocSnap = await getDoc(uidDocRef);
+
+        if (uidDocSnap.exists()) {
+            const docData = uidDocSnap.data();
+            console.info('[RBAC Guard] User doc verified at users/' + authUid, {
+                role: docData.role,
+                email: docData.email,
+            });
+
+            // Sync store if ID mismatch (e.g., migration completed but store stale)
+            if (appUser.id !== authUid) {
+                const syncedUser = { ...docData, id: authUid } as User;
+                useUserStore.getState().setCurrentUser(syncedUser);
+                return syncedUser;
+            }
+            return appUser;
+        }
+
+        // 4. Doc missing — attempt auto-creation (self-repair)
+        console.warn('[RBAC Guard] No user doc at users/' + authUid + '. Attempting auto-repair...');
+
+        // 4a. If store user has a different ID, try migrating the legacy doc
+        if (appUser.id !== authUid) {
+            console.info('[RBAC Guard] Migrating legacy doc', appUser.id, '→', authUid);
+            const { migrateUserDocToAuthUid } = await import('@/services/secureUserService');
+            try {
+                await migrateUserDocToAuthUid(appUser.id, authUid);
+                // Verify migration succeeded
+                const verifySnap = await getDoc(uidDocRef);
+                if (verifySnap.exists()) {
+                    const migratedUser = { ...verifySnap.data(), id: authUid } as User;
+                    useUserStore.getState().setCurrentUser(migratedUser);
+                    console.info('[RBAC Guard] Migration successful');
+                    return migratedUser;
+                }
+            } catch (migError) {
+                console.error('[RBAC Guard] Migration failed:', migError);
+            }
+        }
+
+        // 4b. Last resort — create user doc from app state (self-heal)
+        try {
+            const { setDoc } = await import('firebase/firestore');
+            const newDocData = {
+                ...appUser,
+                id: authUid,
+                email: appUser.email || firebaseUser.email,
+                _autoRepaired: true,
+                _repairedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+            await setDoc(uidDocRef, newDocData);
+
+            // Verify
+            const finalSnap = await getDoc(uidDocRef);
+            if (finalSnap.exists()) {
+                const repairedUser = { ...finalSnap.data(), id: authUid } as User;
+                useUserStore.getState().setCurrentUser(repairedUser);
+                console.info('[RBAC Guard] Auto-repair successful — created users/' + authUid);
+                return repairedUser;
+            }
+        } catch (repairError) {
+            console.error('[RBAC Guard] Auto-repair failed:', repairError);
+        }
+
+        // 5. All attempts failed — give the user an actionable error
+        throw new PermissionError(
+            'Unable to verify your account permissions. Your user profile could not be found or created in the database. ' +
+            'Please try logging out and logging back in. If the problem persists, contact your administrator.',
+            'FIRESTORE_DOC_MISSING',
+            { authUid, appUserId: appUser.id, appUserRole: appUser.role }
+        );
+    }
+
+    /**
+     * Full pre-flight check: client permission + Firestore doc verification.
+     * Use this before ANY protected Firestore write operation.
+     * 
+     * @returns The verified User object
+     * @throws PermissionError with clear, user-facing message
+     */
+    async guard(action: Action, resource: Resource): Promise<User> {
+        // Dynamic import to avoid circular dependency
+        const { useUserStore } = await import('@/stores/useUserStore');
+        const appUser = useUserStore.getState().currentUser;
+
+        // Client-side permission check (fast fail)
+        this.requirePermission(appUser, action, resource);
+
+        // Server-side doc readiness check
+        return this.ensureFirestoreReady();
+    }
+}
+
+/**
+ * Structured error class for permission failures.
+ * Provides both a user-facing message and a machine-readable code
+ * so the UI can differentiate between "no permission" and "broken account".
+ */
+export class PermissionError extends Error {
+    code: string;
+    details?: Record<string, unknown>;
+
+    constructor(message: string, code: string, details?: Record<string, unknown>) {
+        super(message);
+        this.name = 'PermissionError';
+        this.code = code;
+        this.details = details;
     }
 }
 

@@ -74,7 +74,11 @@ function lines(...parts: string[]): string {
 class AIService {
     private async _ask(prompt: string): Promise<string> {
         const response = await aiAgentService.chat(prompt, true);
-        return response.response || '';
+        const text = response.response || '';
+        if (!text.trim()) {
+            throw new Error('AI returned an empty response');
+        }
+        return text;
     }
 
     private async _askHtml(prompt: string): Promise<string> {
@@ -172,16 +176,29 @@ class AIService {
         const isAr = lang === 'ar';
 
         const prompt = lines(
-            'You are a professional medical document editor. Improve the following document for clarity, professionalism, and completeness while preserving its meaning and structure.',
+            'You are a senior healthcare accreditation documentation specialist. Improve the following document for clarity, professionalism, compliance, and completeness while preserving its meaning.',
             '',
-            'Rules:',
+            'FORMATTING RULES:',
             '- Return ONLY valid HTML content (no markdown, no code fences)',
-            '- Preserve existing HTML structure (headings, lists, tables) and improve them',
-            '- If the input has no HTML structure, add proper HTML formatting with <h2>, <h3>, <p>, <ul>, <ol>, <strong>, <table> tags',
-            '- Use professional healthcare/medical terminology',
-            '- Fix grammar, spelling, and punctuation',
-            '- Improve sentence flow and readability',
+            '- Preserve existing HTML structure (headings, lists, tables) and enhance them',
+            '- If the input has no HTML structure, add proper semantic HTML:',
+            '  • <h2> for main title, <h3> for sections, <h4> for subsections',
+            '  • <p> for paragraphs — never output bare text outside tags',
+            '  • <ul>/<ol> with <li> for lists; <ol> for numbered sequential steps',
+            '  • <table><thead><tbody> for tabular data with <th> headers',
+            '  • <strong> for mandatory terms ("shall", "must") and key emphasis',
+            '  • <em> for defined terms and secondary emphasis',
+            '  • <blockquote> for important notes, warnings, safety alerts',
+            '- Number sections consistently (1.0, 2.0, 2.1, 2.2…)',
+            '',
+            'WRITING STANDARDS:',
+            '- Use "shall" for mandatory requirements, "should" for recommendations, "may" for optional',
+            '- Write in third person, present tense, formal tone',
+            '- Use precise medical/regulatory terminology',
+            '- Ensure clear topic sentence for each paragraph',
+            '- Fix grammar, spelling, punctuation, and parallel construction',
             '- Add proper section headings if missing',
+            '- Cross-reference relevant standards (CBAHI, JCI, ISO) where appropriate',
             '- Write ALL output in ' + langName,
             ...(isAr ? [
                 '- Add dir="rtl" attribute to every block-level HTML element (<h2>, <h3>, <p>, <ul>, <ol>, <table>, <div>)',
@@ -275,17 +292,22 @@ class AIService {
         const summaryHeading = isAr ? '\u0627\u0644\u0645\u0644\u062e\u0635 \u0627\u0644\u062a\u0646\u0641\u064a\u0630\u064a' : 'Executive Summary';
 
         const prompt = lines(
-            'You are a healthcare documentation specialist. Summarize the following document concisely while preserving all critical information.',
+            'You are a senior healthcare documentation specialist. Produce a clear, well-formatted executive summary of the following document.',
             '',
-            'Rules:',
+            'FORMATTING RULES:',
             '- Return ONLY valid HTML content (no markdown, no code fences)',
-            '- Use <h3' + d + '> for "' + summaryHeading + '" heading',
-            '- Use <p' + d + '> for summary paragraphs',
-            '- Use <ul' + d + '>/<li> for key points',
-            '- Use <strong> for emphasis on critical items',
-            '- Keep the summary to 3-5 key points maximum',
-            '- Maintain professional healthcare terminology',
-            '- Write ALL output in ' + langName,
+            '- Begin with <h3' + d + '>"' + summaryHeading + '"</h3>',
+            '- Follow with a 1-2 sentence <p' + d + '> stating the document\'s purpose',
+            '- Then a <h4' + d + '> "Key Points" heading followed by <ul' + d + '> with 3-5 bullet points',
+            '- Use <strong> for mandatory actions, deadlines, and named standards',
+            '- If the document has compliance requirements, add a <h4' + d + '> "Compliance Notes" section listing them',
+            '- Keep total length under 200 words',
+            '',
+            'CONTENT STANDARDS:',
+            '- Capture scope, key requirements, responsible parties, and review/audit obligations',
+            '- Preserve specific numbers, dates, frequencies, and standard references (e.g., CBAHI ESR-XX, JCI IPSG.X)',
+            '- Highlight any mandatory actions or deadlines',
+            '- Use professional healthcare terminology in ' + langName,
             ...(isAr ? [
                 '- Add dir="rtl" attribute to every block-level HTML element',
                 '- Use Modern Standard Arabic (\u0641\u0635\u062d\u0649)',

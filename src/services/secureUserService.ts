@@ -28,7 +28,7 @@ import {
     signOut as firebaseSignOut,
     Auth
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, deleteDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import { User, UserRole } from '@/types';
 import { logger } from '@/services/logger';
@@ -194,6 +194,15 @@ export async function userDocExistsByUid(uid: string): Promise<boolean> {
  * This runs automatically on login (see firebaseHooks.ts) to gradually
  * migrate all existing users without downtime.
  * 
+ * IMPORTANT: Uses two sequential operations instead of a batch because
+ * Firestore evaluates security rules against the CURRENT DB state.
+ * In a batch, the DELETE rule checks isAdmin() → getUserRole() → reads
+ * users/{auth.uid}, but that doc hasn't been created yet (the batch
+ * hasn't committed), so isAdmin() returns false and the entire batch
+ * is rejected. Sequential ops solve this: after the CREATE succeeds,
+ * the user doc exists at users/{authUid}, so isAdmin() can resolve
+ * for the subsequent DELETE.
+ * 
  * @param legacyDocId - The old document ID (e.g. "user-5", "user-1708123456789")
  * @param authUid - The correct Firebase Auth UID
  * @returns true if migration was performed, false if not needed
@@ -227,22 +236,48 @@ export async function migrateUserDocToAuthUid(
 
     const userData = legacyDoc.data();
 
-    // Atomic batch: create new doc + delete old doc
-    const batch = writeBatch(db);
+    // STEP 1: Create new document with Auth UID as ID
+    // Allowed by Firestore rule: allow create: if isAdmin() || isOwner(userId)
+    // isOwner(userId) is true because userId === authUid === request.auth.uid
+    console.info(`[Migration] STEP 1: Creating doc at users/${authUid} with role="${userData.role}"`);
+    try {
+        await setDoc(correctDocRef, {
+            ...userData,
+            id: authUid,
+            _migratedFrom: legacyDocId,
+            _migratedAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
+        console.info(`[Migration] ✅ STEP 1 succeeded — created users/${authUid}`);
+    } catch (createError) {
+        console.error(`[Migration] ❌ STEP 1 FAILED — could not create users/${authUid}:`, createError);
+        throw createError;
+    }
 
-    // Create new document with Auth UID as ID
-    batch.set(correctDocRef, {
-        ...userData,
-        id: authUid,
-        _migratedFrom: legacyDocId,
-        _migratedAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-    });
+    logger.info(
+        `[Migration] Created new user doc at users/${authUid} for ${userData.email}`
+    );
 
-    // Delete legacy document
-    batch.delete(legacyDocRef);
-
-    await batch.commit();
+    // STEP 2: Delete legacy document
+    // Now allowed because: the new doc at users/{authUid} exists,
+    // so getUserRole() finds it → isAdmin() resolves correctly.
+    // For non-admin users, the updated Firestore rules allow
+    // deletion when resource.data.email matches the auth token email.
+    try {
+        await deleteDoc(legacyDocRef);
+        logger.info(
+            `[Migration] Deleted legacy doc users/${legacyDocId}`
+        );
+    } catch (deleteError) {
+        // Legacy doc cleanup failed — not critical since the new doc exists
+        // and will be used for all future auth lookups. The orphaned legacy
+        // doc can be cleaned up manually or by a future maintenance task.
+        logger.warn(
+            `[Migration] New doc created at users/${authUid} but failed to delete ` +
+            `legacy doc users/${legacyDocId}. Orphaned doc can be cleaned up later.`,
+            deleteError
+        );
+    }
 
     logger.info(
         `[Migration] Successfully migrated user doc from users/${legacyDocId} to users/${authUid} ` +
@@ -250,4 +285,113 @@ export async function migrateUserDocToAuthUid(
     );
 
     return true;
+}
+
+/**
+ * Ensures the current user's Firestore document is aligned with their Firebase Auth UID.
+ * 
+ * Call this before critical admin operations (delete, approve, etc.) to guarantee
+ * Firestore security rules can resolve the user's role. If the user is still on a
+ * legacy doc ID, this triggers migration and returns the updated user object.
+ * 
+ * @returns The current user (possibly updated with new UID-based ID), or null if not logged in
+ */
+export async function ensureUserMigrated(): Promise<User | null> {
+    const auth = getAuthInstance();
+    const firebaseUser = auth.currentUser;
+
+    if (!firebaseUser) {
+        console.warn('[Migration Guard] No Firebase auth user — cannot verify migration');
+        return null;
+    }
+
+    // Import dynamically to avoid circular dependency
+    const { useUserStore } = await import('@/stores/useUserStore');
+    const currentUser = useUserStore.getState().currentUser;
+
+    if (!currentUser) {
+        console.warn('[Migration Guard] No current user in store');
+        return null;
+    }
+
+    console.info('[Migration Guard] Checking alignment:', {
+        appUserId: currentUser.id,
+        authUid: firebaseUser.uid,
+        appUserRole: currentUser.role,
+        email: currentUser.email,
+        idsMatch: currentUser.id === firebaseUser.uid,
+    });
+
+    // Even when IDs match, verify the doc actually exists in Firestore at the UID path
+    // (it might have been deleted, or the app ID might look correct but doesn't exist)
+    const uidDocRef = doc(db, 'users', firebaseUser.uid);
+    const uidDocSnap = await getDoc(uidDocRef);
+
+    if (uidDocSnap.exists()) {
+        const docData = uidDocSnap.data();
+        console.info('[Migration Guard] ✅ User doc found at users/' + firebaseUser.uid, {
+            role: docData.role,
+            email: docData.email,
+        });
+
+        // If IDs match and doc exists, update store and return
+        if (currentUser.id === firebaseUser.uid) {
+            return currentUser;
+        }
+
+        // IDs don't match but doc exists at correct path — just update the store
+        const updatedUser = { ...docData, id: uidDocSnap.id } as User;
+        useUserStore.getState().setCurrentUser(updatedUser);
+        console.info('[Migration Guard] Updated store user ID to', firebaseUser.uid);
+        return updatedUser;
+    }
+
+    // Doc doesn't exist at users/{authUid} — need to create/migrate it
+    console.warn('[Migration Guard] ❌ No user doc at users/' + firebaseUser.uid + ' — attempting migration');
+
+    // If app user ID differs from auth UID, try migrating the legacy doc
+    if (currentUser.id !== firebaseUser.uid) {
+        try {
+            console.info('[Migration Guard] Migrating from', currentUser.id, 'to', firebaseUser.uid);
+            const migrated = await migrateUserDocToAuthUid(currentUser.id, firebaseUser.uid);
+
+            if (migrated) {
+                const migratedDocSnap = await getDoc(uidDocRef);
+                if (migratedDocSnap.exists()) {
+                    const migratedUser = { ...migratedDocSnap.data(), id: migratedDocSnap.id } as User;
+                    useUserStore.getState().setCurrentUser(migratedUser);
+                    console.info('[Migration Guard] ✅ Migration complete. User ID updated to', firebaseUser.uid);
+                    return migratedUser;
+                }
+            }
+        } catch (migrationError) {
+            console.error('[Migration Guard] Migration failed:', migrationError);
+        }
+    }
+
+    // Last resort: Try to create the doc directly from the current user data
+    // This handles the case where the legacy doc doesn't exist either
+    // (e.g., it was already deleted but new doc creation failed)
+    try {
+        console.info('[Migration Guard] Last resort: creating user doc at users/' + firebaseUser.uid);
+        await setDoc(uidDocRef, {
+            ...currentUser,
+            id: firebaseUser.uid,
+            _createdByMigrationGuard: true,
+            _createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        });
+        const newDocSnap = await getDoc(uidDocRef);
+        if (newDocSnap.exists()) {
+            const newUser = { ...newDocSnap.data(), id: newDocSnap.id } as User;
+            useUserStore.getState().setCurrentUser(newUser);
+            console.info('[Migration Guard] ✅ Created user doc at users/' + firebaseUser.uid);
+            return newUser;
+        }
+    } catch (createError) {
+        console.error('[Migration Guard] Failed to create user doc:', createError);
+    }
+
+    console.error('[Migration Guard] ❗ All migration attempts failed. Server-side role checks will fail.');
+    return currentUser;
 }

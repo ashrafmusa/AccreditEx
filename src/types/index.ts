@@ -4,7 +4,7 @@ export type Theme = 'light' | 'dark';
 
 export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration';
 
-export type NavigationView = 'dashboard' | 'analyticsHub' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations';
+export type NavigationView = 'dashboard' | 'analyticsHub' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder';
 
 // ── Knowledge Base Types ──────────────────────────────────
 
@@ -50,6 +50,7 @@ export interface NavigationState {
   surveyId?: string;
   certificateId?: string;
   programId?: string;
+  documentId?: string;
   filter?: string;
 }
 

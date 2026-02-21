@@ -133,6 +133,18 @@ export const ActivityLogger = {
             ar: `وافق على مستند "${docName}"`,
         }, { type: 'document' }),
 
+    documentUpdated: (userId: string, userName: string, docName: string) =>
+        logActivity(userId, userName, {
+            en: `Updated document "${docName}"`,
+            ar: `حدّث مستند "${docName}"`,
+        }, { type: 'document' }),
+
+    documentDeleted: (userId: string, userName: string, docName: string) =>
+        logActivity(userId, userName, {
+            en: `Deleted document "${docName}"`,
+            ar: `حذف مستند "${docName}"`,
+        }, { type: 'document' }),
+
     incidentReported: (userId: string, userName: string, incidentType: string) =>
         logActivity(userId, userName, {
             en: `Reported ${incidentType} incident`,

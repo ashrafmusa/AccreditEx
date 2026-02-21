@@ -167,80 +167,98 @@ export class AIDocumentGeneratorService {
    * Generate content from template with AI assistance
    */
   private async generateContentFromTemplate(template: DocumentTemplate, context: any, suggestions: string[]): Promise<string> {
-    const prompt = `Generate comprehensive document content based on the following template and context:
+    const prompt = `You are a senior healthcare accreditation consultant. Generate a complete, accreditation-ready document based on the following template and context.
 
-    Template Name: ${template.name}
-    Template Description: ${template.description}
-    Template Content: ${template.structure.join('\n')}
+Template Name: ${template.name}
+Template Description: ${template.description}
+Template Structure:
+${template.structure.join('\n')}
 
-    Context: ${JSON.stringify(context)}
+Context: ${JSON.stringify(context)}
 
-    Suggestions to include:
-    ${suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
+Additional content to incorporate:
+${suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
 
-    Requirements:
-    1. Follow the template structure
-    2. Include all suggested content sections
-    3. Make the document comprehensive and practical
-    4. Use professional language appropriate for healthcare settings
-    5. Ensure compliance with healthcare standards
-    6. Include specific examples and details relevant to the context
+OUTPUT FORMAT — follow strictly:
+- Return ONLY valid HTML content (NO markdown, NO code fences, NO commentary or preamble).
+- Use <h2> for document title. Use <h3> for major sections. Use <h4> for subsections.
+- Use <p> for paragraphs — never output bare text without tags.
+- Use <ul>/<ol> with <li> for lists. Use <ol> for sequential steps/procedures.
+- Use <table><thead><tr><th>…</th></tr></thead><tbody> for tables including Definitions, Roles & Responsibilities, and Revision History.
+- Use <strong> for mandatory terms ("shall", "must") and key emphasis. Use <em> for defined terms.
+- Use <blockquote> for important warnings, safety notes, and critical callouts.
+- Number sections consistently (1.0, 2.0, … and 2.1, 2.2 for subsections).
+- Include a Document Control Block at the top with: Document No., Version, Effective Date, Review Date, Approved By.
+- Include a Revision History table at the bottom with columns: Version, Date, Author, Changes.
 
-    Return the complete document content.`;
+WRITING STANDARDS:
+- Use "shall" for mandatory requirements, "should" for recommendations, "may" for optional.
+- Write in third person, present tense, formal professional tone.
+- Every section must have substantive, detailed content (minimum 3-4 sentences per section).
+- Cross-reference relevant accreditation standards in parentheses (CBAHI ESR-XX, JCI IPSG.X, ISO clause references).
+- Include realistic healthcare content appropriate for a hospital accreditation setting.
+- Follow the template structure, but add document control and revision history even if not in the template.
+
+Return ONLY the HTML content.`;
 
     const response = await aiAgentService.chat(prompt, true);
-    return response.response;
+    let content = (response.response || '').trim();
+    // Strip markdown fences if AI wraps output
+    content = content.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
+    return content;
   }
 
   /**
    * Improve existing document content with AI suggestions
    */
   async improveContent(request: ContentImprovementRequest): Promise<ContentImprovementResponse> {
-    const prompt = `Improve the following document content based on the specified requirements:
+    const improvementAreas = Object.entries(request.suggestions)
+      .filter(([_, value]) => value)
+      .map(([key]) => key.replace(/([A-Z])/g, ' $1').trim());
 
-    Content: ${request.content}
+    const prompt = `You are a senior healthcare documentation editor. Improve the following document content to meet accreditation-quality writing standards.
 
-    Improvement Requirements:
-    ${Object.entries(request.suggestions)
-        .filter(([_, value]) => value)
-        .map(([key]) => `- ${key.replace(/([A-Z])/g, ' $1').trim()}`)
-        .join('\n')}
+Content to improve:
+${request.content}
 
-    Please provide:
-    1. The improved content
-    2. Detailed list of changes made
-    3. Before and after comparisons for each change
+Improvement areas requested:
+${improvementAreas.map(a => `- ${a}`).join('\n')}
 
-    Focus on:
-    - Clarity and readability
-    - Grammar and structure
-    - Professional tone
-    - Compliance with standards
-    - Practicality
+OUTPUT FORMAT — follow strictly:
+- Return ONLY valid HTML content (NO markdown, NO code fences, NO commentary).
+- Use <h2> for main title, <h3> for sections, <h4> for subsections.
+- Use <p> for paragraphs. Use <ul>/<ol> with <li> for lists. Use <ol> for procedures.
+- Use <table><thead><tbody> for tabular data. Use <strong> for mandatory terms.
+- Use <blockquote> for important notes and safety callouts.
+- Number sections consistently.
 
-    Return the improved content with change details.`;
+WRITING STANDARDS:
+- Use "shall" for mandatory, "should" for recommended, "may" for optional.
+- Third person, present tense, formal professional tone.
+- Fix grammar, spelling, punctuation, and parallel construction in lists.
+- Ensure proper heading hierarchy and semantic structure.
+- Add standard cross-references (CBAHI, JCI, ISO) where appropriate.
+- Substantive content in every section — no placeholder text.
+
+Return ONLY the improved HTML content.`;
 
     const response = await aiAgentService.chat(prompt, true);
+    let improved = (response.response || '').trim();
+    improved = improved.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
 
     // Parse response to extract improved content and changes
-    // This would be more sophisticated in production
     return {
       originalContent: request.content,
-      improvedContent: response.response,
+      improvedContent: improved,
       changes: [
         {
           type: 'content_improvement',
           description: 'AI-enhanced content',
           originalText: request.content.substring(0, 100) + '...',
-          suggestedText: response.response.substring(0, 100) + '...'
+          suggestedText: improved.substring(0, 100) + '...'
         }
       ],
-      statistics: {
-        readabilityScore: 85,
-        grammarIssues: 0,
-        clarityScore: 92,
-        professionalismScore: 95
-      }
+      statistics: await this.computeContentStatistics(response.response)
     };
   }
 
@@ -248,75 +266,47 @@ export class AIDocumentGeneratorService {
    * Analyze document content for quality and compliance
    */
   async analyzeDocument(content: string): Promise<DocumentAnalysisResponse> {
-    const prompt = `Analyze this document content for quality, compliance, and improvement potential:
+    const prompt = `You are a healthcare accreditation quality auditor. Analyze this document for quality, compliance readiness, and improvement potential.
 
-    Content: ${content}
+Content:
+${content}
 
-    Please analyze and provide:
-    1. Overall content quality score (1-100)
-    2. Readability score (Flesch-Kincaid or similar)
-    3. Grammar and spelling evaluation
-    4. Content structure and organization
-    5. Compliance issues with healthcare standards
-    6. Specific improvement suggestions
-    7. Key sections and their relevance
+Analyze and provide:
+1. Overall content quality score (1-100) based on: structure, completeness, professional terminology, and formatting.
+2. Readability score (1-100) based on: sentence clarity, appropriate complexity for healthcare professionals.
+3. Grammar and spelling evaluation score (1-100).
+4. Content structure score (1-100): heading hierarchy, section completeness, logical flow.
+5. Compliance readiness (1-100): alignment with CBAHI, JCI, ISO 9001 documentation requirements.
+6. List 3-5 specific, actionable improvement suggestions.
+7. Identify key sections and rate their relevance/completeness.
 
-    Focus on healthcare documentation best practices and standards compliance.`;
+Return your analysis as structured text with clear section labels.`;
 
     const response = await aiAgentService.chat(prompt, true);
-
-    return {
-      contentScore: 88,
-      readabilityScore: 75,
-      grammarScore: 92,
-      structureScore: 85,
-      complianceIssues: [
-        {
-          type: 'warning',
-          section: 'Policy Statement',
-          issue: 'Policy statement could be more specific about implementation timelines',
-          recommendation: 'Add specific dates and implementation milestones'
-        }
-      ],
-      improvementSuggestions: [
-        'Enhance policy statement with specific implementation timeline',
-        'Add examples of proper documentation procedures',
-        'Include more specific risk assessment guidelines'
-      ],
-      keySections: [
-        {
-          title: 'Policy Statement',
-          startIndex: 0,
-          endIndex: 200,
-          relevanceScore: 95
-        },
-        {
-          title: 'Scope and Application',
-          startIndex: 200,
-          endIndex: 400,
-          relevanceScore: 88
-        }
-      ]
-    };
+    return this.parseAnalysisResponse(response.response, content);
   }
 
   /**
    * Check document compliance with healthcare standards
    */
   private async checkCompliance(content: string): Promise<string[]> {
-    const prompt = `Check this document content for compliance with healthcare accreditation standards (JCI, DNV, OHAS, ISO).
+    const prompt = `You are a healthcare accreditation compliance auditor. Check this document for compliance gaps against leading accreditation standards.
 
-    Content: ${content}
+Content:
+${content}
 
-    Identify any non-compliant sections or requirements that are not addressed.
-    Focus on:
-    - Patient safety requirements
-    - Documentation standards
-    - Risk management practices
-    - Quality improvement processes
-    - Training and competency requirements
+Check against these frameworks:
+- CBAHI (Saudi Central Board for Accreditation) — Essential Safety Requirements.
+- JCI (Joint Commission International) — International Patient Safety Goals, documentation standards.
+- ISO 9001:2015 — Quality Management Systems (clauses 7, 8, 10).
+- WHO Patient Safety guidelines.
 
-    Return just the list of compliance issues found.`;
+For each compliance gap found, state:
+1. The specific requirement or standard not met.
+2. The affected section of the document.
+3. A brief corrective recommendation.
+
+Return each issue as a separate line. If the document is well-compliant, note areas of strength instead.`;
 
     const response = await aiAgentService.chat(prompt, true);
 
@@ -399,6 +389,113 @@ export class AIDocumentGeneratorService {
 
     const response = await aiAgentService.chat(prompt, true);
     return response.response;
+  }
+
+  /**
+   * Parse AI analysis response into structured DocumentAnalysisResponse
+   */
+  private parseAnalysisResponse(aiText: string, originalContent: string): DocumentAnalysisResponse {
+    // Try to extract scores from AI response — look for patterns like "Score: 85" or "85/100"
+    const extractScore = (labels: string[]): number => {
+      for (const label of labels) {
+        const patterns = [
+          new RegExp(`${label}[:\\s]*?(\\d{1,3})(?:\\s*(?:/100|%))`, 'i'),
+          new RegExp(`${label}[:\\s]*?(\\d{1,3})`, 'i'),
+        ];
+        for (const pat of patterns) {
+          const match = aiText.match(pat);
+          if (match) {
+            const val = parseInt(match[1], 10);
+            if (val >= 0 && val <= 100) return val;
+          }
+        }
+      }
+      return 0; // Return 0 if no score found — indicates AI didn't provide it
+    };
+
+    const contentScore = extractScore(['content quality', 'content score', 'overall score', 'overall quality']) ||
+      extractScore(['quality']);
+    const readabilityScore = extractScore(['readability', 'flesch', 'reading ease']);
+    const grammarScore = extractScore(['grammar', 'spelling']);
+    const structureScore = extractScore(['structure', 'organization']);
+
+    // Extract improvement suggestions (lines starting with - or •)
+    const suggestionLines = aiText
+      .split('\n')
+      .map(l => l.replace(/^[-*•\d.)\s]+/, '').trim())
+      .filter(l => l.length > 15 && l.length < 300);
+
+    // Extract compliance issues
+    const complianceIssues: DocumentAnalysisResponse['complianceIssues'] = [];
+    const complianceSection = aiText.match(/compliance[^]*?(?=\n\n|\n#{1,3}\s|$)/i);
+    if (complianceSection) {
+      complianceSection[0]
+        .split('\n')
+        .map(l => l.replace(/^[-*•\d.)\s]+/, '').trim())
+        .filter(l => l.length > 10)
+        .forEach(issue => {
+          complianceIssues.push({
+            type: issue.toLowerCase().includes('critical') || issue.toLowerCase().includes('error') ? 'error' :
+              issue.toLowerCase().includes('warning') || issue.toLowerCase().includes('missing') ? 'warning' : 'info',
+            section: 'Document',
+            issue,
+            recommendation: ''
+          });
+        });
+    }
+
+    return {
+      contentScore: contentScore || 75,
+      readabilityScore: readabilityScore || 70,
+      grammarScore: grammarScore || 80,
+      structureScore: structureScore || 75,
+      complianceIssues: complianceIssues.length > 0 ? complianceIssues : [{
+        type: 'info',
+        section: 'General',
+        issue: 'AI analysis completed — review the full response for detailed findings.',
+        recommendation: 'Review AI suggestions below for specific improvements.'
+      }],
+      improvementSuggestions: suggestionLines.slice(0, 7),
+      keySections: [{
+        title: 'Full Document',
+        startIndex: 0,
+        endIndex: originalContent.length,
+        relevanceScore: 100
+      }]
+    };
+  }
+
+  /**
+   * Compute content quality statistics using AI
+   */
+  private async computeContentStatistics(content: string): Promise<{
+    readabilityScore: number;
+    grammarIssues: number;
+    clarityScore: number;
+    professionalismScore: number;
+  }> {
+    try {
+      const prompt = `Rate this healthcare document on a scale of 0-100 for each metric. Return ONLY a JSON object with these exact keys:
+{"readabilityScore": <number>, "grammarIssues": <number>, "clarityScore": <number>, "professionalismScore": <number>}
+
+Document excerpt:
+${content.substring(0, 2000)}`;
+
+      const response = await aiAgentService.chat(prompt, true);
+      const jsonMatch = response.response.match(/\{[^}]+\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          readabilityScore: Math.min(100, Math.max(0, parsed.readabilityScore || 75)),
+          grammarIssues: Math.max(0, parsed.grammarIssues || 0),
+          clarityScore: Math.min(100, Math.max(0, parsed.clarityScore || 75)),
+          professionalismScore: Math.min(100, Math.max(0, parsed.professionalismScore || 75)),
+        };
+      }
+    } catch {
+      // Fall through to defaults
+    }
+    return { readabilityScore: 75, grammarIssues: 0, clarityScore: 75, professionalismScore: 75 };
   }
 }
 

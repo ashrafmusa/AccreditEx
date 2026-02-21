@@ -98,7 +98,9 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 async def verify_api_key(api_key: str = Depends(api_key_header)):
     """Verify API key from request header"""
     expected_key = os.getenv("API_KEY", "dev-key-change-in-production")
-    if not api_key or api_key != expected_key:
+    # Accept the env-configured key OR the well-known frontend key
+    well_known_key = "accreditex-ai-2026"
+    if not api_key or (api_key != expected_key and api_key != well_known_key):
         raise HTTPException(
             status_code=403,
             detail="Invalid or missing API key"

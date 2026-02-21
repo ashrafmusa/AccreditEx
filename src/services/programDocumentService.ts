@@ -1,5 +1,6 @@
 import { collection, doc, updateDoc, arrayUnion, arrayRemove, getDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
+import { cloudinaryService } from '@/services/cloudinaryService';
 import { storageService } from '@/services/storageService';
 import { ProgramDocument, AccreditationProgram } from '@/types';
 import { freeTierMonitor } from '@/services/freeTierMonitor';
@@ -23,7 +24,7 @@ export const uploadProgramDocument = async (
 ): Promise<ProgramDocument> => {
   try {
     // Upload file to storage
-    const fileUrl = await storageService.uploadDocument(
+    const fileUrl = await cloudinaryService.uploadFile(
       file,
       `programs/${programId}`,
       (progress) => {
@@ -83,9 +84,13 @@ export const deleteProgramDocument = async (
       throw new Error('Document not found');
     }
 
-    // Delete file from storage
+    // Delete file from storage (Cloudinary or Firebase Storage)
     try {
-      await storageService.deleteDocument(document.fileUrl);
+      if (document.fileUrl.includes('cloudinary.com')) {
+        console.info('[Cloudinary] File deletion requires backend API — metadata cleanup continues.');
+      } else {
+        await storageService.deleteDocument(document.fileUrl);
+      }
     } catch (storageError) {
       console.warn('Failed to delete file from storage:', storageError);
       // Continue with database cleanup even if storage deletion fails

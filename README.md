@@ -3,8 +3,8 @@
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
 ![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Pages](https://img.shields.io/badge/pages-33-blue)
-![AI Tools](https://img.shields.io/badge/AI%20tools-15%2B-purple)
+![Pages](https://img.shields.io/badge/pages-35-blue)
+![AI Tools](https://img.shields.io/badge/AI%20tools-21%2B-purple)
 ![Deploy](https://img.shields.io/badge/live-accreditex.web.app-green)
 
 AccreditEx is a modern, AI-powered healthcare accreditation management platform designed to support hospitals and clinical laboratories throughout their accreditation journey. Built with a **live Firebase + Firestore backend** and deployed at **https://accreditex.web.app**, it streamlines the management of accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001), ensures traceability of all actions, and maintains compliance across the entire organization — in **English and Arabic** with full RTL support.
@@ -23,7 +23,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 ## Key Features
 
-### Core Platform (33 Pages)
+### Core Platform (35 Pages)
 -   **Role-Based Dashboards**: Admin, Project Lead, Team Member, and Auditor views with real-time compliance KPIs.
 -   **Project Management**: Full accreditation project lifecycle with pre-built templates for 7+ accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001).
 -   **Document Control Hub**: Version-controlled document management with AI-powered document generation, automatic document numbering, and approval workflows.
@@ -56,6 +56,27 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **AI Translation (EN ↔ AR)**: Bidirectional with cultural context.
 -   **AI Executive Briefings**: Data-driven quality insights in JSON format.
 -   **AI Document Summarization, Gap Analysis, Risk Assessment**, and more.
+-   **AI Report Analysis**: Analyzes custom report structure for quality, gaps, and best practices.
+-   **AI Text Generation**: Generates professional narrative content for report text blocks.
+-   **AI Template Recommendations**: Suggests next report type based on existing portfolio.
+-   **AI Workflow Suggestions**: Recommends new automation workflows based on gap analysis.
+-   **AI Execution Log Analysis**: Analyzes workflow execution patterns, failures, and health score.
+-   **AI Generate Action**: Configurable AI content generation as a workflow automation action.
+
+### Workflow Automation (NEW)
+-   **Trigger-Condition-Action Engine**: 10 entity types × 10 event types, 8 condition operators, 11 action types.
+-   **Visual Workflow Builder**: 4-step modal for creating workflows with real-time config.
+-   **Execution Logging**: Per-action status tracking with expandable log detail.
+-   **Template Gallery**: Pre-built workflow templates for common accreditation scenarios.
+-   **AI Integration**: AI-powered workflow suggestions, log analysis, and AI Generate action type.
+
+### Custom Report Builder (NEW)
+-   **Section-Based Designer**: Visual builder with 6 block types (header, text, metric, chart, table, divider).
+-   **13 Data Sources**: Projects, documents, risks, audits, trainings, incidents, and more.
+-   **Live Preview**: Real-time chart/metric rendering with data from Zustand stores.
+-   **Export**: PDF (jsPDF) and CSV export with configurable page orientation and headers.
+-   **Template Gallery**: 5 pre-built report templates (compliance overview, risk assessment, etc.).
+-   **AI Integration**: AI report analysis, AI text generation, AI template recommendations.
 
 ### Platform Capabilities
 -   **Bilingual & RTL Support**: Full English/Arabic with 400+ translation keys, RTL layout, bidirectional text.
@@ -69,7 +90,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 ## Technology Stack
 
 -   **Frontend**: React 19.1.1, TypeScript 5.x, Tailwind CSS v4 (native), Vite 6.x
--   **State Management**: Zustand (7 stores: `useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`)
+-   **State Management**: Zustand (9 stores: `useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`)
 -   **Backend**: Google Firebase
     -   **Authentication**: Firebase Authentication (Email/Password)
     -   **Database**: Google Firestore (real-time)
@@ -84,9 +105,9 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 AccreditEx is built on a clean, scalable, and modular architecture to ensure long-term maintainability.
 
-1.  **Frontend (React Application)**: 33 page components, 50+ feature components, and reusable UI components. The application uses `AppRouter.tsx` with URL-based routing via React Router DOM.
+1.  **Frontend (React Application)**: 35 page components, 50+ feature components, and reusable UI components. The application uses `AppRouter.tsx` with URL-based routing via React Router DOM.
 
-2.  **State Management (Zustand)**: 7 feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`) provide reactive state management decoupled from the UI.
+2.  **State Management (Zustand)**: 9 feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`) provide reactive state management decoupled from the UI.
 
 3.  **Service Layer (67+ services)**: Specialized services for each domain (accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, etc.). The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
 
