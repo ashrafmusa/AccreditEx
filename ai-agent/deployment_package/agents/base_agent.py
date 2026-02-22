@@ -32,8 +32,9 @@ class BaseSpecialistAgent(ABC):
         self.client = groq_client
         self.db = firebase_client.db if firebase_client and hasattr(firebase_client, 'db') else None
         self.model = "llama-3.3-70b-versatile"
+        self.fallback_model = "llama-3.1-8b-instant"
         self.temperature = 0.7
-        self.max_tokens = 2048
+        self.max_tokens = 1536
         
         logger.info(f"🤖 {self.__class__.__name__} initialized")
     
@@ -89,14 +90,28 @@ class BaseSpecialistAgent(ABC):
             
             logger.info(f"💬 {self.get_specialist_name()} processing request")
             
-            # Stream response
-            stream_response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                stream=stream
-            )
+            # Stream response with automatic fallback on 429
+            try:
+                stream_response = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    stream=stream
+                )
+            except Exception as rate_err:
+                err_str = str(rate_err).lower()
+                if '429' in err_str or 'rate_limit' in err_str or 'rate limit' in err_str:
+                    logger.warning(f"⚠️ Rate limited on {self.model}, falling back to {self.fallback_model}")
+                    stream_response = await self.client.chat.completions.create(
+                        model=self.fallback_model,
+                        messages=messages,
+                        temperature=self.temperature,
+                        max_tokens=self.max_tokens,
+                        stream=stream
+                    )
+                else:
+                    raise
             
             if stream:
                 async for chunk in stream_response:
@@ -137,14 +152,28 @@ class BaseSpecialistAgent(ABC):
             
             logger.info(f"📋 {self.get_specialist_name()} processing structured request")
             
-            # Get response (non-streaming for structured output)
-            response = await self.client.chat.completions.create(
-                model=self.model,
-                messages=messages,
-                temperature=self.temperature,
-                max_tokens=self.max_tokens,
-                stream=False
-            )
+            # Get response (non-streaming for structured output) with fallback
+            try:
+                response = await self.client.chat.completions.create(
+                    model=self.model,
+                    messages=messages,
+                    temperature=self.temperature,
+                    max_tokens=self.max_tokens,
+                    stream=False
+                )
+            except Exception as rate_err:
+                err_str = str(rate_err).lower()
+                if '429' in err_str or 'rate_limit' in err_str or 'rate limit' in err_str:
+                    logger.warning(f"⚠️ Rate limited on {self.model}, falling back to {self.fallback_model}")
+                    response = await self.client.chat.completions.create(
+                        model=self.fallback_model,
+                        messages=messages,
+                        temperature=self.temperature,
+                        max_tokens=self.max_tokens,
+                        stream=False
+                    )
+                else:
+                    raise
             
             content = response.choices[0].message.content
             

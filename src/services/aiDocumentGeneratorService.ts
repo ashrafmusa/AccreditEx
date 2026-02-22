@@ -152,7 +152,7 @@ export class AIDocumentGeneratorService {
 
     Return just the list of suggestions.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
 
     // Parse suggestions from response
     const suggestions = response.response
@@ -201,7 +201,7 @@ WRITING STANDARDS:
 
 Return ONLY the HTML content.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
     let content = (response.response || '').trim();
     // Strip markdown fences if AI wraps output
     content = content.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
@@ -242,7 +242,7 @@ WRITING STANDARDS:
 
 Return ONLY the improved HTML content.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
     let improved = (response.response || '').trim();
     improved = improved.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
 
@@ -282,7 +282,7 @@ Analyze and provide:
 
 Return your analysis as structured text with clear section labels.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
     return this.parseAnalysisResponse(response.response, content);
   }
 
@@ -308,7 +308,7 @@ For each compliance gap found, state:
 
 Return each issue as a separate line. If the document is well-compliant, note areas of strength instead.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
 
     const complianceIssues = response.response
       .split(/\n+/)
@@ -333,7 +333,7 @@ Return each issue as a separate line. If the document is well-compliant, note ar
     
     Return 5-7 key content suggestions.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
 
     return response.response
       .split(/\n+/)
@@ -363,7 +363,7 @@ Return each issue as a separate line. If the document is well-compliant, note ar
     
     Return a detailed outline with section descriptions.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
 
     return response.response
       .split(/\n+/)
@@ -387,7 +387,7 @@ Return each issue as a separate line. If the document is well-compliant, note ar
     
     Focus on what stakeholders need to know at a glance.`;
 
-    const response = await aiAgentService.chat(prompt, true);
+    const response = await aiAgentService.chat(prompt, false);
     return response.response;
   }
 
@@ -481,7 +481,7 @@ Return each issue as a separate line. If the document is well-compliant, note ar
 Document excerpt:
 ${content.substring(0, 2000)}`;
 
-      const response = await aiAgentService.chat(prompt, true);
+      const response = await aiAgentService.chat(prompt, false);
       const jsonMatch = response.response.match(/\{[^}]+\}/);
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);

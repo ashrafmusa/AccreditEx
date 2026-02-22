@@ -2,6 +2,7 @@ import os
 import json
 import asyncio
 import time
+import hashlib
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
 import logging
@@ -79,10 +80,15 @@ class UnifiedAccreditexAgent:
         else:
             logger.warning("⚠️ Firebase database not initialized!")
         
-        # Model configuration
+        # Model configuration — primary + fallback for rate limits
         self.model = "llama-3.3-70b-versatile"
+        self.fallback_model = "llama-3.1-8b-instant"
         self.temperature = 0.7
         self.max_tokens = 4096
+        
+        # Response cache — avoids hitting the API for identical prompts
+        self._response_cache: Dict[str, Dict[str, Any]] = {}
+        self._cache_ttl = 600  # 10 minutes
         
         # Initialize context manager (3-tier system)
         try:
@@ -154,7 +160,50 @@ class UnifiedAccreditexAgent:
 
     async def initialize(self):
         """Initialize the agent - mostly a placeholder now as client is init in __init__"""
-        logger.info(f"✅ Agent initialized using model: {self.model}")
+        logger.info(f"✅ Agent initialized using model: {self.model} (fallback: {self.fallback_model})")
+
+    # ── Response cache helpers ───────────────────────────────────────
+    def _cache_key(self, text: str) -> str:
+        return hashlib.sha256(text.encode()).hexdigest()
+
+    def _cache_get(self, key: str) -> Optional[str]:
+        entry = self._response_cache.get(key)
+        if entry and time.time() < entry['expires']:
+            logger.info("✅ Cache HIT — returning cached response (0 tokens used)")
+            return entry['value']
+        if entry:
+            del self._response_cache[key]
+        return None
+
+    def _cache_set(self, key: str, value: str):
+        self._response_cache[key] = {
+            'value': value,
+            'expires': time.time() + self._cache_ttl
+        }
+        # Evict old entries (keep max 200)
+        if len(self._response_cache) > 200:
+            oldest = min(self._response_cache, key=lambda k: self._response_cache[k]['expires'])
+            del self._response_cache[oldest]
+
+    # ── Rate-limit-aware API call ────────────────────────────────────
+    async def _create_completion(self, messages, stream=True, max_tokens=None, temperature=None):
+        """Call Groq with automatic fallback to lighter model on 429."""
+        kwargs = {
+            'model': self.model,
+            'messages': messages,
+            'stream': stream,
+            'temperature': temperature or self.temperature,
+            'max_tokens': max_tokens or 1024,
+        }
+        try:
+            return await self.client.chat.completions.create(**kwargs)
+        except Exception as e:
+            error_str = str(e)
+            if '429' in error_str or 'rate_limit' in error_str.lower():
+                logger.warning(f"⚠️ Rate-limited on {self.model}, falling back to {self.fallback_model}")
+                kwargs['model'] = self.fallback_model
+                return await self.client.chat.completions.create(**kwargs)
+            raise
 
     async def _get_organization_context(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Fetch comprehensive organizational data using enhanced Firebase client"""
@@ -529,9 +578,16 @@ Always be specific and actionable, using real data from their workspace.
     async def chat(self, message: str, thread_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
         Chat with the agent using streaming responses (Standard Chat Completions)
-        Now with specialist routing and tiered context management
+        Now with specialist routing, tiered context management, caching, and fallback model.
         """
         try:
+            # ── Check response cache first (saves 100 % of tokens on repeat requests)
+            cache_key = self._cache_key(message)
+            cached = self._cache_get(cache_key)
+            if cached:
+                yield cached
+                return
+
             # Generate thread_id if not provided
             if not thread_id:
                 thread_id = f"thread_{datetime.now().timestamp()}"
@@ -539,43 +595,39 @@ Always be specific and actionable, using real data from their workspace.
             # Detect task type from message (Quick Win 1)
             task_type = self.detect_task_type(message)
             
-            # Auto-detect context tier from message (Quick Win 3)
+            # ── Context loading — SKIP heavy Firebase fetch when frontend
+            #    already omitted context (writing / document commands).
             user_id = context.get('user_id') if context else None
-            context_tier = context.get('context_tier') if context else None
-            
-            if not context_tier:
-                context_tier = self.context_manager.detect_context_tier(message)
-            
-            # Get tiered context (Quick Win 3)
-            if user_id:
+            has_context = bool(context and context.get('current_data'))
+
+            if has_context and user_id:
+                # Interactive chat — load tiered context
+                context_tier = context.get('context_tier') if context else None
+                if not context_tier:
+                    context_tier = self.context_manager.detect_context_tier(message)
                 tiered_context = self.context_manager.get_context(user_id, context_tier)
                 logger.info(f"📦 Using {context_tier} context tier ({len(str(tiered_context))} chars)")
+                org_context = await self._get_organization_context(user_id)
+                enhanced_context = {
+                    **(context or {}),
+                    **tiered_context,
+                    'organization': org_context,
+                    'user_role': tiered_context.get('user_role', org_context.get('user_role', 'Unknown'))
+                }
             else:
-                tiered_context = {}
-                logger.warning("⚠️ No user_id provided, using empty context")
-            
-            # Fetch organization context from Firebase (legacy - now handled by context_manager)
-            org_context = await self._get_organization_context(user_id)
-            
-            # Merge tiered context with organization context
-            enhanced_context = {
-                **(context or {}),
-                **tiered_context,
-                'organization': org_context,
-                'user_role': tiered_context.get('user_role', org_context.get('user_role', 'Unknown'))
-            }
+                # Lightweight request (writing commands) — zero context overhead
+                enhanced_context = context or {}
+                logger.info("⚡ Lightweight request — skipping context fetch")
             
             # Initialize conversation history if new thread
             if thread_id not in self.conversations:
-                # Use specialist prompt based on detected task type
                 self.conversations[thread_id] = [
-                    {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)}
+                    {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context if has_context else None, task_type=task_type)}
                 ]
             else:
-                # Update system prompt with fresh context + specialist routing
                 self.conversations[thread_id][0] = {
                     "role": "system", 
-                    "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)
+                    "content": self._get_base_system_prompt(context=enhanced_context if has_context else None, task_type=task_type)
                 }
 
             # Append user message
@@ -598,10 +650,10 @@ Always be specific and actionable, using real data from their workspace.
                         full_response += chunk
                         yield chunk
 
-                    # Append assistant response to history
                     self.conversations[thread_id].append({"role": "assistant", "content": full_response})
                     latency_ms = (time.perf_counter() - routing_start) * 1000
                     self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
+                    self._cache_set(cache_key, full_response)
                     return
                 except Exception as specialist_error:
                     logger.error(f"Specialist routing failed, falling back to legacy path: {specialist_error}")
@@ -610,18 +662,16 @@ Always be specific and actionable, using real data from their workspace.
                     route_mode = "legacy-fallback"
 
             
-            # Keep history manageable (last 10 messages + system prompt)
-            if len(self.conversations[thread_id]) > 11:
-                # Keep system prompt [0] and last 10
-                self.conversations[thread_id] = [self.conversations[thread_id][0]] + self.conversations[thread_id][-10:]
+            # Keep history manageable (last 6 messages + system prompt — reduced from 10)
+            if len(self.conversations[thread_id]) > 7:
+                self.conversations[thread_id] = [self.conversations[thread_id][0]] + self.conversations[thread_id][-6:]
 
-            # Stream response
-            stream = await self.client.chat.completions.create(
-                model=self.model,
+            # Stream response with automatic fallback on rate limit
+            stream = await self._create_completion(
                 messages=self.conversations[thread_id],
                 stream=True,
+                max_tokens=1024,
                 temperature=0.7,
-                max_tokens=1024
             )
 
             async for chunk in stream:
@@ -630,10 +680,11 @@ Always be specific and actionable, using real data from their workspace.
                     full_response += content
                     yield content
             
-            # Append assistant response to history
+            # Append to history + cache
             self.conversations[thread_id].append({"role": "assistant", "content": full_response})
             latency_ms = (time.perf_counter() - routing_start) * 1000
             self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
+            self._cache_set(cache_key, full_response)
             
         except Exception as e:
             logger.error(f"Chat error: {e}")
