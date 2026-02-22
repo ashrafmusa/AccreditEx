@@ -290,7 +290,17 @@ Be specific and actionable. If the project looks ready, say so clearly.`;
           <ProjectChecklist project={project} onUpdateProject={updateProject} />
         );
       case "documents": {
-        const projectDocs = documents.filter((d) => d.projectId === project.id);
+        // Collect all document IDs linked via checklist evidence + design controls
+        const linkedDocIds = new Set<string>();
+        project.checklist?.forEach((item) =>
+          item.evidenceFiles?.forEach((id) => linkedDocIds.add(id)),
+        );
+        project.designControls?.forEach((dc) =>
+          dc.linkedDocumentIds?.forEach((id) => linkedDocIds.add(id)),
+        );
+        const projectDocs = documents.filter(
+          (d) => d.projectId === project.id || linkedDocIds.has(d.id),
+        );
         return (
           <div className="space-y-4">
             <div className="flex items-center justify-between">
