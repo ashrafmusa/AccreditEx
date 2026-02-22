@@ -544,7 +544,7 @@ WRITING STANDARDS:
 
 Return ONLY the HTML content.`;
 
-      const resp = await aiAgentService.chat(prompt, true);
+      const resp = await aiAgentService.chat(prompt, false);
       let content = (resp.response || "").trim();
       // Strip markdown code fences if AI wraps
       content = content

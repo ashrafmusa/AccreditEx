@@ -322,7 +322,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       toast.success(
         t("documentSavedSuccessfully") || "Document saved successfully",
       );
-      setViewingDoc(null);
+      // Update viewingDoc in-place so the editor stays open with fresh data
+      setViewingDoc(doc);
     } catch (error) {
       const errorMsg =
         error instanceof Error
@@ -332,6 +333,16 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       console.error("Document save failed:", error);
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  /** Lightweight auto-save — no toast, no close */
+  const handleAutoSaveDocument = async (doc: AppDocument) => {
+    try {
+      await onUpdateDocument(doc);
+      setViewingDoc(doc);
+    } catch (error) {
+      console.error("Auto-save failed:", error);
     }
   };
 
@@ -1535,6 +1546,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             onClose={() => setViewingDoc(null)}
             document={viewingDoc}
             onSave={handleSaveDocument}
+            onAutoSave={handleAutoSaveDocument}
             standards={standards}
             allDocuments={documents}
           />

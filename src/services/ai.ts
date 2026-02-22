@@ -73,7 +73,7 @@ function lines(...parts: string[]): string {
 
 class AIService {
     private async _ask(prompt: string): Promise<string> {
-        const response = await aiAgentService.chat(prompt, true);
+        const response = await aiAgentService.chat(prompt, false);
         const text = response.response || '';
         if (!text.trim()) {
             throw new Error('AI returned an empty response');

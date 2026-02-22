@@ -537,7 +537,8 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
       const improved = await aiService.improveWriting(currentContent, lang);
       if (!improved || !improved.trim()) {
         toast.error(
-          t("aiReturnedEmpty") || "AI returned an empty response. Please try again.",
+          t("aiReturnedEmpty") ||
+            "AI returned an empty response. Please try again.",
         );
         throw new Error();
       }

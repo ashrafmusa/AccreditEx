@@ -147,7 +147,7 @@ class AIWritingService {
         const promptPrefix = COMMAND_PROMPTS[params.command] || COMMAND_PROMPTS.improve;
         const prompt = `${promptPrefix}\n\nText:\n${params.text}`;
         try {
-            const response = await aiAgentService.chat(prompt, true);
+            const response = await aiAgentService.chat(prompt, false);
             return this.cleanHtml(response.response || params.text);
         } catch (error) {
             console.error('AI writing processText error:', error);
@@ -173,7 +173,7 @@ Best-practice writing standards:
 - Use numbered sections for procedures and bullet lists for requirements.
 ${HTML_FORMAT_RULES}
 Instruction: ${prompt}`,
-                true
+                false
             );
             return this.cleanHtml(response.response || '');
         } catch (error) {
