@@ -4,11 +4,12 @@ import { freeTierMonitor } from '@/services/freeTierMonitor';
 import { AppDocument } from '@/types';
 import { storageService } from '@/services/storageService';
 import { cloudinaryService } from '@/services/cloudinaryService';
+import { getTenantQuery, getTenantStamp, getTenantCollection } from '@/utils/tenantQuery';
 
 const documentsCollection = collection(db, 'documents');
 
 export const getDocuments = async (): Promise<AppDocument[]> => {
-    const documentSnapshot = await getDocs(documentsCollection);
+    const documentSnapshot = await getDocs(getTenantQuery('documents'));
     freeTierMonitor.recordRead(1);
     return documentSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AppDocument));
 };
@@ -25,7 +26,7 @@ export const addDocument = async (document: Omit<AppDocument, 'id'>): Promise<Ap
             Object.entries(document).filter(([_, value]) => value !== undefined)
         );
 
-        const docRef = await addDoc(documentsCollection, cleanDocument);
+        const docRef = await addDoc(documentsCollection, { ...cleanDocument, ...getTenantStamp() });
         freeTierMonitor.recordWrite(1);
 
         return { id: docRef.id, ...document } as AppDocument;

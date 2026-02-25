@@ -1,6 +1,7 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { PerformanceEvaluation } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'performance_evaluations';
 const evaluationsCollection = collection(db, COLLECTION_NAME);
@@ -11,7 +12,7 @@ const stripUndefined = (obj: Record<string, unknown>): Record<string, unknown> =
 
 export const getPerformanceEvaluations = async (): Promise<PerformanceEvaluation[]> => {
     try {
-        const q = query(evaluationsCollection, orderBy('createdAt', 'desc'));
+        const q = getTenantQuery(COLLECTION_NAME, orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as PerformanceEvaluation));
     } catch (error) {
@@ -22,7 +23,7 @@ export const getPerformanceEvaluations = async (): Promise<PerformanceEvaluation
 
 export const getEmployeeEvaluations = async (employeeId: string): Promise<PerformanceEvaluation[]> => {
     try {
-        const q = query(evaluationsCollection, where('employeeId', '==', employeeId), orderBy('createdAt', 'desc'));
+        const q = getTenantQuery(COLLECTION_NAME, where('employeeId', '==', employeeId), orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as PerformanceEvaluation));
     } catch (error) {
@@ -33,7 +34,7 @@ export const getEmployeeEvaluations = async (employeeId: string): Promise<Perfor
 
 export const addPerformanceEvaluation = async (evaluation: Omit<PerformanceEvaluation, 'id'>): Promise<PerformanceEvaluation> => {
     try {
-        const payload = stripUndefined({ ...evaluation, createdAt: new Date().toISOString() }) as Omit<PerformanceEvaluation, 'id'>;
+        const payload = stripUndefined({ ...evaluation, createdAt: new Date().toISOString(), ...getTenantStamp() }) as Omit<PerformanceEvaluation, 'id'>;
         const docRef = await addDoc(evaluationsCollection, payload);
         return { id: docRef.id, ...payload } as PerformanceEvaluation;
     } catch (error) {

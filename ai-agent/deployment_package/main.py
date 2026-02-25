@@ -18,6 +18,8 @@ import logging
 import time
 from datetime import datetime
 import base64
+import firebase_admin
+from firebase_admin import auth as firebase_auth
 
 # Import the unified agent
 import sys
@@ -42,12 +44,14 @@ logger = logging.getLogger(__name__)
 limiter = Limiter(key_func=get_remote_address)
 
 # Initialize FastAPI app
+# Security: Disable API docs in production (audit finding S-4)
+_is_production = os.getenv("ENVIRONMENT", "production").lower() == "production"
 app = FastAPI(
     title="AccreditEx AI Agent API",
     description="Context-aware AI agent for healthcare accreditation compliance",
     version="2.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url=None if _is_production else "/docs",
+    redoc_url=None if _is_production else "/redoc",
     openapi_tags=[
         {
             "name": "health",
@@ -84,9 +88,7 @@ app.add_middleware(
         "https://accreditex.firebaseapp.com",
         "https://accreditex-79c08.web.app",
         "https://accreditex-79c08.firebaseapp.com",
-        "http://localhost:5173",
-        "http://localhost:3000"
-    ],
+    ] + (["http://localhost:5173", "http://localhost:3000"] if not _is_production else []),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],
@@ -95,17 +97,48 @@ app.add_middleware(
 # API Key Security
 api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
-async def verify_api_key(api_key: str = Depends(api_key_header)):
-    """Verify API key from request header"""
-    expected_key = os.getenv("API_KEY", "dev-key-change-in-production")
-    # Accept the env-configured key OR the well-known frontend key
-    well_known_key = "accreditex-ai-2026"
-    if not api_key or (api_key != expected_key and api_key != well_known_key):
-        raise HTTPException(
-            status_code=403,
-            detail="Invalid or missing API key"
-        )
-    return api_key
+async def verify_api_key(request: Request, api_key: str = Depends(api_key_header)):
+    """Verify authentication via API key OR Firebase ID token.
+    
+    Dual-auth mode (audit fix S-2):
+    1. X-API-Key header → validates against env API_KEY (for backend-to-backend calls)
+    2. Authorization: Bearer <token> → validates Firebase ID token (for frontend calls)
+    
+    Returns a dict with auth info:
+    - api_key auth: {"auth_type": "api_key"}
+    - firebase auth: {"auth_type": "firebase", "uid": str, "organization_id": str|None}
+    """
+    # Path 1: API Key authentication
+    expected_key = os.getenv("API_KEY")
+    if api_key and expected_key and api_key == expected_key:
+        return {"auth_type": "api_key"}
+    
+    # Path 2: Firebase ID Token authentication
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        token = auth_header[7:]
+        try:
+            decoded_token = firebase_auth.verify_id_token(token)
+            return {
+                "auth_type": "firebase",
+                "uid": decoded_token.get("uid"),
+                "email": decoded_token.get("email"),
+                "organization_id": decoded_token.get("organizationId"),
+                "role": decoded_token.get("role"),
+            }
+        except Exception as e:
+            logger.warning(f"Firebase token verification failed: {e}")
+            raise HTTPException(status_code=401, detail="Invalid Firebase token")
+    
+    # Neither auth method succeeded
+    if not expected_key:
+        logger.error("CRITICAL: API_KEY environment variable is not set!")
+        raise HTTPException(status_code=500, detail="Server misconfigured")
+    
+    raise HTTPException(
+        status_code=403,
+        detail="Invalid or missing authentication. Provide X-API-Key or Authorization: Bearer <token>"
+    )
 
 # Initialize agent
 agent = None
@@ -407,10 +440,19 @@ async def search_documents_ai(request: Request, query: str, user_id: str, docume
 
 # NEW: User context endpoint (for debugging)
 @app.get("/api/ai/context/{user_id}", dependencies=[Depends(verify_api_key)])
-async def get_user_context_endpoint(user_id: str):
-    """Get comprehensive user context from Firebase"""
+async def get_user_context_endpoint(user_id: str, request: Request, auth_info = Depends(verify_api_key)):
+    """Get comprehensive user context from Firebase.
+    
+    Security (audit fix): Firebase-authenticated users can only access
+    their own context. API key auth can access any user.
+    """
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    # Tenant isolation: Firebase users can only access their own context
+    if auth_info.get("auth_type") == "firebase":
+        if auth_info.get("uid") != user_id:
+            raise HTTPException(status_code=403, detail="Cannot access another user's context")
     
     try:
         from firebase_client import firebase_client
@@ -527,9 +569,13 @@ async def upload_report(
             content_type='application/pdf'
         )
         
-        # Make public and get URL
-        blob.make_public()
-        download_url = blob.public_url
+        # Generate signed URL (audit fix S-8: no public blobs)
+        from datetime import timedelta
+        download_url = blob.generate_signed_url(
+            version="v4",
+            expiration=timedelta(hours=24),
+            method="GET",
+        )
         
         logger.info(f"Report uploaded successfully: {blob_path}")
         

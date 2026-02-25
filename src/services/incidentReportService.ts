@@ -1,6 +1,7 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { IncidentReport } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const incidentReportsCollection = collection(db, 'incidentReports');
 
@@ -11,7 +12,7 @@ const stripUndefined = (obj: Record<string, unknown>): Record<string, unknown> =
 
 export const getIncidentReports = async (): Promise<IncidentReport[]> => {
     try {
-        const reportSnapshot = await getDocs(incidentReportsCollection);
+        const reportSnapshot = await getDocs(getTenantQuery('incidentReports'));
         return reportSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as IncidentReport));
     } catch (error) {
         console.error('Failed to fetch incident reports:', error);
@@ -22,7 +23,7 @@ export const getIncidentReports = async (): Promise<IncidentReport[]> => {
 export const addIncidentReport = async (report: Omit<IncidentReport, 'id'>): Promise<IncidentReport> => {
     try {
         const payload = stripUndefined({ ...report, createdAt: new Date().toISOString() }) as Omit<IncidentReport, 'id'>;
-        const docRef = await addDoc(incidentReportsCollection, payload);
+        const docRef = await addDoc(incidentReportsCollection, { ...payload, ...getTenantStamp() });
         return { id: docRef.id, ...payload } as IncidentReport;
     } catch (error) {
         console.error('Failed to add incident report:', error);

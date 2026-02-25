@@ -1,12 +1,13 @@
 import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { AppSettings, UserRole } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const settingsCollection = collection(db, 'appSettings');
 
 export const getAppSettings = async (): Promise<AppSettings | null> => {
     try {
-        const settingsSnapshot = await getDocs(settingsCollection);
+        const settingsSnapshot = await getDocs(getTenantQuery('appSettings'));
         if (settingsSnapshot.empty) {
             console.warn('No app settings found in Firestore');
             return getDefaultSettings();
@@ -26,20 +27,20 @@ export const updateAppSettings = async (settings: AppSettings): Promise<void> =>
             throw new Error('Missing required fields in AppSettings');
         }
 
-        const settingsSnapshot = await getDocs(settingsCollection);
+        const settingsSnapshot = await getDocs(getTenantQuery('appSettings'));
 
         // Convert settings to plain object to avoid any Firestore serialization issues
         const settingsData = JSON.parse(JSON.stringify(settings));
 
         if (settingsSnapshot.empty) {
             // If no settings exist, create a new document
-            await setDoc(doc(settingsCollection, 'default'), settingsData);
+            await setDoc(doc(settingsCollection, 'default'), { ...settingsData, ...getTenantStamp() });
             console.log('App settings created in Firestore');
         } else {
             // Update existing document using setDoc with merge to handle schema changes
             const settingsDocId = settingsSnapshot.docs[0].id;
             const settingsDocRef = doc(db, 'appSettings', settingsDocId);
-            await setDoc(settingsDocRef, settingsData, { merge: true });
+            await setDoc(settingsDocRef, { ...settingsData, ...getTenantStamp() }, { merge: true });
             console.log('App settings updated in Firestore');
         }
     } catch (error) {

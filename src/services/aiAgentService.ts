@@ -60,8 +60,10 @@ export interface TrainingRecommendationsRequest {
 
 /** Production backend URL */
 const RENDER_URL = 'https://accreditex.onrender.com';
-/** Well-known API key shared between frontend and backend */
-const KNOWN_API_KEY = 'accreditex-ai-2026';
+/**
+ * API key – MUST be set via VITE_AI_AGENT_API_KEY env var.
+ * Security (audit fix S-1): No hardcoded fallback key in source code.
+ */
 /** Fetch timeout in milliseconds (90 s — allows for Render cold starts) */
 const FETCH_TIMEOUT_MS = 90_000;
 /** Maximum retry attempts for network failures */
@@ -93,9 +95,12 @@ export class AIAgentService {
             this.baseUrl = envIsLocalhost || !envUrl ? RENDER_URL : envUrl;
         }
 
-        // API key: prefer env var, then well-known fallback.
-        this.apiKey =
-            import.meta.env.VITE_AI_AGENT_API_KEY || KNOWN_API_KEY;
+        // API key: read from env var only (no hardcoded fallback).
+        this.apiKey = import.meta.env.VITE_AI_AGENT_API_KEY || '';
+
+        if (!this.apiKey) {
+            console.warn('⚠️ VITE_AI_AGENT_API_KEY is not set — AI features will fail.');
+        }
 
         if (import.meta.env.DEV) {
             console.log('🤖 AI Agent Service initialized:', {
@@ -194,13 +199,30 @@ export class AIAgentService {
     }
 
     /**
-     * Get common headers for API requests
+     * Get common headers for API requests.
+     * Sends both X-API-Key and Firebase ID token (Authorization: Bearer)
+     * for dual-authentication support.
      */
-    private getHeaders(): HeadersInit {
-        return {
+    private async getHeaders(): Promise<HeadersInit> {
+        const headers: Record<string, string> = {
             'Content-Type': 'application/json',
             'X-API-Key': this.apiKey,
         };
+
+        // Add Firebase ID token for user-level authentication
+        try {
+            const { auth } = await import('@/firebase/firebaseConfig');
+            const user = auth.currentUser;
+            if (user) {
+                const token = await user.getIdToken();
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+        } catch (e) {
+            // Non-fatal: API key auth will still work
+            console.warn('[AI Agent] Could not attach Firebase token:', e);
+        }
+
+        return headers;
     }
 
     /**
@@ -275,7 +297,7 @@ export class AIAgentService {
 
             const response = await this.fetchWithRetry(`${this.baseUrl}/chat`, {
                 method: 'POST',
-                headers: this.getHeaders(),
+                headers: await this.getHeaders(),
                 body: JSON.stringify(request),
             });
 
@@ -384,7 +406,7 @@ export class AIAgentService {
         try {
             const response = await fetch(`${this.baseUrl}/check-compliance`, {
                 method: 'POST',
-                headers: this.getHeaders(),
+                headers: await this.getHeaders(),
                 body: JSON.stringify(request),
             });
 
@@ -407,7 +429,7 @@ export class AIAgentService {
         try {
             const response = await fetch(`${this.baseUrl}/assess-risk`, {
                 method: 'POST',
-                headers: this.getHeaders(),
+                headers: await this.getHeaders(),
                 body: JSON.stringify(request),
             });
 
@@ -430,7 +452,7 @@ export class AIAgentService {
         try {
             const response = await fetch(`${this.baseUrl}/training-recommendations`, {
                 method: 'POST',
-                headers: this.getHeaders(),
+                headers: await this.getHeaders(),
                 body: JSON.stringify(request),
             });
 

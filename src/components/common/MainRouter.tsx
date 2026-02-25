@@ -8,6 +8,7 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 import { LockClosedIcon } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { analytics } from "@/services/analyticsTrackingService";
+import { routes } from "@/router/routes";
 
 // Performance Optimization: Lazy load all page components
 // This reduces the main bundle from 4.39MB to under 500KB
@@ -122,17 +123,22 @@ const MainRouter: React.FC<MainRouterProps> = ({
     deleteStandard,
   } = useAppStore();
 
-  // Role-based Access Control
+  // Role-based Access Control (audit fix: enforce route-level guards)
   useEffect(() => {
     // Robust check: Handle Case-Insensitivity (Admin vs admin)
     const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
     if (currentUser && !isAdmin) {
-      const adminOnlyViews: NavigationState["view"][] = [
+      // Build admin-only list from route config + hardcoded extras
+      const routeAdminViews = routes
+        .filter((r) => r.requiresAdmin)
+        .map((r) => r.view);
+      const adminOnlyViews = new Set([
+        ...routeAdminViews,
         "departments",
         "departmentDetail",
         "dataHub",
-      ];
+      ]);
 
       let isUnauthorized = false;
       let message = "";
@@ -160,7 +166,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
           message =
             "This settings section is restricted to administrators. Please access only the available settings for your role.";
         }
-      } else if (adminOnlyViews.includes(navigation.view)) {
+      } else if (adminOnlyViews.has(navigation.view)) {
         isUnauthorized = true;
         const viewNames = {
           departments: "Department Management",
