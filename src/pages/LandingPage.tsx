@@ -1,7 +1,12 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import Globe from "@/components/ui/Globe";
 import { LogoIcon } from "@/components/icons";
+
+/* ─── TYPES ──────────────────────────────────────────────────────────────── */
+interface LandingPageProps {
+  onLogin: () => void;
+}
 
 /* ─── NAVIGATION BAR ─────────────────────────────────────────────────────── */
 const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
@@ -16,8 +21,11 @@ const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 
   const links = [
     { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
+    { label: "AI Engine", href: "#ai-engine" },
+    { label: "Market", href: "#market" },
     { label: "Pricing", href: "#pricing" },
+    { label: "Team", href: "#team" },
+    { label: "FAQ", href: "#faq" },
     { label: "Pitch Deck", href: "/pitch" },
   ];
 
@@ -30,22 +38,36 @@ const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
       }`}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
-        {/* Logo */}
         <a href="/" className="flex items-center gap-2 group">
-          <LogoIcon className="h-8 w-8 text-brand-primary group-hover:scale-110 transition-transform" />
+          <img
+            src="/logo.png"
+            alt="AccreditEx"
+            className="h-9 w-9 rounded-lg object-contain group-hover:scale-110 transition-transform"
+          />
           <span className="text-xl font-bold">
-            <span className="text-brand-text-primary dark:text-white">Accredit</span>
+            <span
+              className={
+                scrolled
+                  ? "text-brand-text-primary dark:text-white"
+                  : "text-white"
+              }
+            >
+              Accredit
+            </span>
             <span className="text-brand-primary">Ex</span>
           </span>
         </a>
 
-        {/* Desktop Links */}
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden lg:flex items-center gap-6">
           {links.map((l) => (
             <a
               key={l.label}
               href={l.href}
-              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-brand-primary transition-colors"
+              className={`text-sm font-medium transition-colors ${
+                scrolled
+                  ? "text-slate-600 dark:text-slate-300 hover:text-brand-primary"
+                  : "text-white/80 hover:text-white"
+              }`}
             >
               {l.label}
             </a>
@@ -57,32 +79,45 @@ const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
             Login
           </button>
           <a
-            href="#pricing"
-            className="px-5 py-2 text-sm font-semibold rounded-lg bg-brand-primary text-white hover:bg-indigo-700 shadow-lg shadow-brand-primary/25 transition-all"
+            href="https://accreditex.web.app"
+            className="px-5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-teal-600 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all"
           >
-            Get Started
+            Launch App →
           </a>
         </div>
 
-        {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 text-slate-600 dark:text-slate-300"
+          className="lg:hidden p-2"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
-          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg
+            className={`w-6 h-6 ${scrolled ? "text-slate-600" : "text-white"}`}
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
             {mobileOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16M4 18h16"
+              />
             )}
           </svg>
         </button>
       </div>
 
-      {/* Mobile Dropdown */}
       {mobileOpen && (
-        <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-6 py-4 space-y-3 animate-[fadeInUp_0.2s_ease-out]">
+        <div className="lg:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 px-6 py-4 space-y-3">
           {links.map((l) => (
             <a
               key={l.label}
@@ -94,7 +129,10 @@ const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
             </a>
           ))}
           <button
-            onClick={() => { setMobileOpen(false); onLogin(); }}
+            onClick={() => {
+              setMobileOpen(false);
+              onLogin();
+            }}
             className="block w-full text-center px-4 py-2 text-sm font-semibold rounded-lg border-2 border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white transition-all"
           >
             Login
@@ -111,209 +149,213 @@ const Hero: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
   const globeSettings = appSettings?.globeSettings;
 
   return (
-    <section className="relative min-h-screen flex items-center overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-indigo-50/40 to-cyan-50/30 dark:from-slate-950 dark:via-indigo-950/20 dark:to-cyan-950/10" />
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Grid background */}
+      <div
+        className="absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+      {/* Radial glow */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 600px 600px at 20% 50%, rgba(0,137,123,0.12) 0%, transparent 70%), radial-gradient(ellipse 400px 400px at 80% 30%, rgba(21,101,192,0.08) 0%, transparent 70%)",
+        }}
+      />
 
-      {/* Dot grid pattern */}
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: "radial-gradient(circle, #4f46e5 1px, transparent 1px)",
-        backgroundSize: "30px 30px",
-      }} />
-
-      <div className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-24 pb-12">
-        {/* Text */}
-        <div className="space-y-8 animate-[fadeInUp_0.8s_ease-out]">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/10 text-brand-primary text-sm font-medium">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-primary" />
+      <div className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center pt-28 pb-16 w-full">
+        <div className="space-y-8 text-white">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-sm font-semibold">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-300 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-300" />
             </span>
-            AI-Powered Healthcare Accreditation
+            AI-Native Healthcare Platform
           </div>
 
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight text-brand-text-primary dark:text-white">
-            Accreditation{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-cyan-500">
-              Made Simple
-            </span>
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight">
+            From Audit Panic
             <br />
-            for Healthcare
+            to <span className="text-teal-400">Continuous Excellence</span>
           </h1>
 
-          <p className="text-lg text-slate-600 dark:text-slate-400 max-w-lg leading-relaxed">
-            AccreditEx streamlines your entire accreditation journey — from gap analysis to survey readiness.
-            Manage <strong>JCI, CBAHI, CAP, ISO 15189</strong>, and more with AI-powered tools,
-            real-time compliance tracking, and multi-tenant security.
+          <p className="text-lg text-white/70 max-w-lg leading-relaxed">
+            AccreditEx automates healthcare accreditation with AI-powered
+            compliance tracking, real-time risk monitoring, and intelligent
+            document management — built by a clinical quality expert.
           </p>
 
           <div className="flex flex-wrap gap-4">
             <a
               href="#pricing"
-              className="px-8 py-3.5 rounded-xl bg-brand-primary text-white font-semibold text-base shadow-xl shadow-brand-primary/25 hover:shadow-brand-primary/40 hover:scale-[1.02] transition-all"
+              className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-teal-600 to-blue-600 text-white font-semibold shadow-xl shadow-teal-600/30 hover:shadow-teal-600/50 hover:scale-[1.02] transition-all"
             >
-              Start Free Trial
+              Start Free Trial →
             </a>
             <a
-              href="/pitch"
-              className="px-8 py-3.5 rounded-xl bg-white dark:bg-slate-800 text-brand-text-primary dark:text-white font-semibold text-base shadow-lg border border-slate-200 dark:border-slate-700 hover:border-brand-primary hover:scale-[1.02] transition-all flex items-center gap-2"
+              href="#features"
+              className="px-8 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white font-semibold hover:bg-white/15 transition-all"
             >
-              <svg className="w-5 h-5 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
-              </svg>
-              View Pitch Deck
+              Explore Features ↓
             </a>
           </div>
 
           {/* Trust badges */}
-          <div className="pt-4 flex flex-wrap items-center gap-6 text-xs font-medium text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-              HIPAA Ready
-            </div>
-            <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064" /></svg>
-              English & Arabic (RTL)
-            </div>
-            <div className="flex items-center gap-1.5">
-              <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-              21+ AI Tools
-            </div>
+          <div className="pt-4 flex flex-wrap items-center gap-5 text-xs text-white/50">
+            <span className="flex items-center gap-1.5">
+              <span className="text-green-400">●</span> No credit card required
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-green-400">●</span> SOC 2-ready
+              infrastructure
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-green-400">●</span> HIPAA-aligned
+              architecture
+            </span>
+          </div>
+
+          {/* Hero stats */}
+          <div className="flex gap-10 pt-6 border-t border-white/10">
+            {[
+              { value: "15+", label: "AI-Powered Tools" },
+              { value: "240+", label: "Standards Loaded" },
+              { value: "1,043", label: "Sub-Standards" },
+            ].map((s) => (
+              <div key={s.label}>
+                <div className="text-3xl font-extrabold text-white">
+                  {s.value}
+                </div>
+                <div className="text-xs text-white/50 mt-1">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Globe */}
-        <div className="hidden lg:flex items-center justify-center animate-[fadeIn_1.2s_ease-out]">
-          <div className="relative w-[550px] h-[550px]">
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-primary/20 to-cyan-400/20 rounded-full blur-3xl" />
-            {globeSettings && (
+        {/* Globe / App Preview */}
+        <div className="hidden lg:flex items-center justify-center">
+          <div className="relative w-[520px] h-[520px]">
+            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-blue-500/20 rounded-full blur-3xl" />
+            {globeSettings ? (
               <Globe
-                width={550}
-                height={550}
+                width={520}
+                height={520}
                 {...globeSettings}
+                userLocation={{ lat: 23.588, long: 58.3829 }}
+              />
+            ) : (
+              <Globe
+                width={520}
+                height={520}
                 userLocation={{ lat: 23.588, long: 58.3829 }}
               />
             )}
           </div>
         </div>
       </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
-        <svg className="w-6 h-6 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-        </svg>
-      </div>
     </section>
   );
 };
 
-/* ─── STATS BAR ──────────────────────────────────────────────────────────── */
-const StatsBar: React.FC = () => {
-  const stats = [
-    { value: "7+", label: "Accreditation Programs" },
-    { value: "240+", label: "Pre-loaded Standards" },
-    { value: "1,043", label: "Sub-Standards Mapped" },
-    { value: "21+", label: "AI-Powered Tools" },
-    { value: "35", label: "Integrated Pages" },
-  ];
-
-  return (
-    <section className="relative py-12 bg-brand-primary">
-      <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-5 gap-8">
-        {stats.map((s) => (
-          <div key={s.label} className="text-center">
-            <div className="text-3xl md:text-4xl font-extrabold text-white">{s.value}</div>
-            <div className="text-sm text-indigo-200 mt-1">{s.label}</div>
-          </div>
+/* ─── TRUST BAR ──────────────────────────────────────────────────────────── */
+const TrustBar: React.FC = () => (
+  <section className="bg-slate-50 dark:bg-slate-800/50 py-10 border-b border-slate-200 dark:border-slate-700">
+    <div className="max-w-7xl mx-auto px-6 text-center">
+      <p className="text-xs font-semibold uppercase tracking-[2px] text-slate-400 mb-6">
+        Supporting Accreditation Standards From
+      </p>
+      <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
+        {[
+          { name: "CBAHI", region: "Saudi Arabia", color: "text-teal-600" },
+          { name: "JCI", region: "International", color: "text-blue-600" },
+          { name: "DOH", region: "Abu Dhabi", color: "text-teal-700" },
+          { name: "ISO 15189", region: "Laboratory", color: "text-amber-600" },
+          {
+            name: "DHA",
+            region: "Dubai",
+            color: "text-slate-700 dark:text-white",
+          },
+        ].map((s, i, arr) => (
+          <React.Fragment key={s.name}>
+            <div className="text-center">
+              <div className={`text-xl md:text-2xl font-extrabold ${s.color}`}>
+                {s.name}
+              </div>
+              <div className="text-[11px] text-slate-400 mt-0.5">
+                {s.region}
+              </div>
+            </div>
+            {i < arr.length - 1 && (
+              <div className="hidden md:block w-px h-10 bg-slate-200 dark:bg-slate-600" />
+            )}
+          </React.Fragment>
         ))}
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
-/* ─── FEATURES SECTION ───────────────────────────────────────────────────── */
-const features = [
-  {
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-      </svg>
-    ),
-    title: "Multi-Program Accreditation",
-    desc: "Manage JCI, CBAHI, DNV, CAP, ISO 15189, NABH, and ISO 9001 programs — all from a single unified platform with cross-standard evidence mapping.",
-  },
-  {
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ),
-    title: "AI-Powered Document Control",
-    desc: "Auto-generate policies, SOPs, and accreditation documents with AI. Full version control, digital signatures, and automated approval workflows.",
-  },
-  {
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    title: "Real-Time Compliance Tracking",
-    desc: "Live dashboards with compliance KPIs, gap analysis, PDCA cycle tracking, and automated escalation workflows with configurable notification chains.",
-  },
-  {
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-      </svg>
-    ),
-    title: "Training & Competency",
-    desc: "Built-in LMS with quiz-based training, automated certificate generation, CE credit tracking, skill matrices, and competency gap analysis.",
-  },
-  {
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-      </svg>
-    ),
-    title: "Lab Operations Module",
-    desc: "CAP assessment tool with 11 disciplines, QC data import, multi-vendor LIMS integration (Orchard, SoftLab, Sunquest), and tracer worksheets.",
-  },
-  {
-    icon: (
-      <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-      </svg>
-    ),
-    title: "Enterprise Security",
-    desc: "Multi-tenant data isolation, role-based access control, Firebase-backed authentication, and HIPAA-ready architecture with full audit trails.",
-  },
-];
-
-const Features: React.FC = () => (
-  <section id="features" className="py-24 bg-white dark:bg-slate-900">
+/* ─── PROBLEM SECTION ────────────────────────────────────────────────────── */
+const ProblemSection: React.FC = () => (
+  <section className="py-24 bg-slate-50 dark:bg-slate-900/50" id="problem">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <p className="text-brand-primary font-semibold text-sm tracking-wider uppercase mb-3">Platform Capabilities</p>
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          ⚠️ The Challenge
+        </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
-          Everything You Need for Accreditation Success
+          The Healthcare Compliance Crisis
         </h2>
         <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-          A comprehensive suite of tools designed specifically for healthcare facilities pursuing or maintaining accreditation.
+          70% of GCC healthcare facilities still rely on manual spreadsheets,
+          paper binders, and siloed emails for accreditation compliance.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {features.map((f) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          {
+            stat: "30%",
+            title: "Higher Audit Failure Risk",
+            desc: "Human error in documentation is the #1 cause of non-conformities during accreditation surveys.",
+            bgColor: "bg-red-50 dark:bg-red-950/20",
+            iconColor: "text-red-500",
+          },
+          {
+            stat: "50%",
+            title: "Clinician Burnout Rate",
+            desc: "Quality managers spend more time on paperwork than actual patient safety improvement.",
+            bgColor: "bg-orange-50 dark:bg-orange-950/20",
+            iconColor: "text-orange-500",
+          },
+          {
+            stat: "$2M+",
+            title: "Cost of Non-Compliance",
+            desc: "Lost accreditation means lost contracts, reputation damage, and potential patient safety risks.",
+            bgColor: "bg-yellow-50 dark:bg-yellow-950/20",
+            iconColor: "text-yellow-600",
+          },
+        ].map((p) => (
           <div
-            key={f.title}
-            className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-brand-primary/30 hover:shadow-xl hover:shadow-brand-primary/5 transition-all duration-300"
+            key={p.stat}
+            className="p-8 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:shadow-xl transition-all"
           >
-            <div className="w-12 h-12 rounded-xl bg-brand-primary/10 text-brand-primary flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-              {f.icon}
+            <div
+              className={`text-4xl md:text-5xl font-black ${p.iconColor} mb-3`}
+            >
+              {p.stat}
             </div>
-            <h3 className="text-lg font-bold text-brand-text-primary dark:text-white mb-2">{f.title}</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
+            <h3 className="text-lg font-bold text-brand-text-primary dark:text-white mb-2">
+              {p.title}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              {p.desc}
+            </p>
           </div>
         ))}
       </div>
@@ -321,93 +363,415 @@ const Features: React.FC = () => (
   </section>
 );
 
-/* ─── HOW IT WORKS ───────────────────────────────────────────────────────── */
-const HowItWorks: React.FC = () => {
-  const steps = [
+/* ─── FEATURES SECTION ───────────────────────────────────────────────────── */
+const featuresList = [
+  {
+    icon: "📊",
+    title: "Role-Based Dashboards",
+    desc: "Tailored views for Admins, Project Leads, Auditors, and Team Members with real-time KPIs.",
+    subs: [
+      "Executive overview with overdue tasks",
+      "Compliance trend charts",
+      "Department performance analytics",
+      "Quality Insights with predictive risk",
+    ],
+  },
+  {
+    icon: "📁",
+    title: "Project Management",
+    desc: "Full accreditation project lifecycle with checklists, evidence, PDCA cycles, and CAPA tracking.",
+    subs: [
+      "Template-based project creation",
+      "Per-standard compliance checklists",
+      "Design controls & audit logs",
+      "Mock survey simulations",
+    ],
+  },
+  {
+    icon: "📄",
+    title: "Document Control",
+    desc: "Enterprise document management with versioning, approval workflows, and template gallery.",
+    subs: [
+      "Rich-text editor (EN/AR bilingual)",
+      "Version history & comparison",
+      "Multi-step approval chains",
+      "Template gallery (SOP, Policy, etc.)",
+    ],
+  },
+  {
+    icon: "⚠️",
+    title: "Risk & CAPA Hub",
+    desc: "Integrated risk register, incident reporting, CAPA management, and effectiveness tracking.",
+    subs: [
+      "Risk matrix visualization",
+      "Incident severity categorization",
+      "Root cause analysis (5 Whys)",
+      "CAPA closure decision engine",
+    ],
+  },
+  {
+    icon: "🎓",
+    title: "Training & Competency",
+    desc: "Complete training management with quizzes, certificates, and competency gap tracking.",
+    subs: [
+      "Training programs with quizzes",
+      "Auto-generated certificates",
+      "Competency library & gap reports",
+      "AI-powered training recommendations",
+    ],
+  },
+  {
+    icon: "🏥",
+    title: "Multi-Department",
+    desc: "Hospital-wide project support with AI-powered department assignment and per-department analytics.",
+    subs: [
+      "AI auto-assign departments to standards",
+      "Department compliance breakdown",
+      "Cross-department collaboration",
+      "HIS integration support",
+    ],
+  },
+  {
+    icon: "🔍",
+    title: "Audit Management",
+    desc: "Plan, conduct, and track internal audits with findings, mock surveys, and readiness scoring.",
+    subs: [
+      "Audit plan scheduler",
+      "Finding severity classification",
+      "Mock survey pass/fail analysis",
+      "Assessor report pack generation",
+    ],
+  },
+  {
+    icon: "📅",
+    title: "Calendar & Tasks",
+    desc: "Unified calendar aggregating all deadlines with personal task queues and notifications.",
+    subs: [
+      "Month, agenda & year views",
+      "My Tasks with overdue alerts",
+      "Real-time messaging center",
+      "In-app notifications",
+    ],
+  },
+  {
+    icon: "🌐",
+    title: "Standards Library",
+    desc: "Pre-loaded accreditation programs (CBAHI, JCI, DOH) with 240+ standards and 1,043 sub-standards.",
+    subs: [
+      "Cross-standard mapping",
+      "Evidence reuse suggestions",
+      "Bulk import/export",
+      "Bilingual support (EN/AR)",
+    ],
+  },
+];
+
+const Features: React.FC = () => (
+  <section id="features" className="py-24 bg-white dark:bg-slate-900">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="text-center mb-16">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          🏗️ Platform
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
+          Everything You Need for Accreditation
+        </h2>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          A comprehensive platform covering every aspect of healthcare quality
+          management — from standards tracking to team training.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {featuresList.map((f) => (
+          <div
+            key={f.title}
+            className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-teal-400/30 hover:shadow-xl transition-all relative overflow-hidden"
+          >
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+            <div className="text-3xl mb-4">{f.icon}</div>
+            <h3 className="text-lg font-bold text-brand-text-primary dark:text-white mb-2">
+              {f.title}
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-3">
+              {f.desc}
+            </p>
+            <ul className="space-y-1">
+              {f.subs.map((s) => (
+                <li
+                  key={s}
+                  className="text-xs text-slate-400 dark:text-slate-500 pl-4 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-500 before:font-bold"
+                >
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ─── AI ENGINE SECTION ──────────────────────────────────────────────────── */
+const aiTools = [
+  {
+    icon: "💬",
+    title: "AI Assistant",
+    desc: "Context-aware floating chatbot available throughout the app for instant guidance.",
+  },
+  {
+    icon: "📝",
+    title: "Document Generator",
+    desc: "Generate compliant SOPs, policies, reports, and checklists from templates using AI.",
+  },
+  {
+    icon: "🔎",
+    title: "Gap Analysis",
+    desc: "Analyze compliance gaps and get AI-generated action plans for non-compliant items.",
+  },
+  {
+    icon: "📊",
+    title: "Analytics Insights",
+    desc: "AI analyzes your KPIs and generates executive summaries with recommendations.",
+  },
+  {
+    icon: "🎯",
+    title: "Root Cause Analysis",
+    desc: "5 Whys and Fishbone analysis to identify root causes of non-compliance.",
+  },
+  {
+    icon: "🔄",
+    title: "PDCA Improvement",
+    desc: "AI-powered recommendations for each Plan-Do-Check-Act cycle stage.",
+  },
+  {
+    icon: "🛡️",
+    title: "Risk Assessment",
+    desc: "Automated risk scoring with mitigation recommendations and priority actions.",
+  },
+  {
+    icon: "✍️",
+    title: "Content Improvement",
+    desc: "Improves clarity, structure, grammar, and professionalism of existing documents.",
+  },
+  {
+    icon: "🌐",
+    title: "Translation (EN↔AR)",
+    desc: "Translates healthcare documents between English and Arabic preserving formatting.",
+  },
+  {
+    icon: "✅",
+    title: "Compliance Check",
+    desc: "Analyzes documents against specific standards and returns compliance scores.",
+  },
+  {
+    icon: "🏢",
+    title: "Dept Auto-Assignment",
+    desc: "AI maps standards to the most responsible hospital department automatically.",
+  },
+  {
+    icon: "🎓",
+    title: "Training Advisor",
+    desc: "Suggests training programs based on role, department, and competency gaps.",
+  },
+];
+
+const AIEngine: React.FC = () => (
+  <section id="ai-engine" className="py-24 bg-slate-900 text-white">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="text-center mb-16">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/15 text-teal-400 text-sm font-semibold mb-4">
+          🤖 AI Engine
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold">
+          15+ AI-Powered Tools Built In
+        </h2>
+        <p className="mt-4 text-white/60 max-w-2xl mx-auto">
+          Not just a chatbot — a comprehensive AI system trained on healthcare
+          accreditation that actively helps your team at every step.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {aiTools.map((t) => (
+          <div
+            key={t.title}
+            className="p-6 rounded-2xl bg-white/[0.04] border border-white/[0.08] hover:bg-teal-500/[0.08] hover:border-teal-500/20 hover:-translate-y-1 transition-all"
+          >
+            <div className="text-3xl mb-4">{t.icon}</div>
+            <h3 className="text-sm font-bold text-white mb-1.5">{t.title}</h3>
+            <p className="text-xs text-white/60 leading-relaxed">{t.desc}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ─── MARKET OPPORTUNITY ─────────────────────────────────────────────────── */
+const MarketSection: React.FC = () => (
+  <section id="market" className="py-24 bg-slate-50 dark:bg-slate-900/50">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="text-center mb-16">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          📈 Market
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
+          A $4.37B Market Ready for Disruption
+        </h2>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          The Abu Dhabi DoH 2027 mandate for AI-native government creates a "buy
+          or fail" window for healthcare facilities.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-center items-center gap-10 mb-12">
+        {[
+          {
+            label: "TAM",
+            value: "$38.5B",
+            desc: "Global Health Software",
+            border: "border-blue-500",
+            bg: "bg-blue-50 dark:bg-blue-950/20",
+          },
+          {
+            label: "SAM",
+            value: "$4.37B",
+            desc: "Compliance & Quality (2026)",
+            border: "border-teal-500",
+            bg: "bg-teal-50 dark:bg-teal-950/20",
+          },
+          {
+            label: "SOM",
+            value: "5,000+",
+            desc: "GCC Healthcare Facilities",
+            border: "border-amber-500",
+            bg: "bg-amber-50 dark:bg-amber-950/20",
+          },
+        ].map((m) => (
+          <div
+            key={m.label}
+            className={`w-52 h-52 rounded-full border-[3px] ${m.border} ${m.bg} flex flex-col items-center justify-center text-center p-6 hover:scale-105 transition-transform`}
+          >
+            <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              {m.label}
+            </div>
+            <div className="text-3xl md:text-4xl font-black text-brand-text-primary dark:text-white">
+              {m.value}
+            </div>
+            <div className="text-[11px] text-slate-400 mt-1">{m.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ─── COMPETITIVE ADVANTAGE ──────────────────────────────────────────────── */
+const CompetitiveSection: React.FC = () => {
+  const rows = [
+    { cap: "Practitioner-Built", us: "✓ Full", meg: "✗", rld: "✗", vas: "✗" },
     {
-      number: "01",
-      title: "Set Up Your Facility",
-      desc: "Import your organizational structure, departments, and select the accreditation programs you're pursuing (JCI, CBAHI, CAP, etc.).",
+      cap: "GCC Regional Templates",
+      us: "✓ DOH/DHA/MOH",
+      meg: "Partial",
+      rld: "✗",
+      vas: "Limited",
     },
     {
-      number: "02",
-      title: "AI Gap Analysis",
-      desc: "Our AI scans your current documentation against 1,043+ sub-standards and generates a prioritized action plan with estimated timelines.",
+      cap: "AI-Continuous Auditing",
+      us: "✓ 15+ AI Tools",
+      meg: "Basic",
+      rld: "Basic",
+      vas: "✓",
     },
     {
-      number: "03",
-      title: "Track & Collaborate",
-      desc: "Assign tasks, generate documents with AI, monitor compliance in real-time, and prepare for surveys with mock assessment tools.",
+      cap: "Bilingual (EN/AR)",
+      us: "✓ Full RTL",
+      meg: "✗",
+      rld: "✗",
+      vas: "Partial",
+    },
+    { cap: "PWA / Offline-First", us: "✓", meg: "✗", rld: "✗", vas: "✗" },
+    {
+      cap: "Pre-loaded Standards",
+      us: "✓ 240+ / 1,043 Sub",
+      meg: "✗",
+      rld: "✗",
+      vas: "✗",
+    },
+    {
+      cap: "Affordable for SMEs",
+      us: "✓ From $500/mo",
+      meg: "✗",
+      rld: "✗",
+      vas: "✗",
     },
   ];
 
   return (
-    <section id="how-it-works" className="py-24 bg-slate-50 dark:bg-slate-950">
+    <section className="py-24 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <p className="text-brand-primary font-semibold text-sm tracking-wider uppercase mb-3">Getting Started</p>
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+            🏆 Advantage
+          </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
-            Three Steps to Accreditation Readiness
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {steps.map((s, i) => (
-            <div key={s.number} className="relative">
-              {i < steps.length - 1 && (
-                <div className="hidden md:block absolute top-12 left-full w-full h-0.5 bg-gradient-to-r from-brand-primary/30 to-transparent -translate-x-8 z-0" />
-              )}
-              <div className="relative bg-white dark:bg-slate-800 rounded-2xl p-8 shadow-lg border border-slate-100 dark:border-slate-700 hover:shadow-xl transition-shadow">
-                <div className="text-5xl font-black text-brand-primary/10 mb-4">{s.number}</div>
-                <h3 className="text-xl font-bold text-brand-text-primary dark:text-white mb-3">{s.title}</h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{s.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-/* ─── SUPPORTED PROGRAMS ─────────────────────────────────────────────────── */
-const Programs: React.FC = () => {
-  const programs = [
-    { name: "JCI", full: "Joint Commission International", color: "bg-blue-500" },
-    { name: "CBAHI", full: "Saudi Central Board for Accreditation", color: "bg-emerald-500" },
-    { name: "DNV", full: "Det Norske Veritas Healthcare", color: "bg-sky-500" },
-    { name: "CAP", full: "College of American Pathologists", color: "bg-amber-500" },
-    { name: "ISO 15189", full: "Medical Laboratory Standard", color: "bg-violet-500" },
-    { name: "NABH", full: "National Accreditation Board for Hospitals", color: "bg-rose-500" },
-    { name: "ISO 9001", full: "Quality Management Systems", color: "bg-teal-500" },
-  ];
-
-  return (
-    <section className="py-20 bg-white dark:bg-slate-900">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="text-center mb-12">
-          <p className="text-brand-primary font-semibold text-sm tracking-wider uppercase mb-3">Comprehensive Coverage</p>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
-            7+ Accreditation Programs Supported
+            Why AccreditEx Wins
           </h2>
           <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-            Pre-loaded with standards, crosswalks, and evidence mapping for major international and regional programs.
+            Practitioner-built, region-first, AI-native — designed specifically
+            for GCC healthcare compliance.
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-4">
-          {programs.map((p) => (
-            <div
-              key={p.name}
-              className="group flex items-center gap-3 px-6 py-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover:border-brand-primary/30 hover:shadow-lg transition-all cursor-default"
-            >
-              <div className={`w-3 h-3 rounded-full ${p.color}`} />
-              <div>
-                <div className="font-bold text-brand-text-primary dark:text-white text-sm">{p.name}</div>
-                <div className="text-xs text-slate-400">{p.full}</div>
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-800">
+                <th className="text-left py-4 px-5 font-bold text-brand-text-primary dark:text-white">
+                  Capability
+                </th>
+                <th className="text-center py-4 px-5 font-bold text-teal-600">
+                  AccreditEx
+                </th>
+                <th className="text-center py-4 px-5 font-medium text-slate-400">
+                  MEG
+                </th>
+                <th className="text-center py-4 px-5 font-medium text-slate-400">
+                  RLDatix
+                </th>
+                <th className="text-center py-4 px-5 font-medium text-slate-400">
+                  Vastian AI
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr
+                  key={r.cap}
+                  className="border-t border-slate-100 dark:border-slate-700/50"
+                >
+                  <td className="py-3.5 px-5 font-semibold text-brand-text-primary dark:text-white">
+                    {r.cap}
+                  </td>
+                  <td className="py-3.5 px-5 text-center text-teal-600 font-bold">
+                    {r.us}
+                  </td>
+                  <td className="py-3.5 px-5 text-center text-slate-400">
+                    {r.meg}
+                  </td>
+                  <td className="py-3.5 px-5 text-center text-slate-400">
+                    {r.rld}
+                  </td>
+                  <td className="py-3.5 px-5 text-center text-slate-400">
+                    {r.vas}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -417,120 +781,125 @@ const Programs: React.FC = () => {
 /* ─── PRICING SECTION ────────────────────────────────────────────────────── */
 const pricingTiers = [
   {
-    name: "Starter",
-    desc: "Perfect for small clinics and labs beginning their accreditation journey.",
-    price: "$299",
-    period: "/month",
+    name: "Core",
+    desc: "Per facility · Small labs & clinics",
+    price: "$500",
+    period: "/mo",
     highlight: false,
     features: [
-      "1 Accreditation Program",
-      "Up to 25 Users",
-      "Document Control Hub",
-      "Basic Compliance Dashboard",
-      "Email Support",
-      "5 AI Document Generations / mo",
+      "Up to 10 users",
+      "Compliance tracking",
+      "Document management",
+      "Basic AI tools",
+      "Email support",
     ],
-    cta: "Start Free Trial",
-  },
-  {
-    name: "Professional",
-    desc: "For mid-size hospitals managing multiple accreditation programs.",
-    price: "$799",
-    period: "/month",
-    highlight: true,
-    badge: "Most Popular",
-    features: [
-      "Up to 3 Accreditation Programs",
-      "Up to 100 Users",
-      "Full Document Control + AI Generation",
-      "Risk & Audit Management",
-      "Training & Competency LMS",
-      "Real-Time Analytics Hub",
-      "50 AI Document Generations / mo",
-      "Priority Support",
-    ],
-    cta: "Start Free Trial",
+    cta: "Get Started",
+    ctaHref: "https://accreditex.web.app",
   },
   {
     name: "Enterprise",
-    desc: "For large healthcare systems and multi-facility organizations.",
-    price: "Custom",
+    desc: "Per facility · Hospitals & networks",
+    price: "$2,000",
+    period: "/mo",
+    highlight: true,
+    badge: "MOST POPULAR",
+    features: [
+      "Unlimited users",
+      "Full AI predictive engine",
+      "Advanced analytics",
+      "Multi-department support",
+      "HIS integration",
+      "Priority support + SLA",
+      "API access",
+    ],
+    cta: "Start Free Trial",
+    ctaHref: "https://accreditex.web.app",
+  },
+  {
+    name: "Custom",
+    desc: "Predictive Governance AI Add-On",
+    price: "Contact Us",
     period: "",
     highlight: false,
     features: [
-      "Unlimited Accreditation Programs",
-      "Unlimited Users",
-      "Multi-Tenant / Multi-Facility",
-      "Lab Operations Module (CAP/LIMS)",
-      "Workflow Automation",
-      "Custom Report Builder",
-      "Unlimited AI Generations",
-      "Dedicated Account Manager",
-      "On-Premise Option Available",
+      "Premium AI features",
+      "High-throughput centers",
+      "Custom integrations",
+      "Dedicated success manager",
+      "On-premise deployment option",
     ],
     cta: "Contact Sales",
+    ctaHref: "mailto:ashraf.a.m.ishag@gmail.com",
   },
 ];
 
 const Pricing: React.FC = () => (
-  <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-950">
+  <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <p className="text-brand-primary font-semibold text-sm tracking-wider uppercase mb-3">Simple Pricing</p>
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          💳 Pricing
+        </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
-          Plans That Scale With Your Facility
+          Scalable SaaS Pricing
         </h2>
         <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-          Start with a 14-day free trial. No credit card required. Upgrade anytime as your accreditation needs grow.
+          Enterprise-grade data management with seamless scaling — built so your
+          compliance data grows with you.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-stretch max-w-5xl mx-auto">
         {pricingTiers.map((tier) => (
           <div
             key={tier.name}
-            className={`relative flex flex-col rounded-2xl p-8 border transition-all ${
+            className={`relative flex flex-col rounded-2xl p-8 border text-center transition-all ${
               tier.highlight
-                ? "bg-white dark:bg-slate-800 border-brand-primary shadow-2xl shadow-brand-primary/10 scale-[1.02]"
+                ? "bg-white dark:bg-slate-800 border-teal-500 shadow-2xl shadow-teal-500/15 scale-[1.04]"
                 : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-xl"
             }`}
           >
             {tier.highlight && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-brand-primary text-white text-xs font-semibold">
-                {(tier as any).badge}
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 rounded-full bg-gradient-to-r from-teal-500 to-blue-500 text-white text-[11px] font-bold tracking-wider">
+                {tier.badge}
               </div>
             )}
-
             <div className="mb-6">
-              <h3 className="text-xl font-bold text-brand-text-primary dark:text-white">{tier.name}</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{tier.desc}</p>
+              <h3 className="text-xl font-bold text-brand-text-primary dark:text-white">
+                {tier.name}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                {tier.desc}
+              </p>
             </div>
-
-            <div className="mb-8">
-              <span className="text-4xl font-extrabold text-brand-text-primary dark:text-white">{tier.price}</span>
-              <span className="text-slate-500 dark:text-slate-400">{tier.period}</span>
+            <div className="mb-6">
+              <span
+                className={`font-black text-brand-text-primary dark:text-white ${tier.period ? "text-5xl" : "text-3xl"}`}
+              >
+                {tier.price}
+              </span>
+              <span className="text-slate-400">{tier.period}</span>
             </div>
-
-            <ul className="space-y-3 mb-8 flex-1">
+            <ul className="space-y-3 mb-8 flex-1 text-left">
               {tier.features.map((f) => (
-                <li key={f} className="flex items-start gap-3 text-sm text-slate-600 dark:text-slate-300">
-                  <svg className="w-5 h-5 text-brand-primary flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  {f}
+                <li
+                  key={f}
+                  className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-700/50 pb-2.5"
+                >
+                  <span className="text-teal-500 font-bold">✓</span> {f}
                 </li>
               ))}
             </ul>
-
-            <button
-              className={`w-full py-3 rounded-xl font-semibold text-sm transition-all ${
+            <a
+              href={tier.ctaHref}
+              className={`block w-full py-3 rounded-xl font-semibold text-sm transition-all ${
                 tier.highlight
-                  ? "bg-brand-primary text-white hover:bg-indigo-700 shadow-lg shadow-brand-primary/25"
-                  : "bg-slate-100 dark:bg-slate-700 text-brand-text-primary dark:text-white hover:bg-brand-primary hover:text-white"
+                  ? "bg-gradient-to-r from-teal-500 to-blue-500 text-white shadow-lg hover:shadow-xl"
+                  : "bg-slate-100 dark:bg-slate-700 text-brand-text-primary dark:text-white hover:bg-teal-500 hover:text-white"
               }`}
             >
               {tier.cta}
-            </button>
+            </a>
           </div>
         ))}
       </div>
@@ -538,91 +907,281 @@ const Pricing: React.FC = () => (
   </section>
 );
 
-/* ─── TESTIMONIALS ───────────────────────────────────────────────────────── */
-const testimonials = [
+/* ─── TEAM SECTION ───────────────────────────────────────────────────────── */
+const TeamSection: React.FC = () => (
+  <section id="team" className="py-24 bg-white dark:bg-slate-900">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="text-center mb-16">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          👤 Team
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
+          The "Black Belt" Advantage
+        </h2>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          A rare blend of clinical expertise, operational excellence, and
+          full-stack technical capability.
+        </p>
+      </div>
+
+      <div className="flex flex-col md:flex-row items-center gap-10 bg-white dark:bg-slate-800 rounded-2xl p-10 border border-slate-200 dark:border-slate-700 shadow-lg max-w-4xl mx-auto">
+        <img
+          src="/CEO.jpg"
+          alt="Ashraf Abu baker Musa Ishag — Founder & CEO"
+          className="w-36 h-36 rounded-full object-cover border-4 border-teal-400 shadow-lg shadow-teal-500/20 flex-shrink-0"
+          loading="lazy"
+        />
+        <div>
+          <h3 className="text-2xl font-extrabold text-brand-text-primary dark:text-white">
+            Ashraf Abu baker Musa Ishag
+          </h3>
+          <p className="text-teal-600 font-semibold mt-1 mb-5">Founder & CEO</p>
+          <ul className="space-y-2.5">
+            {[
+              "🎓 B.Sc. Medical Laboratory Science, ISQUA Fellow",
+              "⚡ Six Sigma Black Belt · Google Project Manager",
+              "🏥 Licensed Lab Quality Manager (Oman/Sudan)",
+              "💻 Full-Stack Developer (React, TypeScript, Firebase, AI)",
+              "📝 Published researcher",
+            ].map((c) => (
+              <li
+                key={c}
+                className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2"
+              >
+                {c}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-4xl mx-auto">
+        <div className="bg-slate-50 dark:bg-slate-800/50 p-7 rounded-2xl border border-slate-200 dark:border-slate-700">
+          <h4 className="font-bold text-brand-text-primary dark:text-white mb-2">
+            🎯 Unique Positioning
+          </h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            Designed by a clinical quality professional who understands
+            healthcare compliance from the inside — not just software developers
+            adapting generic tools.
+          </p>
+        </div>
+        <div className="bg-slate-50 dark:bg-slate-800/50 p-7 rounded-2xl border border-slate-200 dark:border-slate-700">
+          <h4 className="font-bold text-brand-text-primary dark:text-white mb-2">
+            👥 Advisory Board
+          </h4>
+          <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+            Assembling an advisory board of clinical and technical mentors from
+            the GCC healthcare sector. Currently exploring pilot partnerships
+            with leading hospitals.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+/* ─── ROADMAP ────────────────────────────────────────────────────────────── */
+const RoadmapSection: React.FC = () => (
+  <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="text-center mb-16">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          🗺️ Roadmap
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
+          The Abu Dhabi Vision
+        </h2>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          Strategic roadmap aligned with Abu Dhabi Economic Vision 2030.
+        </p>
+      </div>
+
+      <div className="max-w-2xl mx-auto space-y-8">
+        {[
+          {
+            year: "2026",
+            title: "Strategic HQ at ADGM",
+            desc: "Establishing AccreditEx AI Lab at Abu Dhabi Global Market",
+          },
+          {
+            year: "2026",
+            title: "National Integration",
+            desc: "API roadmap for Malaffi (UAE Health Information Exchange) integration",
+          },
+          {
+            year: "2027",
+            title: "Local R&D Partnership",
+            desc: "Partnering with MBZUAI for R&D and hiring local AI talent",
+          },
+          {
+            year: "Long-term",
+            title: "Global Benchmark",
+            desc: "10-Year Golden Visa & making Abu Dhabi the global benchmark for AI-driven clinical safety",
+          },
+        ].map((r, i) => (
+          <div
+            key={i}
+            className="flex gap-6 pl-8 relative border-l-[3px] border-teal-500"
+          >
+            <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-teal-500" />
+            <div className="min-w-[80px]">
+              <span className="text-teal-600 font-bold">{r.year}</span>
+            </div>
+            <div>
+              <h4 className="font-bold text-brand-text-primary dark:text-white">
+                {r.title}
+              </h4>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+                {r.desc}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+/* ─── FAQ SECTION ────────────────────────────────────────────────────────── */
+const faqs = [
   {
-    quote: "AccreditEx reduced our JCI preparation time by 60%. The AI document generation alone saved us months of manual work.",
-    name: "Dr. Sarah Al-Rashidi",
-    role: "Quality Director",
-    org: "Oman National Hospital",
+    q: "What accreditation standards does AccreditEx support?",
+    a: "AccreditEx comes pre-loaded with 240+ standards and 1,043 sub-standards covering CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory). New standards can be imported in bulk. Cross-standard mapping helps reuse evidence across multiple accreditation bodies.",
   },
   {
-    quote: "The gap analysis feature identified compliance gaps we had been overlooking for years. We achieved CAP accreditation on our first attempt.",
-    name: "Dr. Ahmad Mansour",
-    role: "Lab Director",
-    org: "Gulf Medical Laboratory",
+    q: "How does the AI engine work?",
+    a: "AccreditEx integrates 15+ AI-powered tools directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment.",
   },
   {
-    quote: "Finally, a platform built specifically for healthcare accreditation — not generic project management retrofitted for our needs.",
-    name: "Fatima Al-Harthi",
-    role: "Accreditation Manager",
-    org: "Royal Healthcare Group",
+    q: "Is AccreditEx suitable for small clinics or only large hospitals?",
+    a: "AccreditEx is designed for all facility sizes. The Core plan ($500/mo) is built for small labs and clinics with up to 10 users. The Enterprise plan ($2,000/mo) adds unlimited users, multi-department support, HIS integration, and advanced AI analytics — ideal for hospitals and healthcare networks.",
+  },
+  {
+    q: "Does it support Arabic and right-to-left (RTL) interfaces?",
+    a: "Yes. AccreditEx is fully bilingual (English/Arabic) with complete RTL layout support. The AI translation tool can translate healthcare documents between EN and AR while preserving formatting. This is essential for GCC facilities where regulatory submissions may require Arabic documentation.",
+  },
+  {
+    q: "What makes AccreditEx different from MEG, RLDatix, or Vastian?",
+    a: "AccreditEx is the only platform that is: (1) practitioner-built by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) GCC-first with pre-loaded regional templates for DOH, DHA, MOH, and CBAHI, (3) AI-native with 15+ integrated tools (not bolt-on chatbots), and (4) affordable starting at $500/mo with PWA offline support.",
+  },
+  {
+    q: "Can investors request a demo or pitch deck?",
+    a: "Absolutely. You can view the interactive pitch deck at /pitch, or contact founder Ashraf Ishag directly at ashraf.a.m.ishag@gmail.com to schedule a live demo of the platform.",
   },
 ];
 
-const Testimonials: React.FC = () => (
-  <section className="py-24 bg-white dark:bg-slate-900">
-    <div className="max-w-7xl mx-auto px-6">
-      <div className="text-center mb-16">
-        <p className="text-brand-primary font-semibold text-sm tracking-wider uppercase mb-3">Trusted by Healthcare Leaders</p>
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
-          What Our Clients Say
-        </h2>
-      </div>
+const FAQSection: React.FC = () => {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {testimonials.map((t) => (
-          <div
-            key={t.name}
-            className="p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50"
-          >
-            {/* Stars */}
-            <div className="flex gap-1 mb-4">
-              {[...Array(5)].map((_, i) => (
-                <svg key={i} className="w-5 h-5 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
+  return (
+    <section id="faq" className="py-24 bg-white dark:bg-slate-900">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="text-center mb-16">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+            ❓ FAQ
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
+            Frequently Asked Questions
+          </h2>
+          <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+            Answers to common questions about AccreditEx for healthcare quality
+            leaders and decision-makers.
+          </p>
+        </div>
+
+        <div className="max-w-3xl mx-auto space-y-4">
+          {faqs.map((faq, i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden"
+            >
+              <button
+                onClick={() => setOpenIdx(openIdx === i ? null : i)}
+                className="w-full flex items-center justify-between px-6 py-5 text-left"
+              >
+                <span className="font-bold text-brand-text-primary dark:text-white text-base pr-4">
+                  {faq.q}
+                </span>
+                <span
+                  className={`text-teal-500 text-xl font-bold transition-transform ${openIdx === i ? "rotate-45" : ""}`}
+                >
+                  +
+                </span>
+              </button>
+              {openIdx === i && (
+                <div className="px-6 pb-5 text-sm text-slate-500 dark:text-slate-400 leading-relaxed animate-[fadeInUp_0.3s_ease-out]">
+                  {faq.a}
+                </div>
+              )}
             </div>
-            <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed italic mb-6">"{t.quote}"</p>
-            <div>
-              <div className="font-semibold text-brand-text-primary dark:text-white text-sm">{t.name}</div>
-              <div className="text-xs text-slate-500 dark:text-slate-400">{t.role} — {t.org}</div>
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
-  </section>
-);
+    </section>
+  );
+};
 
 /* ─── CTA SECTION ────────────────────────────────────────────────────────── */
 const CTASection: React.FC = () => (
-  <section className="py-24 bg-gradient-to-br from-brand-primary to-indigo-700 relative overflow-hidden">
-    <div className="absolute inset-0 opacity-10" style={{
-      backgroundImage: "radial-gradient(circle, #fff 1px, transparent 1px)",
-      backgroundSize: "24px 24px",
-    }} />
+  <section className="py-24 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden text-white">
+    <div
+      className="absolute inset-0"
+      style={{
+        background:
+          "radial-gradient(ellipse 600px 400px at 50% 50%, rgba(0,137,123,0.15) 0%, transparent 70%)",
+      }}
+    />
     <div className="relative max-w-4xl mx-auto px-6 text-center">
-      <h2 className="text-3xl sm:text-4xl font-extrabold text-white mb-6">
-        Ready to Transform Your Accreditation Journey?
+      <h2 className="text-3xl sm:text-5xl font-extrabold mb-6">
+        Ready to Transform Healthcare Quality?
       </h2>
-      <p className="text-lg text-indigo-200 mb-10 max-w-2xl mx-auto">
-        Join healthcare facilities across the Middle East and beyond who trust AccreditEx to streamline their accreditation process.
+      <p className="text-lg text-white/60 mb-10 max-w-xl mx-auto">
+        Join the platform that's moving healthcare from annual audit panic to
+        continuous clinical excellence.
       </p>
-      <div className="flex flex-wrap justify-center gap-4">
+      <div className="flex flex-wrap justify-center gap-4 mb-8">
         <a
-          href="#pricing"
-          className="px-8 py-4 rounded-xl bg-white text-brand-primary font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
+          href="https://accreditex.web.app"
+          className="px-8 py-4 rounded-xl bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
         >
-          Start Your Free Trial
+          Start Free Trial →
         </a>
         <a
-          href="mailto:sales@accreditex.com"
-          className="px-8 py-4 rounded-xl border-2 border-white/30 text-white font-semibold hover:bg-white/10 transition-all"
+          href="mailto:ashraf.a.m.ishag@gmail.com"
+          className="px-8 py-4 rounded-xl border border-white/20 bg-white/10 text-white font-semibold hover:bg-white/15 transition-all"
         >
-          Contact Sales
+          Contact Founder
         </a>
+        <a
+          href="/pitch"
+          className="px-8 py-4 rounded-xl border border-white/20 bg-white/[0.06] text-white font-semibold hover:bg-white/15 transition-all"
+        >
+          📥 View Pitch Deck
+        </a>
+      </div>
+      <div className="flex justify-center gap-6 flex-wrap text-xs text-white/50">
+        <span className="flex items-center gap-1.5">
+          <span className="text-green-400">✓</span> 14-day free trial
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="text-green-400">✓</span> No credit card required
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="text-green-400">✓</span> Setup in under 5 minutes
+        </span>
+      </div>
+      <div className="flex justify-center gap-3 mt-6 flex-wrap">
+        {["CBAHI", "JCI", "ISO 15189", "DOH Abu Dhabi", "AI-Native"].map(
+          (b) => (
+            <span
+              key={b}
+              className="px-3.5 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-semibold text-white/60"
+            >
+              {b}
+            </span>
+          ),
+        )}
       </div>
     </div>
   </section>
@@ -632,54 +1191,178 @@ const CTASection: React.FC = () => (
 const Footer: React.FC = () => (
   <footer className="py-16 bg-slate-900 text-slate-400">
     <div className="max-w-7xl mx-auto px-6">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12 pb-10 border-b border-white/[0.08]">
         <div className="col-span-2 md:col-span-1">
-          <div className="flex items-center gap-2 mb-4">
-            <LogoIcon className="h-7 w-7 text-brand-primary" />
-            <span className="text-lg font-bold text-white">
-              Accredit<span className="text-brand-primary">Ex</span>
+          <div className="flex items-center gap-2.5 mb-4">
+            <img
+              src="/logo.png"
+              alt="AccreditEx"
+              className="h-8 w-8 rounded-lg object-contain"
+            />
+            <span className="text-lg font-extrabold text-white">
+              AccreditEx
             </span>
           </div>
           <p className="text-sm leading-relaxed">
-            AI-powered healthcare accreditation management platform. Empowering hospitals and labs to achieve and maintain accreditation excellence.
+            AI-Native Healthcare Accreditation Platform. Built by a clinical
+            quality expert for healthcare facilities transitioning to continuous
+            digital compliance.
+          </p>
+          <p className="text-sm mt-3">
+            📍 Seeb, Muscat | Relocating to Abu Dhabi 2026
           </p>
         </div>
 
         <div>
-          <h4 className="text-white font-semibold mb-4 text-sm">Platform</h4>
-          <ul className="space-y-2 text-sm">
-            <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
-            <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
-            <li><a href="/pitch" className="hover:text-white transition-colors">Pitch Deck</a></li>
-            <li><a href="#how-it-works" className="hover:text-white transition-colors">How It Works</a></li>
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+            Platform
+          </h4>
+          <ul className="space-y-2.5 text-sm">
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Dashboard
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Projects
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Documents
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Risk Hub
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Training
+              </a>
+            </li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-white font-semibold mb-4 text-sm">Programs</h4>
-          <ul className="space-y-2 text-sm">
-            <li><span>JCI Accreditation</span></li>
-            <li><span>CBAHI Standards</span></li>
-            <li><span>CAP Laboratory</span></li>
-            <li><span>ISO 15189</span></li>
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+            AI Tools
+          </h4>
+          <ul className="space-y-2.5 text-sm">
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                AI Assistant
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Document Generator
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Gap Analysis
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Risk Assessment
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                Translation
+              </a>
+            </li>
           </ul>
         </div>
 
         <div>
-          <h4 className="text-white font-semibold mb-4 text-sm">Company</h4>
-          <ul className="space-y-2 text-sm">
-            <li><a href="mailto:sales@accreditex.com" className="hover:text-white transition-colors">Contact Sales</a></li>
-            <li><a href="mailto:support@accreditex.com" className="hover:text-white transition-colors">Support</a></li>
-            <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+            Contact
+          </h4>
+          <ul className="space-y-2.5 text-sm">
+            <li>
+              <a
+                href="mailto:ashraf.a.m.ishag@gmail.com"
+                className="hover:text-teal-400 transition-colors"
+              >
+                ✉️ Email
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://linkedin.com/in/ashraf-ishag"
+                className="hover:text-teal-400 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                💼 LinkedIn
+              </a>
+            </li>
+            <li>
+              <a
+                href="https://accreditex.web.app"
+                className="hover:text-teal-400 transition-colors"
+              >
+                🚀 Launch App
+              </a>
+            </li>
+            <li>
+              <a
+                href="/pitch"
+                className="hover:text-teal-400 transition-colors"
+              >
+                📊 Pitch Deck
+              </a>
+            </li>
           </ul>
         </div>
       </div>
 
-      <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm">&copy; {new Date().getFullYear()} AccreditEx. All rights reserved.</p>
-        <div className="flex items-center gap-4">
-          <span className="text-xs">Made with care for healthcare professionals</span>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p className="text-sm">© 2026 AccreditEx. All rights reserved.</p>
+        <div className="flex items-center gap-2.5">
+          {["React", "TypeScript", "Firebase", "AI-Powered"].map((b) => (
+            <span
+              key={b}
+              className="px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-xs font-semibold"
+            >
+              {b}
+            </span>
+          ))}
         </div>
       </div>
     </div>
@@ -687,21 +1370,21 @@ const Footer: React.FC = () => (
 );
 
 /* ─── LANDING PAGE ───────────────────────────────────────────────────────── */
-interface LandingPageProps {
-  onLogin: () => void;
-}
-
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
   return (
     <div className="bg-white dark:bg-slate-900">
       <Navbar onLogin={onLogin} />
       <Hero onLogin={onLogin} />
-      <StatsBar />
+      <TrustBar />
+      <ProblemSection />
       <Features />
-      <Programs />
-      <HowItWorks />
+      <AIEngine />
+      <MarketSection />
+      <CompetitiveSection />
       <Pricing />
-      <Testimonials />
+      <TeamSection />
+      <RoadmapSection />
+      <FAQSection />
       <CTASection />
       <Footer />
     </div>
