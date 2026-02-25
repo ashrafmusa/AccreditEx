@@ -4,9 +4,12 @@ import pandas as pd
 import re
 from pathlib import Path
 
+# Project root is one level up from scripts/
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
 def read_excel_smcs_data():
     """Read the SMCS Excel file to get detailed measures"""
-    excel_path = r"D:\_Projects\accreditex\data\SMCS SATool (2).xlsx"
+    excel_path = str(PROJECT_ROOT / "data" / "SMCS SATool (2).xlsx")
     
     smcs_data = {}
     
@@ -51,7 +54,7 @@ def read_excel_smcs_data():
 
 def extract_pdf_structure():
     """Extract all standards structure from PDF"""
-    pdf_path = r"D:\_Projects\accreditex\data\oman-healthcare-standards-2023.pdf"
+    pdf_path = str(PROJECT_ROOT / "data" / "oman-healthcare-standards-2023.pdf")
     
     chapters = {
         "GAL": {
@@ -314,10 +317,10 @@ def generate_complete_standards():
         print(f"   ✅ {ch_id:6} - {len(ch_info['standards']):3} standards")
     
     # Save to file
-    output_path = r"D:\_Projects\accreditex\src\data\standards.json"
+    output_path = str(PROJECT_ROOT / "src" / "data" / "standards.json")
     
     # Backup old file
-    backup_path = r"D:\_Projects\accreditex\src\data\standards_backup.json"
+    backup_path = str(PROJECT_ROOT / "src" / "data" / "standards_backup.json")
     if Path(output_path).exists():
         import shutil
         shutil.copy(output_path, backup_path)

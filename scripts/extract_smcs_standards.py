@@ -17,8 +17,10 @@ from datetime import datetime, timezone
 
 import openpyxl
 
-DOCS_DIR = r"D:\_Projects\accreditex\docs\Oman Health Accreditation Standerds"
-OUTPUT_DIR = r"D:\_Projects\accreditex\data\sample-data"
+# Project root is one level up from scripts/
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DOCS_DIR = os.path.join(_PROJECT_ROOT, "docs", "Oman Health Accreditation Standerds")
+OUTPUT_DIR = os.path.join(_PROJECT_ROOT, "data", "sample-data")
 PROGRAM_ID = "prog-ohap"
 CHAPTER = "Chapter 4"
 SECTION = "Specialized Medical Care Services (SMCS)"

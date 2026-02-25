@@ -1,7 +1,9 @@
 # Add PDCA toast notification keys to translation files
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$projectRoot = Split-Path -Parent $scriptDir
 
-$enFile = "d:\_Projects\accreditex\data\locales\en\common.ts"
-$arFile = "d:\_Projects\accreditex\data\locales\ar\common.ts"
+$enFile = Join-Path $projectRoot "data\locales\en\common.ts"
+$arFile = Join-Path $projectRoot "data\locales\ar\common.ts"
 
 # English keys
 $enKeys = @"
