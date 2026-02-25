@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
-import { LogoIcon } from "@/components/icons";
 
 /* ─── SLIDE TYPES ────────────────────────────────────────────────────────── */
 interface Slide {
@@ -149,24 +148,53 @@ const PitchDeckPage: React.FC = () => {
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { icon: "📊", label: "Role-Based Dashboards" },
-              { icon: "📁", label: "Project Management" },
-              { icon: "📄", label: "Document Control" },
-              { icon: "⚠️", label: "Risk & CAPA Hub" },
-              { icon: "🎓", label: "Training & Competency" },
-              { icon: "🏥", label: "Multi-Department" },
-              { icon: "🔍", label: "Audit Management" },
-              { icon: "📅", label: "Calendar & Tasks" },
-              { icon: "💬", label: "AI Assistant" },
-              { icon: "📝", label: "Doc Generator" },
-              { icon: "🌐", label: "EN↔AR Translation" },
-              { icon: "✅", label: "Compliance Check" },
+              {
+                icon: "/pie-chart-svgrepo-com.svg",
+                label: "Role-Based Dashboards",
+              },
+              { icon: "/set-up-svgrepo-com.svg", label: "Project Management" },
+              {
+                icon: "/document-lock-svgrepo-com.svg",
+                label: "Document Control",
+              },
+              {
+                icon: "/trend-analysis-svgrepo-com.svg",
+                label: "Risk & CAPA Hub",
+              },
+              {
+                icon: "/vertical-ruler-svgrepo-com.svg",
+                label: "Training & Competency",
+              },
+              {
+                icon: "/align-two-columns-svgrepo-com.svg",
+                label: "Multi-Department",
+              },
+              { icon: "/look-up-svgrepo-com.svg", label: "Audit Management" },
+              {
+                icon: "/calculator-svgrepo-com.svg",
+                label: "Calendar & Tasks",
+              },
+              { icon: "/help-svgrepo-com.svg", label: "AI Assistant" },
+              { icon: "/insert-word-svgrepo-com.svg", label: "Doc Generator" },
+              {
+                icon: "/global-display-svgrepo-com.svg",
+                label: "EN↔AR Translation",
+              },
+              {
+                icon: "/scaling-ratio-svgrepo-com.svg",
+                label: "Compliance Check",
+              },
             ].map((f) => (
               <div
                 key={f.label}
                 className="flex items-center gap-3 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50"
               >
-                <span className="text-2xl">{f.icon}</span>
+                <img
+                  src={f.icon}
+                  alt={f.label}
+                  className="w-7 h-7"
+                  loading="lazy"
+                />
                 <span className="text-sm font-semibold text-brand-text-primary dark:text-white">
                   {f.label}
                 </span>
