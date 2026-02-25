@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
-import Globe from "@/components/ui/Globe";
+import HeroGlobe from "@/components/ui/HeroGlobe";
 
 /* ─── TYPES ──────────────────────────────────────────────────────────────── */
 interface LandingPageProps {
@@ -238,23 +238,7 @@ const Hero: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 
         {/* Globe / App Preview */}
         <div className="hidden lg:flex items-center justify-center">
-          <div className="relative w-[520px] h-[520px]">
-            <div className="absolute inset-0 bg-gradient-to-r from-teal-500/20 to-blue-500/20 rounded-full blur-3xl" />
-            {globeSettings ? (
-              <Globe
-                width={520}
-                height={520}
-                {...globeSettings}
-                userLocation={{ lat: 23.588, long: 58.3829 }}
-              />
-            ) : (
-              <Globe
-                width={520}
-                height={520}
-                userLocation={{ lat: 23.588, long: 58.3829 }}
-              />
-            )}
-          </div>
+          <HeroGlobe globeSettings={globeSettings} />
         </div>
       </div>
     </section>
