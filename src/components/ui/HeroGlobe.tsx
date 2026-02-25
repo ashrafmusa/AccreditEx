@@ -25,14 +25,14 @@ const cardPositions = [
 
 /* ─── MAIN HERO GLOBE ────────────────────────────────────────────────────── */
 const HeroGlobe: React.FC<HeroGlobeProps> = ({ globeSettings }) => {
-  /* Bright, visible globe settings — the globe should POP */
+  /* Globe settings — full sphere visible, bright, rotating earth */
   const landingDefaults: GlobeSettings = {
-    baseColor: "#1e3a5f" /* visible blue-slate — NOT invisible dark */,
-    markerColor: "#2dd4bf" /* bright teal markers */,
+    baseColor: "#1e3a5f" /* visible blue-slate sphere body */,
+    markerColor: "#2dd4bf" /* bright teal dot markers */,
     glowColor: "#14b8a6" /* teal atmospheric glow */,
-    scale: 2.2,
-    darkness: 0.4 /* much lower = brighter globe */,
-    lightIntensity: 2.5 /* stronger light */,
+    scale: 1.05 /* ~1.0 = full sphere visible, NOT zoomed in */,
+    darkness: 0.35 /* low = bright, visible sphere surface */,
+    lightIntensity: 2.0 /* good light on the sphere */,
     rotationSpeed: 0.004,
   };
 
