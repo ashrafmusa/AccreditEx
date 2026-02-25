@@ -64,13 +64,13 @@ const VisualSettingsPage: React.FC = () => {
 
     // Globe Settings
     globeSettings: {
-      baseColor: appSettings?.globeSettings?.baseColor ?? "#1e293b",
-      markerColor: appSettings?.globeSettings?.markerColor ?? "#818cf8",
-      glowColor: appSettings?.globeSettings?.glowColor ?? "#4f46e5",
-      scale: appSettings?.globeSettings?.scale ?? 2.5,
-      darkness: appSettings?.globeSettings?.darkness ?? 0.9,
-      lightIntensity: appSettings?.globeSettings?.lightIntensity ?? 1.2,
-      rotationSpeed: appSettings?.globeSettings?.rotationSpeed ?? 0.02,
+      baseColor: appSettings?.globeSettings?.baseColor ?? "#1e3a5f",
+      markerColor: appSettings?.globeSettings?.markerColor ?? "#2dd4bf",
+      glowColor: appSettings?.globeSettings?.glowColor ?? "#14b8a6",
+      scale: appSettings?.globeSettings?.scale ?? 1.05,
+      darkness: appSettings?.globeSettings?.darkness ?? 0.35,
+      lightIntensity: appSettings?.globeSettings?.lightIntensity ?? 2.0,
+      rotationSpeed: appSettings?.globeSettings?.rotationSpeed ?? 0.004,
     },
   });
 
@@ -355,13 +355,13 @@ const VisualSettingsPage: React.FC = () => {
         },
       },
       globeSettings: {
-        baseColor: appSettings?.globeSettings?.baseColor ?? "#1e293b",
-        markerColor: appSettings?.globeSettings?.markerColor ?? "#818cf8",
-        glowColor: appSettings?.globeSettings?.glowColor ?? "#4f46e5",
-        scale: appSettings?.globeSettings?.scale ?? 2.5,
-        darkness: appSettings?.globeSettings?.darkness ?? 0.9,
-        lightIntensity: appSettings?.globeSettings?.lightIntensity ?? 1.2,
-        rotationSpeed: appSettings?.globeSettings?.rotationSpeed ?? 0.02,
+        baseColor: appSettings?.globeSettings?.baseColor ?? "#1e3a5f",
+        markerColor: appSettings?.globeSettings?.markerColor ?? "#2dd4bf",
+        glowColor: appSettings?.globeSettings?.glowColor ?? "#14b8a6",
+        scale: appSettings?.globeSettings?.scale ?? 1.05,
+        darkness: appSettings?.globeSettings?.darkness ?? 0.35,
+        lightIntensity: appSettings?.globeSettings?.lightIntensity ?? 2.0,
+        rotationSpeed: appSettings?.globeSettings?.rotationSpeed ?? 0.004,
       },
     });
     setHasChanges(false);

@@ -63,13 +63,13 @@ const getDefaultSettings = (): AppSettings => ({
         requireSymbol: false
     },
     globeSettings: {
-        baseColor: '#1e293b',
-        markerColor: '#818cf8',
-        glowColor: '#4f46e5',
-        scale: 2.5,
-        darkness: 0.9,
-        lightIntensity: 1.2,
-        rotationSpeed: 0.02
+        baseColor: '#1e3a5f',
+        markerColor: '#2dd4bf',
+        glowColor: '#14b8a6',
+        scale: 1.05,
+        darkness: 0.35,
+        lightIntensity: 2.0,
+        rotationSpeed: 0.004
     },
     appearance: {
         compactMode: false,
