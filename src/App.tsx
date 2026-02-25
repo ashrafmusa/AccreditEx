@@ -20,9 +20,12 @@ const MainRouter = React.lazy(() => import("@/components/common/MainRouter"));
 import { AppRouter } from "@/router/AppRouter";
 import { useNavigation } from "@/hooks/useNavigation";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
 const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
+const LandingPage = React.lazy(() => import("@/pages/LandingPage"));
+const PitchDeckPage = React.lazy(() => import("@/pages/PitchDeckPage"));
 
 // AI Assistant Component
 import { AIAssistant } from "@/components/ai/AIAssistant";
@@ -114,6 +117,9 @@ const AppManager: React.FC = () => {
     () => !localStorage.getItem("accreditex-onboarding-complete"),
   );
 
+  const location = useLocation();
+  const navigate = useNavigate();
+
   useFirebaseAuth(); // This hook handles user state
 
   useEffect(() => {
@@ -133,10 +139,30 @@ const AppManager: React.FC = () => {
     return <LoadingScreen />; // Show loading screen while checking auth
   }
 
+  // PUBLIC ROUTES — accessible without authentication
   if (!currentUser) {
+    // /pitch — Investor pitch deck
+    if (location.pathname === "/pitch") {
+      return (
+        <Suspense fallback={<LoadingScreen />}>
+          <PitchDeckPage />
+        </Suspense>
+      );
+    }
+
+    // /login — Direct login page
+    if (location.pathname === "/login") {
+      return (
+        <Suspense fallback={<LoadingScreen />}>
+          <LoginPage />
+        </Suspense>
+      );
+    }
+
+    // Everything else — Marketing landing page
     return (
       <Suspense fallback={<LoadingScreen />}>
-        <LoginPage />
+        <LandingPage onLogin={() => navigate("/login")} />
       </Suspense>
     );
   }
