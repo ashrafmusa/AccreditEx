@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAppStore } from "@/stores/useAppStore";
 import Globe from "@/components/ui/Globe";
-import { LogoIcon } from "@/components/icons";
 
 /* ─── TYPES ──────────────────────────────────────────────────────────────── */
 interface LandingPageProps {
@@ -366,7 +365,7 @@ const ProblemSection: React.FC = () => (
 /* ─── FEATURES SECTION ───────────────────────────────────────────────────── */
 const featuresList = [
   {
-    icon: "📊",
+    icon: "/pie-chart-svgrepo-com.svg",
     title: "Role-Based Dashboards",
     desc: "Tailored views for Admins, Project Leads, Auditors, and Team Members with real-time KPIs.",
     subs: [
@@ -377,7 +376,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "📁",
+    icon: "/set-up-svgrepo-com.svg",
     title: "Project Management",
     desc: "Full accreditation project lifecycle with checklists, evidence, PDCA cycles, and CAPA tracking.",
     subs: [
@@ -388,7 +387,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "📄",
+    icon: "/document-lock-svgrepo-com.svg",
     title: "Document Control",
     desc: "Enterprise document management with versioning, approval workflows, and template gallery.",
     subs: [
@@ -399,7 +398,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "⚠️",
+    icon: "/trend-analysis-svgrepo-com.svg",
     title: "Risk & CAPA Hub",
     desc: "Integrated risk register, incident reporting, CAPA management, and effectiveness tracking.",
     subs: [
@@ -410,7 +409,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "🎓",
+    icon: "/vertical-ruler-svgrepo-com.svg",
     title: "Training & Competency",
     desc: "Complete training management with quizzes, certificates, and competency gap tracking.",
     subs: [
@@ -421,7 +420,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "🏥",
+    icon: "/align-two-columns-svgrepo-com.svg",
     title: "Multi-Department",
     desc: "Hospital-wide project support with AI-powered department assignment and per-department analytics.",
     subs: [
@@ -432,7 +431,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "🔍",
+    icon: "/look-up-svgrepo-com.svg",
     title: "Audit Management",
     desc: "Plan, conduct, and track internal audits with findings, mock surveys, and readiness scoring.",
     subs: [
@@ -443,7 +442,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "📅",
+    icon: "/calculator-svgrepo-com.svg",
     title: "Calendar & Tasks",
     desc: "Unified calendar aggregating all deadlines with personal task queues and notifications.",
     subs: [
@@ -454,7 +453,7 @@ const featuresList = [
     ],
   },
   {
-    icon: "🌐",
+    icon: "/global-display-svgrepo-com.svg",
     title: "Standards Library",
     desc: "Pre-loaded accreditation programs (CBAHI, JCI, DOH) with 240+ standards and 1,043 sub-standards.",
     subs: [
@@ -489,7 +488,12 @@ const Features: React.FC = () => (
             className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-teal-400/30 hover:shadow-xl transition-all relative overflow-hidden"
           >
             <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-            <div className="text-3xl mb-4">{f.icon}</div>
+            <img
+              src={f.icon}
+              alt={f.title}
+              className="w-10 h-10 mb-4"
+              loading="lazy"
+            />
             <h3 className="text-lg font-bold text-brand-text-primary dark:text-white mb-2">
               {f.title}
             </h3>
