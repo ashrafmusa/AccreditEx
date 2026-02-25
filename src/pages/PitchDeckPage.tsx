@@ -681,7 +681,7 @@ const PitchDeckPage: React.FC = () => {
               </a>
             </div>
             <p className="text-xs text-white/40 pt-2">
-              ashraf.a.m.ishag@gmail.com · Seeb, Muscat · Relocating to Abu
+              Ashraf.a.m.ishag@gmail.com · Seeb, Muscat · Relocating to Abu
               Dhabi 2026
             </p>
           </div>
