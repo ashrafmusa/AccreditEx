@@ -30,6 +30,7 @@ import {
   Project
 } from '@/types';
 import { canCloseCapa } from './tqmReadinessService';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const projectsCollection = collection(db, 'projects');
 
@@ -38,7 +39,7 @@ const projectsCollection = collection(db, 'projects');
 // ========================================
 
 export const getProjects = async (): Promise<Project[]> => {
-  const projectSnapshot = await getDocs(query(projectsCollection, orderBy('createdAt', 'desc')));
+  const projectSnapshot = await getDocs(getTenantQuery('projects', orderBy('createdAt', 'desc')));
   freeTierMonitor.recordRead(1);
   return projectSnapshot.docs.map(doc => ({
     id: doc.id,
@@ -58,7 +59,7 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
 };
 
 export const getProjectsByProgram = async (programId: string): Promise<Project[]> => {
-  const q = query(projectsCollection, where('programId', '==', programId));
+  const q = getTenantQuery('projects', where('programId', '==', programId));
   const querySnapshot = await getDocs(q);
   freeTierMonitor.recordRead(1);
   return querySnapshot.docs.map(doc => ({
@@ -68,7 +69,7 @@ export const getProjectsByProgram = async (programId: string): Promise<Project[]
 };
 
 export const getProjectsByStatus = async (status: ProjectStatus): Promise<Project[]> => {
-  const q = query(projectsCollection, where('status', '==', status));
+  const q = getTenantQuery('projects', where('status', '==', status));
   const querySnapshot = await getDocs(q);
   freeTierMonitor.recordRead(1);
   return querySnapshot.docs.map(doc => ({
@@ -80,6 +81,7 @@ export const getProjectsByStatus = async (status: ProjectStatus): Promise<Projec
 export const createProject = async (projectData: Omit<Project, 'id'>): Promise<Project> => {
   const newProject = {
     ...projectData,
+    ...getTenantStamp(),
     createdAt: Timestamp.now().toDate().toISOString(),
     updatedAt: Timestamp.now().toDate().toISOString(),
     progress: 0,
@@ -131,7 +133,7 @@ export const updateProject = async (projectId: string, updates: Partial<Project>
 // ========================================
 
 export const subscribeToProjects = (callback: (projects: Project[]) => void): (() => void) => {
-  const q = query(projectsCollection, orderBy('createdAt', 'desc'));
+  const q = getTenantQuery('projects', orderBy('createdAt', 'desc'));
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const projects = snapshot.docs.map(doc => ({

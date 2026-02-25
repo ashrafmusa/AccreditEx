@@ -1,16 +1,17 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { AuditPlan } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const auditPlansCollection = collection(db, 'auditPlans');
 
 export const getAuditPlans = async (): Promise<AuditPlan[]> => {
-    const planSnapshot = await getDocs(auditPlansCollection);
+    const planSnapshot = await getDocs(getTenantQuery('auditPlans'));
     return planSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AuditPlan));
 };
 
 export const addAuditPlan = async (plan: Omit<AuditPlan, 'id'>): Promise<AuditPlan> => {
-    const docRef = await addDoc(auditPlansCollection, plan);
+    const docRef = await addDoc(auditPlansCollection, { ...plan, ...getTenantStamp() });
     return { id: docRef.id, ...plan } as AuditPlan;
 };
 

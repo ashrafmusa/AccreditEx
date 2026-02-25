@@ -2,6 +2,23 @@ export type Language = 'en' | 'ar';
 export type Direction = 'ltr' | 'rtl';
 export type Theme = 'light' | 'dark';
 
+// ── Multi-Tenancy ────────────────────────────────────────
+
+export interface Organization {
+  id: string;
+  name: string;
+  nameAr?: string;
+  type: 'hospital' | 'clinic' | 'laboratory' | 'group' | 'other';
+  country?: string;
+  contactEmail?: string;
+  logoUrl?: string;
+  isActive: boolean;
+  plan?: 'free' | 'starter' | 'professional' | 'enterprise';
+  maxUsers?: number;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration';
 
 export type NavigationView = 'dashboard' | 'analyticsHub' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder';
@@ -206,6 +223,7 @@ export interface UsersSettings {
 }
 
 export interface AppSettings {
+  organizationId?: string;
   appName: string;
   logoUrl: string;
   primaryColor: string;
@@ -246,6 +264,7 @@ export interface StandardDocument {
 
 export interface Standard {
   id?: string;
+  organizationId?: string;
   standardId: string;
   programId: string;
   section: string;
@@ -267,6 +286,7 @@ export interface Standard {
 
 export interface Competency {
   id: string;
+  organizationId?: string;
   name: LocalizedString;
   description: LocalizedString;
   category?: string;
@@ -279,6 +299,7 @@ export interface Competency {
 
 export interface Department {
   id: string;
+  organizationId?: string;
   name: LocalizedString;
   requiredCompetencyIds?: string[];
   head?: string;
@@ -292,6 +313,7 @@ export interface Department {
 
 export interface User {
   id: string;
+  organizationId?: string;
   name: string;
   displayName?: string;
   email: string;
@@ -531,6 +553,7 @@ export const CAP_LAB_DISCIPLINES = [
 
 export interface AccreditationProgram {
   id: string;
+  organizationId?: string;
   name: string;
   description: LocalizedString;
   documentIds?: string[];
@@ -545,6 +568,7 @@ export interface AccreditationProgram {
 
 export interface AppDocument {
   id: string;
+  organizationId?: string;
   name: LocalizedString;
   type: 'Policy' | 'Procedure' | 'Report' | 'Evidence' | 'Process Map';
   documentNumber?: string;  // Sequential document number (e.g., POL-001, PRC-042)
@@ -593,6 +617,7 @@ export interface AppDocument {
 
 export interface TrainingProgram {
   id: string;
+  organizationId?: string;
   title: LocalizedString;
   description: LocalizedString;
   content: LocalizedString;
@@ -615,6 +640,7 @@ export interface TrainingProgram {
 
 export interface CertificateData {
   id: string;
+  organizationId?: string;
   userId: string;
   userName?: string;
   trainingId: string;
@@ -636,6 +662,7 @@ export interface CustomCalendarEvent {
 
 export interface Project {
   id: string;
+  organizationId?: string;
   name: string;
   description?: string;
   programId: string;
@@ -675,6 +702,7 @@ export interface Comment {
 
 export interface Risk {
   id: string;
+  organizationId?: string;
   title: string;
   description: string;
   likelihood: number;
@@ -697,6 +725,7 @@ export interface Risk {
 
 export interface IncidentReport {
   id: string;
+  organizationId?: string;
   incidentDate: string;
   location: string;
   type: 'Patient Safety' | 'Staff Injury' | 'Facility Issue' | 'Medication Error' | 'Near-Miss'
@@ -749,6 +778,7 @@ export interface EscalationEvent {
 
 export interface AuditPlan {
   id: string;
+  organizationId?: string;
   name: string;
   projectId: string;
   standardSection: string; // e.g. 'Chapter 1' or specific standard IDs
@@ -769,6 +799,7 @@ export interface AuditResult {
 }
 export interface Audit {
   id: string;
+  organizationId?: string;
   planId: string;
   dateConducted: string;
   auditorId: string;
@@ -784,6 +815,7 @@ export type FindingSeverity = 'major' | 'minor' | 'observation' | 'opportunity';
 
 export interface AuditFinding {
   id: string;
+  organizationId?: string;
   auditId: string;
   standardId?: string;
   checklistItemId?: string;
@@ -1251,6 +1283,7 @@ export interface PerformanceGoal {
 
 export interface PerformanceEvaluation {
   id: string;
+  organizationId?: string;
   employeeId: string;
   employeeName: string;
   evaluatorId: string;
@@ -1332,6 +1365,7 @@ export interface RoundingFinding {
 
 export interface QualityRound {
   id: string;
+  organizationId?: string;
   templateId: string;
   templateName: string;
   department: string;

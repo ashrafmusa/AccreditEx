@@ -1,6 +1,7 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { Risk } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const risksCollection = collection(db, 'risks');
 
@@ -10,7 +11,7 @@ const stripUndefined = <T extends Record<string, any>>(obj: T): Partial<T> =>
 
 export const getRisks = async (): Promise<Risk[]> => {
     try {
-        const riskSnapshot = await getDocs(risksCollection);
+        const riskSnapshot = await getDocs(getTenantQuery('risks'));
         return riskSnapshot.docs.map(d => ({ ...d.data(), id: d.id } as Risk));
     } catch (error) {
         console.error('[riskService] getRisks failed:', error);
@@ -22,7 +23,7 @@ export const addRisk = async (risk: Omit<Risk, 'id'>): Promise<Risk> => {
     try {
         const riskWithTimestamp = { ...risk, createdAt: risk.createdAt || new Date().toISOString() };
         const cleanData = stripUndefined(riskWithTimestamp);
-        const docRef = await addDoc(risksCollection, cleanData);
+        const docRef = await addDoc(risksCollection, { ...cleanData, ...getTenantStamp() });
         return { id: docRef.id, ...riskWithTimestamp } as Risk;
     } catch (error) {
         console.error('[riskService] addRisk failed:', error);

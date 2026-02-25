@@ -1,11 +1,12 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { Standard } from '@/types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const standardsCollection = collection(db, 'standards');
 
 export const getStandards = async (): Promise<Standard[]> => {
-    const standardSnapshot = await getDocs(standardsCollection);
+    const standardSnapshot = await getDocs(getTenantQuery('standards'));
     return standardSnapshot.docs.map(docSnap => {
         const data = docSnap.data();
         return {
@@ -19,7 +20,7 @@ export const getStandards = async (): Promise<Standard[]> => {
 export const addStandard = async (standard: Omit<Standard, 'id'>): Promise<Standard> => {
     // Strip any accidentally passed 'id' from the data
     const { id: _discardId, ...cleanData } = standard as any;
-    const docRef = await addDoc(standardsCollection, cleanData);
+    const docRef = await addDoc(standardsCollection, { ...cleanData, ...getTenantStamp() });
     return {
         ...cleanData,
         id: docRef.id,

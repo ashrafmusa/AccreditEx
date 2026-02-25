@@ -9,6 +9,7 @@ import { Project, AppDocument, ComplianceStatus } from '@/types';
 import { freeTierMonitor } from './freeTierMonitor';
 import { generatePDFReport, downloadPDF } from './pdfReportGenerator';
 import { cloudinaryService } from './cloudinaryService';
+import { getTenantStamp } from '@/utils/tenantQuery';
 
 const API_BASE_URL = 'https://accreditex.onrender.com';
 
@@ -117,6 +118,7 @@ export const generateAIComplianceReport = async (
   // Save to Firebase
   const docRef = await addDoc(collection(db, 'documents'), {
     ...reportDocument,
+    ...getTenantStamp(),
     uploadedAt: Timestamp.now(),
     createdAt: Timestamp.now(),
     updatedAt: Timestamp.now()

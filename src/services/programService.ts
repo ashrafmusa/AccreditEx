@@ -1,16 +1,17 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { AccreditationProgram as Program } from '@/types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const programsCollection = collection(db, 'programs');
 
 export const getPrograms = async (): Promise<Program[]> => {
-    const programSnapshot = await getDocs(programsCollection);
+    const programSnapshot = await getDocs(getTenantQuery('programs'));
     return programSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Program));
 };
 
 export const addProgram = async (program: Omit<Program, 'id'>): Promise<Program> => {
-    const docRef = await addDoc(programsCollection, program);
+    const docRef = await addDoc(programsCollection, { ...program, ...getTenantStamp() });
     return { id: docRef.id, ...program } as Program;
 };
 

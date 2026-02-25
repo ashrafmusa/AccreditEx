@@ -1,16 +1,17 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { TrainingProgram } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const trainingProgramsCollection = collection(db, 'trainingPrograms');
 
 export const getTrainingPrograms = async (): Promise<TrainingProgram[]> => {
-    const programSnapshot = await getDocs(trainingProgramsCollection);
+    const programSnapshot = await getDocs(getTenantQuery('trainingPrograms'));
     return programSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as TrainingProgram));
 };
 
 export const addTrainingProgram = async (program: Omit<TrainingProgram, 'id'>): Promise<TrainingProgram> => {
-    const docRef = await addDoc(trainingProgramsCollection, program);
+    const docRef = await addDoc(trainingProgramsCollection, { ...program, ...getTenantStamp() });
     return { id: docRef.id, ...program } as TrainingProgram;
 };
 

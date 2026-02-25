@@ -12,6 +12,7 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTIONS_TO_BACKUP = [
   'users',
@@ -34,9 +35,8 @@ export async function exportAllFirestoreData(): Promise<Record<string, any>> {
 
   try {
     for (const collectionName of COLLECTIONS_TO_BACKUP) {
-      const collectionRef = collection(db, collectionName);
-      const snapshot = await getDocs(collectionRef);
-      
+      const snapshot = await getDocs(getTenantQuery(collectionName));
+
       exportData[collectionName] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),

@@ -1,6 +1,7 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { QualityRound, RoundingTemplate, RoundingFinding } from '../types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 // ─── Collections ─────────────────────────────────────────
 const ROUNDS_COLLECTION = 'quality_rounds';
@@ -19,7 +20,7 @@ const stripUndefined = (obj: Record<string, unknown>): Record<string, unknown> =
 
 export const getRoundingTemplates = async (): Promise<RoundingTemplate[]> => {
     try {
-        const q = query(templatesCollection, orderBy('createdAt', 'desc'));
+        const q = getTenantQuery(TEMPLATES_COLLECTION, orderBy('createdAt', 'desc'));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as RoundingTemplate));
     } catch (error) {
@@ -30,7 +31,7 @@ export const getRoundingTemplates = async (): Promise<RoundingTemplate[]> => {
 
 export const addRoundingTemplate = async (template: Omit<RoundingTemplate, 'id'>): Promise<RoundingTemplate> => {
     try {
-        const payload = stripUndefined({ ...template, createdAt: new Date().toISOString() }) as Omit<RoundingTemplate, 'id'>;
+        const payload = stripUndefined({ ...template, createdAt: new Date().toISOString(), ...getTenantStamp() }) as Omit<RoundingTemplate, 'id'>;
         const docRef = await addDoc(templatesCollection, payload);
         return { id: docRef.id, ...payload } as RoundingTemplate;
     } catch (error) {
@@ -65,7 +66,7 @@ export const deleteRoundingTemplate = async (templateId: string): Promise<void> 
 
 export const getQualityRounds = async (): Promise<QualityRound[]> => {
     try {
-        const q = query(roundsCollection, orderBy('scheduledDate', 'desc'));
+        const q = getTenantQuery(ROUNDS_COLLECTION, orderBy('scheduledDate', 'desc'));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound));
     } catch (error) {
@@ -76,7 +77,7 @@ export const getQualityRounds = async (): Promise<QualityRound[]> => {
 
 export const getRoundsByDepartment = async (department: string): Promise<QualityRound[]> => {
     try {
-        const q = query(roundsCollection, where('department', '==', department), orderBy('scheduledDate', 'desc'));
+        const q = getTenantQuery(ROUNDS_COLLECTION, where('department', '==', department), orderBy('scheduledDate', 'desc'));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound));
     } catch (error) {
@@ -87,7 +88,7 @@ export const getRoundsByDepartment = async (department: string): Promise<Quality
 
 export const getRoundsByStatus = async (status: string): Promise<QualityRound[]> => {
     try {
-        const q = query(roundsCollection, where('status', '==', status), orderBy('scheduledDate', 'desc'));
+        const q = getTenantQuery(ROUNDS_COLLECTION, where('status', '==', status), orderBy('scheduledDate', 'desc'));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound));
     } catch (error) {
@@ -98,7 +99,7 @@ export const getRoundsByStatus = async (status: string): Promise<QualityRound[]>
 
 export const addQualityRound = async (round: Omit<QualityRound, 'id'>): Promise<QualityRound> => {
     try {
-        const payload = stripUndefined({ ...round, createdAt: new Date().toISOString() }) as Omit<QualityRound, 'id'>;
+        const payload = stripUndefined({ ...round, createdAt: new Date().toISOString(), ...getTenantStamp() }) as Omit<QualityRound, 'id'>;
         const docRef = await addDoc(roundsCollection, payload);
         return { id: docRef.id, ...payload } as QualityRound;
     } catch (error) {
@@ -135,9 +136,9 @@ export const getRoundingFindings = async (roundId?: string): Promise<RoundingFin
     try {
         let q;
         if (roundId) {
-            q = query(findingsCollection, where('roundId', '==', roundId), orderBy('createdAt', 'desc'));
+            q = getTenantQuery(FINDINGS_COLLECTION, where('roundId', '==', roundId), orderBy('createdAt', 'desc'));
         } else {
-            q = query(findingsCollection, orderBy('createdAt', 'desc'));
+            q = getTenantQuery(FINDINGS_COLLECTION, orderBy('createdAt', 'desc'));
         }
         const snapshot = await getDocs(q);
         return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as RoundingFinding));
@@ -149,7 +150,7 @@ export const getRoundingFindings = async (roundId?: string): Promise<RoundingFin
 
 export const addRoundingFinding = async (finding: Omit<RoundingFinding, 'id'>): Promise<RoundingFinding> => {
     try {
-        const payload = stripUndefined({ ...finding, createdAt: new Date().toISOString() }) as Omit<RoundingFinding, 'id'>;
+        const payload = stripUndefined({ ...finding, createdAt: new Date().toISOString(), ...getTenantStamp() }) as Omit<RoundingFinding, 'id'>;
         const docRef = await addDoc(findingsCollection, payload);
         return { id: docRef.id, ...payload } as RoundingFinding;
     } catch (error) {

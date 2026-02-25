@@ -18,6 +18,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { Notification } from '@/types';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 /**
  * Get notifications for a specific user, ordered by timestamp
@@ -26,9 +27,7 @@ export async function getNotificationsForUser(
   userId: string
 ): Promise<Notification[]> {
   try {
-    const notificationsRef = collection(db, 'notifications');
-    const q = query(
-      notificationsRef,
+    const q = getTenantQuery('notifications',
       where('userId', '==', userId),
       orderBy('timestamp', 'desc'),
       firestoreLimit(50) // Limit to 50 most recent
@@ -67,8 +66,7 @@ export async function markNotificationAsRead(
  */
 export async function markAllNotificationsAsRead(userId: string): Promise<void> {
   try {
-    const notificationsRef = collection(db, 'notifications');
-    const q = query(notificationsRef, where('userId', '==', userId), where('read', '==', false));
+    const q = getTenantQuery('notifications', where('userId', '==', userId), where('read', '==', false));
 
     const querySnapshot = await getDocs(q);
     for (const doc of querySnapshot.docs) {
@@ -90,6 +88,7 @@ export async function createNotification(
     const notificationsRef = collection(db, 'notifications');
     const docRef = await addDoc(notificationsRef, {
       ...notification,
+      ...getTenantStamp(),
       userId,
       timestamp: Timestamp.now(),
       read: false,

@@ -70,6 +70,33 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
     
+    // ── Multi-Tenancy Helpers ──────────────────────────────
+    // Get the organizationId from the requesting user's Auth token
+    function getUserOrgId() {
+      return request.auth.token.organizationId;
+    }
+    
+    // Check if tenant isolation is active for this request
+    function isTenantActive() {
+      return getUserOrgId() != null;
+    }
+    
+    // Check that document belongs to the user's organization
+    // Backward compatible: pass-through when no org claim or legacy doc without orgId
+    function belongsToUserOrg() {
+      return !isTenantActive()
+        || !resource.data.keys().hasAny(['organizationId'])
+        || resource.data.organizationId == getUserOrgId();
+    }
+    
+    // Check that new/updated document sets the correct org ID
+    // Backward compatible: pass-through when no org claim or no orgId field being set
+    function setsCorrectOrg() {
+      return !isTenantActive()
+        || !request.resource.data.keys().hasAny(['organizationId'])
+        || request.resource.data.organizationId == getUserOrgId();
+    }
+    
     // =====================================================
     // COLLECTION RULES
     // =====================================================
@@ -82,19 +109,11 @@ service cloud.firestore {
     
     // Users collection
     // Security: Users keyed by Firebase Auth UID
-    // - Read: Any authenticated user
-    // - Create: Admin only OR owner (for migration: isOwner matches when doc ID = auth UID)
-    // - Update: Own profile (no role change) or Admin
-    // - Delete: Admin OR own legacy doc (email match enables migration cleanup)
-    //
-    // Migration note: The email-match delete rule allows users to delete their
-    // own legacy doc (keyed by custom ID) during UID migration. This is safe
-    // because Firebase Auth guarantees email uniqueness and request.auth.token.email
-    // cannot be forged by the client.
+    // Multi-tenancy: Reads filtered by org, writes must set correct org
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isAdmin() || isOwner(userId);
-      allow update: if (isOwner(userId) || isAdmin()) && cannotEscalatePrivilege();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if (isAdmin() || isOwner(userId)) && setsCorrectOrg();
+      allow update: if (isOwner(userId) || isAdmin()) && cannotEscalatePrivilege() && setsCorrectOrg();
       allow delete: if isAdmin() 
                     || (isAuthenticated() && resource.data.email == request.auth.token.email);
     }
@@ -103,76 +122,80 @@ service cloud.firestore {
     // Security fix (2026-02-18): Update restricted to project leads+
     // instead of any authenticated user (was: allow update: if isAuthenticated())
     match /projects/{projectId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && hasRequiredProjectFields();
-      allow update: if isAtLeastTeamMember();
-      allow delete: if isProjectLead();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAuthenticated() && hasRequiredProjectFields() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isProjectLead() && belongsToUserOrg();
     }
     
     // Documents collection
+    // Security fix: Create/update restricted to team members+
+    // (was: any authenticated user — audit finding S-7)
     match /documents/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Standards collection
     match /standards/{docId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create, update: if isAdmin() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create, update: if isAdmin() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Departments collection
     match /departments/{docId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create, update: if isAdmin() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Training Programs collection
     match /trainingPrograms/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isProjectLead();
-      allow update: if isProjectLead();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isProjectLead() && setsCorrectOrg();
+      allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Competencies collection
     match /competencies/{docId} {
-      allow read: if isAuthenticated();
-      allow create, update: if isAdmin();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create, update: if isAdmin() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Risks collection
+    // Security fix: Create/update restricted to team members+
     match /risks/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // App Settings collection
     match /appSettings/{docId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow write: if isAdmin() && setsCorrectOrg();
     }
     
     // Audit Findings collection
+    // Security fix: Create/update restricted to team members+
     match /auditFindings/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
-      allow delete: if isAdmin();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Settings Audit Logs collection
@@ -218,27 +241,133 @@ service cloud.firestore {
     }
     
     // Report Definitions collection (Custom Report Builder)
+    // Security fix: Write restricted to project leads+
     match /reportDefinitions/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isProjectLead() && setsCorrectOrg();
+      allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Workflow Definitions collection (Workflow Automation)
+    // Security fix: Write restricted to project leads+
     match /workflowDefinitions/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
-      allow update: if isAuthenticated();
-      allow delete: if isAuthenticated();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isProjectLead() && setsCorrectOrg();
+      allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Workflow Execution Logs collection
     match /workflowExecutionLogs/{docId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAuthenticated() && setsCorrectOrg();
+      allow update: if false;
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // ── Additional Collections (Multi-Tenancy) ─────────────
+    
+    // Organizations collection (super-admin only)
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated() && (isAdmin() || request.auth.token.organizationId == orgId);
+      allow write: if isAdmin();
+    }
+    
+    // Audits collection
+    match /audits/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Audit Plans collection
+    match /auditPlans/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isProjectLead() && setsCorrectOrg();
+      allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Incident Reports collection
+    match /incidentReports/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Quality Rounds collection
+    match /quality_rounds/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Rounding Templates collection
+    match /rounding_templates/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isProjectLead() && setsCorrectOrg();
+      allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Rounding Findings collection
+    match /rounding_findings/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Performance Evaluations collection
+    match /performance_evaluations/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isProjectLead() && setsCorrectOrg();
+      allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Certificates collection
+    match /certificates/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAdmin() && setsCorrectOrg();
+      allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Notifications collection
+    match /notifications/{docId} {
+      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && setsCorrectOrg();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Activity Logs collection
+    match /activity_logs/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAuthenticated() && setsCorrectOrg();
       allow update: if false;
       allow delete: if isAdmin();
+    }
+    
+    // Custom Calendar Events collection
+    match /customEvents/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAuthenticated() && setsCorrectOrg();
+      allow update: if isAuthenticated() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAuthenticated() && belongsToUserOrg();
+    }
+    
+    // Programs collection
+    match /programs/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAdmin() && setsCorrectOrg();
+      allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
   }
 }
