@@ -1071,7 +1071,7 @@ const faqs = [
   },
   {
     q: "Can investors request a demo or pitch deck?",
-    a: "Absolutely. You can view the interactive pitch deck at /pitch, or contact founder Ashraf Ishag directly at ashraf.a.m.ishag@gmail.com to schedule a live demo of the platform.",
+    a: "Absolutely. You can view the interactive pitch deck at /pitch, or contact founder Ashraf Ishag directly at Ashraf.a.m.ishag@gmail.com to schedule a live demo of the platform.",
   },
 ];
 
