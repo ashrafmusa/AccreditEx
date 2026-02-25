@@ -1,7 +1,11 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
+import os
 from pathlib import Path
+
+# Project root is one level up from scripts/
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 def upload_standards_to_firebase():
     """Upload complete OHAS standards to Firebase Firestore"""
@@ -16,15 +20,18 @@ def upload_standards_to_firebase():
         app = firebase_admin.get_app()
         print("✅ Using existing Firebase app")
     except ValueError:
-        # Initialize new app
-        cred = credentials.Certificate(r"D:\_Projects\accreditex\accreditex-79c08-firebase-adminsdk-fbsvc-0c19a890a8.json")
+        # Initialize new app — uses GOOGLE_APPLICATION_CREDENTIALS env var or local key
+        sa_key = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        if not sa_key:
+            sa_key = str(PROJECT_ROOT / "serviceAccountKey.json")
+        cred = credentials.Certificate(sa_key)
         app = firebase_admin.initialize_app(cred)
         print("✅ Firebase Admin SDK initialized")
     
     db = firestore.client()
     
     # Load standards from JSON
-    standards_path = r"D:\_Projects\accreditex\src\data\standards.json"
+    standards_path = str(PROJECT_ROOT / "src" / "data" / "standards.json")
     with open(standards_path, 'r', encoding='utf-8') as f:
         standards = json.load(f)
     

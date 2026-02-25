@@ -1,7 +1,11 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
 import json
+import os
 from pathlib import Path
+
+# Project root is one level up from scripts/
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 def upload_all_data_to_firebase():
     """Upload projects, departments, and competencies to Firebase Firestore"""
@@ -15,7 +19,11 @@ def upload_all_data_to_firebase():
         app = firebase_admin.get_app()
         print("✅ Using existing Firebase app")
     except ValueError:
-        cred = credentials.Certificate(r"D:\_Projects\accreditex\accreditex-79c08-firebase-adminsdk-fbsvc-0c19a890a8.json")
+        # Uses GOOGLE_APPLICATION_CREDENTIALS env var or local key
+        sa_key = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+        if not sa_key:
+            sa_key = str(PROJECT_ROOT / "serviceAccountKey.json")
+        cred = credentials.Certificate(sa_key)
         app = firebase_admin.initialize_app(cred)
         print("✅ Firebase Admin SDK initialized")
     
