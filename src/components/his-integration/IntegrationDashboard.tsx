@@ -62,7 +62,7 @@ export const IntegrationDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Configurations */}
         <div className="bg-white dark:bg-dark-bg-secondary rounded-lg border border-gray-200 dark:border-dark-border p-4">
-          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
             Configurations
           </p>
           <p className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-2">
@@ -75,7 +75,7 @@ export const IntegrationDashboard: React.FC = () => {
 
         {/* Total Syncs */}
         <div className="bg-white dark:bg-dark-bg-secondary rounded-lg border border-gray-200 dark:border-dark-border p-4">
-          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
             Total Syncs
           </p>
           <p className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-2">
@@ -88,7 +88,7 @@ export const IntegrationDashboard: React.FC = () => {
 
         {/* Successful Syncs */}
         <div className="bg-white dark:bg-dark-bg-secondary rounded-lg border border-gray-200 dark:border-dark-border p-4">
-          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
             Successful
           </p>
           <p className="text-2xl font-bold text-green-600 dark:text-green-400 mt-2">
@@ -105,7 +105,7 @@ export const IntegrationDashboard: React.FC = () => {
 
         {/* Failed Syncs */}
         <div className="bg-white dark:bg-dark-bg-secondary rounded-lg border border-gray-200 dark:border-dark-border p-4">
-          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
             Failed
           </p>
           <p className="text-2xl font-bold text-red-600 dark:text-red-400 mt-2">
@@ -118,7 +118,7 @@ export const IntegrationDashboard: React.FC = () => {
 
         {/* Last Sync */}
         <div className="bg-white dark:bg-dark-bg-secondary rounded-lg border border-gray-200 dark:border-dark-border p-4">
-          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+          <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
             Last Sync
           </p>
           <p className="text-sm font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-2">
@@ -276,19 +276,19 @@ const ActivityLog: React.FC = () => {
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-dark-bg-tertiary border-b border-gray-200 dark:border-dark-border">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     HIS Name
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     Action
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     Message
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     Time
                   </th>
                 </tr>

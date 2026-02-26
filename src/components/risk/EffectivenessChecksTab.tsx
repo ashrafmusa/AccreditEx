@@ -57,19 +57,19 @@ const EffectivenessChecksTab: React.FC<Props> = ({
               <tr>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide"
                 >
                   {t("source")}
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide"
                 >
                   {t("checkDueDate")}
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-start text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide"
                 >
                   {t("actions")}
                 </th>

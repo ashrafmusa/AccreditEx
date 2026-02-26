@@ -110,7 +110,7 @@ export const FeedbackWidget: React.FC = () => {
     return (
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-20 right-4 md:right-6 z-[9998] bg-linear-to-br from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110"
+        className="fixed bottom-20 right-4 md:right-6 z-9998 bg-linear-to-br from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-full p-3 shadow-lg transition-all duration-300 hover:scale-110"
         aria-label="Send Feedback"
         title="Send Feedback"
       >
@@ -120,7 +120,7 @@ export const FeedbackWidget: React.FC = () => {
   }
 
   return (
-    <div className="fixed bottom-20 right-4 md:right-6 z-[9998] w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-700">
+    <div className="fixed bottom-20 right-4 md:right-6 z-9998 w-96 max-w-[calc(100vw-2rem)] bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-gray-200 dark:border-slate-700">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700 bg-linear-to-r from-green-600 to-emerald-600 text-white rounded-t-xl">
         <h3 className="font-semibold text-sm flex items-center gap-2">

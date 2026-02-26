@@ -157,7 +157,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
                 {expandedIndex === index && (
                   <div className="mt-3 pt-3 border-t border-current border-opacity-20">
                     <div className="bg-white/50 rounded p-3">
-                      <p className="text-xs font-semibold uppercase text-gray-700 mb-1">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-700 mb-1">
                         Recommendation
                       </p>
                       <p

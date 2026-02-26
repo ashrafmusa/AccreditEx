@@ -101,7 +101,7 @@ const UsageMonitorPage: React.FC = () => {
             >
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-                  <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase mb-2">
+                  <h4 className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase tracking-wide mb-2">
                     Reads
                   </h4>
                   <p className="text-2xl font-bold text-blue-900 dark:text-blue-200">
@@ -112,7 +112,7 @@ const UsageMonitorPage: React.FC = () => {
                   </p>
                 </div>
                 <div className="bg-rose-50 dark:bg-pink-900/20 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
-                  <h4 className="text-xs font-semibold text-pink-900 dark:text-rose-300 uppercase mb-2">
+                  <h4 className="text-xs font-semibold text-pink-900 dark:text-rose-300 uppercase tracking-wide mb-2">
                     Writes
                   </h4>
                   <p className="text-2xl font-bold text-pink-900 dark:text-rose-200">
@@ -123,7 +123,7 @@ const UsageMonitorPage: React.FC = () => {
                   </p>
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
-                  <h4 className="text-xs font-semibold text-green-900 dark:text-green-300 uppercase mb-2">
+                  <h4 className="text-xs font-semibold text-green-900 dark:text-green-300 uppercase tracking-wide mb-2">
                     Deletes
                   </h4>
                   <p className="text-2xl font-bold text-green-900 dark:text-green-200">

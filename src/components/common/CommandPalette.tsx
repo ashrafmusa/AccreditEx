@@ -282,7 +282,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
           {!searchTerm ? (
             // Recent Searches
             <div className="p-2">
-              <h3 className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase mb-2 px-2">
+              <h3 className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide mb-2 px-2">
                 {t("recentSearches")}
               </h3>
               {recentSearches.length > 0 ? (

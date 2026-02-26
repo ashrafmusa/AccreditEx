@@ -1155,7 +1155,7 @@ export default function QualityRoundingPage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs font-medium text-gray-500 uppercase">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             {t("overallComplianceRate")}
           </p>
           <p
@@ -1165,7 +1165,7 @@ export default function QualityRoundingPage() {
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs font-medium text-gray-500 uppercase">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             {t("totalRoundsCompleted")}
           </p>
           <p className="text-3xl font-bold text-blue-600 mt-1">
@@ -1176,7 +1176,7 @@ export default function QualityRoundingPage() {
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs font-medium text-gray-500 uppercase">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             {t("openFindings")}
           </p>
           <p
@@ -1186,7 +1186,7 @@ export default function QualityRoundingPage() {
           </p>
         </div>
         <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs font-medium text-gray-500 uppercase">
+          <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
             {t("criticalFindings")}
           </p>
           <p

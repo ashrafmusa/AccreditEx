@@ -235,13 +235,13 @@ const SkillMatrixTab: React.FC = () => {
         <table className="min-w-full text-xs">
           <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="sticky left-0 z-20 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-left font-semibold text-brand-text-primary dark:text-dark-brand-text-primary min-w-[160px] border-b border-brand-border dark:border-dark-brand-border">
+              <th className="sticky left-0 z-20 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-left font-semibold text-brand-text-primary dark:text-dark-brand-text-primary min-w-40 border-b border-brand-border dark:border-dark-brand-border">
                 Staff Member
               </th>
               {visibleCompetencies.map((comp) => (
                 <th
                   key={comp.id}
-                  className="px-1 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary border-b border-brand-border dark:border-dark-brand-border min-w-[40px]"
+                  className="px-1 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary border-b border-brand-border dark:border-dark-brand-border min-w-10"
                   title={`${comp.name[lang]}${comp.category ? ` (${comp.category})` : ""}${comp.level ? ` — ${comp.level}` : ""}`}
                 >
                   <div

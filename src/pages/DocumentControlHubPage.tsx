@@ -1301,6 +1301,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                           type="checkbox"
                           checked={selectedDocIds.has(doc.id)}
                           onChange={() => toggleDocSelection(doc.id)}
+                          aria-label={`Select document ${doc.name?.en || doc.id}`}
                           className="rounded border-gray-300 dark:border-gray-600 text-brand-primary focus:ring-brand-primary"
                         />
                       </div>

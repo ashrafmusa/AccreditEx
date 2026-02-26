@@ -109,19 +109,19 @@ const RiskRegisterTab: React.FC = () => {
           <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide">
                   {t("riskTitle")}
                 </th>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide">
                   {t("status")}
                 </th>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide">
                   {t("riskScore")}
                 </th>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide">
                   {t("owner")}
                 </th>
-                <th className="px-6 py-3 text-end text-xs font-medium uppercase">
+                <th className="px-6 py-3 text-end text-xs font-medium uppercase tracking-wide">
                   {t("actions")}
                 </th>
               </tr>

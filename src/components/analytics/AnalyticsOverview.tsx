@@ -75,7 +75,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ configId }
       <div className="grid grid-cols-3 gap-4">
         <div className="bg-white rounded-lg shadow p-4 border-l-4 border-green-500">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase">Success Rate</span>
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Success Rate</span>
             <CheckCircle size={16} className="text-green-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900">{performance?.successRate}%</div>
@@ -84,7 +84,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ configId }
 
         <div className="bg-white rounded-lg shadow p-4 border-l-4 border-blue-500">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase">Avg Duration</span>
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Avg Duration</span>
             <TrendingUp size={16} className="text-blue-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900">{performance?.averageDuration}ms</div>
@@ -93,7 +93,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ configId }
 
         <div className="bg-white rounded-lg shadow p-4 border-l-4 border-rose-500">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-gray-600 uppercase">Total Syncs</span>
+            <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Total Syncs</span>
             <CheckCircle size={16} className="text-rose-500" />
           </div>
           <div className="text-3xl font-bold text-gray-900">{performance?.totalSyncs}</div>

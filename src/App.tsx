@@ -177,10 +177,18 @@ const AppManager: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary">
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-9999 focus:px-4 focus:py-2 focus:bg-brand-primary focus:text-white focus:rounded-md focus:text-sm focus:font-medium focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2"
+      >
+        Skip to main content
+      </a>
       <Layout setNavigation={setNavigation} navigation={navigation}>
-        <Suspense fallback={<LoadingScreen />}>
-          <MainRouter navigation={navigation} setNavigation={setNavigation} />
-        </Suspense>
+        <main id="main-content">
+          <Suspense fallback={<LoadingScreen />}>
+            <MainRouter navigation={navigation} setNavigation={setNavigation} />
+          </Suspense>
+        </main>
       </Layout>
       {/* AI Assistant - Always available when logged in */}
       <AIAssistant />

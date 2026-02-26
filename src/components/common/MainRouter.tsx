@@ -273,7 +273,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
           </p>
 
           <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6 text-left">
-            <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase mb-1">
+            <p className="text-xs font-semibold text-blue-900 dark:text-blue-300 uppercase tracking-wide mb-1">
               ℹ️ {t("needHelp")}
             </p>
             <p className="text-sm text-blue-800 dark:text-blue-200">

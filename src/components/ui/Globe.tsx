@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import createGlobe from "cobe";
 import { useSpring } from "framer-motion";
 
@@ -43,6 +43,18 @@ const Globe: React.FC<GlobeProps> = ({
   userLocation,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
+
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handler = (e: MediaQueryListEvent) =>
+      setPrefersReducedMotion(e.matches);
+    mql.addEventListener("change", handler);
+    return () => mql.removeEventListener("change", handler);
+  }, []);
+
   const locationToAngles = (lat: number, long: number): [number, number] => {
     return [(Math.PI / 180) * lat, (Math.PI / 180) * long];
   };
@@ -118,20 +130,20 @@ const Globe: React.FC<GlobeProps> = ({
       scale: scale,
       onRender: (state) => {
         state.phi = phi + r.get();
-        phi += rotationSpeed;
+        phi += prefersReducedMotion ? 0 : rotationSpeed;
         state.width = canvasWidth * 2;
         state.height = canvasWidth * 2;
 
-        const t = Date.now() / 1500;
-        markers.forEach((marker: CustomMarker) => {
-          if (marker.isUser) {
-            // Prominent pulse for user's location to create a "glow"
-            marker.size = 0.1 + Math.abs(Math.sin(t * 3)) * 0.08;
-          } else {
-            // Subtle twinkle for other locations
-            marker.size = 0.05 + Math.sin(t * 2 + marker.offset) * 0.02;
-          }
-        });
+        if (!prefersReducedMotion) {
+          const t = Date.now() / 1500;
+          markers.forEach((marker: CustomMarker) => {
+            if (marker.isUser) {
+              marker.size = 0.1 + Math.abs(Math.sin(t * 3)) * 0.08;
+            } else {
+              marker.size = 0.05 + Math.sin(t * 2 + marker.offset) * 0.02;
+            }
+          });
+        }
       },
     });
 
@@ -151,6 +163,7 @@ const Globe: React.FC<GlobeProps> = ({
     darkness,
     lightIntensity,
     rotationSpeed,
+    prefersReducedMotion,
     r,
     userLocation,
   ]);

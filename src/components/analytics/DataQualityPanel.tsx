@@ -60,13 +60,13 @@ export const DataQualityPanel: React.FC<DataQualityPanelProps> = ({ configId }) 
       {/* Main Metrics */}
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-white rounded p-4">
-          <div className="text-xs font-semibold text-gray-600 uppercase mb-2">Total Records</div>
+          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Total Records</div>
           <div className="text-2xl font-bold text-gray-900">{quality.totalRecords.toLocaleString()}</div>
           <p className="text-xs text-gray-500 mt-1">Processed</p>
         </div>
 
         <div className="bg-white rounded p-4">
-          <div className="text-xs font-semibold text-gray-600 uppercase mb-2">Valid Records</div>
+          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Valid Records</div>
           <div className="text-2xl font-bold text-green-600">{quality.validRecords.toLocaleString()}</div>
           <p className="text-xs text-gray-500 mt-1">
             {quality.totalRecords > 0
@@ -77,7 +77,7 @@ export const DataQualityPanel: React.FC<DataQualityPanelProps> = ({ configId }) 
         </div>
 
         <div className="bg-white rounded p-4">
-          <div className="text-xs font-semibold text-gray-600 uppercase mb-2">Invalid Records</div>
+          <div className="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-2">Invalid Records</div>
           <div className="text-2xl font-bold text-red-600">{quality.invalidRecords.toLocaleString()}</div>
           <p className="text-xs text-gray-500 mt-1">{quality.validationErrorRate.toFixed(1)}% error rate</p>
         </div>
@@ -120,7 +120,7 @@ export const DataQualityPanel: React.FC<DataQualityPanelProps> = ({ configId }) 
         </div>
 
         <div className="border-t border-gray-200 pt-3">
-          <h5 className="text-xs font-semibold text-gray-700 mb-2 uppercase">Missing Fields</h5>
+          <h5 className="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Missing Fields</h5>
           {Object.keys(quality.missingFieldErrors).length > 0 ? (
             <div className="space-y-1">
               {Object.entries(quality.missingFieldErrors)

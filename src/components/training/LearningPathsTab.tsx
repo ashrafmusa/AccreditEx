@@ -703,7 +703,7 @@ const LearningPathsTab: React.FC = () => {
                 <div key={step.id} className="relative pb-6 last:pb-0">
                   {/* Connector line */}
                   {idx < selectedPath.steps.length - 1 && (
-                    <div className="absolute left-[-20px] top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
+                    <div className="absolute -left-5 top-8 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700" />
                   )}
                   {/* Step dot */}
                   <div
