@@ -31,7 +31,7 @@ export const en = {
     partiallyDone: "Partially Done",
     allTasksComplete: "All Tasks Complete!",
     allTasksCompleteMessage: "You've completed all assigned tasks. Great work maintaining compliance!",
-    
+
     // Auditor Dashboard
     auditDashboard: 'Audit Dashboard',
     scheduledAudits: 'Scheduled Audits',
@@ -47,7 +47,7 @@ export const en = {
     allCompliant: 'All Compliant!',
     allCompliantMessage: 'No non-conformities found. All departments are in compliance.',
     departmentNonConformities: 'Department Non-Conformities',
-    
+
     // Project Lead Dashboard Extended
     projectStatusDistributionDetailed: 'Project Status Distribution',
     assignmentCoverage: 'Assignment Coverage',
@@ -57,7 +57,7 @@ export const en = {
     noProjectsYetMessage: "You haven't been assigned as a project lead yet. Projects will appear here once assigned.",
     overdueTasks: 'Overdue Tasks',
     browseAllProjects: 'Browse All Projects',
-    
+
     // Admin Dashboard
     adminDashboardTitle: 'Admin Dashboard',
     activeUsers: 'Active Users',
@@ -72,7 +72,7 @@ export const en = {
     documentsReviewOverdue: 'Docs Overdue Review',
     mitigatedRisks: 'Risks Mitigated',
     projects: 'Projects',
-    
+
     // Dashboard Common
     statistics: 'Statistics',
     metrics: 'Metrics',

@@ -489,9 +489,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       exportDashboardMetricsToCSV(metricsData, t("csvAdminDashboard"));
     } catch (error) {
       console.error("Error exporting metrics:", error);
-      toast.error(
-        t("exportFailed") || t("exportFailedMessage"),
-      );
+      toast.error(t("exportFailed") || t("exportFailedMessage"));
     }
   };
 
@@ -668,7 +666,8 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                       {t("cycleGuideDescription")}
                     </p>
                     <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
-                      {t("cycleGuideProgressLabel")}: {cycleGuideCompleted.length}/
+                      {t("cycleGuideProgressLabel")}:{" "}
+                      {cycleGuideCompleted.length}/
                       {accreditationCycleSteps.length} ({cycleGuideProgress}%)
                     </p>
                   </div>

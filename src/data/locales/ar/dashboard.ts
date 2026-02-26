@@ -32,7 +32,7 @@ export const ar = {
     partiallyDone: "مكتملة جزئياً",
     allTasksComplete: "تم إكمال جميع المهام!",
     allTasksCompleteMessage: "لقد أكملت جميع المهام المعينة. عمل رائع في الحفاظ على الامتثال!",
-    
+
     // Auditor Dashboard
     auditDashboard: 'لوحة تحكم المدقق',
     scheduledAudits: 'التدقيقات المجدولة',
@@ -48,7 +48,7 @@ export const ar = {
     allCompliant: 'جميع الامتثال!',
     allCompliantMessage: 'لم يتم العثور على عدم مطابقات. جميع الإدارات متوافقة.',
     departmentNonConformities: 'عدم مطابقات الإدارة',
-    
+
     // Project Lead Dashboard Extended
     projectStatusDistributionDetailed: 'توزيع حالات المشاريع',
     assignmentCoverage: 'تغطية التكليفات',
@@ -58,7 +58,7 @@ export const ar = {
     noProjectsYetMessage: "لم يتم تعيينك كقائد مشروع بعد. ستظهر المشاريع هنا بمجرد تعيينك.",
     overdueTasks: 'المهام المتأخرة',
     browseAllProjects: 'استعرض جميع المشاريع',
-    
+
     // Admin Dashboard
     adminDashboardTitle: 'لوحة تحكم المسؤول',
     activeUsers: 'المستخدمون النشطون',
@@ -73,7 +73,7 @@ export const ar = {
     documentsReviewOverdue: 'المستندات المتأخرة في المراجعة',
     mitigatedRisks: 'المخاطر المخففة',
     projects: 'المشاريع',
-    
+
     // Dashboard Common
     statistics: 'الإحصائيات',
     metrics: 'المقاييس',

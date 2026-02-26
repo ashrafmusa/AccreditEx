@@ -43,7 +43,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [relativeTime, setRelativeTime] = useState<string>(
-    getRelativeTime(new Date(), t)
+    getRelativeTime(new Date(), t),
   );
 
   // Update relative time every minute
@@ -80,7 +80,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               "{name}",
               currentUser.name?.split(" ")[0] ||
                 currentUser.email?.split("@")[0] ||
-                t("userFallback")
+                t("userFallback"),
             )}
           </h1>
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
