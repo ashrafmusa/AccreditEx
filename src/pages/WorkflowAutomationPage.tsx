@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Button, Modal, Input, TextArea, EmptyState } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   BoltIcon,
   PlusIcon,
@@ -118,6 +119,7 @@ const StatCard: React.FC<{
 
 /** Collapsible execution log detail */
 const ExecutionLogRow: React.FC<{ log: WorkflowExecutionLog }> = ({ log }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -148,7 +150,7 @@ const ExecutionLogRow: React.FC<{ log: WorkflowExecutionLog }> = ({ log }) => {
       {expanded && (
         <div className="border-t dark:border-gray-700 p-3 bg-gray-50/50 dark:bg-gray-900/50 space-y-2">
           <p className="text-xs text-gray-500">
-            Entity ID:{" "}
+            {t("entityId")}{" "}
             <span className="font-mono">{log.triggerEntityId || "—"}</span>
           </p>
           {log.error && (
@@ -196,6 +198,7 @@ const INITIAL_BUILDER: BuilderState = {
 // ── Main Page Component ─────────────────────────────────────
 
 const WorkflowAutomationPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     workflows,
     executionLogs,
@@ -384,7 +387,7 @@ const WorkflowAutomationPage: React.FC = () => {
   const handleDeleteWorkflow = useCallback(
     async (id: string) => {
       if (
-        window.confirm("Delete this workflow? This action cannot be undone.")
+        window.confirm(t("deleteWorkflowConfirm"))
       ) {
         await deleteWorkflow(id);
       }
@@ -429,7 +432,7 @@ Provide:
 Format in clear Markdown with structured details for each workflow.`;
 
       const response = await aiAgentService.chat(prompt, false);
-      setAiModalTitle("AI Workflow Suggestions");
+      setAiModalTitle(t("aiWorkflowSuggestions"));
       setAiModalContent(
         typeof response === "string" ? response : response.response || "",
       );
@@ -481,7 +484,7 @@ Provide:
 Format in clear Markdown.`;
 
       const response = await aiAgentService.chat(prompt, false);
-      setAiModalTitle("AI Execution Log Analysis");
+      setAiModalTitle(t("aiExecutionLogAnalysis"));
       setAiModalContent(
         typeof response === "string" ? response : response.response || "",
       );
@@ -500,9 +503,9 @@ Format in clear Markdown.`;
     label: string;
     icon: React.FC<React.SVGProps<SVGSVGElement>>;
   }[] = [
-    { key: "workflows", label: "Workflows", icon: BoltIcon },
-    { key: "templates", label: "Templates", icon: SparklesIcon },
-    { key: "logs", label: "Execution Logs", icon: ClockIcon },
+    { key: "workflows", label: t("tabWorkflows"), icon: BoltIcon },
+    { key: "templates", label: t("tabTemplates"), icon: SparklesIcon },
+    { key: "logs", label: t("tabExecutionLogs"), icon: ClockIcon },
   ];
 
   return (
@@ -513,10 +516,10 @@ Format in clear Markdown.`;
           <BoltIcon className="h-8 w-8 text-brand-primary" />
           <div>
             <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-              Workflow Automation
+              {t("workflowAutomation")}
             </h1>
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-              Create automated rules with triggers, conditions &amp; actions
+              {t("workflowSubtitle")}
             </p>
           </div>
         </div>
@@ -531,7 +534,7 @@ Format in clear Markdown.`;
             className="flex items-center gap-1.5"
           >
             <PlusIcon className="h-4 w-4" />
-            Create Workflow
+            {t("createWorkflow")}
           </Button>
           <Button
             variant="ghost"
@@ -545,7 +548,7 @@ Format in clear Markdown.`;
             ) : (
               <SparklesIcon className="h-4 w-4" />
             )}
-            AI Suggest
+            {t("aiSuggest")}
           </Button>
         </div>
       </div>
@@ -553,7 +556,7 @@ Format in clear Markdown.`;
       {/* ── Stats Row ──────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
-          label="Total Workflows"
+          label={t("totalWorkflows")}
           value={stats.total}
           icon={
             <BoltIcon className="h-6 w-6 text-blue-600 dark:text-blue-400" />
@@ -561,7 +564,7 @@ Format in clear Markdown.`;
           color="border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-950/20"
         />
         <StatCard
-          label="Active"
+          label={t("wfActive")}
           value={stats.active}
           icon={
             <PlayIcon className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
@@ -569,7 +572,7 @@ Format in clear Markdown.`;
           color="border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20"
         />
         <StatCard
-          label="Paused"
+          label={t("wfPaused")}
           value={stats.paused}
           icon={
             <PauseCircleIcon className="h-6 w-6 text-amber-600 dark:text-amber-400" />
@@ -577,7 +580,7 @@ Format in clear Markdown.`;
           color="border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/20"
         />
         <StatCard
-          label="Executions"
+          label={t("executions")}
           value={stats.executions}
           icon={
             <ClockIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
@@ -627,8 +630,7 @@ Format in clear Markdown.`;
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {executionLogs.length} execution
-              {executionLogs.length !== 1 ? "s" : ""} recorded
+              {executionLogs.length} {executionLogs.length !== 1 ? t("executionsRecordedPlural") : t("executionsRecorded")} {t("recorded")}
             </p>
             {executionLogs.length > 0 && (
               <Button
@@ -643,7 +645,7 @@ Format in clear Markdown.`;
                 ) : (
                   <SparklesIcon className="h-3.5 w-3.5" />
                 )}
-                AI Analyze Logs
+                {t("aiAnalyzeLogs")}
               </Button>
             )}
           </div>
@@ -656,12 +658,12 @@ Format in clear Markdown.`;
         <Modal
           isOpen={showBuilder}
           onClose={resetBuilder}
-          title={editingId ? "Edit Workflow" : "Create Workflow"}
+          title={editingId ? t("editWorkflow") : t("createWorkflow")}
           size="4xl"
           footer={
             <div className="flex justify-end gap-3">
               <Button variant="ghost" size="sm" onClick={resetBuilder}>
-                Cancel
+                {t("cancel")}
               </Button>
               <Button
                 variant="primary"
@@ -669,7 +671,7 @@ Format in clear Markdown.`;
                 onClick={handleSaveWorkflow}
                 disabled={!builder.name.trim() || builder.actions.length === 0}
               >
-                {editingId ? "Update" : "Create"} Workflow
+                {editingId ? t("updateWorkflow") : t("createWorkflowBtn")} {t("workflowSuffix")}
               </Button>
             </div>
           }
@@ -716,12 +718,14 @@ const WorkflowList: React.FC<{
   onDelete,
   onToggle,
   loading,
-}) => (
+}) => {
+  const { t } = useTranslation();
+  return (
   <div className="space-y-4">
     <Input
       value={searchQuery}
       onChange={(e) => onSearchChange(e.target.value)}
-      placeholder="Search workflows by name, description, or category..."
+      placeholder={t("searchWorkflows")}
       className="max-w-xl"
     />
 
@@ -737,8 +741,8 @@ const WorkflowList: React.FC<{
     ) : workflows.length === 0 ? (
       <EmptyState
         icon={<BoltIcon className="h-12 w-12 text-gray-400" />}
-        title="No workflows yet"
-        message="Create your first workflow or start from a template"
+        title={t("noWorkflowsYet")}
+        message={t("createFirstWorkflow")}
       />
     ) : (
       <div className="space-y-3">
@@ -754,7 +758,8 @@ const WorkflowList: React.FC<{
       </div>
     )}
   </div>
-);
+  );
+};
 
 // ── Workflow Card ──────────────────────────────────────────
 
@@ -763,7 +768,9 @@ const WorkflowCard: React.FC<{
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
-}> = ({ workflow: wf, onEdit, onDelete, onToggle }) => (
+}> = ({ workflow: wf, onEdit, onDelete, onToggle }) => {
+  const { t } = useTranslation();
+  return (
   <div className="border rounded-xl p-4 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
       <div className="min-w-0 flex-1">
@@ -787,7 +794,7 @@ const WorkflowCard: React.FC<{
         </p>
         <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
           <span>
-            Trigger:{" "}
+            {t("trigger")}{" "}
             <span className="font-medium">
               {TRIGGER_ENTITY_LABELS[wf.trigger.entity]}
             </span>{" "}
@@ -797,14 +804,14 @@ const WorkflowCard: React.FC<{
             </span>
           </span>
           <span>
-            {wf.actions.length} action{wf.actions.length !== 1 ? "s" : ""}
+            {wf.actions.length} {wf.actions.length !== 1 ? t("actionsCount") : t("actionCount")}
           </span>
           <span>
-            {wf.executionCount} execution{wf.executionCount !== 1 ? "s" : ""}
+            {wf.executionCount} {wf.executionCount !== 1 ? t("executionsCount") : t("executionCount")}
           </span>
           {wf.lastExecutedAt && (
             <span>
-              Last: {new Date(wf.lastExecutedAt).toLocaleDateString()}
+              {t("lastExecution")} {new Date(wf.lastExecutedAt).toLocaleDateString()}
             </span>
           )}
         </div>
@@ -814,7 +821,7 @@ const WorkflowCard: React.FC<{
           type="button"
           onClick={onToggle}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title={wf.status === "active" ? "Pause" : "Activate"}
+          title={wf.status === "active" ? t("pauseTooltip") : t("activateTooltip")}
         >
           {wf.status === "active" ? (
             <PauseCircleIcon className="h-5 w-5 text-amber-500" />
@@ -826,7 +833,7 @@ const WorkflowCard: React.FC<{
           type="button"
           onClick={onEdit}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title="Edit"
+          title={t("editTooltip")}
         >
           <PencilIcon className="h-5 w-5 text-blue-500" />
         </button>
@@ -834,24 +841,26 @@ const WorkflowCard: React.FC<{
           type="button"
           onClick={onDelete}
           className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title="Delete"
+          title={t("deleteTooltip")}
         >
           <TrashIcon className="h-5 w-5 text-red-500" />
         </button>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 // ── Template Gallery ──────────────────────────────────────
 
 const TemplateGallery: React.FC<{
   onUseTemplate: (index: number) => void;
-}> = ({ onUseTemplate }) => (
+}> = ({ onUseTemplate }) => {
+  const { t } = useTranslation();
+  return (
   <div className="space-y-4">
     <p className="text-sm text-gray-600 dark:text-gray-400">
-      Quick-start with pre-configured workflow templates. Customize after
-      creation.
+      {t("templateGalleryDesc")}
     </p>
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {WORKFLOW_TEMPLATES.map((tpl, idx) => (
@@ -881,7 +890,7 @@ const TemplateGallery: React.FC<{
               className="flex items-center gap-1"
             >
               <PlusIcon className="h-3.5 w-3.5" />
-              Use
+              {t("useTemplate")}
             </Button>
           </div>
           <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
@@ -893,25 +902,29 @@ const TemplateGallery: React.FC<{
       ))}
     </div>
   </div>
-);
+  );
+};
 
 // ── Execution Log List ────────────────────────────────────
 
 const ExecutionLogList: React.FC<{
   logs: WorkflowExecutionLog[];
-}> = ({ logs }) => (
+}> = ({ logs }) => {
+  const { t } = useTranslation();
+  return (
   <div className="space-y-3">
     {logs.length === 0 ? (
       <EmptyState
         icon={<ClockIcon className="h-12 w-12 text-gray-400" />}
-        title="No execution logs"
-        message="Logs will appear here when workflows run"
+        title={t("noExecutionLogs")}
+        message={t("logsWillAppear")}
       />
     ) : (
       logs.map((log) => <ExecutionLogRow key={log.id} log={log} />)
     )}
   </div>
-);
+  );
+};
 
 // ── Workflow Builder Modal Content ────────────────────────
 
@@ -934,6 +947,7 @@ const WorkflowBuilder: React.FC<{
   updateAction,
   removeAction,
 }) => {
+  const { t } = useTranslation();
   const entityOptions: TriggerEntity[] = [
     "document",
     "project",
@@ -1002,7 +1016,7 @@ const WorkflowBuilder: React.FC<{
           <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-xs flex items-center justify-center">
             1
           </span>
-          Basic Information
+          {t("basicInformation")}
         </h3>
         <div className="grid sm:grid-cols-2 gap-3">
           <Input
@@ -1010,7 +1024,7 @@ const WorkflowBuilder: React.FC<{
             onChange={(e) =>
               setBuilder((p) => ({ ...p, name: e.target.value }))
             }
-            placeholder="Workflow name"
+            placeholder={t("workflowNamePlaceholder")}
           />
           <select
             value={builder.category}
@@ -1034,7 +1048,7 @@ const WorkflowBuilder: React.FC<{
           onChange={(e) =>
             setBuilder((p) => ({ ...p, description: e.target.value }))
           }
-          placeholder="Description (optional)"
+          placeholder={t("descriptionOptional")}
           className="mt-3"
           rows={2}
         />
@@ -1046,12 +1060,12 @@ const WorkflowBuilder: React.FC<{
           <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-xs flex items-center justify-center">
             2
           </span>
-          Trigger — When should this run?
+          {t("triggerWhenRun")}
         </h3>
         <div className="grid sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-              Entity
+              {t("entity")}
             </label>
             <select
               value={builder.triggerEntity}
@@ -1072,7 +1086,7 @@ const WorkflowBuilder: React.FC<{
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-              Event
+              {t("event")}
             </label>
             <select
               value={builder.triggerEvent}
@@ -1100,11 +1114,11 @@ const WorkflowBuilder: React.FC<{
           <span className="w-6 h-6 rounded-full bg-brand-primary text-white text-xs flex items-center justify-center">
             3
           </span>
-          Conditions (optional) — Only run if…
+          {t("conditionsOptional")}
         </h3>
         {builder.conditions.length > 1 && (
           <div className="flex items-center gap-2 mb-3">
-            <label className="text-xs text-gray-500">Logic:</label>
+            <label className="text-xs text-gray-500">{t("logic")}</label>
             <select
               value={builder.conditionLogic}
               onChange={(e) =>
@@ -1115,8 +1129,8 @@ const WorkflowBuilder: React.FC<{
               }
               className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs"
             >
-              <option value="AND">ALL conditions (AND)</option>
-              <option value="OR">ANY condition (OR)</option>
+              <option value="AND">{t("allConditionsAND")}</option>
+              <option value="OR">{t("anyConditionOR")}</option>
             </select>
           </div>
         )}
@@ -1128,7 +1142,7 @@ const WorkflowBuilder: React.FC<{
                 onChange={(e) =>
                   updateCondition(idx, { field: e.target.value })
                 }
-                placeholder="Field (e.g. status)"
+                placeholder={t("fieldPlaceholder")}
                 className="w-32 text-xs"
               />
               <select
@@ -1152,7 +1166,7 @@ const WorkflowBuilder: React.FC<{
                   onChange={(e) =>
                     updateCondition(idx, { value: e.target.value })
                   }
-                  placeholder="Value"
+                  placeholder={t("valuePlaceholder")}
                   className="w-32 text-xs"
                 />
               )}
@@ -1227,7 +1241,7 @@ const WorkflowBuilder: React.FC<{
               />
               <div className="mt-2">
                 <label className="text-xs text-gray-500">
-                  Delay (minutes):
+                  {t("delayMinutes")}
                 </label>
                 <Input
                   type="number"
@@ -1251,7 +1265,7 @@ const WorkflowBuilder: React.FC<{
           className="mt-2 flex items-center gap-1 text-xs"
         >
           <PlusIcon className="h-3.5 w-3.5" />
-          Add Action
+          {t("addAction")}
         </Button>
       </section>
     </div>
@@ -1295,6 +1309,7 @@ const ActionConfigFields: React.FC<{
   action: WorkflowAction;
   onUpdate: (updates: Partial<WorkflowAction>) => void;
 }> = ({ action, onUpdate }) => {
+  const { t } = useTranslation();
   const config = (action.config || {}) as Record<string, unknown>;
 
   const updateConfig = (key: string, value: unknown) => {
@@ -1308,13 +1323,13 @@ const ActionConfigFields: React.FC<{
           <Input
             value={String(config.title || "")}
             onChange={(e) => updateConfig("title", e.target.value)}
-            placeholder="Notification title (supports {{entity.name}} tokens)"
+            placeholder={t("notificationTitlePlaceholder")}
             className="text-xs"
           />
           <TextArea
             value={String(config.message || "")}
             onChange={(e) => updateConfig("message", e.target.value)}
-            placeholder="Message body..."
+            placeholder={t("messageBodyPlaceholder")}
             rows={2}
             className="text-xs"
           />
@@ -1326,7 +1341,7 @@ const ActionConfigFields: React.FC<{
                 e.target.value.split(",").map((s: string) => s.trim()),
               )
             }
-            placeholder="Recipient roles (comma-separated)"
+            placeholder={t("recipientRolesPlaceholder")}
             className="text-xs"
           />
           <select
@@ -1334,10 +1349,10 @@ const ActionConfigFields: React.FC<{
             onChange={(e) => updateConfig("priority", e.target.value)}
             className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs"
           >
-            <option value="low">Low</option>
-            <option value="normal">Normal</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
+            <option value="low">{t("priorityLow")}</option>
+            <option value="normal">{t("priorityNormal")}</option>
+            <option value="high">{t("priorityHigh")}</option>
+            <option value="critical">{t("priorityCritical")}</option>
           </select>
         </div>
       );
@@ -1348,13 +1363,13 @@ const ActionConfigFields: React.FC<{
           <Input
             value={String(config.title || "")}
             onChange={(e) => updateConfig("title", e.target.value)}
-            placeholder="Task title"
+            placeholder={t("taskTitlePlaceholder")}
             className="text-xs"
           />
           <TextArea
             value={String(config.description || "")}
             onChange={(e) => updateConfig("description", e.target.value)}
-            placeholder="Task description..."
+            placeholder={t("taskDescriptionPlaceholder")}
             rows={2}
             className="text-xs"
           />
@@ -1366,7 +1381,7 @@ const ActionConfigFields: React.FC<{
                 e.target.value.split(",").map((s: string) => s.trim()),
               )
             }
-            placeholder="Assign to roles (comma-separated)"
+            placeholder={t("assignToRolesPlaceholder")}
             className="text-xs"
           />
         </div>
@@ -1377,7 +1392,7 @@ const ActionConfigFields: React.FC<{
         <Input
           value={String(config.targetStatus || "")}
           onChange={(e) => updateConfig("targetStatus", e.target.value)}
-          placeholder="Target status value"
+          placeholder={t("targetStatusPlaceholder")}
           className="text-xs"
         />
       );
@@ -1388,7 +1403,7 @@ const ActionConfigFields: React.FC<{
           <TextArea
             value={String(config.message || "")}
             onChange={(e) => updateConfig("message", e.target.value)}
-            placeholder="Escalation message..."
+            placeholder={t("escalationMessagePlaceholder")}
             rows={2}
             className="text-xs"
           />
@@ -1400,7 +1415,7 @@ const ActionConfigFields: React.FC<{
                 e.target.value.split(",").map((s: string) => s.trim()),
               )
             }
-            placeholder="Escalate to roles (comma-separated)"
+            placeholder={t("escalateToRolesPlaceholder")}
             className="text-xs"
           />
         </div>
@@ -1411,7 +1426,7 @@ const ActionConfigFields: React.FC<{
         <TextArea
           value={String(config.comment || "")}
           onChange={(e) => updateConfig("comment", e.target.value)}
-          placeholder="Comment text (supports {{entity.name}} tokens)"
+          placeholder={t("commentTextPlaceholder")}
           rows={2}
           className="text-xs"
         />
@@ -1423,13 +1438,13 @@ const ActionConfigFields: React.FC<{
           <Input
             value={String(config.field || "")}
             onChange={(e) => updateConfig("field", e.target.value)}
-            placeholder="Field name"
+            placeholder={t("fieldNamePlaceholder")}
             className="text-xs"
           />
           <Input
             value={String(config.value || "")}
             onChange={(e) => updateConfig("value", e.target.value)}
-            placeholder="New value"
+            placeholder={t("newValuePlaceholder")}
             className="text-xs"
           />
         </div>
@@ -1441,14 +1456,14 @@ const ActionConfigFields: React.FC<{
           <TextArea
             value={String(config.promptTemplate || "")}
             onChange={(e) => updateConfig("promptTemplate", e.target.value)}
-            placeholder="AI prompt template (use {{entity.name}}, {{entity.status}} tokens)..."
+            placeholder={t("aiPromptPlaceholder")}
             rows={3}
             className="text-xs"
           />
           <Input
             value={String(config.targetField || "")}
             onChange={(e) => updateConfig("targetField", e.target.value)}
-            placeholder="Target field to populate (e.g., summary, recommendation)"
+            placeholder={t("targetFieldPlaceholder")}
             className="text-xs"
           />
           <select
@@ -1456,14 +1471,14 @@ const ActionConfigFields: React.FC<{
             onChange={(e) => updateConfig("outputFormat", e.target.value)}
             className="rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-2 py-1 text-xs"
           >
-            <option value="text">Plain Text</option>
-            <option value="markdown">Markdown</option>
-            <option value="json">JSON</option>
+            <option value="text">{t("plainText")}</option>
+            <option value="markdown">{t("markdown")}</option>
+            <option value="json">{t("json")}</option>
           </select>
           <div className="flex items-center gap-2 mt-1">
             <SparklesIcon className="h-3.5 w-3.5 text-purple-500" />
             <span className="text-xs text-purple-600 dark:text-purple-400">
-              AI will generate content using the prompt when this action fires
+              {t("aiGenerateInfo")}
             </span>
           </div>
         </div>
@@ -1472,8 +1487,8 @@ const ActionConfigFields: React.FC<{
     default:
       return (
         <p className="text-xs text-gray-400 italic">
-          Configuration for &quot;{ACTION_TYPE_LABELS[action.type]}&quot; —
-          additional fields coming soon.
+          {t("configForAction")} &quot;{ACTION_TYPE_LABELS[action.type]}&quot; —
+          {t("configComingSoon")}
         </p>
       );
   }

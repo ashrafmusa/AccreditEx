@@ -7,6 +7,7 @@ import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type { Reagent, ReagentStatus, ReagentUsageLog } from "@/types/labOps";
 import { REAGENT_STATUS_LABELS } from "@/types/labOps";
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   PlusIcon,
   ExclamationTriangleIcon,
@@ -28,6 +29,7 @@ const statusColor: Record<ReagentStatus, string> = {
 };
 
 const ReagentTab: React.FC = () => {
+  const { t } = useTranslation();
   const {
     reagents,
     reagentUsageLogs,
@@ -158,7 +160,7 @@ const ReagentTab: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
-            ← Back
+            {t("back")}
           </Button>
           <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
             {selected.name}
@@ -173,7 +175,7 @@ const ReagentTab: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Manufacturer / Catalog #
+              {t("manufacturerCatalog")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.manufacturer}
@@ -182,7 +184,7 @@ const ReagentTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Lot Number
+              {t("lotNumber")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.lotNumber}
@@ -192,21 +194,21 @@ const ReagentTab: React.FC = () => {
             className={`p-3 ${selected.quantity <= selected.reorderLevel ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20" : ""}`}
           >
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Quantity / Reorder Level
+              {t("quantityReorderLevel")}
             </p>
             <p className="text-xl font-bold dark:text-dark-brand-text-primary">
               {selected.quantity}{" "}
               <span className="text-sm font-normal">{selected.unit}</span>
             </p>
             <p className="text-xs text-gray-500">
-              Reorder at: {selected.reorderLevel} {selected.unit}
+              {t("reorderAt")} {selected.reorderLevel} {selected.unit}
             </p>
           </Card>
           <Card
             className={`p-3 ${isExpired(selected.expirationDate) ? "border-red-300 bg-red-50 dark:bg-red-900/20" : isExpiringSoon(selected.expirationDate) ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20" : ""}`}
           >
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Expiration Date
+              {t("expirationDate")}
             </p>
             <p
               className={`text-xl font-bold ${isExpired(selected.expirationDate) ? "text-red-600" : ""}`}
@@ -214,12 +216,12 @@ const ReagentTab: React.FC = () => {
               {selected.expirationDate}
             </p>
             {isExpired(selected.expirationDate) && (
-              <p className="text-xs text-red-600 font-medium">EXPIRED</p>
+              <p className="text-xs text-red-600 font-medium">{t("expired")}</p>
             )}
             {isExpiringSoon(selected.expirationDate) &&
               !isExpired(selected.expirationDate) && (
                 <p className="text-xs text-yellow-600 font-medium">
-                  Expiring Soon
+                  {t("expiringSoon")}
                 </p>
               )}
           </Card>
@@ -228,7 +230,7 @@ const ReagentTab: React.FC = () => {
         <div className="grid grid-cols-3 gap-4">
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Storage
+              {t("storage")}
             </p>
             <p className="text-sm dark:text-dark-brand-text-primary">
               {selected.storageConditions}
@@ -241,7 +243,7 @@ const ReagentTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Lab Section
+              {t("labSection")}
             </p>
             <p className="text-sm dark:text-dark-brand-text-primary">
               {selected.labSection}
@@ -249,14 +251,14 @@ const ReagentTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Received / Opened
+              {t("receivedOpened")}
             </p>
             <p className="text-sm dark:text-dark-brand-text-primary">
               {selected.receivedDate}
             </p>
             {selected.openedDate && (
               <p className="text-xs text-gray-500">
-                Opened: {selected.openedDate}
+                {t("openedPrefix")} {selected.openedDate}
               </p>
             )}
           </Card>
@@ -266,14 +268,14 @@ const ReagentTab: React.FC = () => {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold dark:text-dark-brand-text-primary">
-              Usage Log
+              {t("usageLog")}
             </h3>
             <Button
               variant="primary"
               size="sm"
               onClick={() => setShowUsage(true)}
             >
-              <PlusIcon className="h-4 w-4 mr-1" /> Log Usage
+              <PlusIcon className="h-4 w-4 mr-1" /> {t("logUsage")}
             </Button>
           </div>
           {showUsage && (
@@ -281,7 +283,7 @@ const ReagentTab: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Quantity Used *
+                    {t("quantityUsedRequired")}
                   </label>
                   <input
                     type="number"
@@ -297,7 +299,7 @@ const ReagentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Used By *
+                    {t("usedByRequired")}
                   </label>
                   <input
                     value={usageForm.usedBy || ""}
@@ -309,7 +311,7 @@ const ReagentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Notes
+                    {t("notes")}
                   </label>
                   <input
                     value={usageForm.notes || ""}
@@ -329,23 +331,29 @@ const ReagentTab: React.FC = () => {
                   Cancel
                 </Button>
                 <Button variant="primary" size="sm" onClick={handleLogUsage}>
-                  Save
+                  {t("save")}
                 </Button>
               </div>
             </Card>
           )}
           {selectedUsages.length === 0 ? (
-            <p className="text-sm text-gray-400">No usage logged</p>
+            <p className="text-sm text-gray-400">{t("noUsageLogged")}</p>
           ) : (
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800">
-                  <th className="px-2 py-1.5 text-left font-medium">Date</th>
                   <th className="px-2 py-1.5 text-left font-medium">
-                    Qty Used
+                    {t("thDate")}
                   </th>
-                  <th className="px-2 py-1.5 text-left font-medium">By</th>
-                  <th className="px-2 py-1.5 text-left font-medium">Notes</th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thQtyUsed")}
+                  </th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thBy")}
+                  </th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thNotes")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -380,14 +388,14 @@ const ReagentTab: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
-          Reagent Inventory
+          {t("reagentInventory")}
         </h2>
         <Button
           variant="primary"
           onClick={() => setShowAdd(true)}
           className="flex items-center gap-1.5"
         >
-          <PlusIcon className="h-4 w-4" /> Add Reagent
+          <PlusIcon className="h-4 w-4" /> {t("addReagent")}
         </Button>
       </div>
 
@@ -396,25 +404,25 @@ const ReagentTab: React.FC = () => {
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-green-600">{totalInStock}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            In Stock
+            {t("inStock")}
           </p>
         </Card>
         <Card className="p-3 text-center border-yellow-200">
           <p className="text-2xl font-bold text-yellow-600">{lowStock}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Low Stock
+            {t("lowStock")}
           </p>
         </Card>
         <Card className="p-3 text-center border-orange-200">
           <p className="text-2xl font-bold text-orange-600">{expiringSoon}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Expiring ≤30d
+            {t("expiringThirtyDays")}
           </p>
         </Card>
         <Card className="p-3 text-center border-red-200">
           <p className="text-2xl font-bold text-red-600">{expired}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Expired
+            {t("expired")}
           </p>
         </Card>
       </div>
@@ -426,7 +434,7 @@ const ReagentTab: React.FC = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search reagents…"
+            placeholder={t("searchReagents")}
             className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
         </div>
@@ -437,7 +445,7 @@ const ReagentTab: React.FC = () => {
           }
           className="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         >
-          <option value="all">All Statuses</option>
+          <option value="all">{t("allStatuses")}</option>
           {Object.entries(REAGENT_STATUS_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -450,12 +458,12 @@ const ReagentTab: React.FC = () => {
       {showAdd && (
         <Card className="p-4 bg-gray-50 dark:bg-gray-800">
           <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-            New Reagent
+            {t("newReagent")}
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Name *
+                {t("nameRequired")}
               </label>
               <input
                 value={form.name || ""}
@@ -465,7 +473,7 @@ const ReagentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Lot Number *
+                {t("lotNumberRequired")}
               </label>
               <input
                 value={form.lotNumber || ""}
@@ -477,7 +485,7 @@ const ReagentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Manufacturer
+                {t("manufacturer")}
               </label>
               <input
                 value={form.manufacturer || ""}
@@ -489,7 +497,7 @@ const ReagentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Catalog #
+                {t("catalogNumber")}
               </label>
               <input
                 value={form.catalogNumber || ""}
@@ -501,7 +509,7 @@ const ReagentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Expiration Date
+                {t("expirationDate")}
               </label>
               <input
                 type="date"
@@ -514,7 +522,7 @@ const ReagentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Quantity
+                {t("quantity")}
               </label>
               <input
                 type="number"
@@ -527,18 +535,18 @@ const ReagentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Unit
+                {t("unit")}
               </label>
               <input
                 value={form.unit || ""}
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
-                placeholder="mL, vials, tests…"
+                placeholder={t("unitPlaceholder")}
                 className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Lab Section
+                {t("labSection")}
               </label>
               <input
                 value={form.labSection || ""}
@@ -554,7 +562,7 @@ const ReagentTab: React.FC = () => {
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleAdd}>
-              Add Reagent
+              {t("addReagent")}
             </Button>
           </div>
         </Card>
@@ -565,12 +573,12 @@ const ReagentTab: React.FC = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800 text-left">
-              <th className="px-3 py-2 font-medium">Name</th>
-              <th className="px-3 py-2 font-medium">Lot #</th>
-              <th className="px-3 py-2 font-medium">Section</th>
-              <th className="px-3 py-2 font-medium">Qty</th>
-              <th className="px-3 py-2 font-medium">Expires</th>
-              <th className="px-3 py-2 font-medium">Status</th>
+              <th className="px-3 py-2 font-medium">{t("thName")}</th>
+              <th className="px-3 py-2 font-medium">{t("thLot")}</th>
+              <th className="px-3 py-2 font-medium">{t("thSection")}</th>
+              <th className="px-3 py-2 font-medium">{t("thQty")}</th>
+              <th className="px-3 py-2 font-medium">{t("thExpires")}</th>
+              <th className="px-3 py-2 font-medium">{t("thStatus")}</th>
             </tr>
           </thead>
           <tbody>

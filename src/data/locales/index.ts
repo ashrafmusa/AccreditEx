@@ -36,6 +36,12 @@ import { en as performanceEn } from './en/performance';
 import { ar as performanceAr } from './ar/performance';
 import { roundingEn } from './en/rounding';
 import { roundingAr } from './ar/rounding';
+import { en as knowledgeBaseEn } from './en/knowledgeBase';
+import { ar as knowledgeBaseAr } from './ar/knowledgeBase';
+import { en as labOperationsEn } from './en/labOperations';
+import { ar as labOperationsAr } from './ar/labOperations';
+import { en as workflowAutomationEn } from './en/workflowAutomation';
+import { ar as workflowAutomationAr } from './ar/workflowAutomation';
 
 export const locales = {
   en: {
@@ -58,6 +64,9 @@ export const locales = {
     ...auditEn,
     ...performanceEn,
     ...roundingEn,
+    ...knowledgeBaseEn,
+    ...labOperationsEn,
+    ...workflowAutomationEn,
   },
   ar: {
     ...commonAr,
@@ -79,5 +88,8 @@ export const locales = {
     ...auditAr,
     ...performanceAr,
     ...roundingAr,
+    ...knowledgeBaseAr,
+    ...labOperationsAr,
+    ...workflowAutomationAr,
   }
 };

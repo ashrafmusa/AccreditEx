@@ -7,6 +7,7 @@ import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type { ProficiencyTest, PTStatus } from "@/types/labOps";
 import { PT_STATUS_LABELS } from "@/types/labOps";
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   PlusIcon,
   CheckCircleIcon,
@@ -31,6 +32,7 @@ const statusColor: Record<PTStatus, string> = {
 };
 
 const ProficiencyTestingTab: React.FC = () => {
+  const { t } = useTranslation();
   const { proficiencyTests, addProficiencyTest, updateProficiencyTest } =
     useLabOpsStore();
 
@@ -118,7 +120,7 @@ const ProficiencyTestingTab: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
-            ← Back
+            {t("back")}
           </Button>
           <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
             {selected.program}
@@ -133,7 +135,7 @@ const ProficiencyTestingTab: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Provider / Survey
+              {t("ptProviderSurvey")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.provider}
@@ -142,7 +144,7 @@ const ProficiencyTestingTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Analyte
+              {t("ptAnalyte")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.analyteName}
@@ -155,7 +157,7 @@ const ProficiencyTestingTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Lab Section
+              {t("labSection")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.labSection}
@@ -163,7 +165,7 @@ const ProficiencyTestingTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Enrollment Date
+              {t("enrollmentDate")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.enrollmentDate}
@@ -176,13 +178,13 @@ const ProficiencyTestingTab: React.FC = () => {
           selected.peerMean !== undefined) && (
           <Card className="p-4">
             <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-              Results
+              {t("results")}
             </h3>
             <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
               {selected.submittedValue !== undefined && (
                 <div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Submitted
+                    {t("submitted")}
                   </p>
                   <p className="text-lg font-bold dark:text-dark-brand-text-primary">
                     {selected.submittedValue}{" "}
@@ -195,7 +197,7 @@ const ProficiencyTestingTab: React.FC = () => {
               {selected.peerMean !== undefined && (
                 <div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Peer Mean
+                    {t("peerMean")}
                   </p>
                   <p className="text-lg font-bold dark:text-dark-brand-text-primary">
                     {selected.peerMean}
@@ -205,7 +207,7 @@ const ProficiencyTestingTab: React.FC = () => {
               {selected.peerSD !== undefined && (
                 <div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Peer SD
+                    {t("peerSD")}
                   </p>
                   <p className="text-lg font-bold dark:text-dark-brand-text-primary">
                     {selected.peerSD}
@@ -215,7 +217,7 @@ const ProficiencyTestingTab: React.FC = () => {
               {selected.sdIndex !== undefined && (
                 <div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    SD Index
+                    {t("sdIndex")}
                   </p>
                   <p
                     className={`text-lg font-bold ${Math.abs(selected.sdIndex) <= 2 ? "text-green-600" : "text-red-600"}`}
@@ -227,7 +229,7 @@ const ProficiencyTestingTab: React.FC = () => {
               {selected.score !== undefined && (
                 <div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Score
+                    {t("score")}
                   </p>
                   <p
                     className={`text-lg font-bold ${selected.score >= 80 ? "text-green-600" : "text-red-600"}`}
@@ -238,18 +240,22 @@ const ProficiencyTestingTab: React.FC = () => {
               )}
               <div>
                 <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Acceptable?
+                  {t("acceptableQuestion")}
                 </p>
                 <div className="flex items-center gap-1 mt-1">
                   {selected.acceptable ? (
                     <>
                       <CheckCircleIcon className="h-5 w-5 text-green-500" />
-                      <span className="text-green-600 font-medium">Yes</span>
+                      <span className="text-green-600 font-medium">
+                        {t("yes")}
+                      </span>
                     </>
                   ) : (
                     <>
                       <XCircleIcon className="h-5 w-5 text-red-500" />
-                      <span className="text-red-600 font-medium">No</span>
+                      <span className="text-red-600 font-medium">
+                        {t("no")}
+                      </span>
                     </>
                   )}
                 </div>
@@ -264,7 +270,7 @@ const ProficiencyTestingTab: React.FC = () => {
             <div className="flex items-center gap-2 mb-2">
               <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
               <h3 className="font-semibold text-red-700 dark:text-red-400">
-                Corrective Action Required
+                {t("correctiveActionRequired")}
               </h3>
             </div>
             {selected.notes && (
@@ -278,13 +284,13 @@ const ProficiencyTestingTab: React.FC = () => {
         {/* Timeline */}
         <Card className="p-4">
           <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-            Timeline
+            {t("timeline")}
           </h3>
           <div className="space-y-2 text-sm">
             <div className="flex gap-3 items-center">
               <span className="w-3 h-3 rounded-full bg-blue-500 shrink-0" />
               <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Enrolled:
+                {t("enrolled")}
               </span>
               <span className="dark:text-dark-brand-text-primary">
                 {selected.enrollmentDate}
@@ -294,7 +300,7 @@ const ProficiencyTestingTab: React.FC = () => {
               <div className="flex gap-3 items-center">
                 <span className="w-3 h-3 rounded-full bg-indigo-500 shrink-0" />
                 <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Sample Received:
+                  {t("sampleReceived")}
                 </span>
                 <span className="dark:text-dark-brand-text-primary">
                   {selected.sampleReceivedDate}
@@ -305,7 +311,7 @@ const ProficiencyTestingTab: React.FC = () => {
               <div className="flex gap-3 items-center">
                 <span className="w-3 h-3 rounded-full bg-purple-500 shrink-0" />
                 <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Submitted:
+                  {t("submittedTimeline")}
                 </span>
                 <span className="dark:text-dark-brand-text-primary">
                   {selected.resultSubmittedDate}
@@ -318,7 +324,7 @@ const ProficiencyTestingTab: React.FC = () => {
                   className={`w-3 h-3 rounded-full shrink-0 ${selected.acceptable ? "bg-green-500" : "bg-red-500"}`}
                 />
                 <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Report:
+                  {t("report")}
                 </span>
                 <span className="dark:text-dark-brand-text-primary">
                   {selected.reportDate}
@@ -337,14 +343,14 @@ const ProficiencyTestingTab: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
-          Proficiency Testing
+          {t("proficiencyTesting")}
         </h2>
         <Button
           variant="primary"
           onClick={() => setShowAdd(true)}
           className="flex items-center gap-1.5"
         >
-          <PlusIcon className="h-4 w-4" /> Enroll New
+          <PlusIcon className="h-4 w-4" /> {t("enrollNew")}
         </Button>
       </div>
 
@@ -353,7 +359,7 @@ const ProficiencyTestingTab: React.FC = () => {
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-brand-primary">{totalTests}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Total Enrollments
+            {t("totalEnrollments")}
           </p>
         </Card>
         <Card className="p-3 text-center">
@@ -363,13 +369,13 @@ const ProficiencyTestingTab: React.FC = () => {
             {acceptanceRate}%
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Acceptance Rate
+            {t("acceptanceRate")}
           </p>
         </Card>
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-yellow-600">{pending}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Pending
+            {t("pending")}
           </p>
         </Card>
         <Card
@@ -377,7 +383,7 @@ const ProficiencyTestingTab: React.FC = () => {
         >
           <p className="text-2xl font-bold text-red-600">{unacceptable}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Unacceptable
+            {t("unacceptable")}
           </p>
         </Card>
       </div>
@@ -389,7 +395,7 @@ const ProficiencyTestingTab: React.FC = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search PT programs…"
+            placeholder={t("searchPTPrograms")}
             className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
         </div>
@@ -398,7 +404,7 @@ const ProficiencyTestingTab: React.FC = () => {
           onChange={(e) => setFilterStatus(e.target.value as PTStatus | "all")}
           className="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         >
-          <option value="all">All Statuses</option>
+          <option value="all">{t("allStatuses")}</option>
           {Object.entries(PT_STATUS_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -411,34 +417,34 @@ const ProficiencyTestingTab: React.FC = () => {
       {showAdd && (
         <Card className="p-4 bg-gray-50 dark:bg-gray-800">
           <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-            New Enrollment
+            {t("newEnrollment")}
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Program *
+                {t("programRequired")}
               </label>
               <input
                 value={form.program || ""}
                 onChange={(e) => setForm({ ...form, program: e.target.value })}
-                placeholder="CAP Chemistry Survey"
+                placeholder={t("capChemistrySurvey")}
                 className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Provider
+                {t("provider")}
               </label>
               <input
                 value={form.provider || ""}
                 onChange={(e) => setForm({ ...form, provider: e.target.value })}
-                placeholder="CAP, AABB…"
+                placeholder={t("capAABB")}
                 className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Survey ID
+                {t("surveyId")}
               </label>
               <input
                 value={form.surveyId || ""}
@@ -448,7 +454,7 @@ const ProficiencyTestingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Analyte *
+                {t("analyteRequired")}
               </label>
               <input
                 value={form.analyteName || ""}
@@ -460,7 +466,7 @@ const ProficiencyTestingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Lab Section *
+                {t("labSectionRequired")}
               </label>
               <input
                 value={form.labSection || ""}
@@ -472,7 +478,7 @@ const ProficiencyTestingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Enrollment Date
+                {t("enrollmentDate")}
               </label>
               <input
                 type="date"
@@ -486,10 +492,10 @@ const ProficiencyTestingTab: React.FC = () => {
           </div>
           <div className="flex justify-end gap-2 mt-3">
             <Button variant="ghost" size="sm" onClick={() => setShowAdd(false)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button variant="primary" size="sm" onClick={handleAdd}>
-              Enroll
+              {t("enroll")}
             </Button>
           </div>
         </Card>
@@ -500,12 +506,12 @@ const ProficiencyTestingTab: React.FC = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800 text-left">
-              <th className="px-3 py-2 font-medium">Program / Analyte</th>
-              <th className="px-3 py-2 font-medium">Section</th>
-              <th className="px-3 py-2 font-medium">Provider</th>
-              <th className="px-3 py-2 font-medium">SD Index</th>
-              <th className="px-3 py-2 font-medium">Score</th>
-              <th className="px-3 py-2 font-medium">Status</th>
+              <th className="px-3 py-2 font-medium">{t("thProgramAnalyte")}</th>
+              <th className="px-3 py-2 font-medium">{t("thSection")}</th>
+              <th className="px-3 py-2 font-medium">{t("thProvider")}</th>
+              <th className="px-3 py-2 font-medium">{t("thSDIndex")}</th>
+              <th className="px-3 py-2 font-medium">{t("thScore")}</th>
+              <th className="px-3 py-2 font-medium">{t("thStatus")}</th>
             </tr>
           </thead>
           <tbody>
@@ -545,7 +551,7 @@ const ProficiencyTestingTab: React.FC = () => {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
-                  No proficiency tests found
+                  {t("noProficiencyTests")}
                 </td>
               </tr>
             )}

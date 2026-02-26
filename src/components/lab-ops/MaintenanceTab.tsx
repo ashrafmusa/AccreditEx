@@ -14,6 +14,7 @@ import {
   MAINTENANCE_STATUS_LABELS,
 } from "@/types/labOps";
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   PlusIcon,
   ExclamationTriangleIcon,
@@ -39,6 +40,7 @@ const typeColor: Record<MaintenanceType, string> = {
 };
 
 const MaintenanceTab: React.FC = () => {
+  const { t } = useTranslation();
   const {
     maintenanceLogs,
     equipment,
@@ -126,14 +128,14 @@ const MaintenanceTab: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
-          Maintenance Logs
+          {t("maintenanceLogs")}
         </h2>
         <Button
           variant="primary"
           onClick={() => setShowAdd(true)}
           className="flex items-center gap-1.5"
         >
-          <PlusIcon className="h-4 w-4" /> New Work Order
+          <PlusIcon className="h-4 w-4" /> {t("newWorkOrder")}
         </Button>
       </div>
 
@@ -142,25 +144,25 @@ const MaintenanceTab: React.FC = () => {
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-blue-600">{scheduled}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Scheduled
+            {t("scheduled")}
           </p>
         </Card>
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-yellow-600">{inProgress}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            In Progress
+            {t("inProgress")}
           </p>
         </Card>
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-green-600">{completed}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Completed
+            {t("completed")}
           </p>
         </Card>
         <Card className="p-3 text-center border-red-200">
           <p className="text-2xl font-bold text-red-600">{overdue}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Overdue
+            {t("overdueLabel")}
           </p>
         </Card>
       </div>
@@ -172,7 +174,7 @@ const MaintenanceTab: React.FC = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search work orders…"
+            placeholder={t("searchWorkOrders")}
             className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
         </div>
@@ -183,7 +185,7 @@ const MaintenanceTab: React.FC = () => {
           }
           className="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         >
-          <option value="all">All Types</option>
+          <option value="all">{t("allTypes")}</option>
           {Object.entries(MAINTENANCE_TYPE_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -197,7 +199,7 @@ const MaintenanceTab: React.FC = () => {
           }
           className="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         >
-          <option value="all">All Statuses</option>
+          <option value="all">{t("allStatuses")}</option>
           {Object.entries(MAINTENANCE_STATUS_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -210,12 +212,12 @@ const MaintenanceTab: React.FC = () => {
       {showAdd && (
         <Card className="p-4 bg-gray-50 dark:bg-gray-800">
           <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-            New Work Order
+            {t("newWorkOrder")}
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Equipment *
+                {t("equipmentRequired")}
               </label>
               <select
                 value={form.equipmentId || ""}
@@ -224,7 +226,7 @@ const MaintenanceTab: React.FC = () => {
                 }
                 className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
-                <option value="">— Select —</option>
+                <option value="">{t("selectPlaceholder")}</option>
                 {equipment.map((e) => (
                   <option key={e.id} value={e.id}>
                     {e.name}
@@ -234,7 +236,7 @@ const MaintenanceTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Type
+                {t("type")}
               </label>
               <select
                 value={form.type}
@@ -252,7 +254,7 @@ const MaintenanceTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Scheduled Date *
+                {t("scheduledDateRequired")}
               </label>
               <input
                 type="date"
@@ -265,7 +267,7 @@ const MaintenanceTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Performed By
+                {t("performedBy")}
               </label>
               <input
                 value={form.performedBy || ""}
@@ -277,7 +279,7 @@ const MaintenanceTab: React.FC = () => {
             </div>
             <div className="col-span-2">
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Description *
+                {t("descriptionRequired")}
               </label>
               <input
                 value={form.description || ""}
@@ -289,7 +291,7 @@ const MaintenanceTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Vendor
+                {t("vendor")}
               </label>
               <input
                 value={form.vendorName || ""}
@@ -301,7 +303,7 @@ const MaintenanceTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Work Order #
+                {t("workOrderNumber")}
               </label>
               <input
                 value={form.workOrderNumber || ""}
@@ -317,7 +319,7 @@ const MaintenanceTab: React.FC = () => {
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleAdd}>
-              Create
+              {t("create")}
             </Button>
           </div>
         </Card>
@@ -328,12 +330,12 @@ const MaintenanceTab: React.FC = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800 text-left">
-              <th className="px-3 py-2 font-medium">Equipment</th>
-              <th className="px-3 py-2 font-medium">Type</th>
-              <th className="px-3 py-2 font-medium">Description</th>
-              <th className="px-3 py-2 font-medium">Scheduled</th>
-              <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Actions</th>
+              <th className="px-3 py-2 font-medium">{t("thEquipment")}</th>
+              <th className="px-3 py-2 font-medium">{t("thType")}</th>
+              <th className="px-3 py-2 font-medium">{t("thDescription")}</th>
+              <th className="px-3 py-2 font-medium">{t("thScheduled")}</th>
+              <th className="px-3 py-2 font-medium">{t("thStatus")}</th>
+              <th className="px-3 py-2 font-medium">{t("thActions")}</th>
             </tr>
           </thead>
           <tbody>
@@ -350,7 +352,7 @@ const MaintenanceTab: React.FC = () => {
                     </p>
                     {m.workOrderNumber && (
                       <p className="text-xs text-gray-500">
-                        WO: {m.workOrderNumber}
+                        {t("woPrefix")} {m.workOrderNumber}
                       </p>
                     )}
                   </td>
@@ -375,7 +377,7 @@ const MaintenanceTab: React.FC = () => {
                       className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[isOD && m.status === "scheduled" ? "overdue" : m.status]}`}
                     >
                       {isOD && m.status === "scheduled"
-                        ? "Overdue"
+                        ? t("overdueLabel")
                         : MAINTENANCE_STATUS_LABELS[m.status]}
                     </span>
                   </td>
@@ -388,7 +390,7 @@ const MaintenanceTab: React.FC = () => {
                         className="text-xs"
                       >
                         <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
-                        Complete
+                        {t("complete")}
                       </Button>
                     )}
                   </td>
@@ -398,7 +400,7 @@ const MaintenanceTab: React.FC = () => {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
-                  No maintenance records found
+                  {t("noMaintenanceRecords")}
                 </td>
               </tr>
             )}
