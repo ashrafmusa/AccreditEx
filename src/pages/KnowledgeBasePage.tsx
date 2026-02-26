@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { useUserStore } from "@/stores/useUserStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   KBArticle,
   KBArticleCategory,
@@ -139,6 +140,7 @@ type ViewMode = "browse" | "article" | "create";
 
 const KnowledgeBasePage: React.FC = () => {
   const { currentUser } = useUserStore();
+  const { t } = useTranslation();
   // Viewer role enforcement: isViewer users see read-only UI
   const isAdmin = currentUser?.role === UserRole.Admin;
 
@@ -246,11 +248,10 @@ const KnowledgeBasePage: React.FC = () => {
           <BookOpenIcon className="h-8 w-8 text-brand-primary" />
           <div>
             <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-              Knowledge Base
+              {t("knowledgeBase")}
             </h1>
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-              Best practices, protocols, regulatory updates, and accreditation
-              guidance
+              {t("kbSubtitle")}
             </p>
           </div>
         </div>
@@ -260,7 +261,7 @@ const KnowledgeBasePage: React.FC = () => {
             onClick={() => setView("create")}
             className="flex items-center gap-2"
           >
-            <PlusIcon className="h-4 w-4" /> New Article
+            <PlusIcon className="h-4 w-4" /> {t("newArticle")}
           </Button>
         )}
       </div>
@@ -273,7 +274,7 @@ const KnowledgeBasePage: React.FC = () => {
             <div className="grow">
               <Input
                 type="text"
-                placeholder="Search articles, tags..."
+                placeholder={t("searchArticlesTags")}
                 aria-label="Search articles and tags"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -286,7 +287,7 @@ const KnowledgeBasePage: React.FC = () => {
               aria-label="Filter by category"
               className={`${inputCls} w-auto sm:w-48`}
             >
-              <option value="all">All Categories</option>
+              <option value="all">{t("allCategories")}</option>
               {Object.entries(KB_CATEGORY_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v} ({catStats[k] ?? 0})
@@ -322,8 +323,8 @@ const KnowledgeBasePage: React.FC = () => {
           {/* Articles Grid */}
           {filtered.length === 0 ? (
             <EmptyState
-              title="No Articles"
-              description="No articles match your search."
+              title={t("noArticles")}
+              description={t("noArticlesMatch")}
               icon={<BookOpenIcon className="h-10 w-10 text-gray-400" />}
             />
           ) : (
@@ -345,7 +346,7 @@ const KnowledgeBasePage: React.FC = () => {
                     </span>
                     {a.isPinned && (
                       <span className="text-[10px] text-yellow-500">
-                        📌 Pinned
+                        📌 {t("pinned")}
                       </span>
                     )}
                   </div>
@@ -394,7 +395,7 @@ const KnowledgeBasePage: React.FC = () => {
             }}
             className="text-xs"
           >
-            ← Back to Articles
+            {t("backToArticles")}
           </Button>
           <div className="bg-brand-surface dark:bg-dark-brand-surface border border-brand-border dark:border-dark-brand-border rounded-lg p-6 max-w-3xl">
             <div className="flex items-center gap-2 mb-3">
@@ -409,11 +410,11 @@ const KnowledgeBasePage: React.FC = () => {
               {selectedArticle.title}
             </h2>
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mb-4">
-              By {selectedArticle.author} · Published{" "}
-              {selectedArticle.publishedAt} · Updated{" "}
+              {t("byAuthor")} {selectedArticle.author} · {t("published")}{" "}
+              {selectedArticle.publishedAt} · {t("updated")}{" "}
               {selectedArticle.updatedAt}
               {selectedArticle.viewCount != null &&
-                ` · ${selectedArticle.viewCount} views`}
+                ` · ${selectedArticle.viewCount} ${t("views")}`}
             </div>
             <div className="prose dark:prose-invert prose-sm max-w-none mb-6 text-brand-text-primary dark:text-dark-brand-text-primary whitespace-pre-line">
               {selectedArticle.content}
@@ -432,7 +433,7 @@ const KnowledgeBasePage: React.FC = () => {
             )}
             <div className="flex items-center gap-3 border-t border-brand-border dark:border-dark-brand-border pt-4">
               <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Was this helpful?
+                {t("wasThisHelpful")}
               </span>
               <Button
                 variant="ghost"
@@ -454,10 +455,10 @@ const KnowledgeBasePage: React.FC = () => {
             onClick={() => setView("browse")}
             className="text-xs"
           >
-            ← Cancel
+            {t("cancelGoBack")}
           </Button>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            New Article
+            {t("newArticle")}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="sm:col-span-2">
@@ -465,7 +466,7 @@ const KnowledgeBasePage: React.FC = () => {
                 htmlFor="kb-title"
                 className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
               >
-                Title *
+                {t("titleRequired")}
               </label>
               <input
                 id="kb-title"
@@ -481,7 +482,7 @@ const KnowledgeBasePage: React.FC = () => {
                 htmlFor="kb-category"
                 className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
               >
-                Category *
+                {t("categoryRequired")}
               </label>
               <select
                 id="kb-category"
@@ -506,7 +507,7 @@ const KnowledgeBasePage: React.FC = () => {
                 htmlFor="kb-tags"
                 className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
               >
-                Tags (comma-separated)
+                {t("tagsCommaSeparated")}
               </label>
               <input
                 id="kb-tags"
@@ -515,7 +516,7 @@ const KnowledgeBasePage: React.FC = () => {
                   setForm((p) => ({ ...p, tags: e.target.value }))
                 }
                 className={inputCls}
-                placeholder="e.g. infection control, JCI, PCI"
+                placeholder={t("tagsPlaceholder")}
               />
             </div>
             <div className="sm:col-span-2">
@@ -523,7 +524,7 @@ const KnowledgeBasePage: React.FC = () => {
                 htmlFor="kb-summary"
                 className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
               >
-                Summary *
+                {t("summaryRequired")}
               </label>
               <textarea
                 id="kb-summary"
@@ -540,7 +541,7 @@ const KnowledgeBasePage: React.FC = () => {
                 htmlFor="kb-content"
                 className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
               >
-                Content (Markdown) *
+                {t("contentMarkdownRequired")}
               </label>
               <textarea
                 id="kb-content"
@@ -559,10 +560,10 @@ const KnowledgeBasePage: React.FC = () => {
               onClick={handlePublish}
               disabled={!form.title || !form.content}
             >
-              Publish
+              {t("publish")}
             </Button>
             <Button variant="ghost" onClick={() => setView("browse")}>
-              Cancel
+              {t("cancel")}
             </Button>
           </div>
         </div>

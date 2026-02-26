@@ -5,6 +5,7 @@
 import React, { useMemo } from "react";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import { Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   CheckCircleIcon,
   XCircleIcon,
@@ -115,6 +116,7 @@ const LeveyJenningsChart: React.FC<{
 
 // Stat cards using calibration/equipment data as proxy for QC overview
 const QCDashboardTab: React.FC = () => {
+  const { t } = useTranslation();
   const { equipment, calibrations, maintenanceLogs, reagents } =
     useLabOpsStore();
 
@@ -187,7 +189,7 @@ const QCDashboardTab: React.FC = () => {
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
-        QC & Compliance Dashboard
+        {t("qcDashboardTitle")}
       </h2>
 
       {/* KPI cards */}
@@ -195,7 +197,7 @@ const QCDashboardTab: React.FC = () => {
         <Card className="p-3 text-center">
           <p className="text-2xl font-bold text-green-600">{activeEquip}</p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Active Equipment
+            {t("activeEquipment")}
           </p>
         </Card>
         <Card
@@ -207,7 +209,7 @@ const QCDashboardTab: React.FC = () => {
             {calDue}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Calibration Overdue
+            {t("calibrationOverdue")}
           </p>
         </Card>
         <Card
@@ -219,7 +221,7 @@ const QCDashboardTab: React.FC = () => {
             {pmDue}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            PM Overdue
+            {t("pmOverdue")}
           </p>
         </Card>
         <Card className="p-3 text-center">
@@ -229,7 +231,7 @@ const QCDashboardTab: React.FC = () => {
             {passRate}%
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Cal Pass Rate (6mo)
+            {t("calPassRate6mo")}
           </p>
         </Card>
         <Card className="p-3 text-center">
@@ -239,7 +241,7 @@ const QCDashboardTab: React.FC = () => {
             {maintComplete}%
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            PM Completion (6mo)
+            {t("pmCompletion6mo")}
           </p>
         </Card>
         <Card
@@ -251,7 +253,7 @@ const QCDashboardTab: React.FC = () => {
             {lowStock + expired}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Reagent Alerts
+            {t("reagentAlerts")}
           </p>
         </Card>
       </div>
@@ -264,7 +266,7 @@ const QCDashboardTab: React.FC = () => {
               <div className="flex items-center gap-2 mb-2">
                 <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
                 <h3 className="font-semibold text-red-700 dark:text-red-400">
-                  Overdue Calibrations ({calDue})
+                  {t("overdueCalibrations")} ({calDue})
                 </h3>
               </div>
               <ul className="text-sm text-red-600 dark:text-red-400 space-y-1">
@@ -277,7 +279,7 @@ const QCDashboardTab: React.FC = () => {
                   )
                   .map((e) => (
                     <li key={e.id}>
-                      {e.name} — due {e.nextCalibrationDue}
+                      {e.name} — {t("due")} {e.nextCalibrationDue}
                     </li>
                   ))}
               </ul>
@@ -288,7 +290,7 @@ const QCDashboardTab: React.FC = () => {
               <div className="flex items-center gap-2 mb-2">
                 <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />
                 <h3 className="font-semibold text-yellow-700 dark:text-yellow-400">
-                  Reagent Alerts
+                  {t("reagentAlerts")}
                 </h3>
               </div>
               <ul className="text-sm space-y-1">
@@ -307,8 +309,8 @@ const QCDashboardTab: React.FC = () => {
                     >
                       {r.name} —{" "}
                       {r.status === "expired"
-                        ? `Expired ${r.expirationDate}`
-                        : `Low: ${r.quantity} ${r.unit}`}
+                        ? `${t("expired")} ${r.expirationDate}`
+                        : `${t("lowLabel")} ${r.quantity} ${r.unit}`}
                     </li>
                   ))}
               </ul>
@@ -320,17 +322,16 @@ const QCDashboardTab: React.FC = () => {
       {/* Levey-Jennings charts */}
       <Card className="p-4">
         <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-          Levey-Jennings Control Charts (Demo)
+          {t("leveyJenningsTitle")}
         </h3>
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mb-4">
-          Synthetic data for demonstration — connect to actual QC data via LIMS
-          integration for live charts.
+          {t("leveyJenningsDesc")}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {ljSections.map((lj) => (
             <LeveyJenningsChart
               key={lj.section}
-              title={`${lj.section} — Control`}
+              title={`${lj.section} ${t("controlSuffix")}`}
               values={lj.values}
               mean={lj.mean}
               sd={lj.sd}
@@ -342,21 +343,29 @@ const QCDashboardTab: React.FC = () => {
       {/* Recent calibrations */}
       <Card className="p-4">
         <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-          Recent Calibrations
+          {t("recentCalibrations")}
         </h3>
         {recent6mo.length === 0 ? (
-          <p className="text-sm text-gray-400">
-            No calibration records in last 6 months
-          </p>
+          <p className="text-sm text-gray-400">{t("noCalibrations6mo")}</p>
         ) : (
           <table className="w-full text-xs">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-800">
-                <th className="px-2 py-1.5 text-left font-medium">Equipment</th>
-                <th className="px-2 py-1.5 text-left font-medium">Date</th>
-                <th className="px-2 py-1.5 text-left font-medium">Result</th>
-                <th className="px-2 py-1.5 text-left font-medium">By</th>
-                <th className="px-2 py-1.5 text-left font-medium">Next Due</th>
+                <th className="px-2 py-1.5 text-left font-medium">
+                  {t("thEquipment")}
+                </th>
+                <th className="px-2 py-1.5 text-left font-medium">
+                  {t("thDate")}
+                </th>
+                <th className="px-2 py-1.5 text-left font-medium">
+                  {t("thResult")}
+                </th>
+                <th className="px-2 py-1.5 text-left font-medium">
+                  {t("thBy")}
+                </th>
+                <th className="px-2 py-1.5 text-left font-medium">
+                  {t("thNextDue")}
+                </th>
               </tr>
             </thead>
             <tbody>

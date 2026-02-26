@@ -5,6 +5,7 @@
 import React, { lazy, Suspense, useState } from "react";
 import type { LabOpsTab } from "@/types/labOps";
 import { Button } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   CogIcon,
   BeakerIcon,
@@ -27,18 +28,23 @@ const ProficiencyTestingTab = lazy(
 
 const tabs: {
   key: LabOpsTab;
-  label: string;
+  labelKey: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
 }[] = [
-  { key: "equipment", label: "Equipment", icon: CogIcon },
-  { key: "maintenance", label: "Maintenance", icon: ClockIcon },
-  { key: "reagents", label: "Reagents", icon: BeakerIcon },
-  { key: "qcDashboard", label: "QC Dashboard", icon: ChartBarIcon },
-  { key: "proficiency", label: "Proficiency Testing", icon: CheckBadgeIcon },
+  { key: "equipment", labelKey: "tabEquipment", icon: CogIcon },
+  { key: "maintenance", labelKey: "tabMaintenance", icon: ClockIcon },
+  { key: "reagents", labelKey: "tabReagents", icon: BeakerIcon },
+  { key: "qcDashboard", labelKey: "tabQCDashboard", icon: ChartBarIcon },
+  {
+    key: "proficiency",
+    labelKey: "tabProficiencyTesting",
+    icon: CheckBadgeIcon,
+  },
 ];
 
 const LabOperationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<LabOpsTab>("equipment");
+  const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
@@ -47,11 +53,10 @@ const LabOperationsPage: React.FC = () => {
         <CogIcon className="h-8 w-8 text-brand-primary" />
         <div>
           <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-            Lab Operations
+            {t("labOperations")}
           </h1>
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-            Equipment management, maintenance tracking, reagent inventory, QC
-            monitoring &amp; proficiency testing
+            {t("labOpsSubtitle")}
           </p>
         </div>
       </div>
@@ -70,7 +75,7 @@ const LabOperationsPage: React.FC = () => {
               className="flex items-center gap-1.5"
             >
               <Icon className="h-4 w-4" />
-              {tab.label}
+              {t(tab.labelKey)}
             </Button>
           );
         })}

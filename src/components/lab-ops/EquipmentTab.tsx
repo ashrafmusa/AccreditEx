@@ -17,6 +17,7 @@ import {
   CALIBRATION_RESULT_LABELS,
 } from "@/types/labOps";
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   PlusIcon,
   CheckCircleIcon,
@@ -45,6 +46,7 @@ const calColor: Record<CalibrationResult, string> = {
 };
 
 const EquipmentTab: React.FC = () => {
+  const { t } = useTranslation();
   const {
     equipment,
     calibrations,
@@ -194,7 +196,7 @@ const EquipmentTab: React.FC = () => {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
-            ← Back
+            {t("back")}
           </Button>
           <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
             {selected.name}
@@ -209,7 +211,7 @@ const EquipmentTab: React.FC = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Manufacturer / Model
+              {t("manufacturerModel")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.manufacturer} {selected.model}
@@ -217,7 +219,7 @@ const EquipmentTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Serial / Asset Tag
+              {t("serialAssetTag")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.serialNumber}
@@ -228,7 +230,7 @@ const EquipmentTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Lab Section / Location
+              {t("labSectionLocation")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.labSection}
@@ -237,7 +239,7 @@ const EquipmentTab: React.FC = () => {
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Category
+              {t("category")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
               {EQUIPMENT_CATEGORY_LABELS[selected.category]}
@@ -251,32 +253,32 @@ const EquipmentTab: React.FC = () => {
             className={`p-3 ${isOverdue(selected.nextCalibrationDue) ? "border-red-300 bg-red-50 dark:bg-red-900/20" : isDueSoon(selected.nextCalibrationDue) ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20" : ""}`}
           >
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Calibration
+              {t("calibration")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
-              Last: {selected.lastCalibrationDate || "—"}
+              {t("last")} {selected.lastCalibrationDate || t("noDataDash")}
             </p>
             <p
               className={`text-sm ${isOverdue(selected.nextCalibrationDue) ? "text-red-600 font-bold" : ""}`}
             >
-              Next: {selected.nextCalibrationDue || "—"}
-              {isOverdue(selected.nextCalibrationDue) && " ⚠ OVERDUE"}
+              {t("next")} {selected.nextCalibrationDue || t("noDataDash")}
+              {isOverdue(selected.nextCalibrationDue) && ` ${t("overdue")}`}
             </p>
           </Card>
           <Card
             className={`p-3 ${isOverdue(selected.nextMaintenanceDue) ? "border-red-300 bg-red-50 dark:bg-red-900/20" : isDueSoon(selected.nextMaintenanceDue) ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20" : ""}`}
           >
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Maintenance
+              {t("maintenance")}
             </p>
             <p className="font-medium dark:text-dark-brand-text-primary">
-              Last: {selected.lastMaintenanceDate || "—"}
+              {t("last")} {selected.lastMaintenanceDate || t("noDataDash")}
             </p>
             <p
               className={`text-sm ${isOverdue(selected.nextMaintenanceDue) ? "text-red-600 font-bold" : ""}`}
             >
-              Next: {selected.nextMaintenanceDue || "—"}
-              {isOverdue(selected.nextMaintenanceDue) && " ⚠ OVERDUE"}
+              {t("next")} {selected.nextMaintenanceDue || t("noDataDash")}
+              {isOverdue(selected.nextMaintenanceDue) && ` ${t("overdue")}`}
             </p>
           </Card>
         </div>
@@ -285,14 +287,14 @@ const EquipmentTab: React.FC = () => {
         <Card className="p-4">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold dark:text-dark-brand-text-primary">
-              Calibration History
+              {t("calibrationHistory")}
             </h3>
             <Button
               variant="primary"
               size="sm"
               onClick={() => setShowCalForm(true)}
             >
-              <PlusIcon className="h-4 w-4 mr-1" /> Record Calibration
+              <PlusIcon className="h-4 w-4 mr-1" /> {t("recordCalibration")}
             </Button>
           </div>
           {showCalForm && (
@@ -300,7 +302,7 @@ const EquipmentTab: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 text-sm">
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Date *
+                    {t("dateRequired")}
                   </label>
                   <input
                     type="date"
@@ -316,7 +318,7 @@ const EquipmentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Next Due
+                    {t("nextDue")}
                   </label>
                   <input
                     type="date"
@@ -329,7 +331,7 @@ const EquipmentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Result *
+                    {t("resultRequired")}
                   </label>
                   <select
                     value={calForm.result}
@@ -350,7 +352,7 @@ const EquipmentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Performed By *
+                    {t("performedByRequired")}
                   </label>
                   <input
                     value={calForm.calibratedBy || ""}
@@ -362,7 +364,7 @@ const EquipmentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Vendor
+                    {t("vendor")}
                   </label>
                   <input
                     value={calForm.vendor || ""}
@@ -374,7 +376,7 @@ const EquipmentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                    Notes
+                    {t("notes")}
                   </label>
                   <input
                     value={calForm.notes || ""}
@@ -394,24 +396,32 @@ const EquipmentTab: React.FC = () => {
                   Cancel
                 </Button>
                 <Button variant="primary" size="sm" onClick={handleAddCal}>
-                  Save
+                  {t("save")}
                 </Button>
               </div>
             </Card>
           )}
           {selectedCals.length === 0 ? (
-            <p className="text-sm text-gray-400">No calibration records yet</p>
+            <p className="text-sm text-gray-400">{t("noCalibrationRecords")}</p>
           ) : (
             <table className="w-full text-xs">
               <thead>
                 <tr className="bg-gray-50 dark:bg-gray-800">
-                  <th className="px-2 py-1.5 text-left font-medium">Date</th>
-                  <th className="px-2 py-1.5 text-left font-medium">Result</th>
-                  <th className="px-2 py-1.5 text-left font-medium">By</th>
                   <th className="px-2 py-1.5 text-left font-medium">
-                    Next Due
+                    {t("thDate")}
                   </th>
-                  <th className="px-2 py-1.5 text-left font-medium">Notes</th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thResult")}
+                  </th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thBy")}
+                  </th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thNextDue")}
+                  </th>
+                  <th className="px-2 py-1.5 text-left font-medium">
+                    {t("thNotes")}
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -441,7 +451,7 @@ const EquipmentTab: React.FC = () => {
         {selected.notes && (
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-              Notes
+              {t("notes")}
             </p>
             <p className="text-sm dark:text-dark-brand-text-primary">
               {selected.notes}
@@ -458,14 +468,14 @@ const EquipmentTab: React.FC = () => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
-          Equipment Inventory
+          {t("equipmentInventory")}
         </h2>
         <Button
           variant="primary"
           onClick={() => setShowAddForm(true)}
           className="flex items-center gap-1.5"
         >
-          <PlusIcon className="h-4 w-4" /> Add Equipment
+          <PlusIcon className="h-4 w-4" /> {t("addEquipment")}
         </Button>
       </div>
 
@@ -476,7 +486,7 @@ const EquipmentTab: React.FC = () => {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search equipment…"
+            placeholder={t("searchEquipment")}
             className="w-full pl-8 pr-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
         </div>
@@ -487,7 +497,7 @@ const EquipmentTab: React.FC = () => {
           }
           className="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         >
-          <option value="all">All Statuses</option>
+          <option value="all">{t("allStatuses")}</option>
           {Object.entries(EQUIPMENT_STATUS_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -501,7 +511,7 @@ const EquipmentTab: React.FC = () => {
           }
           className="px-3 py-2 text-sm border rounded-lg dark:bg-gray-800 dark:border-gray-700 dark:text-white"
         >
-          <option value="all">All Categories</option>
+          <option value="all">{t("allCategoriesEquip")}</option>
           {Object.entries(EQUIPMENT_CATEGORY_LABELS).map(([k, v]) => (
             <option key={k} value={k}>
               {v}
@@ -514,12 +524,12 @@ const EquipmentTab: React.FC = () => {
       {showAddForm && (
         <Card className="p-4 bg-gray-50 dark:bg-gray-800">
           <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
-            New Equipment
+            {t("newEquipment")}
           </h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Name *
+                {t("nameRequired")}
               </label>
               <input
                 value={form.name || ""}
@@ -529,7 +539,7 @@ const EquipmentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Manufacturer *
+                {t("manufacturerRequired")}
               </label>
               <input
                 value={form.manufacturer || ""}
@@ -541,7 +551,7 @@ const EquipmentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Model
+                {t("model")}
               </label>
               <input
                 value={form.model || ""}
@@ -551,7 +561,7 @@ const EquipmentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Serial Number *
+                {t("serialNumberRequired")}
               </label>
               <input
                 value={form.serialNumber || ""}
@@ -563,7 +573,7 @@ const EquipmentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Category
+                {t("category")}
               </label>
               <select
                 value={form.category}
@@ -584,20 +594,20 @@ const EquipmentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Lab Section
+                {t("labSection")}
               </label>
               <input
                 value={form.labSection || ""}
                 onChange={(e) =>
                   setForm({ ...form, labSection: e.target.value })
                 }
-                placeholder="Chemistry, Hematology…"
+                placeholder={t("chemistryHematology")}
                 className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Location
+                {t("location")}
               </label>
               <input
                 value={form.location || ""}
@@ -607,7 +617,7 @@ const EquipmentTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
-                Purchase Date
+                {t("purchaseDate")}
               </label>
               <input
                 type="date"
@@ -628,7 +638,7 @@ const EquipmentTab: React.FC = () => {
               Cancel
             </Button>
             <Button variant="primary" size="sm" onClick={handleAdd}>
-              Add Equipment
+              {t("addEquipment")}
             </Button>
           </div>
         </Card>
@@ -639,12 +649,12 @@ const EquipmentTab: React.FC = () => {
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-gray-50 dark:bg-gray-800 text-left">
-              <th className="px-3 py-2 font-medium">Name</th>
-              <th className="px-3 py-2 font-medium">Category</th>
-              <th className="px-3 py-2 font-medium">Section</th>
-              <th className="px-3 py-2 font-medium">Status</th>
-              <th className="px-3 py-2 font-medium">Next Cal</th>
-              <th className="px-3 py-2 font-medium">Next PM</th>
+              <th className="px-3 py-2 font-medium">{t("thName")}</th>
+              <th className="px-3 py-2 font-medium">{t("thCategory")}</th>
+              <th className="px-3 py-2 font-medium">{t("thSection")}</th>
+              <th className="px-3 py-2 font-medium">{t("thStatus")}</th>
+              <th className="px-3 py-2 font-medium">{t("thNextCal")}</th>
+              <th className="px-3 py-2 font-medium">{t("thNextPM")}</th>
             </tr>
           </thead>
           <tbody>
@@ -694,7 +704,7 @@ const EquipmentTab: React.FC = () => {
             {filtered.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-3 py-8 text-center text-gray-400">
-                  No equipment found
+                  {t("noEquipmentFound")}
                 </td>
               </tr>
             )}
