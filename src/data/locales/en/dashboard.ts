@@ -129,6 +129,9 @@ export const en = {
     allClear: 'All Clear!',
     noOpenCapaMessage: 'No open CAPA reports. Great work maintaining compliance!',
 
+    // MyTasksWidget
+    moreTasks: 'more tasks',
+
     // DashboardHeader
     userFallback: 'User',
 
