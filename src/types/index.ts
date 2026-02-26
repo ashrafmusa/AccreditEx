@@ -17,6 +17,8 @@ export interface Organization {
   maxUsers?: number;
   createdAt: string;
   updatedAt?: string;
+  /** Module configuration for tailored delivery */
+  moduleConfig?: import('./modules').OrganizationModuleConfig;
 }
 
 export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration';

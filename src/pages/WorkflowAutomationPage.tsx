@@ -386,9 +386,7 @@ const WorkflowAutomationPage: React.FC = () => {
 
   const handleDeleteWorkflow = useCallback(
     async (id: string) => {
-      if (
-        window.confirm(t("deleteWorkflowConfirm"))
-      ) {
+      if (window.confirm(t("deleteWorkflowConfirm"))) {
         await deleteWorkflow(id);
       }
     },
@@ -630,7 +628,11 @@ Format in clear Markdown.`;
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {executionLogs.length} {executionLogs.length !== 1 ? t("executionsRecordedPlural") : t("executionsRecorded")} {t("recorded")}
+              {executionLogs.length}{" "}
+              {executionLogs.length !== 1
+                ? t("executionsRecordedPlural")
+                : t("executionsRecorded")}{" "}
+              {t("recorded")}
             </p>
             {executionLogs.length > 0 && (
               <Button
@@ -671,7 +673,8 @@ Format in clear Markdown.`;
                 onClick={handleSaveWorkflow}
                 disabled={!builder.name.trim() || builder.actions.length === 0}
               >
-                {editingId ? t("updateWorkflow") : t("createWorkflowBtn")} {t("workflowSuffix")}
+                {editingId ? t("updateWorkflow") : t("createWorkflowBtn")}{" "}
+                {t("workflowSuffix")}
               </Button>
             </div>
           }
@@ -721,43 +724,43 @@ const WorkflowList: React.FC<{
 }) => {
   const { t } = useTranslation();
   return (
-  <div className="space-y-4">
-    <Input
-      value={searchQuery}
-      onChange={(e) => onSearchChange(e.target.value)}
-      placeholder={t("searchWorkflows")}
-      className="max-w-xl"
-    />
-
-    {loading ? (
-      <div className="space-y-3">
-        {[1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className="animate-pulse h-24 bg-gray-100 dark:bg-gray-800 rounded-lg"
-          />
-        ))}
-      </div>
-    ) : workflows.length === 0 ? (
-      <EmptyState
-        icon={<BoltIcon className="h-12 w-12 text-gray-400" />}
-        title={t("noWorkflowsYet")}
-        message={t("createFirstWorkflow")}
+    <div className="space-y-4">
+      <Input
+        value={searchQuery}
+        onChange={(e) => onSearchChange(e.target.value)}
+        placeholder={t("searchWorkflows")}
+        className="max-w-xl"
       />
-    ) : (
-      <div className="space-y-3">
-        {workflows.map((wf) => (
-          <WorkflowCard
-            key={wf.id}
-            workflow={wf}
-            onEdit={() => onEdit(wf)}
-            onDelete={() => onDelete(wf.id)}
-            onToggle={() => onToggle(wf.id)}
-          />
-        ))}
-      </div>
-    )}
-  </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="animate-pulse h-24 bg-gray-100 dark:bg-gray-800 rounded-lg"
+            />
+          ))}
+        </div>
+      ) : workflows.length === 0 ? (
+        <EmptyState
+          icon={<BoltIcon className="h-12 w-12 text-gray-400" />}
+          title={t("noWorkflowsYet")}
+          message={t("createFirstWorkflow")}
+        />
+      ) : (
+        <div className="space-y-3">
+          {workflows.map((wf) => (
+            <WorkflowCard
+              key={wf.id}
+              workflow={wf}
+              onEdit={() => onEdit(wf)}
+              onDelete={() => onDelete(wf.id)}
+              onToggle={() => onToggle(wf.id)}
+            />
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -771,83 +774,90 @@ const WorkflowCard: React.FC<{
 }> = ({ workflow: wf, onEdit, onDelete, onToggle }) => {
   const { t } = useTranslation();
   return (
-  <div className="border rounded-xl p-4 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
-    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <h3 className="text-lg font-semibold dark:text-white truncate">
-            {wf.name}
-          </h3>
-          <span
-            className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[wf.status]}`}
-          >
-            {wf.status}
-          </span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[wf.category] || CATEGORY_COLORS.general}`}
-          >
-            {wf.category}
-          </span>
-        </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
-          {wf.description}
-        </p>
-        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
-          <span>
-            {t("trigger")}{" "}
-            <span className="font-medium">
-              {TRIGGER_ENTITY_LABELS[wf.trigger.entity]}
-            </span>{" "}
-            →{" "}
-            <span className="font-medium">
-              {TRIGGER_EVENT_LABELS[wf.trigger.event]}
+    <div className="border rounded-xl p-4 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="text-lg font-semibold dark:text-white truncate">
+              {wf.name}
+            </h3>
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_STYLES[wf.status]}`}
+            >
+              {wf.status}
             </span>
-          </span>
-          <span>
-            {wf.actions.length} {wf.actions.length !== 1 ? t("actionsCount") : t("actionCount")}
-          </span>
-          <span>
-            {wf.executionCount} {wf.executionCount !== 1 ? t("executionsCount") : t("executionCount")}
-          </span>
-          {wf.lastExecutedAt && (
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[wf.category] || CATEGORY_COLORS.general}`}
+            >
+              {wf.category}
+            </span>
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
+            {wf.description}
+          </p>
+          <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
             <span>
-              {t("lastExecution")} {new Date(wf.lastExecutedAt).toLocaleDateString()}
+              {t("trigger")}{" "}
+              <span className="font-medium">
+                {TRIGGER_ENTITY_LABELS[wf.trigger.entity]}
+              </span>{" "}
+              →{" "}
+              <span className="font-medium">
+                {TRIGGER_EVENT_LABELS[wf.trigger.event]}
+              </span>
             </span>
-          )}
+            <span>
+              {wf.actions.length}{" "}
+              {wf.actions.length !== 1 ? t("actionsCount") : t("actionCount")}
+            </span>
+            <span>
+              {wf.executionCount}{" "}
+              {wf.executionCount !== 1
+                ? t("executionsCount")
+                : t("executionCount")}
+            </span>
+            {wf.lastExecutedAt && (
+              <span>
+                {t("lastExecution")}{" "}
+                {new Date(wf.lastExecutedAt).toLocaleDateString()}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          type="button"
-          onClick={onToggle}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title={wf.status === "active" ? t("pauseTooltip") : t("activateTooltip")}
-        >
-          {wf.status === "active" ? (
-            <PauseCircleIcon className="h-5 w-5 text-amber-500" />
-          ) : (
-            <PlayIcon className="h-5 w-5 text-emerald-500" />
-          )}
-        </button>
-        <button
-          type="button"
-          onClick={onEdit}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title={t("editTooltip")}
-        >
-          <PencilIcon className="h-5 w-5 text-blue-500" />
-        </button>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          title={t("deleteTooltip")}
-        >
-          <TrashIcon className="h-5 w-5 text-red-500" />
-        </button>
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={onToggle}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title={
+              wf.status === "active" ? t("pauseTooltip") : t("activateTooltip")
+            }
+          >
+            {wf.status === "active" ? (
+              <PauseCircleIcon className="h-5 w-5 text-amber-500" />
+            ) : (
+              <PlayIcon className="h-5 w-5 text-emerald-500" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title={t("editTooltip")}
+          >
+            <PencilIcon className="h-5 w-5 text-blue-500" />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            title={t("deleteTooltip")}
+          >
+            <TrashIcon className="h-5 w-5 text-red-500" />
+          </button>
+        </div>
       </div>
     </div>
-  </div>
   );
 };
 
@@ -858,50 +868,50 @@ const TemplateGallery: React.FC<{
 }> = ({ onUseTemplate }) => {
   const { t } = useTranslation();
   return (
-  <div className="space-y-4">
-    <p className="text-sm text-gray-600 dark:text-gray-400">
-      {t("templateGalleryDesc")}
-    </p>
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {WORKFLOW_TEMPLATES.map((tpl, idx) => (
-        <div
-          key={idx}
-          className="border rounded-xl p-4 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow flex flex-col"
-        >
-          <div className="flex items-center gap-2 mb-2">
-            <SparklesIcon className="h-5 w-5 text-brand-primary" />
-            <h3 className="font-semibold dark:text-white text-sm">
-              {tpl.name}
-            </h3>
+    <div className="space-y-4">
+      <p className="text-sm text-gray-600 dark:text-gray-400">
+        {t("templateGalleryDesc")}
+      </p>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {WORKFLOW_TEMPLATES.map((tpl, idx) => (
+          <div
+            key={idx}
+            className="border rounded-xl p-4 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow flex flex-col"
+          >
+            <div className="flex items-center gap-2 mb-2">
+              <SparklesIcon className="h-5 w-5 text-brand-primary" />
+              <h3 className="font-semibold dark:text-white text-sm">
+                {tpl.name}
+              </h3>
+            </div>
+            <p className="text-xs text-gray-600 dark:text-gray-400 flex-1 line-clamp-3">
+              {tpl.description}
+            </p>
+            <div className="mt-3 flex items-center justify-between">
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[tpl.category] || CATEGORY_COLORS.general}`}
+              >
+                {tpl.category}
+              </span>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => onUseTemplate(idx)}
+                className="flex items-center gap-1"
+              >
+                <PlusIcon className="h-3.5 w-3.5" />
+                {t("useTemplate")}
+              </Button>
+            </div>
+            <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              {TRIGGER_ENTITY_LABELS[tpl.trigger.entity]} →{" "}
+              {TRIGGER_EVENT_LABELS[tpl.trigger.event]} • {tpl.actions.length}{" "}
+              action{tpl.actions.length !== 1 ? "s" : ""}
+            </div>
           </div>
-          <p className="text-xs text-gray-600 dark:text-gray-400 flex-1 line-clamp-3">
-            {tpl.description}
-          </p>
-          <div className="mt-3 flex items-center justify-between">
-            <span
-              className={`px-2 py-0.5 rounded-full text-xs font-medium ${CATEGORY_COLORS[tpl.category] || CATEGORY_COLORS.general}`}
-            >
-              {tpl.category}
-            </span>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => onUseTemplate(idx)}
-              className="flex items-center gap-1"
-            >
-              <PlusIcon className="h-3.5 w-3.5" />
-              {t("useTemplate")}
-            </Button>
-          </div>
-          <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-            {TRIGGER_ENTITY_LABELS[tpl.trigger.entity]} →{" "}
-            {TRIGGER_EVENT_LABELS[tpl.trigger.event]} • {tpl.actions.length}{" "}
-            action{tpl.actions.length !== 1 ? "s" : ""}
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
-  </div>
   );
 };
 
@@ -912,17 +922,17 @@ const ExecutionLogList: React.FC<{
 }> = ({ logs }) => {
   const { t } = useTranslation();
   return (
-  <div className="space-y-3">
-    {logs.length === 0 ? (
-      <EmptyState
-        icon={<ClockIcon className="h-12 w-12 text-gray-400" />}
-        title={t("noExecutionLogs")}
-        message={t("logsWillAppear")}
-      />
-    ) : (
-      logs.map((log) => <ExecutionLogRow key={log.id} log={log} />)
-    )}
-  </div>
+    <div className="space-y-3">
+      {logs.length === 0 ? (
+        <EmptyState
+          icon={<ClockIcon className="h-12 w-12 text-gray-400" />}
+          title={t("noExecutionLogs")}
+          message={t("logsWillAppear")}
+        />
+      ) : (
+        logs.map((log) => <ExecutionLogRow key={log.id} log={log} />)
+      )}
+    </div>
   );
 };
 

@@ -26,6 +26,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { prefetchRoute } from "@/services/routePrefetchService";
 import UserAvatar from "./UserAvatar";
+import { useModuleStore } from "@/stores/useModuleStore";
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -58,6 +59,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   const appSettings = useAppStore((state) => state.appSettings);
   const currentView = navigation.view;
   const sidebarRef = useRef<HTMLDivElement>(null);
+  const isNavKeyEnabled = useModuleStore((s) => s.isNavKeyEnabled);
 
   // Focus Trap
   useEffect(() => {
@@ -203,7 +205,9 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   ];
 
   const visibleNavItems = allNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin",
+    (item) =>
+      (!item.adminOnly || currentUser?.role?.toLowerCase() === "admin") &&
+      isNavKeyEnabled(item.key),
   );
   const mainItems = visibleNavItems.filter((item) => !item.bottom);
   const bottomItems = visibleNavItems.filter((item) => item.bottom);
