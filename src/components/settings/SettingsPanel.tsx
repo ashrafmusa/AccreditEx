@@ -65,7 +65,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
       >
         <div className="flex items-start gap-3 flex-1">
           {Icon && (
-            <div className={`flex-shrink-0 mt-1 ${headerClasses[variant]}`}>
+            <div className={`shrink-0 mt-1 ${headerClasses[variant]}`}>
               <Icon className="w-6 h-6" />
             </div>
           )}
@@ -83,7 +83,7 @@ export const SettingsPanel: React.FC<SettingsPanelProps> = ({
 
         {collapsible && (
           <button
-            className={`flex-shrink-0 ml-2 text-gray-400 hover:text-gray-600 transition-transform ${
+            className={`shrink-0 ml-2 text-gray-400 hover:text-gray-600 transition-transform ${
               isOpen ? '' : '-rotate-90'
             }`}
             aria-expanded={isOpen}

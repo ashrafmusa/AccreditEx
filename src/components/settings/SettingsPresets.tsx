@@ -147,7 +147,7 @@ export const SettingsPresets: React.FC<SettingsPresetsProps> = ({
                   </p>
                 </div>
 
-                <div className="flex gap-1 flex-shrink-0">
+                <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => onLoadPreset(preset)}
                     title={t("loadPreset") || "Load preset"}

@@ -257,7 +257,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
       </div>
 
       {/* AI Health Briefing */}
-      <div className="bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-rose-900/10 dark:to-cyan-900/10 p-6 rounded-lg shadow-sm border border-cyan-200 dark:border-cyan-800">
+      <div className="bg-linear-to-r from-rose-50 to-cyan-50 dark:from-rose-900/10 dark:to-cyan-900/10 p-6 rounded-lg shadow-sm border border-cyan-200 dark:border-cyan-800">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             🤖 AI Project Health Briefing
@@ -265,7 +265,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
           <button
             onClick={handleAIBriefing}
             disabled={isBriefing}
-            className="bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            className="bg-linear-to-r from-rose-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isBriefing ? (
               <>

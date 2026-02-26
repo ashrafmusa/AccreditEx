@@ -199,7 +199,7 @@ Format your response clearly with headers.`;
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* AI Pre-fill banner in edit mode */}
           {isEditing && (
-            <div className="flex items-center justify-between bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 border border-rose-200 dark:border-pink-800 rounded-lg p-3">
+            <div className="flex items-center justify-between bg-linear-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 border border-rose-200 dark:border-pink-800 rounded-lg p-3">
               <span className="text-sm text-gray-700 dark:text-gray-300">
                 🤖 Use AI to pre-fill root cause, corrective &amp; preventive
                 actions
@@ -208,7 +208,7 @@ Format your response clearly with headers.`;
                 type="button"
                 onClick={handleAIPreFill}
                 disabled={isAIPreFilling}
-                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1.5 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                className="text-xs bg-linear-to-r from-rose-600 to-cyan-600 text-white px-3 py-1.5 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 {isAIPreFilling ? (
                   <>
@@ -421,7 +421,7 @@ Format your response clearly with headers.`;
           </div>
 
           {/* AI Effectiveness Review (A-15) */}
-          <div className="border border-rose-200 dark:border-pink-800 rounded-md p-4 bg-gradient-to-r from-rose-50/50 to-cyan-50/50 dark:from-pink-900/10 dark:to-cyan-900/10">
+          <div className="border border-rose-200 dark:border-pink-800 rounded-md p-4 bg-linear-to-r from-rose-50/50 to-cyan-50/50 dark:from-pink-900/10 dark:to-cyan-900/10">
             <div className="flex items-center justify-between mb-2">
               <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">
                 🤖 AI Effectiveness Review
@@ -430,7 +430,7 @@ Format your response clearly with headers.`;
                 type="button"
                 onClick={handleAIEffectivenessReview}
                 disabled={isAIReviewing}
-                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                className="text-xs bg-linear-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 {isAIReviewing ? (
                   <>

@@ -38,7 +38,7 @@ export const AnalyticsOverview: React.FC<AnalyticsOverviewProps> = ({ configId }
   return (
     <div className="space-y-6">
       {/* Health Score Card */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6">
+      <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-gray-800 mb-2">System Health</h3>

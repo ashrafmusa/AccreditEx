@@ -84,7 +84,7 @@ const AIQualityBriefing: React.FC<AIQualityBriefingProps> = ({
   );
 
   return (
-    <div className="bg-gradient-to-br from-sky-50 dark:from-sky-900/50 to-pink-50 dark:to-pink-900/50 p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border">
+    <div className="bg-linear-to-br from-sky-50 dark:from-sky-900/50 to-pink-50 dark:to-pink-900/50 p-6 rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary flex items-center gap-2">

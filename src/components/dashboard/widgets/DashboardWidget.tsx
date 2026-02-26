@@ -28,7 +28,7 @@ export const DashboardWidget: React.FC<DashboardWidgetProps> = ({
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-start gap-3 flex-1">
           {Icon && (
-            <div className="p-2 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-lg">
+            <div className="p-2 bg-linear-to-br from-brand-primary to-brand-secondary rounded-lg">
               <Icon className="w-6 h-6 text-white" />
             </div>
           )}

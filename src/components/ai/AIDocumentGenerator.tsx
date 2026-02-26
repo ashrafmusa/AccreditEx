@@ -230,7 +230,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   return (
     <div className="w-full max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-rose-600 to-cyan-600 p-6 text-white">
+      <div className="bg-linear-to-r from-rose-600 to-cyan-600 p-6 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -471,7 +471,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             <button
               onClick={handleGenerateDocument}
               disabled={!selectedTemplate || isGenerating}
-              className="w-full px-4 py-3 bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
+              className="w-full px-4 py-3 bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
               aria-label={isGenerating ? "Generating document..." : "Generate document"}
               title={isGenerating ? "Generating document..." : "Generate document"}
             >
@@ -584,7 +584,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                     key={index}
                     className="text-sm text-gray-700 dark:text-gray-300 flex items-start space-x-2"
                   >
-                    <CheckIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                    <CheckIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" aria-hidden="true" />
                     <span>{suggestion}</span>
                   </div>
                 ))}
@@ -605,7 +605,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                     key={index}
                     className="text-sm text-gray-700 dark:text-gray-300 flex items-start space-x-2"
                   >
-                    <XMarkIcon className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                    <XMarkIcon className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" aria-hidden="true" />
                     <span>{issue}</span>
                   </div>
                 ))}

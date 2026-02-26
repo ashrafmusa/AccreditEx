@@ -98,7 +98,7 @@ const AIButton: React.FC<{
     title={label}
     className={`inline-flex items-center gap-1 text-xs font-medium rounded-md transition-all
       ${compact ? "px-2 py-1" : "px-2.5 py-1.5"}
-      bg-gradient-to-r from-violet-500 to-blue-500 text-white
+      bg-linear-to-r from-violet-500 to-blue-500 text-white
       hover:from-violet-600 hover:to-blue-600
       disabled:opacity-50 disabled:cursor-not-allowed
       shadow-sm hover:shadow`}
@@ -763,7 +763,7 @@ Return ONLY the HTML content.`;
 
             {/* AI Fill All Banner */}
             {hasName && (
-              <div className="mt-3 flex items-center gap-3 p-2.5 rounded-lg bg-gradient-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 border border-violet-100 dark:border-violet-800/30">
+              <div className="mt-3 flex items-center gap-3 p-2.5 rounded-lg bg-linear-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 border border-violet-100 dark:border-violet-800/30">
                 <SparklesIcon className="w-4 h-4 text-violet-500 shrink-0" />
                 <p className="text-xs text-violet-700 dark:text-violet-300 flex-1">
                   {t("aiAutoFillDescription") ||
@@ -1067,7 +1067,7 @@ Return ONLY the HTML content.`;
                     }
                     if (!next) setGeneratedContent(undefined);
                   }}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-gradient-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 hover:from-violet-100 hover:to-blue-100 dark:hover:from-violet-900/30 dark:hover:to-blue-900/30 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-linear-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 hover:from-violet-100 hover:to-blue-100 dark:hover:from-violet-900/30 dark:hover:to-blue-900/30 transition-colors"
                   disabled={aiAnyLoading && !aiGeneratingContent}
                 >
                   <span className="flex items-center gap-2">

@@ -71,7 +71,7 @@ const ToggleSwitch: FC<ToggleSwitchProps> = ({
         disabled={disabled}
         className={`${
           enabled ? "bg-brand-primary" : "bg-gray-300 dark:bg-gray-600"
-        } relative inline-flex h-7 w-12 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 dark:ring-offset-gray-900 ml-4 shadow-sm hover:shadow-md ${
+        } relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 dark:ring-offset-gray-900 ml-4 shadow-sm hover:shadow-md ${
           !disabled && "active:scale-95"
         } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
         aria-label={`Toggle ${label}`}
@@ -81,7 +81,7 @@ const ToggleSwitch: FC<ToggleSwitchProps> = ({
         <span
           className={`${
             enabled ? "translate-x-5" : "translate-x-0.5"
-          } pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-300 ease-in-out flex items-center justify-center`}
+          } pointer-events-none h-6 w-6 transform rounded-full bg-white shadow-lg ring-0 transition-all duration-300 ease-in-out flex items-center justify-center`}
         >
           {enabled && (
             <svg

@@ -177,7 +177,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       {
         id: "readiness",
         title: "Validate readiness and close open findings",
-        action: () => setNavigation({ view: "qualityInsights" }),
+        action: () => setNavigation({ view: "analyticsHub" }),
       },
     ],
     [firstProgramId, setNavigation],
@@ -534,14 +534,14 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("totalProjects")}
                 value={dashboardData.totalProjects}
                 icon={FolderIcon}
-                color="from-blue-500 to-blue-700 bg-gradient-to-br"
+                color="from-blue-500 to-blue-700 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "projects" })}
               />
               <StatCard
                 title={t("inProgress")}
                 value={dashboardData.inProgressCount}
                 icon={PlayCircleIcon}
-                color="from-orange-400 to-orange-600 bg-gradient-to-br"
+                color="from-orange-400 to-orange-600 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "projects", filter: "inProgress" })
                 }
@@ -550,7 +550,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("completed")}
                 value={dashboardData.completedCount}
                 icon={CheckCircleIcon}
-                color="from-emerald-500 to-emerald-700 bg-gradient-to-br"
+                color="from-emerald-500 to-emerald-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "projects", filter: "completed" })
                 }
@@ -559,14 +559,14 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("overallCompliance")}
                 value={dashboardData.overallCompliance}
                 icon={CheckCircleIcon}
-                color="from-sky-500 to-sky-700 bg-gradient-to-br"
+                color="from-sky-500 to-sky-700 bg-linear-to-br"
                 isLiveLinkable
               />
               <StatCard
                 title={t("openCapaReports")}
                 value={dashboardData.openCapaCount}
                 icon={ExclamationTriangleIcon}
-                color="from-red-500 to-red-700 bg-gradient-to-br"
+                color="from-red-500 to-red-700 bg-linear-to-br"
                 isLiveLinkable
                 onClick={() =>
                   setNavigation({ view: "projects", filter: "openCapa" })
@@ -576,7 +576,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("upcomingDeadlines")}
                 value={dashboardData.upcomingDeadlinesCount}
                 icon={CalendarDaysIcon}
-                color="from-amber-400 to-amber-600 bg-gradient-to-br"
+                color="from-amber-400 to-amber-600 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "calendar" })}
               />
             </div>
@@ -587,21 +587,21 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("auditScheduleCompliance")}
                 value={dashboardData.auditComplianceRate}
                 icon={CheckCircleIcon}
-                color="from-rose-500 to-pink-600 bg-gradient-to-br"
+                color="from-rose-500 to-pink-600 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "auditHub" })}
               />
               <StatCard
                 title={t("riskExposure")}
                 value={`${dashboardData.riskExposure}%`}
                 icon={ExclamationTriangleIcon}
-                color="from-rose-500 to-rose-700 bg-gradient-to-br"
+                color="from-rose-500 to-rose-700 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "riskHub" })}
               />
               <StatCard
                 title={t("documentsReviewOverdue")}
                 value={dashboardData.documentsReviewOverdue}
                 icon={CalendarDaysIcon}
-                color="from-yellow-500 to-yellow-700 bg-gradient-to-br"
+                color="from-yellow-500 to-yellow-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "documentControl", filter: "overdue" })
                 }
@@ -610,7 +610,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("mitigatedRisks")}
                 value={dashboardData.mitigatedRisks}
                 icon={CheckCircleIcon}
-                color="from-teal-500 to-teal-700 bg-gradient-to-br"
+                color="from-teal-500 to-teal-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "riskHub", filter: "mitigated" })
                 }
@@ -630,7 +630,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => setNavigation({ view: "qualityInsights" })}
+                    onClick={() => setNavigation({ view: "analyticsHub" })}
                     className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
                   >
                     Open Quality Insights

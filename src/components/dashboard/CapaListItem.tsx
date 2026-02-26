@@ -26,8 +26,8 @@ const CapaListItem: React.FC<CapaListItemProps> = ({
         className="p-4 rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-brand-border dark:border-dark-brand-border flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
       >
         <div className="flex items-start gap-3">
-          <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
-          <div className="flex-grow">
+          <ExclamationTriangleIcon className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+          <div className="grow">
             <p className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
               {capa.description}
             </p>
@@ -37,7 +37,7 @@ const CapaListItem: React.FC<CapaListItemProps> = ({
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-4 text-xs sm:text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary ltr:sm:pl-8 rtl:sm:pr-8 flex-shrink-0">
+        <div className="flex items-center gap-4 text-xs sm:text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary ltr:sm:pl-8 rtl:sm:pr-8 shrink-0">
           <span className="font-medium">
             {assignee?.name || t("unassigned")}
           </span>

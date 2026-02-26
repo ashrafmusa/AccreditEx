@@ -217,7 +217,7 @@ const BatchImportPanel: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Upload Section */}
-      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
+      <div className="bg-linear-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-6">
         <div className="flex items-center gap-3 mb-4">
           <ArrowPathIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">

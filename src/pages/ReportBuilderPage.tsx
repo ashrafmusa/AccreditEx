@@ -54,6 +54,7 @@ import {
   TableBlockConfig,
   TextBlockConfig,
   HeaderBlockConfig,
+  DividerBlockConfig,
 } from "@/types/reportBuilder";
 import {
   resolveMetric,
@@ -208,12 +209,12 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
               />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={{ stroke: ct.gridStroke }}
               />
               <YAxis
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -264,12 +265,12 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
               />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={{ stroke: ct.gridStroke }}
               />
               <YAxis
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -326,12 +327,12 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
               />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={{ stroke: ct.gridStroke }}
               />
               <YAxis
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -377,8 +378,10 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
                 innerRadius={35}
                 paddingAngle={2}
                 animationDuration={CHART_ANIMATION.duration}
-                label={({ percent }) =>
-                  percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ""
+                label={({ percent }: Record<string, unknown>) =>
+                  (percent as number) > 0.05
+                    ? `${((percent as number) * 100).toFixed(0)}%`
+                    : ""
                 }
                 labelLine={{ stroke: "#9ca3af", strokeWidth: 1 }}
               >
@@ -419,11 +422,11 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
               />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, ...ct.tickStyle }}
+                tick={{ ...ct.tickStyle, fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
               />
@@ -1196,9 +1199,9 @@ function getDefaultConfig(type: ReportBlockType): ReportBlock["config"] {
         maxRows: 25,
       } as TableBlockConfig;
     case "divider":
-      return { style: "solid", thickness: 1 };
+      return { style: "solid", spacing: "md" } as DividerBlockConfig;
     default:
-      return {};
+      return { content: "" } as TextBlockConfig;
   }
 }
 
@@ -1390,6 +1393,7 @@ const ReportBuilderPage: React.FC = () => {
         status: "draft",
         category: data.category || "custom",
         tags: [],
+        isTemplate: false,
         sections: [
           {
             id: `s-${Date.now()}`,
@@ -1638,10 +1642,10 @@ Format in clear Markdown.`;
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* ── Page Header ─────────────────────────────────────── */}
-      <div className="shrink-0 px-6 pt-6 pb-4 border-b dark:border-gray-800 bg-gradient-to-r from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+      <div className="shrink-0 px-6 pt-6 pb-4 border-b dark:border-gray-800 bg-linear-to-r from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30">
+            <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30">
               <Squares2X2Icon className="h-6 w-6" />
             </div>
             <div>
@@ -1655,7 +1659,7 @@ Format in clear Markdown.`;
           </div>
           <Button
             onClick={() => setShowNewModal(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30"
+            className="bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30"
           >
             <PlusIcon className="h-4 w-4 mr-1.5" />
             New Report
@@ -1735,12 +1739,10 @@ Format in clear Markdown.`;
               icon={<Squares2X2Icon className="h-12 w-12 text-indigo-300" />}
               title="No Reports Yet"
               description="Create a new report from scratch or start from a template."
-              action={
-                <Button onClick={() => setShowNewModal(true)}>
-                  <PlusIcon className="h-4 w-4 mr-1.5" />
-                  Create Report
-                </Button>
-              }
+              action={{
+                label: "Create Report",
+                onClick: () => setShowNewModal(true),
+              }}
             />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -1822,9 +1824,9 @@ Format in clear Markdown.`;
         ) : tab === "templates" ? (
           /* ── Template Gallery ──────────────────────────────── */
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {REPORT_TEMPLATES.map((tpl) => (
+            {REPORT_TEMPLATES.map((tpl, index) => (
               <div
-                key={tpl.id}
+                key={tpl.name}
                 className="border rounded-xl dark:border-gray-700 bg-white dark:bg-gray-900 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -1853,8 +1855,8 @@ Format in clear Markdown.`;
                   </span>
                 </div>
                 <Button
-                  onClick={() => handleUseTemplate(tpl.id)}
-                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+                  onClick={() => handleUseTemplate(tpl.name)}
+                  className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white"
                   size="sm"
                 >
                   <PlusIcon className="h-3.5 w-3.5 mr-1" />
@@ -1929,7 +1931,7 @@ Format in clear Markdown.`;
                   size="sm"
                   onClick={handleExportPDF}
                   disabled={exporting}
-                  className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white"
+                  className="bg-linear-to-r from-indigo-600 to-purple-600 text-white"
                 >
                   {exporting ? (
                     <ArrowPathIcon className="h-3.5 w-3.5 mr-1 animate-spin" />
@@ -1950,7 +1952,7 @@ Format in clear Markdown.`;
               <div className="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-xl shadow-lg max-w-4xl mx-auto overflow-hidden">
                 {/* Report Header */}
                 {activeReport.includeHeader && (
-                  <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between">
+                  <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between">
                     <h2 className="text-lg font-bold">
                       {activeReport.headerTitle || activeReport.name}
                     </h2>

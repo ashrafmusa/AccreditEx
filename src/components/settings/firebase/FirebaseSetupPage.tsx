@@ -152,7 +152,7 @@ const FirebaseSetupPage: React.FC = () => {
 
         {/* Info Banner */}
         <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 p-4 rounded-lg flex gap-3">
-          <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+          <ExclamationTriangleIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
           <div>
             <p className="font-semibold text-amber-900 dark:text-amber-100 text-sm">{t('adminOnlyFeature')}</p>
             <p className="text-amber-800 dark:text-amber-200 text-sm mt-1">

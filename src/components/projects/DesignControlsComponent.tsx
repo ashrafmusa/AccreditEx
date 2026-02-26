@@ -134,12 +134,12 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
     try {
       const row = controls[index];
       const emptyFields: string[] = [];
-      if (!row.requirement.trim()) emptyFields.push("requirement");
-      if (!row.policyProcess.trim()) emptyFields.push("policyProcess");
-      if (!row.implementationEvidence.trim())
+      if (!row.requirement?.trim()) emptyFields.push("requirement");
+      if (!row.policyProcess?.trim()) emptyFields.push("policyProcess");
+      if (!row.implementationEvidence?.trim())
         emptyFields.push("implementationEvidence");
-      if (!row.outcomeKPI.trim()) emptyFields.push("outcomeKPI");
-      if (!row.auditFindings.trim()) emptyFields.push("auditFindings");
+      if (!row.outcomeKPI?.trim()) emptyFields.push("outcomeKPI");
+      if (!row.auditFindings?.trim()) emptyFields.push("auditFindings");
 
       if (emptyFields.length === 0) {
         toast.info("All fields already filled for this row.");
@@ -229,7 +229,21 @@ Keep each section concise (2-3 sentences). Use healthcare accreditation terminol
         id: d.id,
         name: d.name.en || d.name.ar || "Untitled",
         type: d.type || "Unknown",
-        description: d.description?.en || d.description?.ar || "",
+        description: (d as Record<string, unknown> & typeof d).description
+          ? (
+              (d as Record<string, unknown> & typeof d).description as {
+                en?: string;
+                ar?: string;
+              }
+            )?.en ||
+            (
+              (d as Record<string, unknown> & typeof d).description as {
+                en?: string;
+                ar?: string;
+              }
+            )?.ar ||
+            ""
+          : "",
       }));
 
       const prompt = `You are a healthcare accreditation document expert. For this design control requirement, suggest the most relevant documents to link.
@@ -417,7 +431,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
               <button
                 onClick={handleAIComplianceCheck}
                 disabled={aiChecking || controls.length === 0}
-                className="bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-5 py-2.5 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold shadow-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="bg-linear-to-r from-rose-600 to-cyan-600 text-white px-5 py-2.5 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold shadow-sm w-full sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {aiChecking ? (
                   <>
@@ -580,7 +594,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
                             aiSuggestingDocs !== null ||
                             documents.length === 0
                           }
-                          className="text-xs flex items-center gap-1 text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-cyan-600 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="text-xs flex items-center gap-1 text-transparent bg-clip-text bg-linear-to-r from-rose-600 to-cyan-600 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           {aiSuggestingDocs === index ? (
                             <svg
@@ -612,7 +626,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
                       {aiDocSuggestions &&
                         aiDocSuggestions.rowIndex === index &&
                         aiDocSuggestions.docIds.length > 0 && (
-                          <div className="mt-2 p-2 bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 rounded border border-rose-200 dark:border-pink-800">
+                          <div className="mt-2 p-2 bg-linear-to-r from-rose-50 to-cyan-50 dark:from-pink-900/20 dark:to-cyan-900/20 rounded border border-rose-200 dark:border-pink-800">
                             <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1">
                               🤖 Suggested Documents:
                             </p>
@@ -704,7 +718,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
                             onClick={() => handleAIFillRow(index)}
                             disabled={aiFillingRow !== null}
                             title="AI Fill Empty Fields"
-                            className="p-1 text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-cyan-600 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
+                            className="p-1 text-transparent bg-clip-text bg-linear-to-r from-rose-600 to-cyan-600 hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
                           >
                             {aiFillingRow === index ? (
                               <svg

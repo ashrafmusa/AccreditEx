@@ -21,7 +21,7 @@ const PitchDeckPage: React.FC = () => {
       id: "title",
       title: "Title",
       render: () => (
-        <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
+        <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
           <div
             className="absolute inset-0 opacity-[0.03]"
             style={{
@@ -515,7 +515,7 @@ const PitchDeckPage: React.FC = () => {
             <img
               src="/CEO.jpg"
               alt="Ashraf Abu baker Musa Ishag — Founder & CEO"
-              className="w-32 h-32 rounded-full object-cover border-4 border-teal-400 shadow-lg flex-shrink-0"
+              className="w-32 h-32 rounded-full object-cover border-4 border-teal-400 shadow-lg shrink-0"
               loading="lazy"
             />
             <div className="text-left">
@@ -597,7 +597,7 @@ const PitchDeckPage: React.FC = () => {
                 className="flex gap-6 pl-8 relative border-l-[3px] border-teal-500"
               >
                 <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-teal-500" />
-                <div className="min-w-[80px]">
+                <div className="min-w-20">
                   <span className="text-teal-600 font-bold">{r.year}</span>
                 </div>
                 <div>
@@ -620,7 +620,7 @@ const PitchDeckPage: React.FC = () => {
       id: "ask",
       title: "The Ask",
       render: () => (
-        <div className="flex flex-col items-center justify-center h-full px-12 md:px-20 py-12 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden text-center">
+        <div className="flex flex-col items-center justify-center h-full px-12 md:px-20 py-12 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden text-center">
           <div
             className="absolute inset-0"
             style={{
@@ -650,7 +650,7 @@ const PitchDeckPage: React.FC = () => {
               ].map((s) => (
                 <div
                   key={s.label}
-                  className="p-4 rounded-xl bg-white/[0.05] border border-white/[0.08]"
+                  className="p-4 rounded-xl bg-white/5 border border-white/8"
                 >
                   <div className="text-xs text-white/50">{s.label}</div>
                   <div className="text-sm font-bold text-white">{s.value}</div>
@@ -661,7 +661,7 @@ const PitchDeckPage: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-4 pt-4">
               <a
                 href="mailto:ashraf.a.m.ishag@gmail.com"
-                className="px-8 py-3.5 rounded-xl bg-gradient-to-r from-teal-500 to-blue-500 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
+                className="px-8 py-3.5 rounded-xl bg-linear-to-r from-teal-500 to-blue-500 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
               >
                 Contact Founder
               </a>
@@ -675,7 +675,7 @@ const PitchDeckPage: React.FC = () => {
                 href="https://linkedin.com/in/ashraf-ishag"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-8 py-3.5 rounded-xl border border-white/20 bg-white/[0.06] text-white font-semibold hover:bg-white/15 transition-all"
+                className="px-8 py-3.5 rounded-xl border border-white/20 bg-white/6 text-white font-semibold hover:bg-white/15 transition-all"
               >
                 💼 LinkedIn
               </a>

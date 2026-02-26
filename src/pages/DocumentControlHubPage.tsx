@@ -882,8 +882,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               <ContextualHelp
                 content={
                   getHelpContent("documentControl") || {
-                    title: t("documentControl") || "Document Control",
-                    description: "",
+                    pageKey: "documentControl",
+                    titleKey: "documentControl",
+                    purposeKey: "documentControlHubDescription",
+                    keyActions: { titleKey: "keyActions", items: [] },
+                    tips: { titleKey: "tips", items: [] },
                   }
                 }
               />
@@ -1069,7 +1072,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               title={t("totalDocuments") || "Total Documents"}
               value={stats.total}
               icon={DocumentTextIcon}
-              color="from-blue-500 to-blue-700 bg-gradient-to-br"
+              color="from-blue-500 to-blue-700 bg-linear-to-br"
               trend={
                 stats.recentTotal > 0
                   ? {
@@ -1084,7 +1087,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               title={t("approved") || "Approved"}
               value={stats.approved}
               icon={CheckCircleIcon}
-              color="from-green-500 to-green-700 bg-gradient-to-br"
+              color="from-green-500 to-green-700 bg-linear-to-br"
               trend={
                 stats.recentApproved > 0
                   ? {
@@ -1099,7 +1102,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               title={t("pendingReview") || "Pending Review"}
               value={stats.pending}
               icon={ClockIcon}
-              color="from-yellow-500 to-yellow-700 bg-gradient-to-br"
+              color="from-yellow-500 to-yellow-700 bg-linear-to-br"
               trend={
                 stats.recentPending > 0
                   ? {
@@ -1115,13 +1118,13 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               title={t("drafts") || "Drafts"}
               value={stats.drafts}
               icon={PencilIcon}
-              color="from-gray-500 to-gray-700 bg-gradient-to-br"
+              color="from-gray-500 to-gray-700 bg-linear-to-br"
             />
             <StatCard
               title={t("overdueReviews") || "Overdue Reviews"}
               value={stats.overdue}
               icon={ExclamationTriangleIcon}
-              color="from-red-500 to-red-700 bg-gradient-to-br"
+              color="from-red-500 to-red-700 bg-linear-to-br"
               trend={
                 stats.overdue > 0
                   ? {
@@ -1439,7 +1442,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
-                      className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${
+                      className={`min-w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
                         currentPage === page
                           ? "bg-brand-primary text-white shadow-sm"
                           : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-dark-brand-border"

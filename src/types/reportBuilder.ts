@@ -187,6 +187,8 @@ export interface ReportSection {
 
 export type ReportFormat = 'pdf' | 'csv' | 'excel';
 
+export type ReportStatus = 'draft' | 'published' | 'archived';
+
 export interface ReportDefinition {
     id: string;
     name: string;
@@ -198,6 +200,7 @@ export interface ReportDefinition {
     isTemplate: boolean;
     category: 'compliance' | 'quality' | 'safety' | 'operational' | 'custom';
     tags: string[];
+    status: ReportStatus;
     lastGeneratedAt?: string;
     generationCount: number;
     /** Page Layout */
@@ -225,6 +228,7 @@ export const REPORT_TEMPLATES: Omit<ReportDefinition, 'id' | 'createdBy' | 'crea
         name: 'Compliance Status Report',
         description: 'Overview of compliance across all projects with checklist completion rates, trends, and department breakdowns.',
         isTemplate: true,
+        status: 'draft',
         category: 'compliance',
         tags: ['compliance', 'projects', 'checklist'],
         pageOrientation: 'portrait',
@@ -269,6 +273,7 @@ export const REPORT_TEMPLATES: Omit<ReportDefinition, 'id' | 'createdBy' | 'crea
         name: 'Incident & Safety Report',
         description: 'Incident analysis with severity breakdown, department distribution, and trend visualization.',
         isTemplate: true,
+        status: 'draft',
         category: 'safety',
         tags: ['incidents', 'safety', 'risk'],
         pageOrientation: 'portrait',
@@ -305,6 +310,7 @@ export const REPORT_TEMPLATES: Omit<ReportDefinition, 'id' | 'createdBy' | 'crea
         name: 'Training Compliance Report',
         description: 'Training program completion rates, department training status, and overdue training items.',
         isTemplate: true,
+        status: 'draft',
         category: 'quality',
         tags: ['training', 'compliance', 'departments'],
         pageOrientation: 'portrait',
@@ -339,6 +345,7 @@ export const REPORT_TEMPLATES: Omit<ReportDefinition, 'id' | 'createdBy' | 'crea
         name: 'Audit Summary Report',
         description: 'Internal and external audit results, findings, and action items across departments.',
         isTemplate: true,
+        status: 'draft',
         category: 'operational',
         tags: ['audits', 'findings', 'departments'],
         pageOrientation: 'landscape',
@@ -364,6 +371,7 @@ export const REPORT_TEMPLATES: Omit<ReportDefinition, 'id' | 'createdBy' | 'crea
         name: 'CAPA Effectiveness Report',
         description: 'Corrective and preventive action tracking — root cause analysis, PDCA stages, closure rates.',
         isTemplate: true,
+        status: 'draft',
         category: 'quality',
         tags: ['capa', 'pdca', 'quality'],
         pageOrientation: 'portrait',

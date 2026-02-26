@@ -199,14 +199,14 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 title={t("myProjects")}
                 value={leadStats.totalProjects}
                 icon={FolderIcon}
-                color="from-blue-500 to-blue-700 bg-gradient-to-br"
+                color="from-blue-500 to-blue-700 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "projects" })}
               />
               <StatCard
                 title={t("inProgress")}
                 value={leadStats.inProgressCount}
                 icon={CheckCircleIcon}
-                color="from-orange-400 to-orange-600 bg-gradient-to-br"
+                color="from-orange-400 to-orange-600 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "projects", filter: "inProgress" })
                 }
@@ -215,13 +215,13 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 title={t("teamCompliance")}
                 value={leadStats.overallCompliance}
                 icon={CheckCircleIcon}
-                color="from-sky-500 to-sky-700 bg-gradient-to-br"
+                color="from-sky-500 to-sky-700 bg-linear-to-br"
               />
               <StatCard
                 title={t("openCapaReports")}
                 value={leadStats.openCapaCount}
                 icon={ExclamationTriangleIcon}
-                color="from-red-500 to-red-700 bg-gradient-to-br"
+                color="from-red-500 to-red-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "projects", filter: "openCapa" })
                 }
@@ -230,14 +230,14 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 title={t("teamMembers")}
                 value={leadStats.teamMembersCount}
                 icon={UsersIcon}
-                color="from-cyan-500 to-cyan-700 bg-gradient-to-br"
+                color="from-cyan-500 to-cyan-700 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "departments" })}
               />
               <StatCard
                 title={t("overdueTasks")}
                 value={leadStats.overdueTasks}
                 icon={ClockIcon}
-                color="from-amber-500 to-amber-700 bg-gradient-to-br"
+                color="from-amber-500 to-amber-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "myTasks", filter: "overdue" })
                 }
@@ -246,7 +246,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 title={t("assignmentCoverage")}
                 value={leadStats.assignmentCoverage}
                 icon={CheckBadgeIcon}
-                color="from-green-500 to-green-700 bg-gradient-to-br"
+                color="from-green-500 to-green-700 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "myTasks" })}
               />
             </div>

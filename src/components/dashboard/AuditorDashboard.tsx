@@ -187,42 +187,42 @@ const AuditorDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) => {
                       title={t('scheduledAudits')} 
                       value={auditStats.totalScheduledAudits} 
                       icon={ClipboardDocumentCheckIcon} 
-                      color="from-blue-500 to-blue-700 bg-gradient-to-br"
+                      color="from-blue-500 to-blue-700 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'auditHub' })}
                     />
                     <StatCard 
                       title={t('completedAudits')} 
                       value={auditStats.completedAudits} 
                       icon={CheckCircleIcon} 
-                      color="from-green-500 to-green-700 bg-gradient-to-br"
+                      color="from-green-500 to-green-700 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'auditHub' })}
                     />
                     <StatCard 
                       title={t('nonConformities')} 
                       value={auditStats.nonConformities} 
                       icon={ExclamationTriangleIcon} 
-                      color="from-red-500 to-red-700 bg-gradient-to-br"
+                      color="from-red-500 to-red-700 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'qualityInsights' })}
                     />
                     <StatCard 
                       title={t('findingsRate')} 
                       value={auditStats.auditFindingsRate} 
                       icon={ChartBarIcon} 
-                      color="from-orange-500 to-orange-700 bg-gradient-to-br"
+                      color="from-orange-500 to-orange-700 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'auditHub' })}
                     />
                     <StatCard 
                       title={t('departmentsAudited')} 
                       value={auditStats.departmentsAudited} 
                       icon={UsersIcon} 
-                      color="from-rose-500 to-pink-600 bg-gradient-to-br"
+                      color="from-rose-500 to-pink-600 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'departments' })}
                     />
                     <StatCard 
                       title={t('overallCompliance')} 
                       value={auditStats.complianceScore} 
                       icon={DocumentTextIcon} 
-                      color="from-cyan-500 to-cyan-700 bg-gradient-to-br"
+                      color="from-cyan-500 to-cyan-700 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'analytics' })}
                     />
                 </div>

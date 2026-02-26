@@ -55,7 +55,7 @@ const CalendarGrid: React.FC<Props> = ({ currentDate, events, onDayClick, onEven
                 className="border rounded-md dark:border-dark-brand-border p-1.5 min-h-[120px] flex flex-col relative group bg-white dark:bg-dark-brand-surface hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors text-left align-top focus:outline-none focus:ring-2 focus:ring-brand-primary z-0 hover:z-10"
               >
                   <time dateTime={dayDate.toISOString()} className={`font-semibold text-xs sm:text-sm ${isToday ? 'bg-brand-primary text-white rounded-full flex items-center justify-center h-6 w-6' : ''}`}>{dayNumber}</time>
-                  <div className="mt-1 space-y-1 flex-grow overflow-hidden">
+                  <div className="mt-1 space-y-1 grow overflow-hidden">
                      {dayEvents.slice(0, 3).map(event => (
                          <div 
                             key={event.id} 

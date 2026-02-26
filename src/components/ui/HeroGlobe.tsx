@@ -121,7 +121,7 @@ const HeroGlobe: React.FC<HeroGlobeProps> = ({ globeSettings }) => {
             animation: `heroFloat 5s ease-in-out ${i * 0.8}s infinite`,
           }}
         >
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.08] backdrop-blur-md border border-white/[0.12] shadow-lg shadow-black/30">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/8 backdrop-blur-md border border-white/12 shadow-lg shadow-black/30">
             <span className="text-sm leading-none">{hub.flag}</span>
             <div>
               <div className="text-[11px] font-bold text-white leading-tight">
@@ -138,7 +138,7 @@ const HeroGlobe: React.FC<HeroGlobeProps> = ({ globeSettings }) => {
 
       {/* ── Gradient border ring (thin, rotating) ─────────────── */}
       <div
-        className="absolute inset-[-1px] rounded-full pointer-events-none z-20"
+        className="absolute -inset-px rounded-full pointer-events-none z-20"
         style={{
           background:
             "conic-gradient(from 0deg, transparent 0%, rgba(20,184,166,0.25) 25%, transparent 50%, rgba(59,130,246,0.15) 75%, transparent 100%)",

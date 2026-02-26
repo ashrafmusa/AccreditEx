@@ -65,7 +65,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({
 
   return (
     <div
-      className={`relative inline-block ${sizeClass.container} rounded-full overflow-hidden flex-shrink-0 ${isClickable} ${ringClass} ${className}`}
+      className={`relative inline-block ${sizeClass.container} rounded-full overflow-hidden shrink-0 ${isClickable} ${ringClass} ${className}`}
       onClick={onClick}
       style={hasImage ? {} : { backgroundColor: bgColor }}
       role={onClick ? "button" : "img"}

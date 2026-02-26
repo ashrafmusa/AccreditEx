@@ -167,7 +167,7 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
             title={t("qualityScore") || "Quality Score"}
             value={`${kpis.qualityScore}%`}
             icon={CheckBadgeIcon}
-            color="from-sky-500 to-sky-700 bg-gradient-to-br"
+            color="from-sky-500 to-sky-700 bg-linear-to-br"
             trend={{ direction: "up", value: 3.2, label: t("vsLastMonth") }}
             sparklineData={qualitySparkline}
           />
@@ -175,21 +175,21 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
             title={t("pendingEffectivenessChecks")}
             value={kpis.pendingChecks}
             icon={ClipboardDocumentCheckIcon}
-            color="from-amber-500 to-amber-700 bg-gradient-to-br"
+            color="from-amber-500 to-amber-700 bg-linear-to-br"
             trend={{ direction: "down", value: 12, label: t("vsLastWeek") }}
           />
           <StatCard
             title={t("riskControlIndex") || "Risk Control Index"}
             value={`${kpis.riskControlIndex}`}
             icon={ExclamationTriangleIcon}
-            color="from-emerald-500 to-emerald-700 bg-gradient-to-br"
+            color="from-emerald-500 to-emerald-700 bg-linear-to-br"
             trend={{ direction: "up", value: 1.5, label: t("vsLastMonth") }}
           />
           <StatCard
             title={t("pendingAcknowledgements")}
             value={kpis.pendingAcks}
             icon={CheckCircleIcon}
-            color="from-sky-500 to-sky-700 bg-gradient-to-br"
+            color="from-sky-500 to-sky-700 bg-linear-to-br"
           />
         </div>
 

@@ -94,6 +94,7 @@ export interface WorkflowAction {
 // ── Notification Action Config ────────────────────────────
 
 export interface NotifyActionConfig {
+    [key: string]: unknown;
     recipientRoles?: UserRole[];
     recipientUserIds?: string[];
     notifyDepartmentHead?: boolean;
@@ -108,12 +109,14 @@ export interface NotifyActionConfig {
 // ── Status Change Action Config ───────────────────────────
 
 export interface StatusChangeActionConfig {
+    [key: string]: unknown;
     targetStatus: string;
 }
 
 // ── Task Creation Action Config ───────────────────────────
 
 export interface CreateTaskActionConfig {
+    [key: string]: unknown;
     title: string;
     description: string;
     assignToRoles?: UserRole[];
@@ -125,6 +128,7 @@ export interface CreateTaskActionConfig {
 // ── Approval Chain Action Config ──────────────────────────
 
 export interface ApprovalChainActionConfig {
+    [key: string]: unknown;
     steps: {
         step: number;
         reviewerRole?: UserRole;
@@ -136,6 +140,8 @@ export interface ApprovalChainActionConfig {
 // ── Workflow Definition ───────────────────────────────────
 
 export type WorkflowStatus = 'active' | 'paused' | 'draft' | 'archived';
+
+export type WorkflowCategory = 'compliance' | 'document' | 'quality' | 'safety' | 'training' | 'custom';
 
 export interface WorkflowDefinition {
     id: string;
@@ -157,7 +163,7 @@ export interface WorkflowDefinition {
     executionCount: number;
     lastExecutedAt?: string;
     /** Category for organization */
-    category: 'compliance' | 'document' | 'quality' | 'safety' | 'training' | 'custom';
+    category: WorkflowCategory;
     /** Whether this is a system-provided template */
     isTemplate: boolean;
 }

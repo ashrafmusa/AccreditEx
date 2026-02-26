@@ -62,7 +62,7 @@ const STATUS_STYLES = {
   archived: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
 } as const;
 
-const CATEGORY_COLORS = {
+const CATEGORY_COLORS: Record<string, string> = {
   compliance:
     "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   quality:
@@ -70,8 +70,11 @@ const CATEGORY_COLORS = {
   safety: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
   training:
     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
+  document:
+    "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
+  custom: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
   general: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-} as const;
+};
 
 const LOG_STATUS_ICONS: Record<string, React.ReactNode> = {
   completed: <CheckCircleIcon className="h-4 w-4 text-emerald-500" />,
@@ -182,7 +185,7 @@ interface BuilderState {
 const INITIAL_BUILDER: BuilderState = {
   name: "",
   description: "",
-  category: "general",
+  category: "custom",
   triggerEntity: "document",
   triggerEvent: "status_changed",
   conditionLogic: "AND",
@@ -984,10 +987,11 @@ const WorkflowBuilder: React.FC<{
 
   const categoryOptions: WorkflowCategory[] = [
     "compliance",
+    "document",
     "quality",
     "safety",
     "training",
-    "general",
+    "custom",
   ];
 
   return (

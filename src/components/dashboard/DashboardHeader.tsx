@@ -72,7 +72,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   if (!currentUser) return null;
 
   return (
-    <div className="bg-gradient-to-r from-sky-50 via-white to-cyan-50 dark:from-slate-800 dark:via-dark-brand-surface dark:to-slate-800 p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
+    <div className="bg-linear-to-r from-sky-50 via-white to-cyan-50 dark:from-slate-800 dark:via-dark-brand-surface dark:to-slate-800 p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
       <div className="flex flex-col md:flex-row justify-between items-start gap-4">
         <div className="flex-1">
           <h1 className="text-3xl font-bold tracking-tight text-brand-text-primary dark:text-dark-brand-text-primary">
@@ -90,7 +90,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
             {t("lastUpdated") || "Last updated"}: {relativeTime}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto flex-shrink-0">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}

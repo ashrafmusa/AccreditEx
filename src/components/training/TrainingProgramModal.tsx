@@ -125,7 +125,7 @@ const TrainingProgramModal: FC<TrainingProgramModalProps> = ({
               {isEditMode ? t("editTraining") : t("createNewTraining")}
             </h3>
           </div>
-          <div className="p-6 space-y-4 overflow-y-auto flex-grow">
+          <div className="p-6 space-y-4 overflow-y-auto grow">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="titleEn" className={labelClasses}>
