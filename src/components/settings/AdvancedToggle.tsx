@@ -85,7 +85,7 @@ export const AdvancedToggle: React.FC<AdvancedToggleProps> = ({
           role="switch"
           aria-checked={checked}
           aria-label={label}
-          className={`relative inline-flex flex-shrink-0 ${sizeClasses[size]} ${
+          className={`relative inline-flex shrink-0 ${sizeClasses[size]} ${
             checked ? colorClasses[color] : 'bg-gray-300'
           } rounded-full transition-colors ${
             disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-90'

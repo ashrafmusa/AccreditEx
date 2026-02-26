@@ -126,12 +126,12 @@ const ImageUpload: FC<ImageUploadProps> = ({ currentImage, onImageChange }) => {
     <div className="space-y-4">
       {error && (
         <div className="flex items-center gap-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-          <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0" />
+          <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0" />
           <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
         </div>
       )}
       <div
-        className="w-32 h-32 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden relative border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 hover:border-brand-primary dark:hover:border-brand-primary"
+        className="w-32 h-32 rounded-xl bg-linear-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 flex items-center justify-center overflow-hidden relative border-2 border-dashed border-gray-300 dark:border-gray-600 transition-all duration-200 hover:border-brand-primary dark:hover:border-brand-primary"
         onMouseEnter={() => setHovering(true)}
         onMouseLeave={() => setHovering(false)}
       >

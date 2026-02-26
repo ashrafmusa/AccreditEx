@@ -166,7 +166,7 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
             <div className="space-y-2 bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary rounded-lg p-4">
               {checklist.map((item, index) => (
                 <div key={index} className="flex items-start">
-                  <div className="flex-shrink-0 w-5 h-5 rounded border-2 border-brand-primary mt-0.5 mr-3" />
+                  <div className="shrink-0 w-5 h-5 rounded border-2 border-brand-primary mt-0.5 mr-3" />
                   <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
                     {item}
                   </span>
@@ -189,7 +189,7 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
                 type="button"
                 onClick={handleAISuggestNotes}
                 disabled={isAISuggesting}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isAISuggesting ? (
                   <>

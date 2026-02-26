@@ -94,7 +94,7 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
                   <div className="flex items-center gap-3">
                     {/* Step Number/Checkmark */}
                     <span
-                      className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
                         isCompleted
                           ? 'border-brand-primary bg-brand-primary text-white'
                           : isCurrent

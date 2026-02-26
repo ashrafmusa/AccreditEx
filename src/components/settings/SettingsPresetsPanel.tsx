@@ -269,7 +269,7 @@ const SettingsPresetsPanel: React.FC = () => {
         )}
 
         {/* Built-in Presets Highlight */}
-        <div className="bg-gradient-to-r from-rose-100 to-cyan-100 dark:from-pink-900/30 dark:to-cyan-900/30 rounded-lg p-6 border border-rose-200 dark:border-pink-700">
+        <div className="bg-linear-to-r from-rose-100 to-cyan-100 dark:from-pink-900/30 dark:to-cyan-900/30 rounded-lg p-6 border border-rose-200 dark:border-pink-700">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
             <SparklesIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
             Built-in Presets

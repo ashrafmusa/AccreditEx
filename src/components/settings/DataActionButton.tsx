@@ -32,7 +32,7 @@ const DataActionButton: FC<DataActionButtonProps> = ({ title, description, butto
       : "bg-brand-primary hover:bg-sky-700 text-white shadow-md hover:shadow-lg active:scale-95";
 
     return (
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 px-4 bg-gradient-to-r from-gray-50 to-transparent dark:from-gray-800/30 dark:to-transparent border-t border-brand-border dark:border-dark-brand-border first:border-t-0 first:pt-0 last:pb-0 rounded-lg transition-all">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 px-4 bg-linear-to-r from-gray-50 to-transparent dark:from-gray-800/30 dark:to-transparent border-t border-brand-border dark:border-dark-brand-border first:border-t-0 first:pt-0 last:pb-0 rounded-lg transition-all">
         <div>
           <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
             {title}
@@ -41,7 +41,7 @@ const DataActionButton: FC<DataActionButtonProps> = ({ title, description, butto
             {description}
           </p>
         </div>
-        <div className="mt-3 sm:mt-0 flex-shrink-0">
+        <div className="mt-3 sm:mt-0 shrink-0">
           <button
             type="button"
             onClick={handleClick}

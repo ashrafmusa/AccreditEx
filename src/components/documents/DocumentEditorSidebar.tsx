@@ -310,9 +310,9 @@ const CompletenessIndicator: React.FC<{
         {items.map((item) => (
           <li key={item.label} className="flex items-center gap-1.5 text-xs">
             {item.done ? (
-              <CheckCircleIcon className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
+              <CheckCircleIcon className="w-3.5 h-3.5 text-green-500 shrink-0" />
             ) : (
-              <span className="w-3.5 h-3.5 rounded-full border border-gray-300 dark:border-gray-600 inline-block flex-shrink-0" />
+              <span className="w-3.5 h-3.5 rounded-full border border-gray-300 dark:border-gray-600 inline-block shrink-0" />
             )}
             <span
               className={
@@ -789,7 +789,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
 
   return (
     <aside
-      className="w-80 border-s dark:border-dark-brand-border flex-shrink-0 flex flex-col bg-white dark:bg-gray-900 overflow-y-auto"
+      className="w-80 border-s dark:border-dark-brand-border shrink-0 flex flex-col bg-white dark:bg-gray-900 overflow-y-auto"
       dir={isRtl ? "rtl" : "ltr"}
     >
       {/* ===== Edit / View toggle ===== */}
@@ -1030,7 +1030,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                   type="button"
                   onClick={handleFreePrompt}
                   disabled={activeAiOp !== null || !freePrompt.trim()}
-                  className="px-3 py-2 text-xs font-medium rounded-md bg-gradient-to-r from-violet-500 to-blue-500 text-white
+                  className="px-3 py-2 text-xs font-medium rounded-md bg-linear-to-r from-violet-500 to-blue-500 text-white
                              hover:from-violet-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {activeAiOp === "generate" ? (

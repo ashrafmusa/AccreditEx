@@ -205,7 +205,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           <span
             className={`${getPriorityColor(
               priority,
-            )} text-xs px-2 py-1 rounded-full ml-2 flex-shrink-0`}
+            )} text-xs px-2 py-1 rounded-full ml-2 shrink-0`}
           >
             {priority}
           </span>
@@ -287,7 +287,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           <button
             onClick={handleAIRootCause}
             disabled={isGeneratingAI}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-rose-600 to-pink-600 text-white rounded hover:from-rose-700 hover:to-pink-700 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-linear-to-r from-rose-600 to-pink-600 text-white rounded hover:from-rose-700 hover:to-pink-700 transition-colors disabled:opacity-50"
           >
             {isGeneratingAI ? (
               <>
@@ -315,7 +315,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           </button>
           <button
             onClick={handleConvertToPDCA}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-sky-600 to-rose-600 text-white rounded hover:from-sky-700 hover:to-pink-700 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-linear-to-r from-sky-600 to-rose-600 text-white rounded hover:from-sky-700 hover:to-pink-700 transition-colors"
           >
             <PlusIcon className="w-3 h-3" />
             Convert to PDCA Cycle
@@ -329,7 +329,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
           <button
             onClick={handleAISuggestions}
             disabled={isGeneratingAI}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50"
           >
             {isGeneratingAI ? (
               <>

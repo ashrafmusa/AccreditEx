@@ -141,11 +141,13 @@ export const useReportBuilderStore = create<ReportBuilderState>((set, get) => ({
 
     // ── Template Instantiation ──────────────────────────────
     createFromTemplate: async (templateId, name?) => {
-        const tpl = REPORT_TEMPLATES.find((t) => t.id === templateId);
+        const tpl = REPORT_TEMPLATES.find((t) => t.name === templateId);
         if (!tpl) throw new Error('Template not found');
         return get().createReport({
             ...tpl,
             name: name || tpl.name,
+            createdBy: getAuthInstance().currentUser?.uid || 'system',
+            generationCount: 0,
         });
     },
 

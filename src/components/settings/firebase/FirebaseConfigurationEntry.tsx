@@ -249,7 +249,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
+      <div className="bg-linear-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 rounded-lg p-6 border border-blue-200 dark:border-blue-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
           {t("firebaseConfig.title")}
         </h3>
@@ -261,7 +261,7 @@ export const FirebaseConfigurationEntry: React.FC = () => {
       {/* Success Message */}
       {successMessage && (
         <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
-          <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+          <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
           <p className="text-sm text-green-800 dark:text-green-200">
             {successMessage}
           </p>

@@ -87,7 +87,7 @@ const LinkDataModal: React.FC<LinkDataModalProps> = ({
                 onClick={() => onLink(resource)}
                 className="w-full text-left p-3 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center gap-3"
               >
-                <CircleStackIcon className="w-5 h-5 text-brand-primary flex-shrink-0" />
+                <CircleStackIcon className="w-5 h-5 text-brand-primary shrink-0" />
                 <div>
                   <p className="font-semibold text-sm">
                     {resource.displayText}

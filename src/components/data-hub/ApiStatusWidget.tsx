@@ -54,7 +54,7 @@ const ApiStatusWidget: React.FC = () => {
                     {isLoading ? t('checking') : t('runHealthCheck')}
                 </button>
             </div>
-            <div className="mt-4 space-y-3 flex-grow">
+            <div className="mt-4 space-y-3 grow">
                 {services.map(service => (
                     <div key={service.name} className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                         <div className="flex items-center gap-2">

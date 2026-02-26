@@ -111,7 +111,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
       role="alert"
     >
       <div className="flex items-start gap-3 p-4">
-        <div className={`flex-shrink-0 mt-0.5 ${colors.icon}`}>{getIcon()}</div>
+        <div className={`shrink-0 mt-0.5 ${colors.icon}`}>{getIcon()}</div>
         <div className="flex-1 min-w-0">
           <h4 className={`font-semibold text-sm ${colors.text}`}>
             {notification.title}
@@ -135,7 +135,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({
         </div>
         <button
           onClick={handleClose}
-          className={`flex-shrink-0 ${colors.text} hover:opacity-75 transition-opacity`}
+          className={`shrink-0 ${colors.text} hover:opacity-75 transition-opacity`}
           aria-label="Close notification"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

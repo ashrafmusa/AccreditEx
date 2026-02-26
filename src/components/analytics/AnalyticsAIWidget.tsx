@@ -43,7 +43,7 @@ const AnalyticsAIWidget: React.FC<AnalyticsAIWidgetProps> = ({ data }) => {
   const lastMessage = chatHistory.length > 0 ? chatHistory[chatHistory.length - 1] : null;
 
   return (
-    <div className="bg-gradient-to-br from-sky-50 to-pink-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-xl shadow-lg border border-sky-100 dark:border-slate-700 relative overflow-hidden">
+    <div className="bg-linear-to-br from-sky-50 to-pink-50 dark:from-slate-800 dark:to-slate-900 p-6 rounded-xl shadow-lg border border-sky-100 dark:border-slate-700 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-4 opacity-10">
         <SparklesIcon className="w-24 h-24 text-sky-600 dark:text-sky-400" />
       </div>

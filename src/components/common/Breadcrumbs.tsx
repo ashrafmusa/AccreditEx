@@ -58,7 +58,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
           </button>
           {items.length > 0 && (
             <Separator
-              className="w-4 h-4 text-gray-400 dark:text-gray-600 flex-shrink-0"
+              className="w-4 h-4 text-gray-400 dark:text-gray-600 shrink-0"
               aria-hidden="true"
             />
           )}
@@ -81,7 +81,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
               }`}
               aria-current={isLast ? "page" : undefined}
             >
-              {ItemIcon && <ItemIcon className="w-4 h-4 flex-shrink-0" />}
+              {ItemIcon && <ItemIcon className="w-4 h-4 shrink-0" />}
               <span className="truncate max-w-[150px] sm:max-w-xs">
                 {item.label}
               </span>
@@ -89,7 +89,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
 
             {!isLast && (
               <Separator
-                className="w-4 h-4 text-gray-400 dark:text-gray-600 flex-shrink-0"
+                className="w-4 h-4 text-gray-400 dark:text-gray-600 shrink-0"
                 aria-hidden="true"
               />
             )}

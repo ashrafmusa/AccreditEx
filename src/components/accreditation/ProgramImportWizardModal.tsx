@@ -239,7 +239,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
         {step === "file-selection" && (
           <div className="space-y-4">
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex gap-3">
-              <InformationCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <InformationCircleIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800 dark:text-blue-300">
                 <p className="font-semibold">{t("importTip")}</p>
                 <p className="mt-1">{t("selectJsonFileWithProgramData")}</p>
@@ -268,7 +268,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
 
             {selectedFile && (
               <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-start gap-3">
-                <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
                 <div className="flex-1">
                   <p className="text-sm font-medium text-green-800 dark:text-green-300">
                     {selectedFile.name}
@@ -299,7 +299,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
             {validationResult.errors.length > 0 && (
               <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                 <div className="flex gap-2">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
                   <div className="text-sm text-red-800 dark:text-red-300">
                     <p className="font-semibold">{t("validationErrors")}</p>
                     <ul className="mt-2 space-y-1">
@@ -317,7 +317,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
             {validationResult.warnings.length > 0 && (
               <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                 <div className="flex gap-2">
-                  <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                  <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400 shrink-0 mt-0.5" />
                   <div className="text-sm text-yellow-800 dark:text-yellow-300">
                     <p className="font-semibold">{t("warnings")}</p>
                     <ul className="mt-2 space-y-1">
@@ -337,7 +337,7 @@ const ProgramImportWizardModal: React.FC<ProgramImportWizardModalProps> = ({
                 <>
                   <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
                     <div className="flex gap-2">
-                      <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                      <CheckCircleIcon className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0 mt-0.5" />
                       <div className="text-sm text-green-800 dark:text-green-300">
                         <p className="font-semibold">
                           {validationResult.programs.length}{" "}

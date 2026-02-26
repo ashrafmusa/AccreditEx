@@ -481,7 +481,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
                 type="button"
                 onClick={handleAISuggestCycle}
                 disabled={isAISuggesting}
-                className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1.5 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
+                className="text-xs bg-linear-to-r from-rose-600 to-cyan-600 text-white px-3 py-1.5 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
               >
                 {isAISuggesting ? (
                   <>

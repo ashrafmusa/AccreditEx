@@ -162,7 +162,7 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ configId, reports, isLoading })
   return (
     <div className="space-y-6">
       {/* Report Generator */}
-      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6 border border-blue-200">
+      <div className="bg-linear-to-br from-blue-50 to-blue-100 rounded-lg shadow p-6 border border-blue-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Generate New Report</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[

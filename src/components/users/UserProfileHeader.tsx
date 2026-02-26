@@ -102,7 +102,7 @@ const UserProfileHeader: React.FC<Props> = ({
   };
 
   return (
-    <div className="bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-900 dark:to-cyan-900 rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-linear-to-r from-blue-600 to-cyan-600 dark:from-blue-900 dark:to-cyan-900 rounded-lg shadow-lg overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute inset-0 bg-grid-pattern" />

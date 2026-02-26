@@ -132,7 +132,7 @@ const QuickActionsPanel: React.FC<QuickActionsProps> = ({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-rose-500 to-cyan-600 rounded-lg">
+              <div className="p-2 bg-linear-to-br from-rose-500 to-cyan-600 rounded-lg">
                 <BoltIcon className="w-6 h-6 text-white" />
               </div>
               <div>

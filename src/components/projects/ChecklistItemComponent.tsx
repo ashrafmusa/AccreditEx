@@ -1158,7 +1158,7 @@ Action Plan: ${item.actionPlan || "None"}`;
 
           {/* A-3: AI Notes/Findings Banner — auto-triggered on non-compliant status change */}
           {showAiNotesBanner && isEditing && (
-            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-amber-50 to-rose-50 dark:from-amber-900/20 dark:to-rose-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
+            <div className="flex items-center gap-3 p-3 bg-linear-to-r from-amber-50 to-rose-50 dark:from-amber-900/20 dark:to-rose-900/20 border border-amber-200 dark:border-amber-700 rounded-lg">
               <span className="text-amber-600">🤖</span>
               <p className="text-sm text-amber-800 dark:text-amber-300 grow">
                 Status changed to non-compliant — would you like AI to generate
@@ -1210,7 +1210,7 @@ Existing Notes: ${item.notes || "None"}`;
                   }
                 }}
                 disabled={isAutoGeneratingNotes}
-                className="px-3 py-1.5 text-xs font-medium bg-gradient-to-r from-amber-500 to-rose-500 text-white rounded-md hover:from-amber-600 hover:to-rose-600 disabled:opacity-50 whitespace-nowrap"
+                className="px-3 py-1.5 text-xs font-medium bg-linear-to-r from-amber-500 to-rose-500 text-white rounded-md hover:from-amber-600 hover:to-rose-600 disabled:opacity-50 whitespace-nowrap"
               >
                 {isAutoGeneratingNotes ? "Generating..." : "✨ Generate"}
               </button>

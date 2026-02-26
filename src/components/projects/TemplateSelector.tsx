@@ -52,7 +52,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-gray-400 to-gray-600 flex items-center justify-center text-2xl">
+            <div className="w-12 h-12 rounded-lg bg-linear-to-br from-gray-400 to-gray-600 flex items-center justify-center text-2xl">
               ⚙️
             </div>
             <div>
@@ -84,7 +84,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-3 flex-1">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-sky-500 to-rose-600 flex items-center justify-center text-2xl flex-shrink-0">
+                <div className="w-12 h-12 rounded-lg bg-linear-to-br from-sky-500 to-rose-600 flex items-center justify-center text-2xl shrink-0">
                   {template.icon || '📋'}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -120,7 +120,7 @@ const TemplateSelector: React.FC<TemplateSelectorProps> = ({
               </div>
               <div className="flex flex-col items-end gap-2 ml-2">
                 {selectedTemplateId === template.id && (
-                  <CheckIcon className="w-6 h-6 text-brand-primary flex-shrink-0" />
+                  <CheckIcon className="w-6 h-6 text-brand-primary shrink-0" />
                 )}
                 <button
                   onClick={(e) => {

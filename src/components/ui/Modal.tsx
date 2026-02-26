@@ -95,9 +95,9 @@ const Modal: FC<ModalProps> = ({
             <XMarkIcon className="w-5 h-5" />
           </button>
         </header>
-        <main className="p-6 overflow-y-auto flex-grow">{children}</main>
+        <main className="p-6 overflow-y-auto grow">{children}</main>
         {footer && (
-          <footer className="bg-gray-50 dark:bg-gray-900/50 px-4 sm:px-6 py-3 flex flex-wrap justify-end gap-3 rounded-b-lg border-t dark:border-dark-brand-border flex-shrink-0">
+          <footer className="bg-gray-50 dark:bg-gray-900/50 px-4 sm:px-6 py-3 flex flex-wrap justify-end gap-3 rounded-b-lg border-t dark:border-dark-brand-border shrink-0">
             {footer}
           </footer>
         )}

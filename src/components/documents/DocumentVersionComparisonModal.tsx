@@ -79,7 +79,7 @@ const DocumentVersionComparisonModal: React.FC<
         dir={dir}
       >
         {/* Header */}
-        <header className="p-4 border-b dark:border-dark-brand-border flex justify-between items-center flex-shrink-0">
+        <header className="p-4 border-b dark:border-dark-brand-border flex justify-between items-center shrink-0">
           <div>
             <h3
               id="version-comparison-modal-title"
@@ -102,7 +102,7 @@ const DocumentVersionComparisonModal: React.FC<
         </header>
 
         {/* Content - Side by Side */}
-        <main className="flex-grow flex overflow-hidden">
+        <main className="grow flex overflow-hidden">
           {/* Left Version */}
           <div className="flex-1 flex flex-col border-e dark:border-dark-brand-border">
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border-b dark:border-dark-brand-border">
@@ -143,7 +143,7 @@ const DocumentVersionComparisonModal: React.FC<
         </main>
 
         {/* Footer */}
-        <footer className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 flex justify-end items-center border-t dark:border-dark-brand-border flex-shrink-0">
+        <footer className="bg-gray-50 dark:bg-gray-900/50 px-6 py-3 flex justify-end items-center border-t dark:border-dark-brand-border shrink-0">
           <button
             onClick={onClose}
             className="inline-flex justify-center py-2 px-4 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600"

@@ -676,7 +676,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
     <div className="space-y-4">
       <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-lg shadow-sm border border-brand-border dark:border-dark-brand-border flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-grow">
+          <div className="relative grow">
             <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
               type="text"
@@ -720,7 +720,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           <button
             onClick={handleAIGapAnalysis}
             disabled={isAnalyzing || project.checklist.length === 0}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-rose-700 hover:to-cyan-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {isAnalyzing ? (
               <>
@@ -749,7 +749,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           <button
             onClick={handleAIFlagRisks}
             disabled={isFlaggingRisks || project.checklist.length === 0}
-            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-amber-600 to-red-600 text-white rounded-lg hover:from-amber-700 hover:to-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-amber-600 to-red-600 text-white rounded-lg hover:from-amber-700 hover:to-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {isFlaggingRisks ? (
               <>
@@ -779,7 +779,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
             <button
               onClick={handleAIAssignDepartments}
               disabled={isAssigningDepts || project.checklist.length === 0}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {isAssigningDepts ? (
                 <>
@@ -1063,7 +1063,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
             </span>
             <div className="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
               {/* Header */}
-              <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+              <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">🏢</span>
                   <div>
@@ -1204,7 +1204,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                       isApplyingDepts ||
                       deptProposals.every((p) => !p.departmentId)
                     }
-                    className="px-6 py-2 text-sm bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-2 text-sm bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isApplyingDepts ? (
                       <>

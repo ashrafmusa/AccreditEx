@@ -101,14 +101,14 @@ const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({
             >
               {/* Gradient Background */}
               <div
-                className={`absolute inset-0 bg-gradient-to-br ${action.color} opacity-10 group-hover:opacity-20 transition-opacity`}
+                className={`absolute inset-0 bg-linear-to-br ${action.color} opacity-10 group-hover:opacity-20 transition-opacity`}
               />
 
               {/* Content */}
               <div className="relative z-10">
                 <div className="flex items-start gap-3">
                   <div
-                    className={`p-2 rounded-lg bg-gradient-to-br ${action.color} text-white`}
+                    className={`p-2 rounded-lg bg-linear-to-br ${action.color} text-white`}
                   >
                     <Icon className="w-5 h-5" />
                   </div>

@@ -137,7 +137,7 @@ Keep it actionable and concise.`;
         <button
           onClick={handleSurveyBriefing}
           disabled={isBriefing}
-          className="mt-3 bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          className="mt-3 bg-linear-to-r from-rose-600 to-cyan-600 text-white px-4 py-2 rounded-lg hover:from-rose-700 hover:to-cyan-700 font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isBriefing ? (
             <>
@@ -166,7 +166,7 @@ Keep it actionable and concise.`;
       </div>
 
       {surveyBriefing && (
-        <div className="bg-gradient-to-r from-rose-50 to-cyan-50 dark:from-rose-900/10 dark:to-cyan-900/10 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800">
+        <div className="bg-linear-to-r from-rose-50 to-cyan-50 dark:from-rose-900/10 dark:to-cyan-900/10 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
               🤖 AI Survey Briefing
@@ -236,7 +236,7 @@ Keep it actionable and concise.`;
                     handleAIHint(item.id, item.item, item.standardId)
                   }
                   disabled={loadingHint !== null}
-                  className="text-xs bg-gradient-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shrink-0"
+                  className="text-xs bg-linear-to-r from-rose-600 to-cyan-600 text-white px-3 py-1 rounded-md hover:from-rose-700 hover:to-cyan-700 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1 shrink-0"
                 >
                   {loadingHint === item.id ? (
                     <>

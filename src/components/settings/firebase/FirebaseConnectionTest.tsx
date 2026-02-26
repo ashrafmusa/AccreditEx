@@ -60,9 +60,9 @@ const FirebaseConnectionTest: React.FC = () => {
           }`}
         >
           {status.isConnected ? (
-            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-1 flex-shrink-0" />
+            <CheckCircleIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 mt-1 shrink-0" />
           ) : (
-            <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 mt-1 flex-shrink-0" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-red-600 dark:text-red-400 mt-1 shrink-0" />
           )}
           <div className="flex-1">
             <p

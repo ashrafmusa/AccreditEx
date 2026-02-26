@@ -52,7 +52,7 @@ const LiveDataFeed: React.FC = () => {
                 <ShareIcon className="w-6 h-6 text-brand-primary" />
                 {t('liveDataFeed')}
             </h3>
-            <div ref={logContainerRef} className="mt-4 flex-grow h-64 overflow-y-auto space-y-2 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg">
+            <div ref={logContainerRef} className="mt-4 grow h-64 overflow-y-auto space-y-2 bg-gray-50 dark:bg-gray-900/50 p-3 rounded-lg">
                 {log.map(entry => (
                      <div key={entry.id} className={`p-2 rounded-md border-l-4 ${getColors(entry.resourceType)} animate-[fadeIn_0.5s_ease-out]`}>
                         <div className="flex justify-between items-center">

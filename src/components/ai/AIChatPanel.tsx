@@ -92,7 +92,7 @@ export default function AIChatPanel() {
       {!isServiceAvailable && (
         <div className="bg-yellow-50 dark:bg-yellow-900/20 border-b border-yellow-200 dark:border-yellow-800 p-3">
           <div className="flex items-start gap-2">
-            <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-500 flex-shrink-0 mt-0.5" />
+            <ExclamationTriangleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-500 shrink-0 mt-0.5" />
             <div className="text-xs text-yellow-800 dark:text-yellow-200">
               <p className="font-semibold">AI Service Unavailable</p>
               <p className="mt-1">
@@ -144,7 +144,7 @@ export default function AIChatPanel() {
                   : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap break-words">
+              <p className="text-sm whitespace-pre-wrap wrap-break-word">
                 {msg.role === "assistant" ? (
                   <span
                     className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0"

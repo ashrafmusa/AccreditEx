@@ -137,7 +137,7 @@ export const FeatureDiscoveryWidget: React.FC<FeatureDiscoveryWidgetProps> = ({
           <button
             key={feature.id}
             onClick={() => handleFeatureClick(feature)}
-            className={`flex flex-col items-start p-4 rounded-xl bg-gradient-to-br ${feature.gradient} text-white hover:scale-105 transition-all duration-300 shadow-md hover:shadow-xl group`}
+            className={`flex flex-col items-start p-4 rounded-xl bg-linear-to-br ${feature.gradient} text-white hover:scale-105 transition-all duration-300 shadow-md hover:shadow-xl group`}
           >
             <feature.icon className="w-8 h-8 mb-3 group-hover:scale-110 transition-transform" />
             <h4 className="font-semibold text-base mb-1">

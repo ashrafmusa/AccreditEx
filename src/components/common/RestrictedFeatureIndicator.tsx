@@ -30,7 +30,7 @@ const RestrictedFeatureIndicator: React.FC<RestrictedFeatureIndicatorProps> = ({
 
   return (
     <div className={`bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 flex items-start gap-3 ${className}`}>
-      <div className="flex-shrink-0 pt-0.5">
+      <div className="shrink-0 pt-0.5">
         <LockClosedIcon className="h-5 w-5 text-amber-600 dark:text-amber-400" />
       </div>
       <div className="flex-1">

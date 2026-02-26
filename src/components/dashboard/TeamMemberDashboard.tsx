@@ -226,7 +226,7 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
                 title={t("tasksCompleted")}
                 value={`${taskStats.completedTasks} / ${taskStats.totalTasks}`}
                 icon={CheckCircleIcon}
-                color="from-green-500 to-green-700 bg-gradient-to-br"
+                color="from-green-500 to-green-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "myTasks", filter: "completed" })
                 }
@@ -235,13 +235,13 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
                 title={t("myComplianceRate")}
                 value={taskStats.complianceRate}
                 icon={ClockIcon}
-                color="from-sky-500 to-sky-700 bg-gradient-to-br"
+                color="from-sky-500 to-sky-700 bg-linear-to-br"
               />
               <StatCard
                 title={t("upcomingTasks")}
                 value={taskStats.upcomingTasks}
                 icon={SparklesIcon}
-                color="from-blue-500 to-blue-700 bg-gradient-to-br"
+                color="from-blue-500 to-blue-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "myTasks", filter: "upcoming" })
                 }
@@ -250,7 +250,7 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
                 title={t("overdue")}
                 value={taskStats.overdueTasks}
                 icon={ExclamationTriangleIcon}
-                color="from-red-500 to-red-700 bg-gradient-to-br"
+                color="from-red-500 to-red-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "myTasks", filter: "overdue" })
                 }
@@ -259,13 +259,13 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
                 title={t("completionRate")}
                 value={taskStats.completionTrend}
                 icon={ChartBarIcon}
-                color="from-cyan-500 to-cyan-700 bg-gradient-to-br"
+                color="from-cyan-500 to-cyan-700 bg-linear-to-br"
               />
               <StatCard
                 title={t("partiallyDone")}
                 value={taskStats.partiallyCompliantTasks}
                 icon={ClockIcon}
-                color="from-amber-500 to-amber-700 bg-gradient-to-br"
+                color="from-amber-500 to-amber-700 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "myTasks", filter: "partial" })
                 }

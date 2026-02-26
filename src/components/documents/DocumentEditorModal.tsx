@@ -628,7 +628,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
           {/* Document Link Picker Modal */}
           {showLinkPicker && (
             <div
-              className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40"
+              className="fixed inset-0 z-60 flex items-center justify-center bg-black/40"
               onClick={() => setShowLinkPicker(false)}
             >
               <div

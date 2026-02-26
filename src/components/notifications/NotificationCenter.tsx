@@ -133,7 +133,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                 </div>
               </div>
               {!notification.read && (
-                <div className="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1.5" />
+                <div className="w-2 h-2 rounded-full bg-blue-600 shrink-0 mt-1.5" />
               )}
             </div>
 
@@ -150,7 +150,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   </p>
                   {notification.data && (
                     <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 bg-black/10 dark:bg-white/10 p-2 rounded">
-                      <pre className="whitespace-pre-wrap break-words">
+                      <pre className="whitespace-pre-wrap wrap-break-word">
                         {JSON.stringify(notification.data, null, 2)}
                       </pre>
                     </div>

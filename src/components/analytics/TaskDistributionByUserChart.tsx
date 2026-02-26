@@ -88,7 +88,7 @@ const TaskDistributionByUserChart: React.FC<Props> = ({
         {t("taskDistributionByUser")}
       </h3>
       {data.length > 0 ? (
-        <div className="flex-grow min-h-0">
+        <div className="grow min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
@@ -126,7 +126,7 @@ const TaskDistributionByUserChart: React.FC<Props> = ({
           </ResponsiveContainer>
         </div>
       ) : (
-        <div className="flex items-center justify-center flex-grow">
+        <div className="flex items-center justify-center grow">
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
             {t("noDataAvailable")}
           </p>
