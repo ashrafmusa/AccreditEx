@@ -683,7 +683,9 @@ const TracerWorksheetTab: React.FC = () => {
                   {tmpl.description}
                 </p>
                 <div className="flex gap-3 text-[10px] text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  <span>{tmpl.steps.length} {t("tracerDepartments")}</span>
+                  <span>
+                    {tmpl.steps.length} {t("tracerDepartments")}
+                  </span>
                   <span>
                     {tmpl.steps.reduce((s, st) => s + st.checkpoints.length, 0)}{" "}
                     {t("tracerCheckpoints")}
@@ -772,7 +774,9 @@ const TracerWorksheetTab: React.FC = () => {
                                   : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                             }`}
                           >
-                            {s.status === "completed" ? t("tracerCompleted") : t("tracerInProgress")}
+                            {s.status === "completed"
+                              ? t("tracerCompleted")
+                              : t("tracerInProgress")}
                           </span>
                         </td>
                         <td className="px-3 py-2 text-right">
@@ -780,7 +784,9 @@ const TracerWorksheetTab: React.FC = () => {
                             onClick={() => resumeSession(s)}
                             className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
                           >
-                            {s.status === "completed" ? t("tracerReview") : t("tracerContinue")}
+                            {s.status === "completed"
+                              ? t("tracerReview")
+                              : t("tracerContinue")}
                           </button>
                         </td>
                       </tr>
@@ -833,7 +839,8 @@ const TracerWorksheetTab: React.FC = () => {
               <div className="border border-brand-border dark:border-dark-brand-border rounded-lg">
                 <div className="bg-brand-surface-alt dark:bg-dark-brand-surface-alt px-4 py-3 border-b border-brand-border dark:border-dark-brand-border">
                   <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                    {t("tracerStep")} {step.order}: {step.department} — {step.area}
+                    {t("tracerStep")} {step.order}: {step.department} —{" "}
+                    {step.area}
                   </h4>
                 </div>
                 <div className="divide-y divide-brand-border/50 dark:divide-dark-brand-border/50">

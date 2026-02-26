@@ -204,7 +204,7 @@ Format your response in clear Markdown with headers and bullet points.`;
           className="flex items-center gap-2 text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-300 dark:text-purple-400 dark:border-purple-800"
         >
           <SparklesIcon className="h-4 w-4" />
-          {aiLoading ? t("loading") + "..." : "AI Analyze"}
+          {aiLoading ? t("loading") + "..." : t("aiAnalyze")}
         </Button>
       </div>
 
@@ -245,7 +245,7 @@ Format your response in clear Markdown with headers and bullet points.`;
             variant={activeTab === "tracers" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            Tracers
+            {t("tracersTab")}
           </Button>
         </nav>
       </div>

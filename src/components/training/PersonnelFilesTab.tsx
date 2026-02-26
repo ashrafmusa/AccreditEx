@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useRef } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import {
   User,
@@ -14,6 +14,9 @@ import {
   PlusIcon,
   CheckCircleIcon,
 } from "@/components/icons";
+import { storageService } from "@/services/storageService";
+import { useToast } from "@/hooks/useToast";
+import { useOrganizationId } from "@/stores/useTenantStore";
 
 /** Default set of required documents per employee */
 const DEFAULT_REQUIRED_DOCS: PersonnelDocCategory[] = [
@@ -78,9 +81,14 @@ function computeCompleteness(user: User): {
 
 type ViewMode = "overview" | "detail";
 
+const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,.doc,.docx,.webp";
+const MAX_FILE_SIZE_MB = 10;
+
 const PersonnelFilesTab: React.FC = () => {
   const { currentUser, users, updateUser } = useUserStore();
   const { departments } = useAppStore();
+  const toast = useToast();
+  const orgId = useOrganizationId();
   const isAdmin = currentUser?.role === UserRole.Admin;
   const [viewMode, setViewMode] = useState<ViewMode>(
     isAdmin ? "overview" : "detail",
@@ -89,6 +97,14 @@ const PersonnelFilesTab: React.FC = () => {
     currentUser?.id ?? "",
   );
   const [deptFilter, setDeptFilter] = useState("all");
+  const [uploadingCategory, setUploadingCategory] = useState<string | null>(
+    null,
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingUploadRef = useRef<{
+    userId: string;
+    category: PersonnelDocCategory;
+  } | null>(null);
 
   const filteredUsers = useMemo(() => {
     let list = users.filter((u) => u.isActive !== false);
@@ -118,48 +134,107 @@ const PersonnelFilesTab: React.FC = () => {
 
   const selectedUser = users.find((u) => u.id === selectedUserId);
 
-  const handleUploadDoc = useCallback(
-    async (userId: string, category: PersonnelDocCategory) => {
+  /** Open the hidden file input for a given document category */
+  const triggerFileInput = useCallback(
+    (userId: string, category: PersonnelDocCategory) => {
+      pendingUploadRef.current = { userId, category };
+      fileInputRef.current?.click();
+    },
+    [],
+  );
+
+  /** Handle the file selected from the file picker */
+  const handleFileSelected = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      // Reset input so the same file can be re-selected
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (!file || !pendingUploadRef.current) return;
+
+      const { userId, category } = pendingUploadRef.current;
+      pendingUploadRef.current = null;
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        toast.error(`File too large. Maximum size is ${MAX_FILE_SIZE_MB} MB.`);
+        return;
+      }
+
       const user = users.find((u) => u.id === userId);
       if (!user) return;
-      const docs = [...(user.personnelDocuments ?? [])];
-      const idx = docs.findIndex((d) => d.category === category);
-      const newDoc: PersonnelDocument = {
-        id: `pd-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-        category,
-        name: PERSONNEL_DOC_LABELS[category],
-        status: "uploaded",
-        uploadedAt: new Date().toISOString(),
-      };
-      if (idx >= 0)
-        docs[idx] = {
-          ...docs[idx],
+
+      setUploadingCategory(category);
+
+      try {
+        // Upload file to Firebase Storage
+        const docId = `personnel-${userId}-${category}`;
+        const fileUrl = await storageService.uploadDocument(
+          file,
+          docId,
+          undefined,
+          orgId || undefined,
+          "personnel",
+        );
+
+        // Update user record in Firestore
+        const docs = [...(user.personnelDocuments ?? [])];
+        const idx = docs.findIndex((d) => d.category === category);
+        const newDoc: PersonnelDocument = {
+          id: `pd-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+          category,
+          name: PERSONNEL_DOC_LABELS[category],
           status: "uploaded",
+          fileUrl,
+          fileName: file.name,
           uploadedAt: new Date().toISOString(),
         };
-      else docs.push(newDoc);
-      await updateUser({ ...user, personnelDocuments: docs });
+        if (idx >= 0)
+          docs[idx] = {
+            ...docs[idx],
+            status: "uploaded",
+            fileUrl,
+            fileName: file.name,
+            uploadedAt: new Date().toISOString(),
+          };
+        else docs.push(newDoc);
+
+        await updateUser({ ...user, personnelDocuments: docs });
+        toast.success(
+          `${PERSONNEL_DOC_LABELS[category]} uploaded successfully.`,
+        );
+      } catch (err: any) {
+        console.error("Personnel file upload failed:", err);
+        toast.error(err?.message || "Upload failed. Please try again.");
+      } finally {
+        setUploadingCategory(null);
+      }
     },
-    [users, updateUser],
+    [users, updateUser, orgId, toast],
   );
 
   const handleVerifyDoc = useCallback(
     async (userId: string, category: PersonnelDocCategory) => {
       const user = users.find((u) => u.id === userId);
       if (!user) return;
-      const docs = (user.personnelDocuments ?? []).map((d) =>
-        d.category === category
-          ? {
-              ...d,
-              status: "verified" as const,
-              verifiedBy: currentUser?.name,
-              verifiedAt: new Date().toISOString(),
-            }
-          : d,
-      );
-      await updateUser({ ...user, personnelDocuments: docs });
+      try {
+        const docs = (user.personnelDocuments ?? []).map((d) =>
+          d.category === category
+            ? {
+                ...d,
+                status: "verified" as const,
+                verifiedBy: currentUser?.name,
+                verifiedAt: new Date().toISOString(),
+              }
+            : d,
+        );
+        await updateUser({ ...user, personnelDocuments: docs });
+        toast.success(`${PERSONNEL_DOC_LABELS[category]} verified.`);
+      } catch (err: any) {
+        console.error("Verify failed:", err);
+        toast.error(err?.message || "Verification failed. Please try again.");
+      }
     },
-    [users, updateUser, currentUser],
+    [users, updateUser, currentUser, toast],
   );
 
   const inputCls =
@@ -167,6 +242,14 @@ const PersonnelFilesTab: React.FC = () => {
 
   return (
     <div className="space-y-4 p-4">
+      {/* Hidden file input for document uploads */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={ACCEPTED_FILE_TYPES}
+        className="hidden"
+        onChange={handleFileSelected}
+      />
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
@@ -408,6 +491,7 @@ const PersonnelFilesTab: React.FC = () => {
                         {doc?.uploadedAt && (
                           <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
                             Uploaded: {doc.uploadedAt.split("T")[0]}
+                            {doc.fileName && ` · ${doc.fileName}`}
                             {doc.verifiedBy &&
                               ` · Verified by ${doc.verifiedBy}`}
                           </div>
@@ -420,31 +504,62 @@ const PersonnelFilesTab: React.FC = () => {
                           </div>
                         )}
                       </div>
+                      {doc?.fileUrl && (
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-brand-primary-600 dark:text-brand-primary-400 hover:underline shrink-0"
+                        >
+                          View
+                        </a>
+                      )}
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.color} ${cfg.bg}`}
                       >
                         {cfg.label}
                       </span>
                       <div className="flex gap-1">
-                        {status === "missing" && (
+                        {(status === "missing" || status === "expired") && (
                           <button
                             onClick={() =>
-                              handleUploadDoc(selectedUser.id, cat)
+                              triggerFileInput(selectedUser.id, cat)
                             }
-                            className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
+                            disabled={uploadingCategory === cat}
+                            className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs disabled:opacity-50 disabled:cursor-wait"
                           >
-                            Upload
+                            {uploadingCategory === cat ? (
+                              <span className="flex items-center gap-1">
+                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
+                                Uploading…
+                              </span>
+                            ) : (
+                              "Upload"
+                            )}
                           </button>
                         )}
                         {status === "uploaded" && isAdmin && (
-                          <button
-                            onClick={() =>
-                              handleVerifyDoc(selectedUser.id, cat)
-                            }
-                            className="text-green-600 dark:text-green-400 hover:underline text-xs"
-                          >
-                            Verify
-                          </button>
+                          <>
+                            <button
+                              onClick={() =>
+                                handleVerifyDoc(selectedUser.id, cat)
+                              }
+                              className="text-green-600 dark:text-green-400 hover:underline text-xs"
+                            >
+                              Verify
+                            </button>
+                            <button
+                              onClick={() =>
+                                triggerFileInput(selectedUser.id, cat)
+                              }
+                              disabled={uploadingCategory === cat}
+                              className="text-brand-text-secondary dark:text-dark-brand-text-secondary hover:underline text-xs disabled:opacity-50"
+                            >
+                              {uploadingCategory === cat
+                                ? "Uploading…"
+                                : "Re-upload"}
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
