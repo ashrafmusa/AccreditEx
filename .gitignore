@@ -65,6 +65,9 @@ Thumbs.db
 serviceAccountKey.json
 **/serviceAccountKey.json
 
+# ─── Confidential Internal Docs ──────────────────────────────────────────────
+docs/internal/CLIENT_CONFIGURATION_GUIDE.md
+
 # ─── Private Keys & Certificates ─────────────────────────────────────────────
 *.pem
 *.key
