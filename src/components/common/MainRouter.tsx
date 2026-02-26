@@ -9,6 +9,9 @@ import { LockClosedIcon } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { analytics } from "@/services/analyticsTrackingService";
 import { routes } from "@/router/routes";
+import { useModuleStore } from "@/stores/useModuleStore";
+import { getModuleForView } from "@/services/moduleService";
+import UpgradePrompt from "@/components/common/UpgradePrompt";
 
 // Performance Optimization: Lazy load all page components
 // This reduces the main bundle from 4.39MB to under 500KB
@@ -294,6 +297,17 @@ const MainRouter: React.FC<MainRouterProps> = ({
           </div>
         </div>
       </div>
+    );
+  }
+
+  // Module-based route guard: check if current view's module is enabled
+  const isViewEnabled = useModuleStore((s) => s.isViewEnabled);
+  const moduleDef = getModuleForView(navigation.view);
+  if (moduleDef && !isViewEnabled(navigation.view)) {
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <UpgradePrompt moduleId={moduleDef.id} />
+      </Suspense>
     );
   }
 

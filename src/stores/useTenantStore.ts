@@ -13,6 +13,7 @@ import { create } from 'zustand';
 import { Organization } from '@/types';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
+import { useModuleStore } from '@/stores/useModuleStore';
 
 interface TenantState {
     /** The currently active organization (null = legacy single-tenant mode) */
@@ -50,6 +51,8 @@ export const useTenantStore = create<TenantState>((set, get) => ({
             isMultiTenant: !!org,
             error: null,
         });
+        // Resolve enabled modules for this organization
+        useModuleStore.getState().resolveModules(org, org?.moduleConfig);
     },
 
     loadOrganization: async (orgId: string) => {
@@ -66,6 +69,8 @@ export const useTenantStore = create<TenantState>((set, get) => ({
                     isMultiTenant: true,
                     loading: false,
                 });
+                // Resolve enabled modules for this organization
+                useModuleStore.getState().resolveModules(org, org.moduleConfig);
             } else {
                 set({ loading: false, error: 'Organization not found' });
             }
@@ -84,6 +89,8 @@ export const useTenantStore = create<TenantState>((set, get) => ({
                 isMultiTenant: false,
                 loading: false,
             });
+            // Legacy mode: all modules enabled
+            useModuleStore.getState().resolveModules(null);
             return;
         }
         await get().loadOrganization(userOrgId);
@@ -97,6 +104,8 @@ export const useTenantStore = create<TenantState>((set, get) => ({
             loading: false,
             error: null,
         });
+        // Reset to all-enabled
+        useModuleStore.getState().reset();
     },
 }));
 

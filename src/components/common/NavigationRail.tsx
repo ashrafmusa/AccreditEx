@@ -23,6 +23,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useArrowNavigation } from "@/hooks/useArrowNavigation";
 import { prefetchRoute } from "@/services/routePrefetchService";
+import { useModuleStore } from "@/stores/useModuleStore";
 
 interface NavigationRailProps {
   setNavigation: (state: NavigationState) => void;
@@ -90,6 +91,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
 
   const navRef = useRef<HTMLElement>(null);
   useArrowNavigation(navRef);
+  const isNavKeyEnabled = useModuleStore((s) => s.isNavKeyEnabled);
 
   const allNavItems: NavItemData[] = [
     {
@@ -190,10 +192,14 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
   ];
 
   const visibleNavItems = allNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin",
+    (item) =>
+      (!item.adminOnly || currentUser?.role?.toLowerCase() === "admin") &&
+      isNavKeyEnabled(item.key),
   );
   const visibleBottomNavItems = bottomNavItems.filter(
-    (item) => !item.adminOnly || currentUser?.role?.toLowerCase() === "admin",
+    (item) =>
+      (!item.adminOnly || currentUser?.role?.toLowerCase() === "admin") &&
+      isNavKeyEnabled(item.key),
   );
 
   const isActive = (key: string) => {
