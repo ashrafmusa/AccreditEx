@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { NavigationState, ProjectDetailView, User, Project } from "@/types";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
@@ -8,17 +8,29 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import ProjectDetailHeader from "@/components/projects/ProjectDetailHeader";
 import ProjectDetailSidebar from "@/components/projects/ProjectDetailSidebar";
-import ProjectOverview from "@/pages/ProjectOverview";
-import ProjectChecklist from "@/components/projects/ProjectChecklist";
 import SignatureModal from "@/components/common/SignatureModal";
 import GenerateReportModal from "@/components/documents/GenerateReportModal";
-import DesignControlsComponent from "@/components/projects/DesignControlsComponent";
-import AuditLogComponent from "@/components/audits/AuditLogComponent";
-import SurveyListComponent from "@/components/projects/SurveyListComponent";
-import PDCACycleManager from "@/components/projects/PDCACycleManager";
-import { Button } from "@/components/ui";
+import { Button, LoadingSpinner } from "@/components/ui";
 import { aiAgentService } from "@/services/aiAgentService";
 import AISuggestionModal from "@/components/ai/AISuggestionModal";
+
+// ── Lazy-loaded tab components (code-splitting) ───────────
+const ProjectOverview = lazy(() => import("@/pages/ProjectOverview"));
+const ProjectChecklist = lazy(
+  () => import("@/components/projects/ProjectChecklist"),
+);
+const DesignControlsComponent = lazy(
+  () => import("@/components/projects/DesignControlsComponent"),
+);
+const AuditLogComponent = lazy(
+  () => import("@/components/audits/AuditLogComponent"),
+);
+const SurveyListComponent = lazy(
+  () => import("@/components/projects/SurveyListComponent"),
+);
+const PDCACycleManager = lazy(
+  () => import("@/components/projects/PDCACycleManager"),
+);
 
 interface ProjectDetailPageProps {
   navigation: { view: "projectDetail"; projectId: string };
@@ -439,7 +451,15 @@ Be specific and actionable. If the project looks ready, say so clearly.`;
               </span>
             </div>
           )}
-          {renderContent()}
+          <Suspense
+            fallback={
+              <div className="flex justify-center items-center py-12">
+                <LoadingSpinner />
+              </div>
+            }
+          >
+            {renderContent()}
+          </Suspense>
         </div>
       </main>
 

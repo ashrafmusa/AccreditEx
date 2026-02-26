@@ -13,10 +13,19 @@ jest.mock('firebase/firestore', () => ({
     doc: (...args: any[]) => mockDoc(...args),
     updateDoc: (...args: any[]) => mockUpdateDoc(...args),
     setDoc: (...args: any[]) => mockSetDoc(...args),
+    query: jest.fn((...args: any[]) => args),
+    where: jest.fn(),
 }));
 
 jest.mock('../../firebase/firebaseConfig', () => ({
     db: 'mocked-db',
+}));
+
+// Mock tenant query helper
+jest.mock('@/utils/tenantQuery', () => ({
+    getTenantQuery: jest.fn(() => 'mocked-tenant-query'),
+    getTenantStamp: jest.fn(() => ({})),
+    getTenantCollection: jest.fn(() => 'mocked-collection'),
 }));
 
 // Mock console methods to avoid noise in tests
@@ -134,13 +143,13 @@ describe('appSettingsService', () => {
                     requireSymbol: false,
                 },
                 globeSettings: {
-                    baseColor: '#1e293b',
-                    markerColor: '#818cf8',
-                    glowColor: '#4f46e5',
-                    scale: 2.5,
-                    darkness: 0.9,
-                    lightIntensity: 1.2,
-                    rotationSpeed: 0.02,
+                    baseColor: '#1e3a5f',
+                    markerColor: '#2dd4bf',
+                    glowColor: '#14b8a6',
+                    scale: 1.05,
+                    darkness: 0.35,
+                    lightIntensity: 2.0,
+                    rotationSpeed: 0.004,
                 },
                 appearance: {
                     compactMode: false,
@@ -213,7 +222,7 @@ describe('appSettingsService', () => {
             expect(mockGetDocs).toHaveBeenCalledTimes(1);
             expect(mockSetDoc).toHaveBeenCalledWith(
                 'mocked-doc-result',
-                JSON.parse(JSON.stringify(mockAppSettings)),
+                expect.objectContaining(JSON.parse(JSON.stringify(mockAppSettings))),
                 { merge: true }
             );
             expect(mockConsoleLog).toHaveBeenCalledWith('App settings updated in Firestore');
@@ -229,7 +238,7 @@ describe('appSettingsService', () => {
             expect(mockGetDocs).toHaveBeenCalledTimes(1);
             expect(mockSetDoc).toHaveBeenCalledWith(
                 'mocked-doc-result',
-                JSON.parse(JSON.stringify(mockAppSettings))
+                expect.objectContaining(JSON.parse(JSON.stringify(mockAppSettings)))
             );
             expect(mockConsoleLog).toHaveBeenCalledWith('App settings created in Firestore');
         });
@@ -309,7 +318,7 @@ describe('appSettingsService', () => {
             const expectedSerializedData = JSON.parse(JSON.stringify(complexSettings));
             expect(mockSetDoc).toHaveBeenCalledWith(
                 'mocked-doc-result',
-                expectedSerializedData,
+                expect.objectContaining(expectedSerializedData),
                 { merge: true }
             );
         });

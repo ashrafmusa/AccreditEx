@@ -1,6 +1,18 @@
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { act } from "react-dom/test-utils";
+
+// Mock marked (ESM-only package)
+jest.mock("marked", () => ({
+  marked: { parse: jest.fn((s: string) => s) },
+}));
+
+// Mock dompurify
+jest.mock("dompurify", () => ({
+  __esModule: true,
+  default: { sanitize: jest.fn((s: string) => s) },
+}));
+
 import AIChatPanel from "../AIChatPanel";
 
 // Mock scrollIntoView

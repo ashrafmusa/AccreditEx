@@ -95,3 +95,8 @@ ai-agent/enhanced_deployment_package/*.json
 Thumbs.db
 Desktop.ini
 ehthumbs.db
+
+
+bulk-test-output.txt
+projectlist-test-output.txt
+ts_errors.txt

@@ -31,16 +31,18 @@ jest.mock('../../firebase/firebaseConfig', () => ({
 
 // Helper function to create a test file from a buffer with arrayBuffer support
 function createTestFile(buffer: Buffer | ArrayBuffer, filename: string, mimeType: string): File {
-    // Convert Buffer to ArrayBuffer if needed
-    const arrayBuffer = buffer instanceof Buffer
-        ? buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
-        : buffer;
+    // Convert Buffer to Uint8Array to avoid SharedArrayBuffer/offset issues
+    const uint8 = buffer instanceof Buffer
+        ? new Uint8Array(buffer)
+        : new Uint8Array(buffer);
 
-    const blob = new Blob([arrayBuffer], { type: mimeType });
+    const blob = new Blob([uint8], { type: mimeType });
     const file = new File([blob], filename, { type: mimeType });
 
-    // Add arrayBuffer method for Node.js environment
-    (file as any).arrayBuffer = async () => arrayBuffer;
+    // Add arrayBuffer method for Node.js/jsdom environment
+    (file as any).arrayBuffer = async () => uint8.buffer.slice(
+        uint8.byteOffset, uint8.byteOffset + uint8.byteLength
+    );
 
     return file;
 }

@@ -1,13 +1,46 @@
-import React from "react";
+import React, { useCallback, useMemo } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
+import { useUserStore } from "@/stores/useUserStore";
+import { useProjectStore } from "@/stores/useProjectStore";
 import AIDocumentGenerator from "@/components/ai/AIDocumentGenerator";
+import type { DocumentGenerationResponse } from "@/services/aiDocumentGeneratorService";
 
 const AIDocumentGeneratorPage: React.FC = () => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const currentUser = useUserStore((s) => s.currentUser);
+  const projects = useProjectStore((s) => s.projects);
 
-  const handleDocumentGenerated = (response: any) => {
-    console.log("Document generated successfully:", response);
-  };
+  const context = useMemo(
+    () => ({
+      userRole: currentUser?.role ?? "Viewer",
+      departmentId: currentUser?.departmentId ?? currentUser?.department ?? "",
+      projectId: projects[0]?.id ?? "",
+    }),
+    [currentUser, projects],
+  );
+
+  const handleDocumentGenerated = useCallback(
+    (response: DocumentGenerationResponse) => {
+      toast.showToast(
+        t("documentGeneratedSuccess") ?? "Document generated successfully",
+        "success",
+      );
+
+      // Auto-download when content is available
+      if (response.content) {
+        const blob = new Blob([response.content], { type: "text/markdown" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `ai-document-${Date.now()}.md`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    },
+    [toast, t],
+  );
 
   return (
     <div className="space-y-6">
@@ -22,11 +55,7 @@ const AIDocumentGeneratorPage: React.FC = () => {
 
       <AIDocumentGenerator
         onDocumentGenerated={handleDocumentGenerated}
-        context={{
-          userRole: "Admin",
-          departmentId: "IT",
-          projectId: "PROJ-001",
-        }}
+        context={context}
         preferences={{
           tone: "professional",
           length: "comprehensive",
