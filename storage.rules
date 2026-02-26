@@ -31,6 +31,12 @@ service firebase.storage {
       return getUserRole() in ['Admin', 'ProjectLead'];
     }
     
+    // Tenant isolation: verify the requesting user belongs to the
+    // organization whose path they are accessing.
+    function isOrgMember(orgId) {
+      return isAuthenticated() && request.auth.token.organizationId == orgId;
+    }
+    
     // =====================================================
     // FILE VALIDATION HELPERS
     // Security fix (2026-02-18): Added file type and size
@@ -64,6 +70,56 @@ service firebase.storage {
     function isValidDocumentUpload() {
       return isValidFileSize() && isAllowedDocumentType();
     }
+    
+    // =====================================================
+    // TENANT-ISOLATED DOCUMENT PATHS
+    // All document paths are now prefixed with /{orgId}/ to
+    // enforce multi-tenant data isolation at the storage level.
+    // The isOrgMember() check ensures users can only access
+    // files belonging to their own organization.
+    // =====================================================
+
+    // Program documents - accessible by org members, managed by admin
+    match /documents/{orgId}/programs/{programId}/{allFiles=**} {
+      allow read: if isOrgMember(orgId);
+      allow write: if isOrgMember(orgId) && isAdmin() && isValidDocumentUpload();
+      allow delete: if isOrgMember(orgId) && isAdmin();
+    }
+    
+    // Standard documents - accessible by org members, managed by admin
+    match /documents/{orgId}/standards/{standardId}/{allFiles=**} {
+      allow read: if isOrgMember(orgId);
+      allow write: if isOrgMember(orgId) && isAdmin() && isValidDocumentUpload();
+      allow delete: if isOrgMember(orgId) && isAdmin();
+    }
+    
+    // User profile documents - accessible by owner and admin within org
+    match /documents/{orgId}/users/{userId}/{allFiles=**} {
+      allow read: if isOrgMember(orgId) && (request.auth.uid == userId || isAdmin());
+      allow write: if isOrgMember(orgId) && (request.auth.uid == userId || isAdmin()) && isValidFileSize() && (isAllowedDocumentType() || isAllowedImageType());
+      allow delete: if isOrgMember(orgId) && isAdmin();
+    }
+    
+    // Project documents - accessible by org members, write restricted to leads+
+    match /documents/{orgId}/projects/{projectId}/{allFiles=**} {
+      allow read: if isOrgMember(orgId);
+      allow write: if isOrgMember(orgId) && (isAdmin() || isProjectLead()) && isValidDocumentUpload();
+      allow delete: if isOrgMember(orgId) && isAdmin();
+    }
+    
+    // Reports - accessible by org members, write restricted to leads+
+    match /reports/{orgId}/{projectId}/{allFiles=**} {
+      allow read: if isOrgMember(orgId);
+      allow write: if isOrgMember(orgId) && isProjectLead() && isValidDocumentUpload();
+      allow delete: if isOrgMember(orgId) && isAdmin();
+    }
+
+    // =====================================================
+    // LEGACY PATHS (backward compatibility)
+    // These match the old flat paths without orgId prefix.
+    // Read-only access is preserved for migration; new writes
+    // must use the tenant-isolated paths above.
+    // =====================================================
     
     // Program documents - accessible by all authenticated users, managed by admin
     match /documents/programs/{programId}/{allFiles=**} {

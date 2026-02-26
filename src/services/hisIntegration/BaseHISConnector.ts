@@ -264,12 +264,12 @@ export abstract class BaseHISConnector implements HISConnector {
    * Add new transform types here as needed.
    */
   private static readonly SAFE_TRANSFORMS: Record<string, (value: any) => any> = {
-    'toString': (v) => String(v),
-    'toNumber': (v) => Number(v),
-    'toBoolean': (v) => Boolean(v),
-    'toUpperCase': (v) => String(v).toUpperCase(),
-    'toLowerCase': (v) => String(v).toLowerCase(),
-    'trim': (v) => String(v).trim(),
+    'toString': (v: any) => String(v),
+    'toNumber': (v: any) => Number(v),
+    'toBoolean': (v: any) => Boolean(v),
+    'toUpperCase': (v: any) => String(v).toUpperCase(),
+    'toLowerCase': (v: any) => String(v).toLowerCase(),
+    'trim': (v: any) => String(v).trim(),
     'toISODate': (v) => new Date(v).toISOString(),
     'toDateString': (v) => new Date(v).toLocaleDateString(),
     'parseJSON': (v) => JSON.parse(v),

@@ -80,7 +80,7 @@ export const en = {
     selectCategory: 'Select a category',
     processFailure: 'Process Failure',
     humanError: 'Human Error',
-    equipmentMalfunction: 'Equipment Malfunction',
+    equipmentMalfunctionCause: 'Equipment Malfunction',
     externalFactors: 'External Factors',
     recommendedTraining: 'Recommended Training',
     noTrainingRecommended: 'No specific training recommended',

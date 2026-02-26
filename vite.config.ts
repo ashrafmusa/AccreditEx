@@ -29,6 +29,28 @@ export default defineConfig(({ mode }) => {
       alias: {
         '@': path.resolve(__dirname, './src'),
       }
-    }
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            // Heavy vendor libraries — load on demand
+            'vendor-excel': ['exceljs'],
+            'vendor-pdf': ['jspdf', 'jspdf-autotable'],
+            'vendor-html2canvas': ['html2canvas'],
+            'vendor-tiptap': [
+              '@tiptap/react',
+              '@tiptap/starter-kit',
+              '@tiptap/extension-underline',
+              '@tiptap/extension-text-align',
+              '@tiptap/extension-image',
+            ],
+            'vendor-recharts': ['recharts'],
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+            'vendor-docx': ['docx'],
+          },
+        },
+      },
+    },
   };
 });

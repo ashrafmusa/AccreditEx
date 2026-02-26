@@ -80,7 +80,7 @@ export const ar = {
     selectCategory: 'اختر فئة',
     processFailure: 'فشل العملية',
     humanError: 'خطأ بشري',
-    equipmentMalfunction: 'عطل في المعدات',
+    equipmentMalfunctionCause: 'عطل في المعدات',
     externalFactors: 'عوامل خارجية',
     recommendedTraining: 'التدريب الموصى به',
     noTrainingRecommended: 'لا يوجد تدريب محدد موصى به',
