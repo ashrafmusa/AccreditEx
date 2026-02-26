@@ -1,5 +1,6 @@
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../firebase/firebaseConfig';
+import { buildDocumentPath, type StorageCategory } from '../utils/storagePaths';
 
 export interface UploadProgress {
   bytesTransferred: number;
@@ -9,21 +10,32 @@ export interface UploadProgress {
 
 export class StorageService {
   /**
-   * Upload a document file to Firebase Storage
+   * Upload a document file to Firebase Storage.
+   *
+   * When `orgId` is supplied the file is stored under the tenant-isolated
+   * path (`documents/{orgId}/{category}/{documentId}/{timestamp}-{file}`).
+   * Without `orgId` the legacy flat path is used for backward compatibility.
+   *
    * @param file - The file to upload
-   * @param documentId - Unique document ID
+   * @param documentId - Unique document ID (resourceId)
    * @param onProgress - Optional callback for upload progress
+   * @param orgId - Organisation ID for tenant-isolated path (recommended)
+   * @param category - Storage category (defaults to 'projects')
    * @returns Promise with the download URL
    */
   async uploadDocument(
     file: File,
     documentId: string,
-    onProgress?: (progress: UploadProgress) => void
+    onProgress?: (progress: UploadProgress) => void,
+    orgId?: string,
+    category: StorageCategory = 'projects',
   ): Promise<string> {
     try {
-      // Create a storage reference
-      const fileName = `${Date.now()}-${file.name}`;
-      const storageRef = ref(storage, `documents/${documentId}/${fileName}`);
+      // Build storage path — prefer tenant-isolated when orgId is available
+      const storagePath = orgId
+        ? buildDocumentPath({ orgId, category, resourceId: documentId, fileName: file.name })
+        : `documents/${documentId}/${Date.now()}-${file.name}`;
+      const storageRef = ref(storage, storagePath);
 
       // Create upload task
       const uploadTask = uploadBytesResumable(storageRef, file);

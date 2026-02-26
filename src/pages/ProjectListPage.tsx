@@ -109,7 +109,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       const matchesAssignee =
         assigneeFilter === "all" ||
         p.projectLead?.id === assigneeFilter ||
-        p.checklist.some((item) => item.assignedTo === assigneeFilter);
+        p.checklist?.some((item) => item.assignedTo === assigneeFilter);
 
       const matchesDate =
         (!dateFilter.start ||
@@ -478,7 +478,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredProjects.map((p) => {
             const assignedUserIds = new Set(
-              p.checklist.map((item) => item.assignedTo).filter(Boolean),
+              (p.checklist || [])
+                .map((item) => item.assignedTo)
+                .filter(Boolean),
             );
             if (p.projectLead?.id) {
               assignedUserIds.add(p.projectLead.id);

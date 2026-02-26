@@ -1,5 +1,17 @@
 import '@testing-library/jest-dom';
 
+// Polyfill Blob.arrayBuffer for jsdom (needed by ExcelJS tests)
+if (!Blob.prototype.arrayBuffer) {
+  Blob.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(this);
+    });
+  };
+}
+
 // Mock import.meta.env for Vite (both window and global)
 const mockEnv = {
   DEV: true,
@@ -67,6 +79,18 @@ jest.mock('@/services/storageService', () => ({
     uploadFile: jest.fn(),
     deleteFile: jest.fn(),
     getFileUrl: jest.fn(),
+  },
+}));
+
+// Mock Cloudinary service to avoid import.meta.env issues
+jest.mock('@/services/cloudinaryService', () => ({
+  cloudinaryService: {
+    uploadFile: jest.fn(),
+    uploadDocument: jest.fn(),
+    deleteFile: jest.fn(),
+    getFileUrl: jest.fn(),
+    generateThumbnailUrl: jest.fn(),
+    getOptimizedUrl: jest.fn(),
   },
 }));
 

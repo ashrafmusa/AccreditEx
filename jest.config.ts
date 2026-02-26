@@ -8,13 +8,13 @@ const config: Config = {
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  
+
   // Module resolution
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
-  
+
   // Transform files
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
@@ -26,11 +26,11 @@ const config: Config = {
       },
     }],
   },
-  
+
   transformIgnorePatterns: [
-    'node_modules/(?!(firebase)/)',
+    'node_modules/(?!(firebase|marked|@cloudinary)/)',
   ],
-  
+
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
@@ -40,7 +40,9 @@ const config: Config = {
     '!src/vite-env.d.ts',
     '!src/**/*.stories.tsx',
   ],
-  
+
+  coverageReporters: ['text', 'lcov', 'clover', 'json', 'json-summary'],
+
   coverageThreshold: {
     global: {
       branches: 70,
@@ -49,13 +51,13 @@ const config: Config = {
       statements: 80,
     },
   },
-  
+
   // Setup files
   setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
-  
+
   // Ignore patterns
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
-  
+
   // Module paths
   modulePaths: ['<rootDir>/src'],
 };
