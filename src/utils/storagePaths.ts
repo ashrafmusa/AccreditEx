@@ -14,7 +14,7 @@
 // Types
 // ---------------------------------------------------------------------------
 
-export type StorageCategory = 'programs' | 'standards' | 'users' | 'projects';
+export type StorageCategory = 'programs' | 'standards' | 'users' | 'projects' | 'personnel';
 
 export interface StoragePathOptions {
     /** Organisation ID (required for tenant-isolated paths). */

@@ -2,7 +2,7 @@ export const ar = {
   // Audit Hub Page
   auditHub: "مركز التدقيق",
   auditHubDescription: "خطط وتنفيذ وتتبع أنشطة التدقيق",
-  
+
   // Audit Plans
   auditPlans: "خطط التدقيق",
   newAuditPlan: "خطة تدقيق جديدة",
@@ -20,10 +20,10 @@ export const ar = {
   auditsItemsFrequency: "تدقيق {itemCount} عناصر {frequency}",
   noAuditPlans: "لم يتم العثور على خطط تدقيق",
   areYouSureDeleteAuditPlan: "هل أنت متأكد من حذف خطة التدقيق هذه؟",
-  
+
   // Audit Execution
   runAudit: "تشغيل التدقيق",
-  
+
   // Audit Log
   auditLog: "سجل التدقيق",
   searchActivity: "البحث عن النشاط...",
@@ -31,10 +31,12 @@ export const ar = {
   user: "المستخدم",
   action: "الإجراء",
   noActivity: "لم يتم العثور على نشاط",
-  
+
   // Messages
   noResults: "لم يتم العثور على نتائج",
   noProjectsFound: "لم يتم العثور على مشاريع",
+  tracersTab: "التتبع",
+  aiAnalyze: "تحليل الذكاء الاصطناعي",
 
   // Tracer Methodology
   tracerMethodology: "منهجية التتبع",
