@@ -381,6 +381,21 @@ export const ar = {
     adminAccessRequired: 'يتطلب وصول المسؤول',
     saveTheExcelFile: 'حفظ ملف Excel',
 
+    // Feature Discovery Widget
+    discoverHiddenFeatures: 'اكتشف الميزات المخفية',
+    discoverHiddenFeaturesDesc: 'أطلق العنان لإمكانيات AccreditEx الكاملة مع هذه الأدوات القوية.',
+    aiDocumentGenerator: 'مولّد المستندات بالذكاء الاصطناعي',
+    aiDocumentGeneratorDesc: 'صياغة السياسات وإجراءات العمل في ثوانٍ بمساعدة الذكاء الاصطناعي.',
+    mockSurveyFeature: 'منشئ المسح التجريبي',
+    mockSurveyFeatureDesc: 'محاكاة تدقيق حقيقي لتحديد الثغرات قبل وصول المُقيّم.',
+    qualityInsightsFeature: 'لوحة رؤى الجودة',
+    qualityInsightsFeatureDesc: 'تتبع دورات PDCA ومقاييس الجودة الموحدة.',
+    aiRecommendations: 'توصيات ذكية بالذكاء الاصطناعي',
+    aiRecommendationsDesc: 'احصل على خطوات عملية لتحسين درجة الامتثال.',
+    featuresRotateWeekly: 'تتناوب الميزات أسبوعيًا لمساعدتك على التعلم.',
+    learnMore: 'اعرف المزيد',
+    proTip: 'نصيحة احترافية',
+
     // Access Denied Dialog
     accessDenied: 'تم رفض الوصول',
     noPermissionToAccess: 'دورك لا يملك صلاحية الوصول إلى هذه المنطقة.',
