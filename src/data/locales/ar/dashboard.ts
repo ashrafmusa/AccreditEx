@@ -130,6 +130,9 @@ export const ar = {
     allClear: 'كل شيء على ما يرام!',
     noOpenCapaMessage: 'لا توجد تقارير CAPA مفتوحة. عمل رائع في الحفاظ على الامتثال!',
 
+    // MyTasksWidget
+    moreTasks: 'مهام أخرى',
+
     // DashboardHeader
     userFallback: 'مستخدم',
 
