@@ -2131,7 +2131,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <span
-                        className={`px-1.5 py-0.5 text-[10px] font-bold uppercase rounded ${
+                        className={`px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide rounded ${
                           opt.priority === "high"
                             ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200"
                             : opt.priority === "medium"

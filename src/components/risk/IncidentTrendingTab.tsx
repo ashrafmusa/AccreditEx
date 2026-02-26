@@ -352,16 +352,16 @@ Format your response in clear Markdown with headers and bullet points.`;
         <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+              <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                 {viewMode === "type" ? t("incidentType") : t("severity")}
               </th>
-              <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+              <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                 {t("count")}
               </th>
-              <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+              <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                 {t("percentage")}
               </th>
-              <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+              <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                 {t("distribution")}
               </th>
             </tr>

@@ -65,19 +65,19 @@ const SurveyListComponent: React.FC<SurveyListComponentProps> = ({
                 <tr>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-700 dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300"
                   >
                     {t("date")}
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-700 dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300"
                   >
                     {t("status")}
                   </th>
                   <th
                     scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-700 dark:text-gray-300"
+                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-700 dark:text-gray-300"
                   >
                     {t("actions")}
                   </th>

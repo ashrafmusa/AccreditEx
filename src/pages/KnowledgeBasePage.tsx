@@ -274,6 +274,7 @@ const KnowledgeBasePage: React.FC = () => {
               <Input
                 type="text"
                 placeholder="Search articles, tags..."
+                aria-label="Search articles and tags"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 leftIcon={<SearchIcon className="h-5 w-5" />}
@@ -282,6 +283,7 @@ const KnowledgeBasePage: React.FC = () => {
             <select
               value={filterCategory}
               onChange={(e) => setFilterCategory(e.target.value)}
+              aria-label="Filter by category"
               className={`${inputCls} w-auto sm:w-48`}
             >
               <option value="all">All Categories</option>
@@ -459,10 +461,14 @@ const KnowledgeBasePage: React.FC = () => {
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
+              <label
+                htmlFor="kb-title"
+                className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
+              >
                 Title *
               </label>
               <input
+                id="kb-title"
                 value={form.title}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, title: e.target.value }))
@@ -471,10 +477,14 @@ const KnowledgeBasePage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
+              <label
+                htmlFor="kb-category"
+                className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
+              >
                 Category *
               </label>
               <select
+                id="kb-category"
                 value={form.category}
                 onChange={(e) =>
                   setForm((p) => ({
@@ -492,10 +502,14 @@ const KnowledgeBasePage: React.FC = () => {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
+              <label
+                htmlFor="kb-tags"
+                className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
+              >
                 Tags (comma-separated)
               </label>
               <input
+                id="kb-tags"
                 value={form.tags}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, tags: e.target.value }))
@@ -505,10 +519,14 @@ const KnowledgeBasePage: React.FC = () => {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
+              <label
+                htmlFor="kb-summary"
+                className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
+              >
                 Summary *
               </label>
               <textarea
+                id="kb-summary"
                 value={form.summary}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, summary: e.target.value }))
@@ -518,10 +536,14 @@ const KnowledgeBasePage: React.FC = () => {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
+              <label
+                htmlFor="kb-content"
+                className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
+              >
                 Content (Markdown) *
               </label>
               <textarea
+                id="kb-content"
                 value={form.content}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, content: e.target.value }))

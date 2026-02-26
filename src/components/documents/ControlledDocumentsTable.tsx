@@ -185,7 +185,7 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
               {visibleColumns.has("name") && (
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
                   onClick={() => handleSort("name")}
                 >
                   <span className="inline-flex items-center">
@@ -199,7 +199,7 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
               {visibleColumns.has("status") && (
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
                   onClick={() => handleSort("status")}
                 >
                   <span className="inline-flex items-center">
@@ -213,7 +213,7 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
               {visibleColumns.has("version") && (
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
                   onClick={() => handleSort("version")}
                 >
                   <span className="inline-flex items-center">
@@ -227,7 +227,7 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
               {visibleColumns.has("reviewDate") && (
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
+                  className="px-6 py-3 text-left rtl:text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide cursor-pointer select-none hover:text-gray-700 dark:hover:text-gray-100 transition-colors"
                   onClick={() => handleSort("reviewDate")}
                 >
                   <span className="inline-flex items-center">
@@ -241,7 +241,7 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
               {visibleColumns.has("actions") && (
                 <th
                   scope="col"
-                  className="px-6 py-3 text-right rtl:text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase"
+                  className="px-6 py-3 text-right rtl:text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wide"
                 >
                   <div className="flex items-center justify-end rtl:justify-start gap-2">
                     <span>{columnLabels.actions}</span>
@@ -258,7 +258,7 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
                       </button>
                       {showColumnMenu && (
                         <div className="absolute right-0 rtl:left-0 rtl:right-auto mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                          <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase">
+                          <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-wide">
                             {t("columns") || "Columns"}
                           </div>
                           {ALL_COLUMNS.map((col) => (

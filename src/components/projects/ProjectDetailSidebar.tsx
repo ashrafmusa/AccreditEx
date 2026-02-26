@@ -81,7 +81,7 @@ const ProjectDetailSidebar: React.FC<ProjectDetailSidebarProps> = ({
             <item.icon className="w-5 h-5" />
             <span className="flex-1 text-left">{item.label}</span>
             {item.badge !== undefined && item.badge > 0 && (
-              <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-brand-primary rounded-full min-w-[1.25rem]">
+              <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-brand-primary rounded-full min-w-5">
                 {item.badge}
               </span>
             )}

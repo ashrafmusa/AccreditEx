@@ -757,19 +757,19 @@ const PerformanceEvaluationPage: React.FC<{
           <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                   {t("employee")}
                 </th>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                   {t("evaluationPeriod")}
                 </th>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                   {t("overallRating")}
                 </th>
-                <th className="px-6 py-3 text-start text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+                <th className="px-6 py-3 text-start text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                   {t("status")}
                 </th>
-                <th className="px-6 py-3 text-end text-xs font-medium uppercase text-gray-500 dark:text-gray-300">
+                <th className="px-6 py-3 text-end text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-300">
                   {t("actions")}
                 </th>
               </tr>

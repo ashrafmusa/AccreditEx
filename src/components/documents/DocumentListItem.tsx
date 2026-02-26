@@ -85,7 +85,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
             {displayName}
           </span>
           {fileExtension && (
-            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase shrink-0">
+            <span className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide shrink-0">
               {fileExtension}
             </span>
           )}
@@ -142,7 +142,7 @@ const DocumentListItem: React.FC<DocumentListItemProps> = ({
             </span>
 
             {fileExtension && showFileInfo && (
-              <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded uppercase">
+              <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded uppercase tracking-wide">
                 {fileExtension}
               </span>
             )}

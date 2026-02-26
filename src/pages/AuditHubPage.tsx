@@ -325,6 +325,7 @@ Format your response in clear Markdown with headers and bullet points.`;
               <Input
                 type="text"
                 placeholder={t("searchActivity")}
+                aria-label={t("searchActivity")}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 leftIcon={<SearchIcon className="h-5 w-5" />}

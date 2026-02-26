@@ -163,7 +163,7 @@ const NotificationSettingsPage: React.FC = () => {
           <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase">
+                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
                   {t("total")}
                 </p>
                 <p className="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
@@ -176,7 +176,7 @@ const NotificationSettingsPage: React.FC = () => {
           <div className="bg-linear-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-lg p-4 border border-amber-200 dark:border-amber-800">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase">
+                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wide">
                   {t("unread")}
                 </p>
                 <p className="text-2xl font-bold text-amber-900 dark:text-amber-100 mt-1">
@@ -189,7 +189,7 @@ const NotificationSettingsPage: React.FC = () => {
           <div className="bg-linear-to-br from-rose-50 to-pink-100 dark:from-pink-900/30 dark:to-pink-700/30 rounded-lg p-4 border border-rose-200 dark:border-pink-700">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase">
+                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wide">
                   {t("critical")}
                 </p>
                 <p className="text-2xl font-bold text-pink-900 dark:text-rose-100 mt-1">
@@ -202,7 +202,7 @@ const NotificationSettingsPage: React.FC = () => {
           <div className="bg-linear-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg p-4 border border-green-200 dark:border-green-800">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase">
+                <p className="text-xs font-semibold text-green-600 dark:text-green-400 uppercase tracking-wide">
                   {t("archived")}
                 </p>
                 <p className="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
