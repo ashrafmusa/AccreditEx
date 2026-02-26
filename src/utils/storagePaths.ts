@@ -17,20 +17,20 @@
 export type StorageCategory = 'programs' | 'standards' | 'users' | 'projects';
 
 export interface StoragePathOptions {
-  /** Organisation ID (required for tenant-isolated paths). */
-  orgId: string;
-  /** Category of the asset — maps to storage rule match paths. */
-  category: StorageCategory;
-  /** Resource-specific identifier (programId, standardId, userId, projectId). */
-  resourceId: string;
-  /** Original filename — will be prefixed with a timestamp to avoid collisions. */
-  fileName: string;
+    /** Organisation ID (required for tenant-isolated paths). */
+    orgId: string;
+    /** Category of the asset — maps to storage rule match paths. */
+    category: StorageCategory;
+    /** Resource-specific identifier (programId, standardId, userId, projectId). */
+    resourceId: string;
+    /** Original filename — will be prefixed with a timestamp to avoid collisions. */
+    fileName: string;
 }
 
 export interface ReportPathOptions {
-  orgId: string;
-  projectId: string;
-  fileName: string;
+    orgId: string;
+    projectId: string;
+    fileName: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -54,9 +54,9 @@ export interface ReportPathOptions {
  * ```
  */
 export function buildDocumentPath(opts: StoragePathOptions): string {
-  validateRequiredFields(opts.orgId, opts.category, opts.resourceId, opts.fileName);
-  const safeName = sanitiseFileName(opts.fileName);
-  return `documents/${opts.orgId}/${opts.category}/${opts.resourceId}/${Date.now()}-${safeName}`;
+    validateRequiredFields(opts.orgId, opts.category, opts.resourceId, opts.fileName);
+    const safeName = sanitiseFileName(opts.fileName);
+    return `documents/${opts.orgId}/${opts.category}/${opts.resourceId}/${Date.now()}-${safeName}`;
 }
 
 /**
@@ -65,9 +65,9 @@ export function buildDocumentPath(opts: StoragePathOptions): string {
  * Output format: `reports/{orgId}/{projectId}/{timestamp}-{fileName}`
  */
 export function buildReportPath(opts: ReportPathOptions): string {
-  validateRequiredFields(opts.orgId, opts.projectId, opts.fileName);
-  const safeName = sanitiseFileName(opts.fileName);
-  return `reports/${opts.orgId}/${opts.projectId}/${Date.now()}-${safeName}`;
+    validateRequiredFields(opts.orgId, opts.projectId, opts.fileName);
+    const safeName = sanitiseFileName(opts.fileName);
+    return `reports/${opts.orgId}/${opts.projectId}/${Date.now()}-${safeName}`;
 }
 
 /**
@@ -79,11 +79,11 @@ export function buildReportPath(opts: ReportPathOptions): string {
  * Output format: `documents/{category}/{resourceId}/{fileName}`
  */
 export function buildLegacyDocumentPath(
-  category: StorageCategory,
-  resourceId: string,
-  fileName: string,
+    category: StorageCategory,
+    resourceId: string,
+    fileName: string,
 ): string {
-  return `documents/${category}/${resourceId}/${fileName}`;
+    return `documents/${category}/${resourceId}/${fileName}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -91,8 +91,8 @@ export function buildLegacyDocumentPath(
 // ---------------------------------------------------------------------------
 
 export interface MigrationMapping {
-  legacyPath: string;
-  tenantPath: string;
+    legacyPath: string;
+    tenantPath: string;
 }
 
 /**
@@ -105,28 +105,28 @@ export interface MigrationMapping {
  * @returns The tenant-isolated path, or `null` if the pattern is unrecognised.
  */
 export function mapLegacyPathToTenant(
-  legacyPath: string,
-  orgId: string,
+    legacyPath: string,
+    orgId: string,
 ): string | null {
-  if (!orgId) return null;
+    if (!orgId) return null;
 
-  // documents/{category}/{resourceId}/{file...}
-  const docMatch = legacyPath.match(
-    /^documents\/(programs|standards|users|projects)\/([^/]+)\/(.+)$/,
-  );
-  if (docMatch) {
-    const [, category, resourceId, file] = docMatch;
-    return `documents/${orgId}/${category}/${resourceId}/${file}`;
-  }
+    // documents/{category}/{resourceId}/{file...}
+    const docMatch = legacyPath.match(
+        /^documents\/(programs|standards|users|projects)\/([^/]+)\/(.+)$/,
+    );
+    if (docMatch) {
+        const [, category, resourceId, file] = docMatch;
+        return `documents/${orgId}/${category}/${resourceId}/${file}`;
+    }
 
-  // reports/{projectId}/{file...}
-  const reportMatch = legacyPath.match(/^reports\/([^/]+)\/(.+)$/);
-  if (reportMatch) {
-    const [, projectId, file] = reportMatch;
-    return `reports/${orgId}/${projectId}/${file}`;
-  }
+    // reports/{projectId}/{file...}
+    const reportMatch = legacyPath.match(/^reports\/([^/]+)\/(.+)$/);
+    if (reportMatch) {
+        const [, projectId, file] = reportMatch;
+        return `reports/${orgId}/${projectId}/${file}`;
+    }
 
-  return null;
+    return null;
 }
 
 /**
@@ -141,15 +141,15 @@ export function mapLegacyPathToTenant(
  * ```
  */
 export function buildMigrationPlan(
-  legacyPaths: string[],
-  orgId: string,
+    legacyPaths: string[],
+    orgId: string,
 ): MigrationMapping[] {
-  return legacyPaths
-    .map((lp) => ({
-      legacyPath: lp,
-      tenantPath: mapLegacyPathToTenant(lp, orgId),
-    }))
-    .filter((m): m is MigrationMapping => m.tenantPath !== null);
+    return legacyPaths
+        .map((lp) => ({
+            legacyPath: lp,
+            tenantPath: mapLegacyPathToTenant(lp, orgId),
+        }))
+        .filter((m): m is MigrationMapping => m.tenantPath !== null);
 }
 
 // ---------------------------------------------------------------------------
@@ -157,11 +157,11 @@ export function buildMigrationPlan(
 // ---------------------------------------------------------------------------
 
 function validateRequiredFields(...fields: string[]): void {
-  for (const f of fields) {
-    if (!f || f.trim().length === 0) {
-      throw new Error('Storage path: all fields (orgId, category, resourceId, fileName) are required');
+    for (const f of fields) {
+        if (!f || f.trim().length === 0) {
+            throw new Error('Storage path: all fields (orgId, category, resourceId, fileName) are required');
+        }
     }
-  }
 }
 
 /**
@@ -169,5 +169,5 @@ function validateRequiredFields(...fields: string[]): void {
  * Keeps alphanumeric, dashes, underscores, dots, and spaces.
  */
 function sanitiseFileName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._\- ]/g, '_');
+    return name.replace(/[^a-zA-Z0-9._\- ]/g, '_');
 }

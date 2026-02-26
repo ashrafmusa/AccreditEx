@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useCallback } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   TracerType,
   TracerTemplate,
@@ -456,28 +457,35 @@ const BUILTIN_TEMPLATES: TracerTemplate[] = [
   },
 ];
 
-const RESULT_STYLES: Record<string, { label: string; cls: string }> = {
+const RESULT_STYLES: Record<string, { labelKey: string; cls: string }> = {
   compliant: {
-    label: "Compliant",
+    labelKey: "tracerCompliant",
     cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   },
   partial: {
-    label: "Partial",
+    labelKey: "tracerPartial",
     cls: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
   },
   non_compliant: {
-    label: "Non-Compliant",
+    labelKey: "tracerNonCompliant",
     cls: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   },
   not_observed: {
-    label: "Not Observed",
+    labelKey: "tracerNotObserved",
     cls: "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400",
   },
 };
 
 type ViewMode = "templates" | "sessions" | "conduct";
 
+const TRACER_TYPE_LABEL_KEYS: Record<TracerType, string> = {
+  patient: "tracerPatient",
+  system: "tracerSystem",
+  program: "tracerProgram",
+};
+
 const TracerWorksheetTab: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, users } = useUserStore();
   const { departments } = useAppStore();
   const isAdmin = currentUser?.role === UserRole.Admin;
@@ -599,10 +607,10 @@ const TracerWorksheetTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            Tracer Methodology
+            {t("tracerMethodology")}
           </h3>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Patient, system, and program-specific tracer worksheets
+            {t("tracerMethodologyDescription")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -611,14 +619,14 @@ const TracerWorksheetTab: React.FC = () => {
             onClick={() => setView("templates")}
             className="text-xs"
           >
-            Templates
+            {t("tracerTemplates")}
           </Button>
           <Button
             variant={view === "sessions" ? "primary" : "ghost"}
             onClick={() => setView("sessions")}
             className="text-xs"
           >
-            Sessions ({sessions.length})
+            {t("tracerSessions")} ({sessions.length})
           </Button>
         </div>
       </div>
@@ -632,10 +640,10 @@ const TracerWorksheetTab: React.FC = () => {
               onChange={(e) => setFilterType(e.target.value)}
               className={`${inputCls} w-auto`}
             >
-              <option value="all">All Types</option>
-              {Object.entries(TRACER_TYPE_LABELS).map(([k, v]) => (
+              <option value="all">{t("tracerAllTypes")}</option>
+              {Object.entries(TRACER_TYPE_LABEL_KEYS).map(([k, labelKey]) => (
                 <option key={k} value={k}>
-                  {v}
+                  {t(labelKey)}
                 </option>
               ))}
             </select>
@@ -657,7 +665,7 @@ const TracerWorksheetTab: React.FC = () => {
                             : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
                       }`}
                     >
-                      {TRACER_TYPE_LABELS[tmpl.tracerType]}
+                      {t(TRACER_TYPE_LABEL_KEYS[tmpl.tracerType])}
                     </span>
                     <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                       {tmpl.name}
@@ -668,17 +676,17 @@ const TracerWorksheetTab: React.FC = () => {
                     onClick={() => startTracer(tmpl)}
                     className="text-xs shrink-0"
                   >
-                    Start
+                    {t("tracerStart")}
                   </Button>
                 </div>
                 <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mb-2">
                   {tmpl.description}
                 </p>
                 <div className="flex gap-3 text-[10px] text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  <span>{tmpl.steps.length} departments</span>
+                  <span>{tmpl.steps.length} {t("tracerDepartments")}</span>
                   <span>
                     {tmpl.steps.reduce((s, st) => s + st.checkpoints.length, 0)}{" "}
-                    checkpoints
+                    {t("tracerCheckpoints")}
                   </span>
                   {tmpl.programRef && <span>{tmpl.programRef}</span>}
                 </div>
@@ -693,8 +701,8 @@ const TracerWorksheetTab: React.FC = () => {
         <div className="space-y-3">
           {sessions.length === 0 ? (
             <EmptyState
-              title="No Tracer Sessions"
-              description="Start a tracer from the Templates tab."
+              title={t("tracerNoSessions")}
+              description={t("tracerNoSessionsDescription")}
               icon={
                 <ClipboardDocumentSearchIcon className="h-10 w-10 text-gray-400" />
               }
@@ -705,25 +713,25 @@ const TracerWorksheetTab: React.FC = () => {
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Tracer
+                      {t("tracerColumnTracer")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Type
+                      {t("tracerColumnType")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Date
+                      {t("tracerColumnDate")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Progress
+                      {t("tracerColumnProgress")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Compliance
+                      {t("tracerColumnCompliance")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Status
+                      {t("tracerColumnStatus")}
                     </th>
                     <th className="px-3 py-2 text-right font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Action
+                      {t("tracerColumnAction")}
                     </th>
                   </tr>
                 </thead>
@@ -739,7 +747,7 @@ const TracerWorksheetTab: React.FC = () => {
                           {s.title}
                         </td>
                         <td className="px-3 py-2 text-center text-xs">
-                          {TRACER_TYPE_LABELS[s.tracerType]}
+                          {t(TRACER_TYPE_LABEL_KEYS[s.tracerType])}
                         </td>
                         <td className="px-3 py-2 text-center text-xs">
                           {s.date}
@@ -764,7 +772,7 @@ const TracerWorksheetTab: React.FC = () => {
                                   : "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
                             }`}
                           >
-                            {s.status.replace("_", " ")}
+                            {s.status === "completed" ? t("tracerCompleted") : t("tracerInProgress")}
                           </span>
                         </td>
                         <td className="px-3 py-2 text-right">
@@ -772,7 +780,7 @@ const TracerWorksheetTab: React.FC = () => {
                             onClick={() => resumeSession(s)}
                             className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
                           >
-                            {s.status === "completed" ? "Review" : "Continue"}
+                            {s.status === "completed" ? t("tracerReview") : t("tracerContinue")}
                           </button>
                         </td>
                       </tr>
@@ -825,7 +833,7 @@ const TracerWorksheetTab: React.FC = () => {
               <div className="border border-brand-border dark:border-dark-brand-border rounded-lg">
                 <div className="bg-brand-surface-alt dark:bg-dark-brand-surface-alt px-4 py-3 border-b border-brand-border dark:border-dark-brand-border">
                   <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                    Step {step.order}: {step.department} — {step.area}
+                    {t("tracerStep")} {step.order}: {step.department} — {step.area}
                   </h4>
                 </div>
                 <div className="divide-y divide-brand-border/50 dark:divide-dark-brand-border/50">
@@ -848,7 +856,7 @@ const TracerWorksheetTab: React.FC = () => {
                       </div>
                       <div className="flex flex-wrap gap-1 ml-4">
                         {Object.entries(RESULT_STYLES).map(
-                          ([key, { label, cls }]) => (
+                          ([key, { labelKey, cls }]) => (
                             <button
                               key={key}
                               onClick={() =>
@@ -865,7 +873,7 @@ const TracerWorksheetTab: React.FC = () => {
                                   : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:opacity-80"
                               }`}
                             >
-                              {label}
+                              {t(labelKey)}
                             </button>
                           ),
                         )}
@@ -882,7 +890,7 @@ const TracerWorksheetTab: React.FC = () => {
                               e.target.value,
                             )
                           }
-                          placeholder="Findings / observations..."
+                          placeholder={t("tracerFindingsPlaceholder")}
                           rows={2}
                           className={`${inputCls} ml-4`}
                         />
@@ -902,7 +910,7 @@ const TracerWorksheetTab: React.FC = () => {
               onClick={() => setActiveStepIdx((i) => i - 1)}
               className="text-xs"
             >
-              ← Previous
+              {t("tracerPrevious")}
             </Button>
             {activeStepIdx < activeSession.steps.length - 1 ? (
               <Button
@@ -910,7 +918,7 @@ const TracerWorksheetTab: React.FC = () => {
                 onClick={() => setActiveStepIdx((i) => i + 1)}
                 className="text-xs"
               >
-                Next →
+                {t("tracerNext")}
               </Button>
             ) : (
               <Button
@@ -918,7 +926,7 @@ const TracerWorksheetTab: React.FC = () => {
                 onClick={completeSession}
                 className="text-xs"
               >
-                Complete Tracer
+                {t("tracerComplete")}
               </Button>
             )}
           </div>
