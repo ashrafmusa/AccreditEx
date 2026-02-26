@@ -153,7 +153,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
     () => [
       {
         id: "standards",
-        title: "Review accreditation standards",
+        title: t("cycleGuideReviewStandards"),
         action: () =>
           firstProgramId
             ? setNavigation({ view: "standards", programId: firstProgramId })
@@ -161,26 +161,26 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       },
       {
         id: "project",
-        title: "Create first accreditation project",
+        title: t("cycleGuideCreateProject"),
         action: () => setNavigation({ view: "createProject" }),
       },
       {
         id: "evidence",
-        title: "Upload and link controlled evidence",
+        title: t("cycleGuideUploadEvidence"),
         action: () => setNavigation({ view: "documentControl" }),
       },
       {
         id: "audit",
-        title: "Schedule and run internal audits",
+        title: t("cycleGuideScheduleAudit"),
         action: () => setNavigation({ view: "auditHub" }),
       },
       {
         id: "readiness",
-        title: "Validate readiness and close open findings",
+        title: t("cycleGuideValidateReadiness"),
         action: () => setNavigation({ view: "analyticsHub" }),
       },
     ],
-    [firstProgramId, setNavigation],
+    [firstProgramId, setNavigation, t],
   );
 
   const cycleGuideProgress =
@@ -476,21 +476,21 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
   const handleExportMetrics = () => {
     try {
       const metricsData = {
-        "Total Projects": dashboardData.totalProjects,
-        "In Progress": dashboardData.inProgressCount,
-        Completed: dashboardData.completedCount,
-        "Overall Compliance": dashboardData.overallCompliance,
-        "Open CAPA Reports": dashboardData.openCapaCount,
-        "Audit Compliance Rate": dashboardData.auditComplianceRate,
-        "Risk Exposure (%)": `${dashboardData.riskExposure}%`,
-        "Documents Review Overdue": dashboardData.documentsReviewOverdue,
-        "Risks Mitigated": dashboardData.mitigatedRisks,
+        [t("csvTotalProjects")]: dashboardData.totalProjects,
+        [t("csvInProgress")]: dashboardData.inProgressCount,
+        [t("csvCompleted")]: dashboardData.completedCount,
+        [t("csvOverallCompliance")]: dashboardData.overallCompliance,
+        [t("csvOpenCapaReports")]: dashboardData.openCapaCount,
+        [t("csvAuditComplianceRate")]: dashboardData.auditComplianceRate,
+        [t("csvRiskExposure")]: `${dashboardData.riskExposure}%`,
+        [t("csvDocsReviewOverdue")]: dashboardData.documentsReviewOverdue,
+        [t("csvRisksMitigated")]: dashboardData.mitigatedRisks,
       };
-      exportDashboardMetricsToCSV(metricsData, "Admin Dashboard");
+      exportDashboardMetricsToCSV(metricsData, t("csvAdminDashboard"));
     } catch (error) {
       console.error("Error exporting metrics:", error);
       toast.error(
-        t("exportFailed") || "Failed to export metrics. Please try again.",
+        t("exportFailed") || t("exportFailedMessage"),
       );
     }
   };
@@ -621,11 +621,10 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                    Quality Quick Actions
+                    {t("qualityQuickActions")}
                   </h3>
                   <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                    Jump directly to high-value quality workflows used for
-                    readiness, audits, and evidence control.
+                    {t("qualityQuickActionsDesc")}
                   </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -633,25 +632,25 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                     onClick={() => setNavigation({ view: "analyticsHub" })}
                     className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
                   >
-                    Open Quality Insights
+                    {t("openQualityInsights")}
                   </button>
                   <button
                     onClick={() => setNavigation({ view: "auditHub" })}
                     className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
                   >
-                    Open Audit Hub
+                    {t("openAuditHub")}
                   </button>
                   <button
                     onClick={() => setNavigation({ view: "standards" })}
                     className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
                   >
-                    Open Standards
+                    {t("openStandards")}
                   </button>
                   <button
                     onClick={() => setNavigation({ view: "documentControl" })}
                     className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
                   >
-                    Open Document Control
+                    {t("openDocumentControl")}
                   </button>
                 </div>
               </div>
@@ -663,21 +662,20 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                   <div>
                     <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary flex items-center gap-2">
                       <ClipboardDocumentCheckIcon className="w-5 h-5" />
-                      First Accreditation Cycle Guide
+                      {t("firstAccreditationCycleGuide")}
                     </h3>
                     <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                      Guided in-app flow to complete your first accreditation
-                      cycle.
+                      {t("cycleGuideDescription")}
                     </p>
                     <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
-                      Progress: {cycleGuideCompleted.length}/
+                      {t("cycleGuideProgressLabel")}: {cycleGuideCompleted.length}/
                       {accreditationCycleSteps.length} ({cycleGuideProgress}%)
                     </p>
                   </div>
                   <button
                     onClick={() => setCycleGuideDismissed(true)}
                     className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700"
-                    aria-label="Dismiss guide"
+                    aria-label={t("dismissGuide")}
                   >
                     <XMarkIcon className="w-5 h-5 text-gray-500" />
                   </button>
@@ -709,7 +707,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                           onClick={step.action}
                           className="px-3 py-1 text-xs rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50"
                         >
-                          Open
+                          {t("open")}
                         </button>
                       </div>
                     );
@@ -720,12 +718,12 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
 
             <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
               <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
-                Governance Adoption Snapshot
+                {t("governanceAdoptionSnapshot")}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    First Cycle Guide Completion
+                    {t("firstCycleGuideCompletion")}
                   </p>
                   <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {cycleGuideProgress}%
@@ -733,7 +731,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
                 <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Assessor Pack Exports (30d)
+                    {t("assessorPackExports30d")}
                   </p>
                   <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {assessorExportMetrics.exportsLast30Days}
@@ -741,7 +739,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
                 <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Reviewer Sign-off Rate
+                    {t("reviewerSignOffRate")}
                   </p>
                   <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {assessorExportMetrics.reviewerSignOffRatePercent}%
@@ -749,14 +747,14 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
                 <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Guide vs Readiness Correlation
+                    {t("guideVsReadinessCorrelation")}
                   </p>
                   <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {guideReadinessCorrelation.coefficient}
                   </p>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
                     {guideReadinessCorrelation.label} (
-                    {monthlyOutcomeSnapshots.length} month snapshots)
+                    {monthlyOutcomeSnapshots.length} {t("monthSnapshots")})
                   </p>
                 </div>
               </div>
@@ -808,9 +806,9 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                   </ResponsiveContainer>
                 ) : (
                   <EmptyStatePlaceholder
-                    title="No Projects"
-                    message="Create your first project to see compliance metrics"
-                    actionLabel="Create Project"
+                    title={t("noProjects")}
+                    message={t("createFirstProjectMessage")}
+                    actionLabel={t("createProject")}
                     onAction={() => setNavigation({ view: "createProject" })}
                     secondary
                     compact
@@ -869,8 +867,8 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                   </ResponsiveContainer>
                 ) : (
                   <EmptyStatePlaceholder
-                    title="No Projects"
-                    message="All projects appear here once created"
+                    title={t("noProjects")}
+                    message={t("projectsAppearOnceCreated")}
                     secondary
                     compact
                   />
@@ -903,8 +901,8 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 </div>
               ) : (
                 <EmptyStatePlaceholder
-                  title="All Clear!"
-                  message="No open CAPA reports. Great work maintaining compliance!"
+                  title={t("allClear")}
+                  message={t("noOpenCapaMessage")}
                   secondary
                   compact
                 />

@@ -93,4 +93,56 @@ export const ar = {
     showLess: 'إظهار أقل',
     filterBy: 'تصفية حسب',
     sortBy: 'ترتيب حسب',
+
+    // Accreditation Cycle Guide
+    cycleGuideReviewStandards: 'مراجعة معايير الاعتماد',
+    cycleGuideCreateProject: 'إنشاء أول مشروع اعتماد',
+    cycleGuideUploadEvidence: 'رفع وربط الأدلة الموثقة',
+    cycleGuideScheduleAudit: 'جدولة وتنفيذ التدقيقات الداخلية',
+    cycleGuideValidateReadiness: 'التحقق من الجاهزية وإغلاق النتائج المفتوحة',
+    firstAccreditationCycleGuide: 'دليل دورة الاعتماد الأولى',
+    cycleGuideDescription: 'تدفق موجه داخل التطبيق لإكمال دورة الاعتماد الأولى.',
+    cycleGuideProgressLabel: 'التقدم',
+    dismissGuide: 'إغلاق الدليل',
+    open: 'فتح',
+
+    // Quality Quick Actions
+    qualityQuickActions: 'إجراءات الجودة السريعة',
+    qualityQuickActionsDesc: 'الانتقال مباشرة إلى سير عمل الجودة عالي القيمة المستخدم للجاهزية والتدقيقات والتحكم في الأدلة.',
+    openQualityInsights: 'فتح رؤى الجودة',
+    openAuditHub: 'فتح مركز التدقيق',
+    openStandards: 'فتح المعايير',
+    openDocumentControl: 'فتح التحكم في المستندات',
+
+    // Governance Adoption Snapshot
+    governanceAdoptionSnapshot: 'لمحة اعتماد الحوكمة',
+    firstCycleGuideCompletion: 'إكمال دليل الدورة الأولى',
+    assessorPackExports30d: 'تصدير حزمة المُقيّم (30 يوم)',
+    reviewerSignOffRate: 'معدل موافقة المراجع',
+    guideVsReadinessCorrelation: 'ارتباط الدليل مقابل الجاهزية',
+    monthSnapshots: 'لقطات شهرية',
+
+    // Empty States
+    noProjects: 'لا توجد مشاريع',
+    createFirstProjectMessage: 'أنشئ مشروعك الأول لرؤية مقاييس الامتثال',
+    createProject: 'إنشاء مشروع',
+    projectsAppearOnceCreated: 'تظهر جميع المشاريع هنا بمجرد إنشائها',
+    allClear: 'كل شيء على ما يرام!',
+    noOpenCapaMessage: 'لا توجد تقارير CAPA مفتوحة. عمل رائع في الحفاظ على الامتثال!',
+
+    // DashboardHeader
+    userFallback: 'مستخدم',
+
+    // Export CSV headers
+    csvTotalProjects: 'إجمالي المشاريع',
+    csvInProgress: 'قيد التنفيذ',
+    csvCompleted: 'مكتمل',
+    csvOverallCompliance: 'الامتثال العام',
+    csvOpenCapaReports: 'تقارير CAPA المفتوحة',
+    csvAuditComplianceRate: 'معدل الامتثال للتدقيق',
+    csvRiskExposure: 'التعرض للمخاطر (%)',
+    csvDocsReviewOverdue: 'المستندات المتأخرة في المراجعة',
+    csvRisksMitigated: 'المخاطر المخففة',
+    csvAdminDashboard: 'لوحة تحكم المسؤول',
+    exportFailedMessage: 'فشل تصدير المقاييس. يرجى المحاولة مرة أخرى.',
 };

@@ -92,4 +92,56 @@ export const en = {
     showLess: 'Show less',
     filterBy: 'Filter by',
     sortBy: 'Sort by',
+
+    // Accreditation Cycle Guide
+    cycleGuideReviewStandards: 'Review accreditation standards',
+    cycleGuideCreateProject: 'Create first accreditation project',
+    cycleGuideUploadEvidence: 'Upload and link controlled evidence',
+    cycleGuideScheduleAudit: 'Schedule and run internal audits',
+    cycleGuideValidateReadiness: 'Validate readiness and close open findings',
+    firstAccreditationCycleGuide: 'First Accreditation Cycle Guide',
+    cycleGuideDescription: 'Guided in-app flow to complete your first accreditation cycle.',
+    cycleGuideProgressLabel: 'Progress',
+    dismissGuide: 'Dismiss guide',
+    open: 'Open',
+
+    // Quality Quick Actions
+    qualityQuickActions: 'Quality Quick Actions',
+    qualityQuickActionsDesc: 'Jump directly to high-value quality workflows used for readiness, audits, and evidence control.',
+    openQualityInsights: 'Open Quality Insights',
+    openAuditHub: 'Open Audit Hub',
+    openStandards: 'Open Standards',
+    openDocumentControl: 'Open Document Control',
+
+    // Governance Adoption Snapshot
+    governanceAdoptionSnapshot: 'Governance Adoption Snapshot',
+    firstCycleGuideCompletion: 'First Cycle Guide Completion',
+    assessorPackExports30d: 'Assessor Pack Exports (30d)',
+    reviewerSignOffRate: 'Reviewer Sign-off Rate',
+    guideVsReadinessCorrelation: 'Guide vs Readiness Correlation',
+    monthSnapshots: 'month snapshots',
+
+    // Empty States
+    noProjects: 'No Projects',
+    createFirstProjectMessage: 'Create your first project to see compliance metrics',
+    createProject: 'Create Project',
+    projectsAppearOnceCreated: 'All projects appear here once created',
+    allClear: 'All Clear!',
+    noOpenCapaMessage: 'No open CAPA reports. Great work maintaining compliance!',
+
+    // DashboardHeader
+    userFallback: 'User',
+
+    // Export CSV headers
+    csvTotalProjects: 'Total Projects',
+    csvInProgress: 'In Progress',
+    csvCompleted: 'Completed',
+    csvOverallCompliance: 'Overall Compliance',
+    csvOpenCapaReports: 'Open CAPA Reports',
+    csvAuditComplianceRate: 'Audit Compliance Rate',
+    csvRiskExposure: 'Risk Exposure (%)',
+    csvDocsReviewOverdue: 'Documents Review Overdue',
+    csvRisksMitigated: 'Risks Mitigated',
+    csvAdminDashboard: 'Admin Dashboard',
+    exportFailedMessage: 'Failed to export metrics. Please try again.',
 };

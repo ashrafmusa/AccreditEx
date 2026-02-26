@@ -18,17 +18,17 @@ interface DashboardHeaderProps {
 }
 
 // Helper function to format relative time
-const getRelativeTime = (date: Date): string => {
+const getRelativeTime = (date: Date, t: (key: string) => string): string => {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-  return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+  if (diffMins < 1) return t("justNow");
+  if (diffMins < 60) return `${diffMins} ${t("minutesAgo")}`;
+  if (diffHours < 24) return `${diffHours} ${t("hoursAgo")}`;
+  return `${diffDays} ${t("daysAgo")}`;
 };
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
@@ -43,16 +43,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [relativeTime, setRelativeTime] = useState<string>(
-    getRelativeTime(new Date())
+    getRelativeTime(new Date(), t)
   );
 
   // Update relative time every minute
   useEffect(() => {
     const interval = setInterval(() => {
-      setRelativeTime(getRelativeTime(lastUpdated));
+      setRelativeTime(getRelativeTime(lastUpdated, t));
     }, 60000);
     return () => clearInterval(interval);
-  }, [lastUpdated]);
+  }, [lastUpdated, t]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -61,7 +61,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         await onRefresh();
       }
       setLastUpdated(new Date());
-      setRelativeTime("just now");
+      setRelativeTime(t("justNow"));
     } catch (error) {
       console.error("Error refreshing dashboard:", error);
     } finally {
@@ -80,7 +80,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
               "{name}",
               currentUser.name?.split(" ")[0] ||
                 currentUser.email?.split("@")[0] ||
-                "User"
+                t("userFallback")
             )}
           </h1>
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
@@ -105,7 +105,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           {onExport && (
             <button
               onClick={onExport}
-              title="Export dashboard data"
+              title={t("exportDashboardData")}
               className="text-sm font-semibold text-brand-primary-600 dark:text-brand-primary-400 bg-white dark:bg-dark-brand-surface px-4 py-2.5 rounded-lg hover:bg-brand-primary-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto border border-brand-border dark:border-dark-brand-border shadow-sm"
             >
               <DownloadIcon className="w-5 h-5" />{" "}
