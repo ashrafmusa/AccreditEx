@@ -10,6 +10,14 @@ import { notificationService } from '@/services/notificationService';
 import { useUserStore } from '@/stores/useUserStore';
 import { logger } from '@/services/logger';
 
+/** Severity ordering for comparison — higher number = more severe */
+const SEVERITY_LEVEL: Record<string, number> = {
+    'Minor': 1,
+    'Moderate': 2,
+    'Severe': 3,
+    'Sentinel Event': 4,
+};
+
 // Default escalation rules — can be overridden via AppSettings
 const DEFAULT_ESCALATION_RULES: EscalationRule[] = [
     {

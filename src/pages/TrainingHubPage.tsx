@@ -78,7 +78,7 @@ const TrainingHubPage: React.FC<TrainingHubPageProps> = ({ setNavigation }) => {
     try {
       const programCount = trainingPrograms.length;
       const activePrograms = trainingPrograms.filter(
-        (p) => p.status === "active",
+        (p) => p.isActive === true,
       ).length;
       const deptCount = departments.length;
 

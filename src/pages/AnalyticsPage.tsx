@@ -63,7 +63,7 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
     const allCapas = filteredProjects.flatMap((p) => p.capaReports || []);
     const totalCapas = allCapas.length;
     const resolvedCapas = allCapas.filter(
-      (c) => c.status === "Closed" || c.status === "Resolved",
+      (c) => c.status === "Closed" || c.status === "Completed",
     ).length;
     const capaResolutionRate =
       totalCapas > 0 ? Math.round((resolvedCapas / totalCapas) * 100) : 0;

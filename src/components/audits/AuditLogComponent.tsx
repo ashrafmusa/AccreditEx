@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { Project } from "@/types";
+import { Project, ActivityLogItem } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SearchIcon, ClipboardDocumentListIcon } from "@/components/icons";
 import { TableContainer, EmptyState } from "@/components/ui";
@@ -9,21 +9,10 @@ interface AuditLogComponentProps {
   project: Project;
 }
 
-interface ActivityLogEntry {
-  id: string;
-  timestamp: string;
-  user: string;
-  action: string | { [lang: string]: string };
-  details?: string;
-  type?: string;
-}
-
 const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
   const { t, lang } = useTranslation();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activityLogData, setActivityLogData] = useState<ActivityLogEntry[]>(
-    [],
-  );
+  const [activityLogData, setActivityLogData] = useState<ActivityLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchLogs = useCallback(async () => {
@@ -43,7 +32,7 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
   }, [fetchLogs]);
 
   const filteredLog = useMemo(() => {
-    return activityLogData.filter((log: ActivityLogEntry) => {
+    return activityLogData.filter((log: ActivityLogItem) => {
       const searchLower = searchTerm.toLowerCase();
       const actionText =
         typeof log.action === "string" ? log.action : log.action?.[lang] || "";
@@ -111,7 +100,7 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
                 </td>
               </tr>
             ) : (
-              filteredLog.map((log: ActivityLogEntry) => {
+              filteredLog.map((log: ActivityLogItem) => {
                 const actionText =
                   typeof log.action === "string"
                     ? log.action

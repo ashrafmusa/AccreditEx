@@ -34,8 +34,7 @@ const STATUS_COLORS: Record<CAPAssessmentStatus, string> = {
 function computeStatus(a: CAPAssessment): CAPAssessmentStatus {
   if (a.status === "completed") return "completed";
   if (a.status === "in_progress") return "in_progress";
-  if (new Date(a.scheduledDate) < new Date() && a.status !== "completed")
-    return "overdue";
+  if (new Date(a.scheduledDate) < new Date()) return "overdue";
   return "scheduled";
 }
 
