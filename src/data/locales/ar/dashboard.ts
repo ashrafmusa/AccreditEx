@@ -45,8 +45,8 @@ export const ar = {
     dueDate: 'تاريخ الاستحقاق',
     allAuditsComplete: 'جميع التدقيقات مكتملة!',
     allAuditsCompleteMessage: 'لا توجد تدقيقات معلقة. تم إكمال جميع التدقيقات المجدولة.',
-    allCompliant: 'جميع الامتثال!',
-    allCompliantMessage: 'لم يتم العثور على عدم مطابقات. جميع الإدارات متوافقة.',
+    allCompliant: 'الكل ممتثل!',
+    allCompliantMessage: 'لم يتم العثور على عدم مطابقات. جميع الإدارات ممتثلة.',
     departmentNonConformities: 'عدم مطابقات الإدارة',
 
     // Project Lead Dashboard Extended
@@ -115,9 +115,9 @@ export const ar = {
     openDocumentControl: 'فتح التحكم في المستندات',
 
     // Governance Adoption Snapshot
-    governanceAdoptionSnapshot: 'لمحة اعتماد الحوكمة',
+    governanceAdoptionSnapshot: 'لمحة تبنّي الحوكمة',
     firstCycleGuideCompletion: 'إكمال دليل الدورة الأولى',
-    assessorPackExports30d: 'تصدير حزمة المُقيّم (30 يوم)',
+    assessorPackExports30d: 'تصديرات حزمة المُقيّم (30 يومًا)',
     reviewerSignOffRate: 'معدل موافقة المراجع',
     guideVsReadinessCorrelation: 'ارتباط الدليل مقابل الجاهزية',
     monthSnapshots: 'لقطات شهرية',
