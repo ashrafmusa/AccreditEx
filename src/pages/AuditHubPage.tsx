@@ -1,28 +1,29 @@
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import EmptyState from "@/components/common/EmptyState";
+import LoadingScreen from "@/components/common/LoadingScreen";
+import { Button, Input, TableContainer } from "@/components/ui";
+import { aiAgentService } from "@/services/aiAgentService";
 import React, {
-  useState,
-  useMemo,
-  useEffect,
-  useCallback,
   lazy,
   Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
 } from "react";
-import { useTranslation } from "../hooks/useTranslation";
+import AuditPlanModal from "../components/audits/AuditPlanModal";
 import {
   ClipboardDocumentSearchIcon,
   PlusIcon,
   SearchIcon,
   SparklesIcon,
 } from "../components/icons";
-import { useAppStore } from "../stores/useAppStore";
-import { useUserStore } from "../stores/useUserStore";
-import { useProjectStore } from "../stores/useProjectStore";
-import { AuditPlan, ActivityLogItem } from "../types";
-import AuditPlanModal from "../components/audits/AuditPlanModal";
-import { Button, Input, TableContainer } from "@/components/ui";
+import { useTranslation } from "../hooks/useTranslation";
 import { getRecentActivityLogs } from "../services/activityLogService";
-import { aiAgentService } from "@/services/aiAgentService";
-import AISuggestionModal from "@/components/ai/AISuggestionModal";
-import LoadingScreen from "@/components/common/LoadingScreen";
+import { useAppStore } from "../stores/useAppStore";
+import { useProjectStore } from "../stores/useProjectStore";
+import { useUserStore } from "../stores/useUserStore";
+import { ActivityLogItem, AuditPlan } from "../types";
 
 const QualityRoundingPage = lazy(() => import("@/pages/QualityRoundingPage"));
 const TracerWorksheetTab = lazy(
@@ -417,9 +418,31 @@ Format your response in clear Markdown with headers and bullet points.`;
               </tbody>
             </table>
             {!isLoadingLog && filteredLog.length === 0 && (
-              <p className="text-center py-8 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                {searchTerm ? t("noProjectsFound") : t("noActivity")}
-              </p>
+              <EmptyState
+                icon={ClipboardDocumentSearchIcon}
+                title={searchTerm ? t("noProjectsFound") : t("noActivity")}
+                message={
+                  searchTerm
+                    ? t("tryAdjustingFilters")
+                    : t("auditActivityWillAppearHere")
+                }
+                action={
+                  !searchTerm
+                    ? {
+                        label: t("scheduleAudit"),
+                        onClick: () => setActiveTab("plans"),
+                      }
+                    : undefined
+                }
+                secondaryAction={
+                  searchTerm
+                    ? {
+                        label: t("clearSearch"),
+                        onClick: () => setSearchTerm(""),
+                      }
+                    : undefined
+                }
+              />
             )}
           </TableContainer>
         </div>

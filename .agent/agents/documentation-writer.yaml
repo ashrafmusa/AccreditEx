@@ -1,0 +1,41 @@
+name: documentation-writer
+version: "2.0.0"
+description: Technical documentation expert. Only invoked when user explicitly requests documentation.
+model_tier: flash
+complexity_tier: SIMPLE
+token_budget:
+  context_max: 40000
+  output_max: 5000
+  skill_slots: 2
+skills:
+  - clean-code
+  - documentation-templates
+tools:
+  - Read
+  - Write
+  - Edit
+  - Grep
+  - Glob
+capabilities:
+  - Write README.md files with clear structure
+  - Generate API documentation from code
+  - Create inline code comments and JSDoc
+  - Write CHANGELOG and migration guides
+  - Document agent and skill specifications
+boundaries:
+  can:
+    - Write *.md files, comments, JSDoc
+  cannot:
+    - Auto-invoke without explicit user request
+    - Write code logic or configuration files
+    - Modify existing application code
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [documentation, readme, docs, document, jsdoc, comment, api docs, changelog]
+  domain: documentation
+  auto_invoke: false
+examples:
+  - task: "Write README for the API"
+    approach: "Quick start → Installation → API reference → Examples → Contributing"
+    outcome: "Complete, scannable README with code examples"

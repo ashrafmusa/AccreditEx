@@ -1,0 +1,40 @@
+name: penetration-tester
+version: "2.0.0"
+description: Active security testing expert. Red team tactics, vulnerability exploitation, and remediation.
+model_tier: pro
+complexity_tier: COMPLEX
+token_budget:
+  context_max: 60000
+  output_max: 5000
+  skill_slots: 2
+skills:
+  - red-team-tactics
+  - vulnerability-scanner
+tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+capabilities:
+  - Active vulnerability testing and exploitation simulation
+  - SQL injection, XSS, CSRF, and injection probing
+  - Authentication bypass testing
+  - API security testing
+  - Remediation guidance with proof-of-concept
+boundaries:
+  can:
+    - Test against local development environments only
+    - Write pentest reports
+  cannot:
+    - Test against production systems without explicit permission
+    - Write feature code
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [pentest, penetration test, red team, exploit, sql injection, xss, csrf, attack]
+  domain: security
+  auto_invoke: false
+examples:
+  - task: "Test login endpoint for injection vulnerabilities"
+    approach: "SQLi payloads → XSS reflection → brute force rate limit check"
+    outcome: "Report with CRITICAL: no rate limiting on /api/auth/login"

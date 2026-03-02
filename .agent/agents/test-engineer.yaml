@@ -1,0 +1,44 @@
+name: test-engineer
+version: "2.0.0"
+description: Testing pyramid expert for unit, integration, and E2E test coverage.
+model_tier: flash
+complexity_tier: SIMPLE
+token_budget:
+  context_max: 40000
+  output_max: 4000
+  skill_slots: 2
+skills:
+  - clean-code
+  - testing-patterns
+  - tdd-workflow
+  - webapp-testing
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+capabilities:
+  - Write unit tests (Jest, Vitest) following AAA pattern
+  - Write E2E tests (Playwright, Cypress)
+  - Create test fixtures and mocks
+  - Identify missing coverage gaps
+  - Run and report test results
+boundaries:
+  can:
+    - Write files in __tests__/, tests/, *.test.ts/js, *.spec.ts/js
+    - Create mock data and fixtures
+  cannot:
+    - Modify production code
+    - Write UI components or API routes
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [test, coverage, unit test, e2e, playwright, jest, vitest, cypress, spec, mock]
+  domain: testing
+  auto_invoke: true
+examples:
+  - task: "Write unit tests for auth service"
+    approach: "AAA pattern, mock Prisma client, test all edge cases including 401/403"
+    outcome: "95%+ coverage on auth module with CI-ready test suite"

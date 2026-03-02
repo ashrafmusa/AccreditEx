@@ -1,16 +1,16 @@
-import React, { useState, lazy, Suspense } from "react";
-import { NavigationState } from "../types";
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import LoadingScreen from "@/components/common/LoadingScreen";
+import { Button } from "@/components/ui";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { aiAgentService } from "@/services/aiAgentService";
+import React, { lazy, Suspense, useState } from "react";
+import { AcademicCapIcon, SparklesIcon } from "../components/icons";
+import MyTrainingTab from "../components/training/MyTrainingTab";
+import TrainingAdminTab from "../components/training/TrainingAdminTab";
 import { useTranslation } from "../hooks/useTranslation";
 import { useAppStore } from "../stores/useAppStore";
 import { useUserStore } from "../stores/useUserStore";
-import MyTrainingTab from "../components/training/MyTrainingTab";
-import TrainingAdminTab from "../components/training/TrainingAdminTab";
-import { AcademicCapIcon, SparklesIcon } from "../components/icons";
-import { Button } from "@/components/ui";
-import { aiAgentService } from "@/services/aiAgentService";
-import AISuggestionModal from "@/components/ai/AISuggestionModal";
-import LoadingScreen from "@/components/common/LoadingScreen";
-import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import { NavigationState } from "../types";
 
 const PerformanceEvaluationPage = lazy(
   () => import("@/pages/PerformanceEvaluationPage"),
@@ -35,17 +35,14 @@ const LearningPathsTab = lazy(
   () => import("@/components/training/LearningPathsTab"),
 );
 
-type TrainingHubTab =
-  | "myTraining"
-  | "admin"
-  | "evaluations"
-  | "competencies"
-  | "skillMatrix"
-  | "licenses"
-  | "personnelFiles"
-  | "capAssessment"
-  | "ceCredits"
-  | "learningPaths";
+type TrainingHubTab = "overview" | "competency" | "learning" | "personnel";
+
+type SubTab = {
+  overview: "myTraining" | "admin";
+  competency: "competencies" | "evaluations" | "capAssessment";
+  learning: "learningPaths" | "ceCredits";
+  personnel: "personnelFiles" | "licenses" | "skillMatrix";
+};
 
 interface TrainingHubPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -63,7 +60,15 @@ const TrainingHubPage: React.FC<TrainingHubPageProps> = ({ setNavigation }) => {
     deleteTrainingProgram,
     assignTraining,
   } = useAppStore();
-  const [activeTab, setActiveTab] = useState<TrainingHubTab>("myTraining");
+  const [activeTab, setActiveTab] = useState<TrainingHubTab>("overview");
+  const [overviewSubTab, setOverviewSubTab] =
+    useState<SubTab["overview"]>("myTraining");
+  const [competencySubTab, setCompetencySubTab] =
+    useState<SubTab["competency"]>("competencies");
+  const [learningSubTab, setLearningSubTab] =
+    useState<SubTab["learning"]>("learningPaths");
+  const [personnelSubTab, setPersonnelSubTab] =
+    useState<SubTab["personnel"]>("personnelFiles");
 
   // AI state
   const [aiLoading, setAiLoading] = useState(false);
@@ -140,87 +145,149 @@ Format your response in clear Markdown with headers and bullet points.`;
       </div>
 
       <div className="border-b border-gray-200 dark:border-dark-brand-border">
+        {/* Main Tabs */}
         <nav
           className="-mb-px flex space-x-4 rtl:space-x-reverse overflow-x-auto"
           aria-label="Tabs"
         >
           <Button
-            onClick={() => setActiveTab("myTraining")}
-            variant={activeTab === "myTraining" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
+            onClick={() => setActiveTab("overview")}
+            variant={activeTab === "overview" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2 whitespace-nowrap px-6 py-3"
           >
-            {t("myTraining")}
-          </Button>
-          {canAdminTraining && (
-            <Button
-              onClick={() => setActiveTab("admin")}
-              variant={activeTab === "admin" ? "primary" : "ghost"}
-              className="rounded-t-lg border-b-2 whitespace-nowrap"
-            >
-              {t("trainingAdministration")}
-            </Button>
-          )}
-          <Button
-            onClick={() => setActiveTab("evaluations")}
-            variant={activeTab === "evaluations" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
-          >
-            {t("performanceEvaluations")}
+            {t("overviewAndPrograms")}
           </Button>
           <Button
-            onClick={() => setActiveTab("competencies")}
-            variant={activeTab === "competencies" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
+            onClick={() => setActiveTab("competency")}
+            variant={activeTab === "competency" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2 whitespace-nowrap px-6 py-3"
           >
-            {t("competencies")}
+            {t("competencyAndAssessments")}
           </Button>
           <Button
-            onClick={() => setActiveTab("skillMatrix")}
-            variant={activeTab === "skillMatrix" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
+            onClick={() => setActiveTab("learning")}
+            variant={activeTab === "learning" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2 whitespace-nowrap px-6 py-3"
           >
-            {t("skillMatrix")}
+            {t("learningAndCE")}
           </Button>
           <Button
-            onClick={() => setActiveTab("licenses")}
-            variant={activeTab === "licenses" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
+            onClick={() => setActiveTab("personnel")}
+            variant={activeTab === "personnel" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2 whitespace-nowrap px-6 py-3"
           >
-            {t("licenses")}
-          </Button>
-          <Button
-            onClick={() => setActiveTab("personnelFiles")}
-            variant={activeTab === "personnelFiles" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
-          >
-            {t("personnelFiles")}
-          </Button>
-          <Button
-            onClick={() => setActiveTab("capAssessment")}
-            variant={activeTab === "capAssessment" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
-          >
-            {t("capAssessment")}
-          </Button>
-          <Button
-            onClick={() => setActiveTab("ceCredits")}
-            variant={activeTab === "ceCredits" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
-          >
-            {t("ceCredits")}
-          </Button>
-          <Button
-            onClick={() => setActiveTab("learningPaths")}
-            variant={activeTab === "learningPaths" ? "primary" : "ghost"}
-            className="rounded-t-lg border-b-2 whitespace-nowrap"
-          >
-            {t("learningPaths")}
+            {t("personnelAndLicensure")}
           </Button>
         </nav>
+
+        {/* Sub-tabs */}
+        {activeTab === "overview" && (
+          <nav className="flex space-x-2 rtl:space-x-reverse mt-2 px-4 pb-2">
+            <Button
+              onClick={() => setOverviewSubTab("myTraining")}
+              variant={overviewSubTab === "myTraining" ? "secondary" : "ghost"}
+              size="sm"
+            >
+              {t("myTraining")}
+            </Button>
+            {canAdminTraining && (
+              <Button
+                onClick={() => setOverviewSubTab("admin")}
+                variant={overviewSubTab === "admin" ? "secondary" : "ghost"}
+                size="sm"
+              >
+                {t("trainingAdministration")}
+              </Button>
+            )}
+          </nav>
+        )}
+
+        {activeTab === "competency" && (
+          <nav className="flex space-x-2 rtl:space-x-reverse mt-2 px-4 pb-2">
+            <Button
+              onClick={() => setCompetencySubTab("competencies")}
+              variant={
+                competencySubTab === "competencies" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              {t("competencies")}
+            </Button>
+            <Button
+              onClick={() => setCompetencySubTab("evaluations")}
+              variant={
+                competencySubTab === "evaluations" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              {t("performanceEvaluations")}
+            </Button>
+            <Button
+              onClick={() => setCompetencySubTab("capAssessment")}
+              variant={
+                competencySubTab === "capAssessment" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              {t("capAssessment")}
+            </Button>
+          </nav>
+        )}
+
+        {activeTab === "learning" && (
+          <nav className="flex space-x-2 rtl:space-x-reverse mt-2 px-4 pb-2">
+            <Button
+              onClick={() => setLearningSubTab("learningPaths")}
+              variant={
+                learningSubTab === "learningPaths" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              {t("learningPaths")}
+            </Button>
+            <Button
+              onClick={() => setLearningSubTab("ceCredits")}
+              variant={learningSubTab === "ceCredits" ? "secondary" : "ghost"}
+              size="sm"
+            >
+              {t("ceCredits")}
+            </Button>
+          </nav>
+        )}
+
+        {activeTab === "personnel" && (
+          <nav className="flex space-x-2 rtl:space-x-reverse mt-2 px-4 pb-2">
+            <Button
+              onClick={() => setPersonnelSubTab("personnelFiles")}
+              variant={
+                personnelSubTab === "personnelFiles" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              {t("personnelFiles")}
+            </Button>
+            <Button
+              onClick={() => setPersonnelSubTab("licenses")}
+              variant={personnelSubTab === "licenses" ? "secondary" : "ghost"}
+              size="sm"
+            >
+              {t("licenses")}
+            </Button>
+            <Button
+              onClick={() => setPersonnelSubTab("skillMatrix")}
+              variant={
+                personnelSubTab === "skillMatrix" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              {t("skillMatrix")}
+            </Button>
+          </nav>
+        )}
       </div>
 
       <div>
-        {activeTab === "myTraining" && (
+        {activeTab === "overview" && overviewSubTab === "myTraining" && (
           <MyTrainingTab
             trainingPrograms={trainingPrograms}
             userTrainingStatus={userTrainingStatuses[currentUser!.id] || {}}
@@ -228,55 +295,57 @@ Format your response in clear Markdown with headers and bullet points.`;
             setNavigation={setNavigation}
           />
         )}
-        {canAdminTraining && activeTab === "admin" && (
-          <TrainingAdminTab
-            trainingPrograms={trainingPrograms}
-            users={users}
-            departments={departments}
-            onAssign={assignTraining}
-            onCreate={addTrainingProgram}
-            onUpdate={updateTrainingProgram}
-            onDelete={deleteTrainingProgram}
-          />
-        )}
-        {activeTab === "evaluations" && (
-          <Suspense fallback={<LoadingScreen />}>
-            <PerformanceEvaluationPage setNavigation={setNavigation} />
-          </Suspense>
-        )}
-        {activeTab === "competencies" && (
+        {activeTab === "overview" &&
+          canAdminTraining &&
+          overviewSubTab === "admin" && (
+            <TrainingAdminTab
+              trainingPrograms={trainingPrograms}
+              users={users}
+              departments={departments}
+              onAssign={assignTraining}
+              onCreate={addTrainingProgram}
+              onUpdate={updateTrainingProgram}
+              onDelete={deleteTrainingProgram}
+            />
+          )}
+        {activeTab === "competency" && competencySubTab === "competencies" && (
           <Suspense fallback={<LoadingScreen />}>
             <CompetencyLibraryPage />
           </Suspense>
         )}
-        {activeTab === "skillMatrix" && (
+        {activeTab === "competency" && competencySubTab === "evaluations" && (
           <Suspense fallback={<LoadingScreen />}>
-            <SkillMatrixTab />
+            <PerformanceEvaluationPage setNavigation={setNavigation} />
           </Suspense>
         )}
-        {activeTab === "licenses" && (
-          <Suspense fallback={<LoadingScreen />}>
-            <LicensureTrackingTab />
-          </Suspense>
-        )}
-        {activeTab === "personnelFiles" && (
-          <Suspense fallback={<LoadingScreen />}>
-            <PersonnelFilesTab />
-          </Suspense>
-        )}
-        {activeTab === "capAssessment" && (
+        {activeTab === "competency" && competencySubTab === "capAssessment" && (
           <Suspense fallback={<LoadingScreen />}>
             <CAPAssessmentTab />
           </Suspense>
         )}
-        {activeTab === "ceCredits" && (
+        {activeTab === "learning" && learningSubTab === "learningPaths" && (
+          <Suspense fallback={<LoadingScreen />}>
+            <LearningPathsTab />
+          </Suspense>
+        )}
+        {activeTab === "learning" && learningSubTab === "ceCredits" && (
           <Suspense fallback={<LoadingScreen />}>
             <CECreditsTab />
           </Suspense>
         )}
-        {activeTab === "learningPaths" && (
+        {activeTab === "personnel" && personnelSubTab === "personnelFiles" && (
           <Suspense fallback={<LoadingScreen />}>
-            <LearningPathsTab />
+            <PersonnelFilesTab />
+          </Suspense>
+        )}
+        {activeTab === "personnel" && personnelSubTab === "licenses" && (
+          <Suspense fallback={<LoadingScreen />}>
+            <LicensureTrackingTab />
+          </Suspense>
+        )}
+        {activeTab === "personnel" && personnelSubTab === "skillMatrix" && (
+          <Suspense fallback={<LoadingScreen />}>
+            <SkillMatrixTab />
           </Suspense>
         )}
       </div>

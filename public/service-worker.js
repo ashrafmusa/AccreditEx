@@ -1,4 +1,4 @@
-const CACHE_NAME = 'accreditex-cache-v4';
+const CACHE_NAME = 'accreditex-cache-v5';
 
 // Static assets to pre-cache during install
 const STATIC_CACHE = [
@@ -6,14 +6,17 @@ const STATIC_CACHE = [
   '/index.html',
 ];
 
-// Install event - cache static assets
+  // Install event - cache static assets
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Service Worker: Caching static assets');
-        return cache.addAll(STATIC_CACHE);
+        return cache.addAll(STATIC_CACHE).catch(() => {
+          console.log('Service Worker: Some static assets could not be cached');
+        });
       })
+      .catch(err => console.error('Service Worker install error:', err))
   );
   self.skipWaiting();
 });
@@ -40,30 +43,79 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(request)
         .then(response => {
-          // Cache the fresh HTML for offline use
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
+          // Cache successful responses
+          if (response && response.status === 200) {
+            caches.open(CACHE_NAME).then(cache => {
+              // Clone before caching to avoid consuming response
+              const responseToCache = response.clone();
+              cache.put(request, responseToCache)
+                .catch(err => console.error('Cache.put error:', err));
+            }).catch(err => console.error('Caches.open error:', err));
+          }
           return response;
         })
         .catch(async () => {
-          const cached = await caches.match(request);
-          return cached || caches.match('/index.html') || Response.error();
+          // Serve from cache on network failure
+          try {
+            const cached = await caches.match(request);
+            return cached || caches.match('/index.html') || Response.error();
+          } catch (err) {
+            console.error('Cache match error:', err);
+            return Response.error();
+          }
         })
     );
     return;
   }
 
-  // Stale-while-revalidate for JS bundles (serve cached, update in background)
+  // Cache-first for JS bundles with background update
   if (request.destination === 'script' || url.pathname.endsWith('.js')) {
     event.respondWith(
-      caches.match(request).then(cachedResponse => {
-        const fetchPromise = fetch(request).then(networkResponse => {
-          caches.open(CACHE_NAME).then(cache => cache.put(request, networkResponse.clone()));
-          return networkResponse;
-        }).catch(() => cachedResponse || Response.error());
-        
-        return cachedResponse || fetchPromise;
-      })
+      caches.match(request)
+        .then(cachedResponse => {
+          // Always serve from cache if available
+          if (cachedResponse) {
+            // Update cache in background (fire and forget)
+            fetch(request)
+              .then(freshResponse => {
+                // Only cache successful responses
+                if (freshResponse && freshResponse.status === 200) {
+                  caches.open(CACHE_NAME).then(cache => {
+                    // Clone before caching to avoid consuming the response
+                    const responseToCache = freshResponse.clone();
+                    cache.put(request, responseToCache)
+                      .catch(err => console.error('Cache.put error:', err));
+                  }).catch(err => console.error('Caches.open error:', err));
+                }
+              })
+              .catch(() => {
+                // Silently fail on network error during background update
+              });
+            return cachedResponse;
+          }
+
+          // No cache, fetch from network
+          return fetch(request)
+            .then(networkResponse => {
+              // Clone before caching
+              if (networkResponse && networkResponse.status === 200) {
+                caches.open(CACHE_NAME).then(cache => {
+                  const responseToCache = networkResponse.clone();
+                  cache.put(request, responseToCache)
+                    .catch(err => console.error('Cache.put error:', err));
+                }).catch(err => console.error('Caches.open error:', err));
+              }
+              return networkResponse;
+            })
+            .catch(err => {
+              console.error('Fetch error:', err);
+              return Response.error();
+            });
+        })
+        .catch(err => {
+          console.error('Cache match error:', err);
+          return Response.error();
+        })
     );
     return;
   }
@@ -81,12 +133,26 @@ self.addEventListener('fetch', event => {
           if (response) {
             return response;
           }
-          return fetch(request).then(fetchResponse => {
-            return caches.open(CACHE_NAME).then(cache => {
-              cache.put(request, fetchResponse.clone());
+          return fetch(request)
+            .then(fetchResponse => {
+              if (fetchResponse && fetchResponse.status === 200) {
+                caches.open(CACHE_NAME).then(cache => {
+                  // Clone before caching to avoid consuming response
+                  const responseToCache = fetchResponse.clone();
+                  cache.put(request, responseToCache)
+                    .catch(err => console.error('Cache.put error:', err));
+                }).catch(err => console.error('Caches.open error:', err));
+              }
               return fetchResponse;
+            })
+            .catch(err => {
+              console.error('Fetch error:', err);
+              return Response.error();
             });
-          }).catch(() => Response.error());
+        })
+        .catch(err => {
+          console.error('Cache match error:', err);
+          return Response.error();
         })
     );
     return;
@@ -98,16 +164,43 @@ self.addEventListener('fetch', event => {
       caches.match(request)
         .then(response => {
           if (response) {
-            // Background revalidate
-            fetch(request).then(freshResponse => {
-              caches.open(CACHE_NAME).then(cache => cache.put(request, freshResponse));
-            }).catch(() => {});
+            // Background revalidate (fire and forget)
+            fetch(request)
+              .then(freshResponse => {
+                if (freshResponse && freshResponse.status === 200) {
+                  caches.open(CACHE_NAME).then(cache => {
+                    const responseToCache = freshResponse.clone();
+                    cache.put(request, responseToCache)
+                      .catch(err => console.error('Cache.put error:', err));
+                  }).catch(err => console.error('Caches.open error:', err));
+                }
+              })
+              .catch(() => {
+                // Silently fail on network error during background update
+              });
             return response;
           }
-          return fetch(request).then(fetchResponse => {
-            caches.open(CACHE_NAME).then(cache => cache.put(request, fetchResponse.clone()));
-            return fetchResponse;
-          }).catch(() => Response.error());
+
+          // No cache, fetch from network
+          return fetch(request)
+            .then(fetchResponse => {
+              if (fetchResponse && fetchResponse.status === 200) {
+                caches.open(CACHE_NAME).then(cache => {
+                  const responseToCache = fetchResponse.clone();
+                  cache.put(request, responseToCache)
+                    .catch(err => console.error('Cache.put error:', err));
+                }).catch(err => console.error('Caches.open error:', err));
+              }
+              return fetchResponse;
+            })
+            .catch(err => {
+              console.error('Fetch error:', err);
+              return Response.error();
+            });
+        })
+        .catch(err => {
+          console.error('Cache match error:', err);
+          return Response.error();
         })
     );
     return;
@@ -124,12 +217,12 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Deleting old cache', cacheName);
-            return caches.delete(cacheName);
+            console.log('Service Worker: Deleting old cache:', cacheName);
+            return caches.delete(cacheName).catch(err => console.error('Cache delete error:', err));
           }
         })
       );
-    })
+    }).catch(err => console.error('Activate error:', err))
   );
   self.clients.claim();
 });

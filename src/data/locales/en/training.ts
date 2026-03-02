@@ -3,6 +3,12 @@ export const en = {
     trainingPageDescription: 'Manage and complete assigned training modules.',
     myTraining: 'My Training',
     trainingAdministration: 'Training Administration',
+    // New consolidated tab labels
+    overviewAndPrograms: 'Overview & Programs',
+    competencyAndAssessments: 'Competency & Assessments',
+    learningAndCE: 'Learning & CE',
+    personnelAndLicensure: 'Personnel & Licensure',
+    // Existing tabs
     pendingTraining: 'Pending Training',
     completedTraining: 'Completed Training',
     noPendingTraining: 'You have no pending training assignments.',

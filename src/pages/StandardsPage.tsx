@@ -1,37 +1,38 @@
-import React, { useState, useMemo, useRef } from "react";
-import {
-  Standard,
-  AccreditationProgram,
-  User,
-  UserRole,
-  StandardCriticality,
-  ComplianceStatus,
-} from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useToast } from "@/hooks/useToast";
-import { ContextualHelp } from "@/components/common/ContextualHelp";
-import { getHelpContent } from "@/data/helpContent";
-import {
-  ShieldCheckIcon,
-  PlusIcon,
-  SearchIcon,
-  FunnelIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-} from "@/components/icons";
+import ImportStandardsModal from "@/components/accreditation/ImportStandardsModal";
 import StandardAccordion from "@/components/accreditation/StandardAccordion";
 import StandardModal from "@/components/accreditation/StandardModal";
-import ImportStandardsModal from "@/components/accreditation/ImportStandardsModal";
+import { ContextualHelp } from "@/components/common/ContextualHelp";
+import EmptyState from "@/components/common/EmptyState";
 import RestrictedFeatureIndicator from "@/components/common/RestrictedFeatureIndicator";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  FunnelIcon,
+  PlusIcon,
+  SearchIcon,
+  ShieldCheckIcon,
+} from "@/components/icons";
 import { Button, Input } from "@/components/ui";
+import { getHelpContent } from "@/data/helpContent";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
-import { useProjectStore } from "@/stores/useProjectStore";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { buildCrossStandardMappingSummary } from "@/services/crossStandardMappingService";
 import {
   exportStandardsGovernanceLog,
   getStandardsGovernanceStatus,
   saveStandardsBaseline,
 } from "@/services/standardsGovernanceService";
-import { buildCrossStandardMappingSummary } from "@/services/crossStandardMappingService";
+import { useProjectStore } from "@/stores/useProjectStore";
+import {
+  AccreditationProgram,
+  ComplianceStatus,
+  Standard,
+  StandardCriticality,
+  User,
+  UserRole,
+} from "@/types";
+import React, { useMemo, useRef, useState } from "react";
 
 interface StandardsPageProps {
   program: AccreditationProgram;
@@ -761,7 +762,29 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
           />
         ))}
         {filteredStandards.length === 0 && (
-          <p className="text-center py-8">{t("noResultsFound")}</p>
+          <EmptyState
+            icon={ShieldCheckIcon}
+            title={t("noResultsFound")}
+            message={t("tryAdjustingFilters")}
+            action={
+              canModify
+                ? {
+                    label: t("addStandard"),
+                    onClick: () => setIsModalOpen(true),
+                  }
+                : undefined
+            }
+            secondaryAction={
+              searchTerm ||
+              selectedCriticality !== "all" ||
+              selectedComplianceStatus !== "all"
+                ? {
+                    label: t("clearFilters"),
+                    onClick: clearFilters,
+                  }
+                : undefined
+            }
+          />
         )}
       </div>
 

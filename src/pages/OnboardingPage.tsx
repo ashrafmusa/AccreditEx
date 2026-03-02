@@ -1,16 +1,16 @@
+import { Button } from "@/components/ui";
 import React, { useState } from "react";
-import { useTranslation } from "../hooks/useTranslation";
 import {
-  LogoIcon,
   ChartPieIcon,
-  FolderIcon,
-  UsersIcon,
-  ShieldCheckIcon,
-  SparklesIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  FolderIcon,
+  LogoIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  UsersIcon,
 } from "../components/icons";
-import { Button } from "@/components/ui";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface OnboardingPageProps {
   onComplete: () => void;
@@ -63,6 +63,15 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) => {
     <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background flex flex-col items-center justify-center p-4 transition-colors duration-300">
       <div className="w-full max-w-2xl bg-brand-surface dark:bg-dark-brand-surface rounded-2xl shadow-2xl overflow-hidden animate-[scaleIn_0.5s_ease-out_forwards]">
         <div className="p-8 sm:p-12 text-center">
+          <div className="flex justify-end mb-4">
+            <button
+              onClick={onComplete}
+              className="text-sm text-brand-text-secondary hover:text-brand-primary dark:text-dark-brand-text-secondary dark:hover:text-brand-primary underline transition-colors"
+              aria-label="Skip onboarding tour"
+            >
+              {t("skipTour")}
+            </button>
+          </div>
           <div key={step} className="animate-[fadeInUp_0.5s_ease-out]">
             <CurrentIcon className="w-16 h-16 mx-auto text-brand-primary" />
             <h1 className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-6">

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Agentica CLI Demo</title>
+    <style>
+        body { background: #0f172a; color: #f8fafc; font-family: 'Courier New', monospace; padding: 40px; }
+        .terminal { background: #1e293b; border-radius: 8px; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1); padding: 20px; border: 1px solid #334155; }
+        .header { display: flex; gap: 8px; margin-bottom: 20px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ef4444; } .yellow { background: #f59e0b; } .green { background: #10b981; }
+        .line { margin-bottom: 8px; }
+        .prompt { color: #10b981; }
+        .output { color: #94a3b8; }
+        .highlight { color: #38bdf8; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+        </div>
+        <div class="line"><span class="prompt">PS D:\Agentica></span> python scripts/exchange.py sync</div>
+        <div class="line" style="color: #fbbf24">[*] Syncing with https://raw.githubusercontent.com/...</div>
+        <div class="line" style="color: #34d399">[+] Sync complete. 2 new components available.</div>
+        <div class="line"></div>
+        <div class="line"><span class="prompt">PS D:\Agentica></span> python scripts/exchange.py list</div>
+        <div class="line">--- <span class="highlight">Installed Agentica Components</span> ---</div>
+        <div class="line">- react-expert (version: 1.0.0)</div>
+        <div class="line">- tailwind-expert (version: 1.1.0)</div>
+        <div class="line">--------------------------------------</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,42 @@
+name: game-developer
+version: "2.0.0"
+description: Game development expert for web games, Unity, Godot, Phaser, and multiplayer systems.
+model_tier: pro
+complexity_tier: COMPLEX
+token_budget:
+  context_max: 60000
+  output_max: 6000
+  skill_slots: 2
+skills:
+  - clean-code
+  - game-development
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+capabilities:
+  - Build browser games with Phaser 3
+  - Design game loops, physics, and collision systems
+  - Implement save/load systems and achievement tracking
+  - Create particle effects and animations
+  - Design multiplayer with WebSocket synchronization
+boundaries:
+  can:
+    - Write game-specific components, scenes, and systems
+    - Handle game-specific state management
+  cannot:
+    - Write web app or mobile native components
+    - Use frontend-specialist UI patterns for game UI
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [game, phaser, unity, godot, scene, sprite, physics, collision, multiplayer, level]
+  domain: game
+  auto_invoke: true
+examples:
+  - task: "Add boss battle to existing game"
+    approach: "Boss scene class → health bar UI → phase-based attack patterns → death animation"
+    outcome: "Reusable boss system with 3 difficulty phases"
