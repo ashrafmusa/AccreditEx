@@ -1,9 +1,9 @@
 # AccreditEx — Healthcare Accreditation Management Platform
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Code Coverage](https://img.shields.io/badge/coverage-95%25-brightgreen)
+![Tests](https://img.shields.io/badge/tests-28%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Pages](https://img.shields.io/badge/pages-35-blue)
+![Pages](https://img.shields.io/badge/pages-39-blue)
 ![AI Tools](https://img.shields.io/badge/AI%20tools-21%2B-purple)
 ![Deploy](https://img.shields.io/badge/live-accreditex.web.app-green)
 
@@ -23,7 +23,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 ## Key Features
 
-### Core Platform (35 Pages)
+### Core Platform (39 Pages)
 -   **Role-Based Dashboards**: Admin, Project Lead, Team Member, and Auditor views with real-time compliance KPIs.
 -   **Project Management**: Full accreditation project lifecycle with pre-built templates for 7+ accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001).
 -   **Document Control Hub**: Version-controlled document management with AI-powered document generation, automatic document numbering, and approval workflows.
@@ -101,7 +101,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 -   **Frontend**: React 19.1.1, TypeScript 5.x, Tailwind CSS v4 (native), Vite 6.x
 -   **Native Mobile**: Capacitor 8.x (10 plugins: camera, push-notifications, haptics, status-bar, splash-screen, app, keyboard, preferences, filesystem + capacitor-native-biometric)
--   **State Management**: Zustand (9 stores: `useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`)
+-   **State Management**: Zustand (13 stores: `useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`, `useChangeControlStore`, `useModuleStore`, `useSupplierStore`, `useTenantStore`)
 -   **Offline Storage**: IndexedDB via `idb` (3 stores: `cachedData`, `pendingSync`, `meta`) + in-memory Firestore cache with 5-min TTL
 -   **Backend**: Google Firebase
     -   **Authentication**: Firebase Authentication (Email/Password)
@@ -117,11 +117,11 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 AccreditEx is built on a clean, scalable, and modular architecture to ensure long-term maintainability.
 
-1.  **Frontend (React Application)**: 35 page components, 50+ feature components, and reusable UI components. The application uses `AppRouter.tsx` with URL-based routing via React Router DOM.
+1.  **Frontend (React Application)**: 39 page components, 295 feature components, and reusable UI components across 33 domains. The application uses `AppRouter.tsx` with URL-based routing via React Router DOM.
 
-2.  **State Management (Zustand)**: 9 feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`) provide reactive state management decoupled from the UI.
+2.  **State Management (Zustand)**: 13 feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`, `useChangeControlStore`, `useModuleStore`, `useSupplierStore`, `useTenantStore`) provide reactive state management decoupled from the UI.
 
-3.  **Service Layer (70+ services)**: Specialized services for each domain (accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, native camera, native push, native biometric, etc.). The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
+3.  **Service Layer (107 services)**: 79 root-level services + 18 HIS integration + 10 LIMS integration files. Specialized services for each domain (accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, native camera, native push, native biometric, etc.). The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
 
 4.  **Integration Layer**: HIS Integration (18 files — Epic, Cerner, HL7, FHIR connectors) and LIMS Integration (10 files — Orchard, SoftLab, Sunquest connectors) provide healthcare system interoperability.
 
@@ -149,12 +149,12 @@ src/
 ├── firebase/                # Firebase configuration and hooks
 ├── hooks/                   # Custom React hooks
 │   └── usePushNotifications.ts  # NEW: Push notification lifecycle hook
-├── pages/                   # 33 page components
+├── pages/                   # 39 page components
 │   ├── LabOperationsPage.tsx    # 5-tab lab operations hub
 │   ├── KnowledgeBasePage.tsx    # Searchable knowledge base
-│   └── ...                      # 31 additional page components
+│   └── ...                      # 37 additional page components
 ├── router/                  # AppRouter.tsx + routes.ts (34 routes)
-├── services/                # 70+ domain services
+├── services/                # 107 domain services
 │   ├── hisIntegration/      # 18 files: Epic, Cerner, HL7, FHIR connectors
 │   ├── limsIntegration/     # 10 files: Orchard, SoftLab, Sunquest connectors
 │   ├── nativeCameraService.ts   # NEW: Camera capture with web fallback
@@ -162,9 +162,9 @@ src/
 │   ├── nativeBiometricService.ts # NEW: Biometric auth (fingerprint/face)
 │   ├── escalationService.ts     # Automated escalation workflows
 │   ├── qcDataImportService.ts   # QC data import with validation
-│   └── ...                      # 60+ additional services
-├── stores/                  # 9 Zustand stores
-├── types/                   # 7 type definition files (including labOps.ts)
+│   └── ...                      # 70+ additional root services
+├── stores/                  # 13 Zustand stores
+├── types/                   # 12 type definition files
 ├── utils/                   # Utility modules
 │   ├── capacitorPlatform.ts     # NEW: Platform detection & native fallbacks
 │   ├── capacitorInit.ts         # NEW: Native lifecycle initialization
@@ -212,15 +212,20 @@ The Lab Operations module (P2 roadmap item, fully implemented) provides:
 -   **Tracer Worksheets**: Interactive CAP/JCI survey preparation tool (931 lines)
 -   **Knowledge Base**: Searchable articles with categorized content (552 lines)
 
-## Contributing
+## Quick Commands
+```bash
+npm run dev              # Start dev server (http://localhost:5173)
+npm run build            # Production build
+npm run test             # Run all unit tests (Jest)
+npm run test:coverage    # Tests with coverage report
+npm run test:e2e         # Run Playwright E2E tests
+npx cap sync             # Sync web build → native projects (Android/iOS)
 
-We welcome contributions to this project. To contribute, please follow these steps:
-
-1. Fork the repository.
-2. Create a new branch for your changes.
-3. Make your changes and commit them to your branch.
-4. Push your changes to your fork.
-5. Open a pull request.
+# Deployment scripts (in scripts/ folder)
+npx powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy-render.ps1    # Deploy to Render
+npx powershell -NoProfile -ExecutionPolicy Bypass -File scripts/setup-render-service.ps1  # Setup Render service
+npx powershell -NoProfile -ExecutionPolicy Bypass -File scripts/test-ai-agent.ps1    # Test AI agent
+```
 
 ## License
 
@@ -228,4 +233,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-**Last Updated:** February 28, 2026 | **Version:** 2.2 | **Live:** https://accreditex.web.app
+**Last Updated:** March 3, 2026 | **Version:** 2.3 | **Live:** https://accreditex.web.app

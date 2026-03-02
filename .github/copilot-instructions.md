@@ -44,6 +44,9 @@
 ```typescript
 // ✅ Always use Zustand stores — never local useState for shared data
 // Store location: src/stores/use{Name}Store.ts
+// 13 total stores: Core (useAppStore), Projects, Auth (useUserStore),
+// Theme (useCustomizationStore), AI, HIS, Lab, Workflow, Reports,
+// ChangeControl, Modules, Suppliers, Tenant
 import { useProjectStore } from '@/stores/useProjectStore';
 const projects = useProjectStore((state) => state.projects);
 ```
@@ -63,7 +66,8 @@ export async function getProject(id: string): Promise<Project | null> {
 ### Internationalization (MANDATORY)
 ```typescript
 // ✅ ALL user-facing strings MUST use i18n — no hardcoded English strings
-// src/i18n/ contains translation files
+// Real i18n system: src/data/locales/ (22 EN + 22 AR module files)
+// ✅ Provider location: src/components/common/LanguageProvider
 import { useLanguage } from '@/components/common/LanguageProvider';
 const { t } = useLanguage();
 return <h1>{t('dashboard.title')}</h1>;
@@ -128,22 +132,27 @@ Before starting any feature:
 ## Folder Structure
 ```
 src/
-├── components/      # Reusable UI components
+├── components/      # 295 feature components across 33 domains
 │   ├── ai/         # AI assistant components
-│   └── common/     # Layout, Nav, Theme, Toast
-├── pages/          # Full page components (route-level)
-├── stores/         # Zustand state stores
-├── services/       # Firebase/API service functions
+│   └── common/     # Layout, Nav, Theme, Toast (includes LanguageProvider)
+├── pages/          # 39 page components (route-level)
+├── stores/         # 13 Zustand state stores
+├── services/       # 107 Firebase/API service functions
+│   ├── hisIntegration/  # 18 HIS connector files
+│   └── limsIntegration/ # 10 LIMS connector files
 ├── firebase/       # Firebase config + hooks
-├── hooks/          # Custom React hooks
-├── types/          # TypeScript type definitions
-├── utils/          # Pure utility functions
-├── i18n/           # Translation files
-└── test/           # Jest unit tests
+├── hooks/          # 27 custom React hooks
+├── types/          # 12 TypeScript type definitions
+├── utils/          # 37 pure utility functions
+├── data/locales/   # ✅ i18n translations (22 EN + 22 AR modules) — PRIMARY SYSTEM
+├── router/         # AppRouter.tsx + routes.ts (34 routes)
+├── test/           # Jest test setup
+└── i18n/           # ⚠️ Legacy (ar.js only) — do not use for new code
 
 e2e/                # Playwright E2E tests
 android/            # Capacitor Android
 ios/                # Capacitor iOS
+scripts/            # Deployment & utility scripts (deploy-render.ps1, test-ai-agent.ps1, etc.)
 ```
 
 ---
