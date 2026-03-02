@@ -21,9 +21,9 @@ export interface Organization {
   moduleConfig?: import('./modules').OrganizationModuleConfig;
 }
 
-export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration';
+export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'changeControl' | 'supplierHub';
 
-export type NavigationView = 'dashboard' | 'analyticsHub' | 'analytics' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'accreditation' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'myTasks' | 'qualityInsights' | 'users' | 'competencies';
+export type NavigationView = 'dashboard' | 'analyticsHub' | 'analytics' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'accreditation' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'supplierHub' | 'changeControlHub' | 'myTasks' | 'qualityInsights' | 'users' | 'competencies';
 
 // ── Knowledge Base Types ──────────────────────────────────
 

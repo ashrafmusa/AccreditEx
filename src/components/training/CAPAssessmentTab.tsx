@@ -13,6 +13,7 @@ import {
 } from "@/types";
 import { Button, EmptyState } from "@/components/ui";
 import { PlusIcon, CheckCircleIcon } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 const RESULT_COLORS = {
   competent:
@@ -54,6 +55,7 @@ type TabView = "dashboard" | "schedule" | "form";
 const CAPAssessmentTab: React.FC = () => {
   const { currentUser, users, updateUser } = useUserStore();
   const { competencies } = useAppStore();
+  const { t } = useTranslation();
   const isAdmin = currentUser?.role === UserRole.Admin;
 
   const [view, setView] = useState<TabView>("dashboard");
@@ -164,11 +166,10 @@ const CAPAssessmentTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            CAP Competency Assessment
+            {t("capCompetencyAssessment")}
           </h3>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            College of American Pathologists — 6-method competency assessment
-            tracking
+            {t("capDescription")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -177,14 +178,14 @@ const CAPAssessmentTab: React.FC = () => {
             onClick={() => setView("dashboard")}
             className="text-xs"
           >
-            Dashboard
+            {t("dashboard")}
           </Button>
           <Button
             variant={view === "schedule" ? "primary" : "ghost"}
             onClick={() => setView("schedule")}
             className="text-xs"
           >
-            Assessments
+            {t("assessments")}
           </Button>
           {isAdmin && (
             <Button
@@ -196,7 +197,7 @@ const CAPAssessmentTab: React.FC = () => {
               }}
               className="text-xs flex items-center gap-1"
             >
-              <PlusIcon className="h-3 w-3" /> New
+              <PlusIcon className="h-3 w-3" /> {t("newAssessment")}
             </Button>
           )}
         </div>
@@ -212,7 +213,7 @@ const CAPAssessmentTab: React.FC = () => {
                 {stats.total}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Total Assessments
+                {t("totalAssessments")}
               </div>
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
@@ -220,7 +221,7 @@ const CAPAssessmentTab: React.FC = () => {
                 {stats.completed}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Completed
+                {t("completed")}
               </div>
             </div>
             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 text-center">
@@ -228,7 +229,7 @@ const CAPAssessmentTab: React.FC = () => {
                 {stats.overdue}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Overdue
+                {t("overdue")}
               </div>
             </div>
             <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
@@ -236,7 +237,7 @@ const CAPAssessmentTab: React.FC = () => {
                 {stats.methodCoverage}/6
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Methods Used
+                {t("methodsUsed")}
               </div>
             </div>
           </div>
@@ -244,7 +245,7 @@ const CAPAssessmentTab: React.FC = () => {
           {/* 6-Method Coverage Grid */}
           <div>
             <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-              CAP 6-Method Coverage
+              {t("capMethodCoverage")}
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {(
@@ -275,7 +276,7 @@ const CAPAssessmentTab: React.FC = () => {
                       {count}
                     </div>
                     <div className="text-[10px] text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      completed assessments
+                      {t("completedAssessments")}
                     </div>
                   </div>
                 );
@@ -286,7 +287,7 @@ const CAPAssessmentTab: React.FC = () => {
           {/* Testing Phase Summary */}
           <div>
             <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-              Testing Phase Distribution
+              {t("testingPhaseDistribution")}
             </h4>
             <div className="grid grid-cols-3 gap-2">
               {(
@@ -312,7 +313,7 @@ const CAPAssessmentTab: React.FC = () => {
                       {completed}/{count}
                     </div>
                     <div className="text-[10px] text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      completed / total
+                      {t("completedSlashTotal")}
                     </div>
                   </div>
                 );
@@ -332,7 +333,7 @@ const CAPAssessmentTab: React.FC = () => {
               onChange={(e) => setFilterMethod(e.target.value)}
               className={`${inputCls} w-auto`}
             >
-              <option value="all">All Methods</option>
+              <option value="all">{t("allMethods")}</option>
               {Object.entries(CAP_METHOD_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
@@ -344,7 +345,7 @@ const CAPAssessmentTab: React.FC = () => {
               onChange={(e) => setFilterPhase(e.target.value)}
               className={`${inputCls} w-auto`}
             >
-              <option value="all">All Phases</option>
+              <option value="all">{t("allPhases")}</option>
               {Object.entries(CAP_PHASE_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
@@ -355,8 +356,8 @@ const CAPAssessmentTab: React.FC = () => {
 
           {filteredAssessments.length === 0 ? (
             <EmptyState
-              title="No Assessments"
-              description="Schedule a CAP competency assessment to get started."
+              title={t("noAssessments")}
+              description={t("noAssessmentsHint")}
               icon={<CheckCircleIcon className="h-10 w-10 text-gray-400" />}
             />
           ) : (
@@ -365,28 +366,28 @@ const CAPAssessmentTab: React.FC = () => {
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Staff
+                      {t("licStaff")}
                     </th>
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Competency
+                      {t("competency")}
                     </th>
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Method
+                      {t("method")}
                     </th>
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Phase
+                      {t("phase")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Date
+                      {t("date")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Status
+                      {t("statusLabel")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Result
+                      {t("resultLabel")}
                     </th>
                     <th className="px-3 py-2 text-right font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Actions
+                      {t("action")}
                     </th>
                   </tr>
                 </thead>
@@ -440,7 +441,7 @@ const CAPAssessmentTab: React.FC = () => {
                             onClick={() => handleComplete(a.id, 4, "competent")}
                             className="text-green-600 dark:text-green-400 hover:underline text-xs"
                           >
-                            Complete
+                            {t("complete")}
                           </button>
                         )}
                         {isAdmin && (
@@ -448,7 +449,7 @@ const CAPAssessmentTab: React.FC = () => {
                             onClick={() => handleEdit(a)}
                             className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
                           >
-                            Edit
+                            {t("editAssessment")}
                           </button>
                         )}
                       </td>
@@ -465,14 +466,14 @@ const CAPAssessmentTab: React.FC = () => {
       {view === "form" && isAdmin && (
         <div className="bg-brand-surface-alt dark:bg-dark-brand-surface-alt rounded-lg p-4 space-y-4 max-w-2xl">
           <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            {editingId ? "Edit Assessment" : "Schedule New Assessment"}
+            {editingId ? t("editAssessment") : t("scheduleNewAssessment")}
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {/* Staff */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Staff Member *
+                {t("staffMember")} *
               </label>
               <select
                 value={form.userId}
@@ -481,7 +482,7 @@ const CAPAssessmentTab: React.FC = () => {
                 }
                 className={inputCls}
               >
-                <option value="">Select...</option>
+                <option value="">{t("capSelectPlaceholder")}</option>
                 {labUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -493,7 +494,7 @@ const CAPAssessmentTab: React.FC = () => {
             {/* Assessor */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Assessor *
+                {t("assessor")} *
               </label>
               <select
                 value={form.assessorId}
@@ -502,7 +503,7 @@ const CAPAssessmentTab: React.FC = () => {
                 }
                 className={inputCls}
               >
-                <option value="">Select...</option>
+                <option value="">{t("capSelectPlaceholder")}</option>
                 {labUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -514,7 +515,7 @@ const CAPAssessmentTab: React.FC = () => {
             {/* Competency */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Competency *
+                {t("competency")} *
               </label>
               <select
                 value={form.competencyId}
@@ -523,7 +524,7 @@ const CAPAssessmentTab: React.FC = () => {
                 }
                 className={inputCls}
               >
-                <option value="">Select...</option>
+                <option value="">{t("capSelectPlaceholder")}</option>
                 {competencies.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name?.en ?? c.id}
@@ -535,7 +536,7 @@ const CAPAssessmentTab: React.FC = () => {
             {/* Lab Discipline */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Lab Discipline
+                {t("labDiscipline")}
               </label>
               <select
                 value={form.labDiscipline ?? ""}
@@ -544,7 +545,7 @@ const CAPAssessmentTab: React.FC = () => {
                 }
                 className={inputCls}
               >
-                <option value="">Select...</option>
+                <option value="">{t("capSelectPlaceholder")}</option>
                 {CAP_LAB_DISCIPLINES.map((d) => (
                   <option key={d} value={d}>
                     {d}
@@ -556,7 +557,7 @@ const CAPAssessmentTab: React.FC = () => {
             {/* Assessment Method */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Assessment Method *
+                {t("assessmentMethod")} *
               </label>
               <select
                 value={form.method}
@@ -579,7 +580,7 @@ const CAPAssessmentTab: React.FC = () => {
             {/* Testing Phase */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Testing Phase *
+                {t("testingPhase")} *
               </label>
               <select
                 value={form.testingPhase}
@@ -602,7 +603,7 @@ const CAPAssessmentTab: React.FC = () => {
             {/* Scheduled Date */}
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Scheduled Date *
+                {t("scheduledDate")} *
               </label>
               <input
                 type="date"
@@ -619,7 +620,7 @@ const CAPAssessmentTab: React.FC = () => {
               <>
                 <div>
                   <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                    Score (1-5)
+                    {t("scoreRange")}
                   </label>
                   <input
                     type="number"
@@ -637,7 +638,7 @@ const CAPAssessmentTab: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                    Result
+                    {t("resultLabel")}
                   </label>
                   <select
                     value={form.result ?? ""}
@@ -650,15 +651,17 @@ const CAPAssessmentTab: React.FC = () => {
                     }
                     className={inputCls}
                   >
-                    <option value="">Pending</option>
-                    <option value="competent">Competent</option>
-                    <option value="needs_improvement">Needs Improvement</option>
-                    <option value="not_competent">Not Competent</option>
+                    <option value="">{t("pending")}</option>
+                    <option value="competent">{t("competent")}</option>
+                    <option value="needs_improvement">
+                      {t("needsImprovement")}
+                    </option>
+                    <option value="not_competent">{t("notCompetent")}</option>
                   </select>
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                    Status
+                    {t("statusLabel")}
                   </label>
                   <select
                     value={form.status}
@@ -670,9 +673,9 @@ const CAPAssessmentTab: React.FC = () => {
                     }
                     className={inputCls}
                   >
-                    <option value="scheduled">Scheduled</option>
-                    <option value="in_progress">In Progress</option>
-                    <option value="completed">Completed</option>
+                    <option value="scheduled">{t("scheduled")}</option>
+                    <option value="in_progress">{t("capInProgress")}</option>
+                    <option value="completed">{t("completed")}</option>
                   </select>
                 </div>
               </>
@@ -682,7 +685,7 @@ const CAPAssessmentTab: React.FC = () => {
           {/* Findings */}
           <div>
             <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-              Findings / Notes
+              {t("findingsNotes")}
             </label>
             <textarea
               value={form.findings ?? ""}
@@ -702,7 +705,7 @@ const CAPAssessmentTab: React.FC = () => {
                 !form.userId || !form.competencyId || !form.scheduledDate
               }
             >
-              {editingId ? "Update" : "Schedule Assessment"}
+              {editingId ? t("capUpdate") : t("capScheduleAssessmentBtn")}
             </Button>
             <Button
               variant="ghost"
@@ -712,7 +715,7 @@ const CAPAssessmentTab: React.FC = () => {
                 setView("schedule");
               }}
             >
-              Cancel
+              {t("capCancel")}
             </Button>
           </div>
         </div>

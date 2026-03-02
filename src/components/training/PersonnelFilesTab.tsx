@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback, useRef } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import {
   User,
@@ -14,7 +15,7 @@ import {
   PlusIcon,
   CheckCircleIcon,
 } from "@/components/icons";
-import { storageService } from "@/services/storageService";
+import { cloudinaryService } from "@/services/cloudinaryService";
 import { useToast } from "@/hooks/useToast";
 import { useOrganizationId } from "@/stores/useTenantStore";
 
@@ -34,25 +35,25 @@ const DEFAULT_REQUIRED_DOCS: PersonnelDocCategory[] = [
 
 const STATUS_CONFIG: Record<
   PersonnelDocument["status"],
-  { label: string; color: string; bg: string }
+  { labelKey: string; color: string; bg: string }
 > = {
   missing: {
-    label: "Missing",
+    labelKey: "missing",
     color: "text-red-700 dark:text-red-400",
     bg: "bg-red-100 dark:bg-red-900/30",
   },
   uploaded: {
-    label: "Uploaded",
+    labelKey: "uploaded",
     color: "text-blue-700 dark:text-blue-400",
     bg: "bg-blue-100 dark:bg-blue-900/30",
   },
   verified: {
-    label: "Verified",
+    labelKey: "verified",
     color: "text-green-700 dark:text-green-400",
     bg: "bg-green-100 dark:bg-green-900/30",
   },
   expired: {
-    label: "Expired",
+    labelKey: "expired",
     color: "text-orange-700 dark:text-orange-400",
     bg: "bg-orange-100 dark:bg-orange-900/30",
   },
@@ -85,6 +86,7 @@ const ACCEPTED_FILE_TYPES = ".pdf,.jpg,.jpeg,.png,.doc,.docx,.webp";
 const MAX_FILE_SIZE_MB = 10;
 
 const PersonnelFilesTab: React.FC = () => {
+  const { t, lang } = useTranslation();
   const { currentUser, users, updateUser } = useUserStore();
   const { departments } = useAppStore();
   const toast = useToast();
@@ -166,15 +168,9 @@ const PersonnelFilesTab: React.FC = () => {
       setUploadingCategory(category);
 
       try {
-        // Upload file to Firebase Storage
-        const docId = `personnel-${userId}-${category}`;
-        const fileUrl = await storageService.uploadDocument(
-          file,
-          docId,
-          undefined,
-          orgId || undefined,
-          "personnel",
-        );
+        // Upload file to Cloudinary
+        const folder = `personnel/${orgId || "default"}/${userId}`;
+        const fileUrl = await cloudinaryService.uploadFile(file, folder);
 
         // Update user record in Firestore
         const docs = [...(user.personnelDocuments ?? [])];
@@ -253,7 +249,7 @@ const PersonnelFilesTab: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          Personnel Files
+          {t("personnelFilesTitle")}
         </h3>
         <div className="flex gap-2">
           {isAdmin && (
@@ -263,10 +259,10 @@ const PersonnelFilesTab: React.FC = () => {
                 onChange={(e) => setDeptFilter(e.target.value)}
                 className={inputCls}
               >
-                <option value="all">All Departments</option>
+                <option value="all">{t("allDepartments")}</option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.name.en}
+                    {d.name[lang]}
                   </option>
                 ))}
               </select>
@@ -275,7 +271,7 @@ const PersonnelFilesTab: React.FC = () => {
                 onClick={() => setViewMode("overview")}
                 className="text-xs"
               >
-                Overview
+                {t("overview")}
               </Button>
             </>
           )}
@@ -284,7 +280,7 @@ const PersonnelFilesTab: React.FC = () => {
             onClick={() => setViewMode("detail")}
             className="text-xs"
           >
-            My Files
+            {t("myFiles")}
           </Button>
         </div>
       </div>
@@ -297,7 +293,7 @@ const PersonnelFilesTab: React.FC = () => {
               {overviewStats.avgPct}%
             </div>
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Avg File Completeness
+              {t("avgFileCompleteness")}
             </div>
           </div>
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
@@ -305,7 +301,7 @@ const PersonnelFilesTab: React.FC = () => {
               {overviewStats.usersComplete}
             </div>
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Fully Compliant
+              {t("fullyCompliant")}
             </div>
           </div>
           <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 text-center">
@@ -313,7 +309,7 @@ const PersonnelFilesTab: React.FC = () => {
               {overviewStats.totalMissing}
             </div>
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Missing Documents
+              {t("missingDocuments")}
             </div>
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
@@ -321,7 +317,7 @@ const PersonnelFilesTab: React.FC = () => {
               {overviewStats.totalUsers}
             </div>
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Total Staff
+              {t("totalStaff")}
             </div>
           </div>
         </div>
@@ -334,19 +330,19 @@ const PersonnelFilesTab: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-gray-800">
               <tr>
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Staff
+                  {t("licStaff")}
                 </th>
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Department
+                  {t("department")}
                 </th>
                 <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Completeness
+                  {t("completeness")}
                 </th>
                 <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Missing
+                  {t("missing")}
                 </th>
                 <th className="px-3 py-2 text-right font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Action
+                  {t("action")}
                 </th>
               </tr>
             </thead>
@@ -399,7 +395,7 @@ const PersonnelFilesTab: React.FC = () => {
                         }}
                         className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
                       >
-                        View Files
+                        {t("viewFiles")}
                       </button>
                     </td>
                   </tr>
@@ -416,7 +412,7 @@ const PersonnelFilesTab: React.FC = () => {
           {isAdmin && (
             <div className="flex items-center gap-2">
               <label className="text-sm font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Staff:
+                {t("staffLabel")}
               </label>
               <select
                 value={selectedUserId}
@@ -434,7 +430,7 @@ const PersonnelFilesTab: React.FC = () => {
                 onClick={() => setViewMode("overview")}
                 className="text-xs ml-auto"
               >
-                ← Back to Overview
+                {t("backToOverview")}
               </Button>
             </div>
           )}
@@ -448,7 +444,7 @@ const PersonnelFilesTab: React.FC = () => {
                   <div className="bg-brand-surface-alt dark:bg-dark-brand-surface-alt rounded-lg p-4 flex items-center gap-4">
                     <div className="grow">
                       <div className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-1">
-                        {selectedUser.name} — File Completeness
+                        {selectedUser.name} — {t("fileCompleteness")}
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
                         <div
@@ -511,13 +507,13 @@ const PersonnelFilesTab: React.FC = () => {
                           rel="noopener noreferrer"
                           className="text-xs text-brand-primary-600 dark:text-brand-primary-400 hover:underline shrink-0"
                         >
-                          View
+                          {t("view")}
                         </a>
                       )}
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.color} ${cfg.bg}`}
                       >
-                        {cfg.label}
+                        {t(cfg.labelKey)}
                       </span>
                       <div className="flex gap-1">
                         {(status === "missing" || status === "expired") && (
@@ -531,10 +527,10 @@ const PersonnelFilesTab: React.FC = () => {
                             {uploadingCategory === cat ? (
                               <span className="flex items-center gap-1">
                                 <span className="h-3 w-3 animate-spin rounded-full border-2 border-brand-primary border-t-transparent" />
-                                Uploading…
+                                {t("uploading")}
                               </span>
                             ) : (
-                              "Upload"
+                              t("upload")
                             )}
                           </button>
                         )}
@@ -546,7 +542,7 @@ const PersonnelFilesTab: React.FC = () => {
                               }
                               className="text-green-600 dark:text-green-400 hover:underline text-xs"
                             >
-                              Verify
+                              {t("verify")}
                             </button>
                             <button
                               onClick={() =>
@@ -556,8 +552,8 @@ const PersonnelFilesTab: React.FC = () => {
                               className="text-brand-text-secondary dark:text-dark-brand-text-secondary hover:underline text-xs disabled:opacity-50"
                             >
                               {uploadingCategory === cat
-                                ? "Uploading…"
-                                : "Re-upload"}
+                                ? t("uploading")
+                                : t("reUpload")}
                             </button>
                           </>
                         )}

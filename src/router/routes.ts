@@ -4,7 +4,7 @@
  * Maintains backward compatibility with existing NavigationState system
  */
 
-import { NavigationView, NavigationState } from "@/types";
+import { NavigationState, NavigationView } from "@/types";
 
 export interface RouteConfig {
     path: string;
@@ -78,13 +78,19 @@ export const routes: RouteConfig[] = [
     { path: "/knowledge-base", view: "knowledgeBase", requiresAuth: true },
 
     // Lab Operations
-    { path: "/lab-operations", view: "labOperations", requiresAuth: true },
+    { path: "/lab-operations", view: "labOperations", requiresAuth: true, requiresAdmin: true },
 
     // Workflow Automation
-    { path: "/workflow-automation", view: "workflowAutomation", requiresAuth: true },
+    { path: "/workflow-automation", view: "workflowAutomation", requiresAuth: true, requiresAdmin: true },
 
     // Report Builder
-    { path: "/report-builder", view: "reportBuilder", requiresAuth: true },
+    { path: "/report-builder", view: "reportBuilder", requiresAuth: true, requiresAdmin: true },
+
+    // Supplier Quality Management
+    { path: "/suppliers", view: "supplierHub", requiresAuth: true, requiresAdmin: true },
+
+    // Change Control
+    { path: "/change-control", view: "changeControlHub", requiresAuth: true, requiresAdmin: true },
 
     // Redirect legacy standalone routes to parent hubs
     { path: "/performance", view: "trainingHub", requiresAuth: true },
@@ -154,8 +160,14 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/lab-operations";
         case "workflowAutomation":
             return "/workflow-automation";
+        case "qualityInsights":
+            return "/quality-insights";
         case "reportBuilder":
             return "/report-builder";
+        case "supplierHub":
+            return "/suppliers";
+        case "changeControlHub":
+            return "/change-control";
         default:
             return "/dashboard";
     }
@@ -191,7 +203,9 @@ export const pathToNavigationState = (
     if (path === "/lab-operations") return { view: "labOperations" };
     if (path === "/workflow-automation") return { view: "workflowAutomation" };
     if (path === "/report-builder") return { view: "reportBuilder" };
-    if (path === "/quality-insights") return { view: "analyticsHub" };
+    if (path === "/suppliers") return { view: "supplierHub" };
+    if (path === "/change-control") return { view: "changeControlHub" };
+    if (path === "/quality-insights") return { view: "qualityInsights" };
     if (path === "/reports") return { view: "analyticsHub" };
     if (path === "/competencies") return { view: "trainingHub" };
     if (path === "/ai-document-generator") return { view: "documentControl" };

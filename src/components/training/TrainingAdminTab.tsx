@@ -35,11 +35,11 @@ const TrainingAdminTab: React.FC<Props> = ({
   const [isProgramModalOpen, setIsProgramModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [editingProgram, setEditingProgram] = useState<TrainingProgram | null>(
-    null
+    null,
   );
 
   const handleSaveProgram = (
-    program: TrainingProgram | Omit<TrainingProgram, "id">
+    program: TrainingProgram | Omit<TrainingProgram, "id">,
   ) => {
     if ("id" in program) {
       onUpdate(program);
@@ -126,11 +126,8 @@ const TrainingAdminTab: React.FC<Props> = ({
         {trainingPrograms.length === 0 && (
           <EmptyState
             icon={AcademicCapIcon}
-            title={t("noTrainingPrograms") || "No Training Programs"}
-            message={
-              t("createTrainingToStart") ||
-              "Create a new training program to get started."
-            }
+            title={t("noTrainingPrograms")}
+            message={t("createTrainingToStart")}
           />
         )}
       </div>

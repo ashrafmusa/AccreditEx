@@ -9,35 +9,35 @@ type LicenseStatus = UserLicense["status"];
 
 const STATUS_CONFIG: Record<
   LicenseStatus,
-  { label: string; color: string; bg: string }
+  { labelKey: string; color: string; bg: string }
 > = {
   active: {
-    label: "Active",
+    labelKey: "statusActive",
     color: "text-green-700 dark:text-green-400",
     bg: "bg-green-100 dark:bg-green-900/30",
   },
   pending_renewal: {
-    label: "Pending Renewal",
+    labelKey: "statusPendingRenewal",
     color: "text-yellow-700 dark:text-yellow-400",
     bg: "bg-yellow-100 dark:bg-yellow-900/30",
   },
   expired: {
-    label: "Expired",
+    labelKey: "statusExpired",
     color: "text-red-700 dark:text-red-400",
     bg: "bg-red-100 dark:bg-red-900/30",
   },
   suspended: {
-    label: "Suspended",
+    labelKey: "statusSuspended",
     color: "text-gray-700 dark:text-gray-400",
     bg: "bg-gray-100 dark:bg-gray-700",
   },
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  professional: "Professional",
-  facility: "Facility",
-  regulatory: "Regulatory",
-  specialty: "Specialty",
+const CATEGORY_LABEL_KEYS: Record<string, string> = {
+  professional: "catProfessional",
+  facility: "catFacility",
+  regulatory: "catRegulatory",
+  specialty: "catSpecialty",
 };
 
 function computeStatus(license: UserLicense): LicenseStatus {
@@ -193,7 +193,7 @@ const LicensureTrackingTab: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          Licenses & Credentials
+          {t("licensesAndCredentials")}
         </h3>
         <Button
           onClick={openAdd}
@@ -201,7 +201,7 @@ const LicensureTrackingTab: React.FC = () => {
           className="flex items-center gap-1.5"
         >
           <PlusIcon className="h-4 w-4" />
-          Add License
+          {t("addLicense")}
         </Button>
       </div>
 
@@ -220,7 +220,7 @@ const LicensureTrackingTab: React.FC = () => {
               >
                 <div className={`text-xl font-bold ${cfg.color}`}>{count}</div>
                 <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  {cfg.label}
+                  {t(cfg.labelKey)}
                 </div>
               </button>
             );
@@ -232,13 +232,13 @@ const LicensureTrackingTab: React.FC = () => {
       {showForm && (
         <div className="bg-brand-surface dark:bg-dark-brand-surface border border-brand-border dark:border-dark-brand-border rounded-xl p-4 space-y-3">
           <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            {editingLicense ? "Edit License" : "Add New License"}
+            {editingLicense ? t("editLicense") : t("addNewLicense")}
           </h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {isAdmin && !editingLicense && (
               <div className="sm:col-span-2">
                 <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Staff Member
+                  {t("staffMember")}
                 </label>
                 <select
                   value={targetUserId}
@@ -257,7 +257,7 @@ const LicensureTrackingTab: React.FC = () => {
             )}
             <div>
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                License Name *
+                {t("licenseName")} *
               </label>
               <input
                 value={form.name}
@@ -270,7 +270,7 @@ const LicensureTrackingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                License Number *
+                {t("licenseNumber")} *
               </label>
               <input
                 value={form.licenseNumber}
@@ -283,7 +283,7 @@ const LicensureTrackingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Issuing Authority *
+                {t("issuingAuthority")} *
               </label>
               <input
                 value={form.issuingAuthority}
@@ -296,7 +296,7 @@ const LicensureTrackingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Category
+                {t("categoryLabel")}
               </label>
               <select
                 value={form.category}
@@ -308,16 +308,16 @@ const LicensureTrackingTab: React.FC = () => {
                 }
                 className={inputCls}
               >
-                {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
+                {Object.entries(CATEGORY_LABEL_KEYS).map(([k, v]) => (
                   <option key={k} value={k}>
-                    {v}
+                    {t(v)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Issue Date *
+                {t("issueDate")} *
               </label>
               <input
                 type="date"
@@ -330,7 +330,7 @@ const LicensureTrackingTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Expiry Date *
+                {t("expiryDate")} *
               </label>
               <input
                 type="date"
@@ -343,7 +343,7 @@ const LicensureTrackingTab: React.FC = () => {
             </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Notes
+                {t("notesLabel")}
               </label>
               <textarea
                 value={form.notes}
@@ -357,7 +357,7 @@ const LicensureTrackingTab: React.FC = () => {
           </div>
           <div className="flex gap-2 justify-end">
             <Button variant="ghost" onClick={() => setShowForm(false)}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               variant="primary"
@@ -370,7 +370,7 @@ const LicensureTrackingTab: React.FC = () => {
                 !form.expiryDate
               }
             >
-              {editingLicense ? "Update" : "Save"}
+              {editingLicense ? t("updateBtn") : t("save")}
             </Button>
           </div>
         </div>
@@ -380,11 +380,11 @@ const LicensureTrackingTab: React.FC = () => {
       {filteredRows.length === 0 ? (
         <EmptyState
           icon={<DocumentTextIcon className="h-12 w-12" />}
-          title="No Licenses Found"
+          title={t("noLicensesFound")}
           description={
             filterStatus !== "all"
-              ? "Try changing the filter above."
-              : 'Click "Add License" to start tracking credentials.'
+              ? t("noLicensesFilterHint")
+              : t("noLicensesAddHint")
           }
         />
       ) : (
@@ -394,29 +394,29 @@ const LicensureTrackingTab: React.FC = () => {
               <tr>
                 {isAdmin && (
                   <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    Staff
+                    {t("licStaff")}
                   </th>
                 )}
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  License
+                  {t("licLicense")}
                 </th>
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Number
+                  {t("licNumber")}
                 </th>
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Authority
+                  {t("licAuthority")}
                 </th>
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Category
+                  {t("categoryLabel")}
                 </th>
                 <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Expiry
+                  {t("licExpiry")}
                 </th>
                 <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Status
+                  {t("licStatus")}
                 </th>
                 <th className="px-3 py-2 text-right font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                  Actions
+                  {t("actions")}
                 </th>
               </tr>
             </thead>
@@ -444,7 +444,8 @@ const LicensureTrackingTab: React.FC = () => {
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-brand-text-secondary dark:text-dark-brand-text-secondary">
                       {license.category
-                        ? CATEGORY_LABELS[license.category] || license.category
+                        ? t(CATEGORY_LABEL_KEYS[license.category]) ||
+                          license.category
                         : "—"}
                     </td>
                     <td className="px-3 py-2 whitespace-nowrap text-brand-text-secondary dark:text-dark-brand-text-secondary">
@@ -454,7 +455,7 @@ const LicensureTrackingTab: React.FC = () => {
                       <span
                         className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${cfg.color} ${cfg.bg}`}
                       >
-                        {cfg.label}
+                        {t(cfg.labelKey)}
                       </span>
                     </td>
                     <td className="px-3 py-2 text-right space-x-1">
@@ -462,13 +463,13 @@ const LicensureTrackingTab: React.FC = () => {
                         onClick={() => openEdit(user, license)}
                         className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
                       >
-                        Edit
+                        {t("edit")}
                       </button>
                       <button
                         onClick={() => handleDelete(user, license.id)}
                         className="text-red-600 dark:text-red-400 hover:underline text-xs"
                       >
-                        Delete
+                        {t("delete")}
                       </button>
                     </td>
                   </tr>

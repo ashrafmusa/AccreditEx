@@ -10,6 +10,7 @@ import {
 } from "@/types";
 import { Button } from "@/components/ui";
 import { PlusIcon, TrashIcon } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ── Colors per category ──────────────────────────────────
 
@@ -89,6 +90,7 @@ const FishboneDiagram: React.FC<FishboneDiagramProps> = ({
   onChange,
   readOnly,
 }) => {
+  const { t } = useTranslation();
   const addCause = (cat: FishboneCategory) => {
     const cause: FishboneCause = { id: uid(), text: "", subCauses: [] };
     onChange({
@@ -200,7 +202,7 @@ const FishboneDiagram: React.FC<FishboneDiagramProps> = ({
       {/* Problem Statement (Fishbone "Head") */}
       <div className="flex items-center gap-3">
         <div className="shrink-0 text-sm font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary">
-          Problem:
+          {t("rcaProblem")}
         </div>
         {readOnly ? (
           <div className="text-brand-text-primary dark:text-dark-brand-text-primary font-medium">
@@ -213,7 +215,7 @@ const FishboneDiagram: React.FC<FishboneDiagramProps> = ({
               onChange({ ...fishbone, problemStatement: e.target.value })
             }
             className="grow border border-red-300 dark:border-red-700 rounded-lg px-3 py-2 text-sm bg-red-50 dark:bg-red-900/20 text-brand-text-primary dark:text-dark-brand-text-primary font-medium focus:ring-red-500 focus:border-red-500"
-            placeholder="Describe the problem or effect..."
+            placeholder={t("rcaProblemPlaceholder")}
           />
         )}
       </div>
@@ -276,18 +278,27 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
   onUpdateSub,
   onRemoveSub,
 }) => {
+  const { t } = useTranslation();
   const colors = CATEGORY_COLORS[cat];
+  const fbCatLabels: Record<FishboneCategory, string> = {
+    man: t("fbCatPeople"),
+    machine: t("fbCatEquipment"),
+    method: t("fbCatProcess"),
+    material: t("fbCatMaterials"),
+    measurement: t("fbCatMeasurement"),
+    environment: t("fbCatEnvironment"),
+  };
   return (
     <div className={`${colors.bg} border ${colors.border} rounded-lg p-3`}>
       <div className="flex items-center justify-between mb-2">
         <span className={`font-semibold text-sm ${colors.text}`}>
-          {FISHBONE_CATEGORY_LABELS[cat]}
+          {fbCatLabels[cat]}
         </span>
         {!readOnly && (
           <button
             onClick={onAdd}
             className={`${colors.text} hover:opacity-70`}
-            title="Add cause"
+            title={t("rcaAddCause")}
           >
             <PlusIcon className="h-4 w-4" />
           </button>
@@ -295,7 +306,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       </div>
       {causes.length === 0 && (
         <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary italic">
-          No causes yet
+          {t("rcaNoCausesYet")}
         </div>
       )}
       <div className="space-y-2">
@@ -312,19 +323,19 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
                     value={cause.text}
                     onChange={(e) => onUpdate(cause.id, e.target.value)}
                     className="grow border border-gray-200 dark:border-gray-600 rounded px-2 py-1 text-xs bg-white dark:bg-gray-800 dark:text-dark-brand-text-primary"
-                    placeholder="Potential cause..."
+                    placeholder={t("rcaPotentialCause")}
                   />
                   <button
                     onClick={() => onAddSub(cause.id)}
                     className="text-gray-400 hover:text-gray-600"
-                    title="Add sub-cause"
+                    title={t("rcaAddSubCause")}
                   >
                     <PlusIcon className="h-3 w-3" />
                   </button>
                   <button
                     onClick={() => onRemove(cause.id)}
                     className="text-red-400 hover:text-red-600"
-                    title="Remove"
+                    title={t("rcaRemove")}
                   >
                     <TrashIcon className="h-3 w-3" />
                   </button>
@@ -348,7 +359,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
                             onUpdateSub(cause.id, sub.id, e.target.value)
                           }
                           className="grow border border-gray-200 dark:border-gray-600 rounded px-2 py-0.5 text-[11px] bg-white dark:bg-gray-800 dark:text-dark-brand-text-primary"
-                          placeholder="Sub-cause..."
+                          placeholder={t("rcaSubCause")}
                         />
                         <button
                           onClick={() => onRemoveSub(cause.id, sub.id)}
@@ -382,6 +393,7 @@ const FiveWhyBuilder: React.FC<FiveWhyBuilderProps> = ({
   onChange,
   readOnly,
 }) => {
+  const { t } = useTranslation();
   const updateStep = (
     idx: number,
     field: "question" | "answer",
@@ -442,7 +454,7 @@ const FiveWhyBuilder: React.FC<FiveWhyBuilderProps> = ({
                   value={step.answer}
                   onChange={(e) => updateStep(idx, "answer", e.target.value)}
                   className="w-full border border-brand-border dark:border-dark-brand-border rounded px-3 py-1.5 text-sm bg-brand-surface dark:bg-dark-brand-surface dark:text-dark-brand-text-secondary"
-                  placeholder="Because..."
+                  placeholder={t("rcaBecause")}
                   rows={2}
                 />
               </>
@@ -458,7 +470,7 @@ const FiveWhyBuilder: React.FC<FiveWhyBuilderProps> = ({
               onClick={removeLastStep}
               className="text-xs"
             >
-              Remove Last
+              {t("rcaRemoveLast")}
             </Button>
           )}
           {analysis.steps.length < 5 && (
@@ -467,14 +479,14 @@ const FiveWhyBuilder: React.FC<FiveWhyBuilderProps> = ({
               onClick={addStep}
               className="text-xs flex items-center gap-1"
             >
-              <PlusIcon className="h-3 w-3" /> Add Why
+              <PlusIcon className="h-3 w-3" /> {t("rcaAddWhy")}
             </Button>
           )}
         </div>
       )}
       <div>
         <label className="block text-sm font-medium mb-1 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-          Root Cause Conclusion
+          {t("rcaRootCauseConclusion")}
         </label>
         {readOnly ? (
           <div className="text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
@@ -487,7 +499,7 @@ const FiveWhyBuilder: React.FC<FiveWhyBuilderProps> = ({
               onChange({ ...analysis, rootCauseConclusion: e.target.value })
             }
             className="w-full border border-brand-border dark:border-dark-brand-border rounded-lg px-3 py-2 text-sm bg-brand-surface dark:bg-dark-brand-surface dark:text-dark-brand-text-primary"
-            placeholder="Based on the analysis above, the root cause is..."
+            placeholder={t("rcaConclusionPlaceholder")}
             rows={2}
           />
         )}
@@ -501,11 +513,12 @@ const FiveWhyBuilder: React.FC<FiveWhyBuilderProps> = ({
 type ToolMode = "fishbone" | "fiveWhy";
 
 const RCAToolTab: React.FC = () => {
+  const { t } = useTranslation();
   const [mode, setMode] = useState<ToolMode>("fishbone");
   const [fishbone, setFishbone] = useState<FishboneAnalysis>(emptyFishbone());
   const [fiveWhy, setFiveWhy] = useState<FiveWhyAnalysis>({
     id: `5w-${Date.now()}`,
-    steps: [{ whyNumber: 1, question: "Why did this happen?", answer: "" }],
+    steps: [{ whyNumber: 1, question: t("rcaWhyDidThisHappen"), answer: "" }],
     rootCauseConclusion: "",
     createdAt: new Date().toISOString(),
   });
@@ -524,18 +537,22 @@ const RCAToolTab: React.FC = () => {
     else
       setFiveWhy({
         id: `5w-${Date.now()}`,
-        steps: [{ whyNumber: 1, question: "Why did this happen?", answer: "" }],
+        steps: [
+          { whyNumber: 1, question: t("rcaWhyDidThisHappen"), answer: "" },
+        ],
         rootCauseConclusion: "",
         createdAt: new Date().toISOString(),
       });
-  }, [mode, fishbone, fiveWhy]);
+  }, [mode, fishbone, fiveWhy, t]);
 
   const handleReset = () => {
     if (mode === "fishbone") setFishbone(emptyFishbone());
     else
       setFiveWhy({
         id: `5w-${Date.now()}`,
-        steps: [{ whyNumber: 1, question: "Why did this happen?", answer: "" }],
+        steps: [
+          { whyNumber: 1, question: t("rcaWhyDidThisHappen"), answer: "" },
+        ],
         rootCauseConclusion: "",
         createdAt: new Date().toISOString(),
       });
@@ -555,16 +572,15 @@ const RCAToolTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            Root Cause Analysis Tool
+            {t("rcaToolTitle")}
           </h3>
           <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
-            Interactive Fishbone (Ishikawa) and 5-Why analysis for systematic
-            problem solving
+            {t("rcaToolDescription")}
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" onClick={handleReset} className="text-xs">
-            Reset
+            {t("rcaReset")}
           </Button>
           <Button
             variant="primary"
@@ -576,7 +592,7 @@ const RCAToolTab: React.FC = () => {
             }
             className="text-xs"
           >
-            Save Analysis
+            {t("rcaSaveAnalysis")}
           </Button>
         </div>
       </div>
@@ -588,17 +604,20 @@ const RCAToolTab: React.FC = () => {
           onClick={() => setMode("fishbone")}
           className="text-sm"
         >
-          🐟 Fishbone Diagram
+          {t("rcaFishboneDiagram")}
         </Button>
         <Button
           variant={mode === "fiveWhy" ? "primary" : "ghost"}
           onClick={() => setMode("fiveWhy")}
           className="text-sm"
         >
-          ❓ 5-Why Analysis
+          {t("rcaFiveWhyAnalysis")}
         </Button>
         <span className="ml-auto text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary self-center">
-          {totalCauses} cause{totalCauses !== 1 ? "s" : ""} identified
+          {totalCauses}{" "}
+          {totalCauses !== 1
+            ? t("rcaCausesIdentified")
+            : t("rcaCauseIdentified")}
         </span>
       </div>
 
@@ -615,7 +634,7 @@ const RCAToolTab: React.FC = () => {
       {savedAnalyses.length > 0 && (
         <div className="space-y-2">
           <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            Saved Analyses ({savedAnalyses.length})
+            {t("rcaSavedAnalyses")} ({savedAnalyses.length})
           </h4>
           {savedAnalyses.map((rca, i) => (
             <div
@@ -625,7 +644,7 @@ const RCAToolTab: React.FC = () => {
               {rca.fishbone && (
                 <div>
                   <span className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    🐟 Fishbone
+                    🐟 {t("rcaFishboneDiagram").replace("🐟 ", "")}
                   </span>
                   <span className="ml-2 text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
                     {rca.fishbone.problemStatement}
@@ -636,20 +655,20 @@ const RCAToolTab: React.FC = () => {
                       (s, c) => s + rca.fishbone!.categories[c].length,
                       0,
                     )}{" "}
-                    causes)
+                    {t("rcaCauses")})
                   </span>
                 </div>
               )}
               {rca.fiveWhys?.map((fw) => (
                 <div key={fw.id}>
                   <span className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    ❓ 5-Why
+                    ❓ {t("rcaFiveWhyAnalysis").replace("❓ ", "")}
                   </span>
                   <span className="ml-2 text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
                     {fw.rootCauseConclusion}
                   </span>
                   <span className="ml-2 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    ({fw.steps.length} steps)
+                    ({fw.steps.length} {t("rcaSteps")})
                   </span>
                 </div>
               ))}

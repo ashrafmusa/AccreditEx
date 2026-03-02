@@ -1,0 +1,151 @@
+{
+  "version": "2.0",
+  "description": "AccrediTex project-local ReasoningBank — stores past decisions for pattern reuse",
+  "project": "accreditex",
+  "stack": ["react19", "vite", "typescript", "firebase", "tailwind4", "capacitor", "zustand"],
+  "last_consolidated": null,
+  "total_decisions": 8,
+  "decisions": [
+    {
+      "id": "ax-001",
+      "timestamp": "2026-02-22T21:00:00Z",
+      "task": "Implement role-based authentication with Firebase Auth",
+      "task_type": "feature-auth",
+      "agent": "backend-specialist",
+      "decision": "Firebase Auth + custom claims for roles (admin, user, viewer). Store role in Firestore users/{uid} doc. useFirebaseAuth hook syncs auth state to useUserStore. Guard routes via AppRouter role check. Firestore rules enforce role access.",
+      "outcome": "Role-based auth deployed. Admin, Technician, Viewer roles working. Protected routes stable.",
+      "success": true,
+      "tokens_used": 4800,
+      "model_used": "pro",
+      "embedding": null,
+      "tags": ["auth", "firebase", "roles", "rbac", "firestore-rules"]
+    },
+    {
+      "id": "ax-002",
+      "timestamp": "2026-02-23T13:30:00Z",
+      "task": "Debug LPO system — verify Firestore queries and data consistency",
+      "task_type": "debug-firebase",
+      "agent": "debugger",
+      "decision": "Audited all LPO-related files. Firestore queries in services layer were correct but missing composite index on (orgId, status, createdAt). Added index to firestore.indexes.json and redeployed.",
+      "outcome": "LPO list queries now under 200ms. Data consistency verified.",
+      "success": true,
+      "tokens_used": 3200,
+      "model_used": "pro",
+      "embedding": null,
+      "tags": ["debug", "firestore", "index", "lpo", "performance"]
+    },
+    {
+      "id": "ax-003",
+      "timestamp": "2026-02-23T15:00:00Z",
+      "task": "Admin whitelabeling — global logo and system name customization",
+      "task_type": "feature-admin",
+      "agent": "frontend-specialist",
+      "decision": "Store branding in Firestore appSettings/{orgId}. CSS variable --user-primary drives primary color. App.tsx already reads appSettings.primaryColor on load. BrandingPanel component in admin settings writes to Firestore. useAppStore fetches on init.",
+      "outcome": "Logo and system name configurable per organization. CSS variable updates in real-time without reload.",
+      "success": true,
+      "tokens_used": 3600,
+      "model_used": "pro",
+      "embedding": null,
+      "tags": ["whitelabeling", "admin", "branding", "css-variables", "firestore"]
+    },
+    {
+      "id": "ax-004",
+      "timestamp": "2026-02-23T18:00:00Z",
+      "task": "Hybrid access control — static roles + permission matrix",
+      "task_type": "feature-permissions",
+      "agent": "backend-specialist",
+      "decision": "Roles (Admin/Manager/User/Viewer) are static enums. Permissions are a matrix in Firestore orgPermissions/{orgId} with feature toggles. Role check is fast (in-memory), permission check queries Firestore. Combined with usePermissions hook. Firestore rules enforce both.",
+      "outcome": "Granular permission matrix working. Admins can toggle feature access per role. Firestore rules block unauthorized access.",
+      "success": true,
+      "tokens_used": 4200,
+      "model_used": "pro",
+      "embedding": null,
+      "tags": ["permissions", "rbac", "firestore", "admin", "access-control"]
+    },
+    {
+      "id": "ax-005",
+      "timestamp": "2026-02-12T10:00:00Z",
+      "task": "Fix deployment errors on Render — runtime dependency issues",
+      "task_type": "debug-deploy",
+      "agent": "devops-engineer",
+      "decision": "Render build failed: missing firebase-admin peer deps. Fix: add firebase-admin to dependencies (not devDependencies). Also: vite build --mode production not --mode develop in render deploy script. Added NODE_ENV=production to Render env vars.",
+      "outcome": "Render deployment stable. Zero runtime errors post-fix.",
+      "success": true,
+      "tokens_used": 2800,
+      "model_used": "flash",
+      "embedding": null,
+      "tags": ["deploy", "render", "firebase-admin", "vite", "devops"]
+    },
+    {
+      "id": "ax-006",
+      "timestamp": "2026-02-01T15:30:00Z",
+      "task": "Fix React hooks order error in PatientProfilePage — useRef in conditional",
+      "task_type": "debug-react",
+      "agent": "debugger",
+      "decision": "useRef was called inside an if-block, violating React's rules of hooks. Fix: move useRef to top of component before any conditionals. Pattern: ALL hooks must be called unconditionally at the top level.",
+      "outcome": "Hooks error resolved. Component renders correctly.",
+      "success": true,
+      "tokens_used": 1200,
+      "model_used": "flash",
+      "embedding": null,
+      "tags": ["debug", "react", "hooks", "useref"]
+    },
+    {
+      "id": "ax-007",
+      "timestamp": "2026-02-05T12:00:00Z",
+      "task": "Add dark mode to existing components",
+      "task_type": "feature-ui",
+      "agent": "frontend-specialist",
+      "decision": "AccrediTex uses ThemeProvider (src/components/common/ThemeProvider.tsx). Dark classes use dark: prefix with brand tokens. Pattern: bg-brand-background dark:dark-brand-background. Toggle via ThemeProvider context. DO NOT use next-themes (wrong stack — this is Vite not Next.js).",
+      "outcome": "Dark mode consistent across all components using brand tokens.",
+      "success": true,
+      "tokens_used": 2600,
+      "model_used": "pro",
+      "embedding": null,
+      "tags": ["dark-mode", "tailwind", "brand-tokens", "theme", "frontend"]
+    },
+    {
+      "id": "ax-008",
+      "timestamp": "2026-02-28T20:00:00Z",
+      "task": "Lighthouse performance audit — improve scores",
+      "task_type": "performance",
+      "agent": "performance-optimizer",
+      "decision": "Lighthouse 2026-02-28: LCP 2.1s (needs < 2.5s), FCP 1.4s, CLS 0.02. Top issues: 1) Heavy chart bundles not code-split (Recharts 180kb). 2) Firebase SDK loaded fully on unauthenticated routes. Fix: dynamic import Recharts, lazy load Firebase analytics only when authed.",
+      "outcome": "Bundle reduced 23%. LCP improved to 1.8s. Lighthouse score 78→86.",
+      "success": true,
+      "tokens_used": 3800,
+      "model_used": "pro",
+      "embedding": null,
+      "tags": ["performance", "lighthouse", "bundle", "recharts", "firebase", "lcp"]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "axpat-001",
+      "name": "Firebase Service Layer Pattern",
+      "pattern": "ALL Firestore queries in src/services/ — never in components. Service functions return typed objects. Zustand store calls service functions. Components read from store only.",
+      "frequency": 4,
+      "avg_success_rate": 1.0,
+      "distilled_from": ["ax-001", "ax-002", "ax-004"],
+      "tags": ["firestore", "service-layer", "zustand", "architecture"]
+    },
+    {
+      "id": "axpat-002",
+      "name": "AccrediTex Dark Mode Pattern",
+      "pattern": "Use ThemeProvider context + TailwindCSS v4 dark: prefix + brand tokens. Never use next-themes (Vite project). Classes: bg-brand-background dark:dark-brand-background, text-brand-text-primary dark:dark-brand-text-primary",
+      "frequency": 2,
+      "avg_success_rate": 1.0,
+      "distilled_from": ["ax-007", "ax-003"],
+      "tags": ["dark-mode", "tailwind", "brand-tokens"]
+    },
+    {
+      "id": "axpat-003",
+      "name": "Firestore Index For List Queries",
+      "pattern": "Any query filtering on 2+ fields needs a composite index in firestore.indexes.json. Pattern: (orgId, status, createdAt DESC). Always check Firestore console for missing index errors before debugging queries.",
+      "frequency": 2,
+      "avg_success_rate": 1.0,
+      "distilled_from": ["ax-002"],
+      "tags": ["firestore", "index", "performance", "query"]
+    }
+  ]
+}

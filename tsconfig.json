@@ -11,7 +11,16 @@
     ],
     "skipLibCheck": true,
     "types": [
-      "node"
+      "node",
+      "@capacitor/camera",
+      "@capacitor/push-notifications",
+      "@capacitor/haptics",
+      "@capacitor/status-bar",
+      "@capacitor/splash-screen",
+      "@capacitor/app",
+      "@capacitor/keyboard",
+      "@capacitor/preferences",
+      "@capacitor/filesystem"
     ],
     "moduleResolution": "bundler",
     "isolatedModules": true,

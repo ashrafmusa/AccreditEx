@@ -8,6 +8,7 @@ import RiskMatrix from "./RiskMatrix";
 import RiskModal from "./RiskModal";
 import { PlusIcon, PencilIcon, TrashIcon } from "../icons";
 import { TableContainer } from "@/components/ui";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
 
 const RiskRegisterTab: React.FC = () => {
   const { t } = useTranslation();
@@ -15,6 +16,10 @@ const RiskRegisterTab: React.FC = () => {
   const { risks, addRisk, updateRisk, deleteRisk, trainingPrograms } =
     useAppStore();
   const { users } = useUserStore();
+  const { can } = usePermission();
+  const canCreate = can(Action.Create, Resource.Risk);
+  const canUpdate = can(Action.Update, Resource.Risk);
+  const canDelete = can(Action.Delete, Resource.Risk);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRisk, setEditingRisk] = useState<Risk | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -90,16 +95,18 @@ const RiskRegisterTab: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-        <button
-          onClick={() => {
-            setEditingRisk(null);
-            setIsModalOpen(true);
-          }}
-          className="bg-brand-primary text-white px-4 py-2 rounded-lg flex items-center font-semibold text-sm"
-        >
-          <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-          {t("addNewRisk")}
-        </button>
+        {canCreate && (
+          <button
+            onClick={() => {
+              setEditingRisk(null);
+              setIsModalOpen(true);
+            }}
+            className="bg-brand-primary text-white px-4 py-2 rounded-lg flex items-center font-semibold text-sm"
+          >
+            <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+            {t("addNewRisk")}
+          </button>
+        )}
       </div>
 
       <RiskMatrix risks={risks} />
@@ -140,25 +147,29 @@ const RiskRegisterTab: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center gap-2">
-                        <button
-                          disabled={isDeleting}
-                          onClick={() => {
-                            setEditingRisk(risk);
-                            setIsModalOpen(true);
-                          }}
-                          className="p-1 hover:text-brand-primary disabled:opacity-50"
-                          aria-label={t("editRisk")}
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          disabled={isDeleting}
-                          onClick={() => handleDelete(risk.id)}
-                          className="p-1 hover:text-red-600 disabled:opacity-50"
-                          aria-label={t("deleteRisk")}
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            disabled={isDeleting}
+                            onClick={() => {
+                              setEditingRisk(risk);
+                              setIsModalOpen(true);
+                            }}
+                            className="p-1 hover:text-brand-primary disabled:opacity-50"
+                            aria-label={t("editRisk")}
+                          >
+                            <PencilIcon className="w-4 h-4" />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            disabled={isDeleting}
+                            onClick={() => handleDelete(risk.id)}
+                            className="p-1 hover:text-red-600 disabled:opacity-50"
+                            aria-label={t("deleteRisk")}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

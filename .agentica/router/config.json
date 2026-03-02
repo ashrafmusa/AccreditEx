@@ -1,0 +1,37 @@
+{
+  "models": {
+    "lite": "gemini-2.0-flash-lite",
+    "flash": "gemini-2.0-flash",
+    "pro": "gemini-2.5-pro",
+    "pro-extended": "gemini-2.5-pro"
+  },
+  "thresholds": {
+    "lite": { "max_complexity": 2, "max_tokens": 8000 },
+    "flash": { "max_complexity": 4, "max_tokens": 25000 },
+    "pro": { "max_complexity": 7, "max_tokens": 80000 },
+    "pro-extended": { "max_complexity": 10, "max_tokens": 200000 }
+  },
+  "context_strategies": {
+    "MINIMAL": { "max_skills": 1, "load_tier": 1, "compress": true },
+    "COMPRESSED": { "max_skills": 2, "load_tier": 2, "compress": true },
+    "FULL": { "max_skills": 5, "load_tier": 3, "compress": false }
+  },
+  "complexity_weights": {
+    "domain_count": 2.5,
+    "keyword_score": 2.0,
+    "file_impact": 1.5,
+    "agent_tier": 2.0,
+    "ambiguity": 1.0,
+    "history_penalty": -1.5
+  },
+  "keywords": {
+    "high_complexity": ["architect", "design", "distributed", "system", "platform", "enterprise", "migration", "refactor entire", "rebuild", "from scratch", "microservices", "multi-tenant"],
+    "medium_complexity": ["build", "create", "implement", "add feature", "integrate", "connect", "redesign", "optimize", "review", "audit", "setup"],
+    "low_complexity": ["fix", "update", "change", "rename", "move", "typo", "color", "text", "style", "add comment", "minor", "tweak", "small"]
+  },
+  "savings": {
+    "flash_vs_pro_cost_ratio": 0.1,
+    "estimated_flash_tasks_percent": 40,
+    "estimated_token_reduction_with_compression": 0.30
+  }
+}

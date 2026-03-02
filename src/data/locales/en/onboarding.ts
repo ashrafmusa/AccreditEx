@@ -12,4 +12,31 @@ export const en = {
     onboardingAiTitle: 'AI-Powered Assistance',
     onboardingAiMessage: 'Leverage the power of AI to suggest action plans for non-compliant items and help draft policy documents, saving you time and effort.',
     getStarted: 'Get Started',
+
+    // Guided Tour — New User
+    tourDashboardTitle: 'Your Dashboard',
+    tourDashboardDesc: 'This is your command center. View compliance rates, project progress, upcoming deadlines, and key metrics at a glance.',
+    tourProjectsTitle: 'Projects Hub',
+    tourProjectsDesc: 'Create and manage accreditation projects. Each project tracks standards compliance with detailed checklists.',
+    tourAccreditationTitle: 'Accreditation Hub',
+    tourAccreditationDesc: 'Browse and manage accreditation programs like JCI, CBAHI, and DNV. Import standards and track requirements.',
+    tourDocumentsTitle: 'Document Control',
+    tourDocumentsDesc: 'Manage policies, procedures, and evidence documents. Track versions, approvals, and compliance status.',
+    tourTrainingTitle: 'Training Hub',
+    tourTrainingDesc: 'Track staff competencies, training records, and performance evaluations. Ensure your team stays certified.',
+    tourAnalyticsTitle: 'Analytics Hub',
+    tourAnalyticsDesc: 'Dive deep into compliance analytics, gap analysis reports, and trend visualizations across all your projects.',
+    tourSettingsTitle: 'Settings',
+    tourSettingsDesc: 'Configure your profile, app preferences, theme, language, and notification settings.',
+    skipTour: 'Skip Tour',
+
+    // Guided Tour — Quality Manager
+    tourAuditHubTitle: 'Audit Hub',
+    tourAuditHubDesc: 'Plan, schedule, and conduct internal audits. Track findings, non-conformities, and corrective actions.',
+    tourRiskHubTitle: 'Risk Hub',
+    tourRiskHubDesc: 'Identify, assess, and mitigate risks with risk registers, heat maps, and FMEA analysis tools.',
+    tourDataHubTitle: 'Data Hub',
+    tourDataHubDesc: 'Access centralized data management with bulk import/export, data validation, and reporting tools.',
+    tourKnowledgeBaseTitle: 'Knowledge Base',
+    tourKnowledgeBaseDesc: 'Access accreditation guidelines, best practices, and reference materials for your team.',
 };

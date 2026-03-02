@@ -11,7 +11,7 @@
       style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
       font-src 'self' https://fonts.gstatic.com data:;
       img-src 'self' data: blob: https: https://*.cloudinary.com https://res.cloudinary.com https://*.googleapis.com;
-      connect-src 'self' http://localhost:8000 https://api.cloudinary.com https://res.cloudinary.com https://*.cloudinary.com https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net wss://*.firebaseio.com https://aistudiocdn.com https://*.openai.com https://ipapi.co https://accreditex.onrender.com https://fonts.gstatic.com https://www.googletagmanager.com https://*.google-analytics.com;
+      connect-src 'self' http://localhost:8000 https://api.cloudinary.com https://res.cloudinary.com https://*.cloudinary.com https://*.firebaseio.com https://*.googleapis.com https://*.cloudfunctions.net wss://*.firebaseio.com https://aistudiocdn.com https://*.openai.com https://ipapi.co https://api.ipdata.co https://accreditex.onrender.com https://fonts.gstatic.com https://www.googletagmanager.com https://*.google-analytics.com;
       frame-src 'self' https://*.google.com https://accounts.google.com https://*.firebaseapp.com;
       worker-src 'self' blob: https://unpkg.com;
       object-src 'none';
@@ -25,30 +25,79 @@
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
-    <title>AccreditEx</title>
+    <title>AccreditEx — Healthcare Accreditation Management Platform</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="AccreditEx is an enterprise-grade healthcare accreditation management platform. Manage JCI, CBAHI, DNV standards compliance, audits, gap analysis, CAPA, training, and quality improvement — all in one place.">
+    <meta name="keywords" content="healthcare accreditation, JCI accreditation, CBAHI, DNV, quality management, compliance management, audit management, gap analysis, CAPA, hospital accreditation, healthcare quality">
+    <meta name="author" content="AccreditEx">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#4f46e5">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://accreditex.web.app/">
+    <meta property="og:title" content="AccreditEx — Healthcare Accreditation Management Platform">
+    <meta property="og:description" content="Streamline healthcare accreditation with AI-powered compliance tracking, audit management, gap analysis, and real-time dashboards. Trusted by healthcare organizations worldwide.">
+    <meta property="og:image" content="https://accreditex.web.app/og-image.png">
+    <meta property="og:site_name" content="AccreditEx">
+    <meta property="og:locale" content="en_US">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="AccreditEx — Healthcare Accreditation Management Platform">
+    <meta name="twitter:description" content="Streamline healthcare accreditation with AI-powered compliance tracking, audit management, and real-time dashboards.">
+    <meta name="twitter:image" content="https://accreditex.web.app/og-image.png">
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://accreditex.web.app/">
+    
+    <!-- Mobile Web App -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="AccreditEx">
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M12 2L2 7V17L12 22L22 17V7L12 2Z' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 7L12 12L22 7' stroke='%234f46e5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M12 22V12' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
     <link rel="manifest" href="/manifest.json">
     
-    <script type="importmap">
-{
-  "imports": {
-    "react": "https://aistudiocdn.com/react@^19.1.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "recharts": "https://aistudiocdn.com/recharts@^3.2.1",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.20.0",
-    "zustand": "https://aistudiocdn.com/zustand@^5.0.8",
-    "cobe": "https://aistudiocdn.com/cobe@^0.6.5",
-    "framer-motion": "https://aistudiocdn.com/framer-motion@^11.3.19",
-    "use-debounce": "https://aistudiocdn.com/use-debounce@^10.0.6",
-    "firebase/app": "https://aistudiocdn.com/firebase@^10.12.4/app",
-    "firebase/auth": "https://aistudiocdn.com/firebase@^10.12.4/auth",
-    "firebase/firestore": "https://aistudiocdn.com/firebase@^10.12.4/firestore",
-    "firebase/": "https://aistudiocdn.com/firebase@^12.3.0/",
-    "recharts/": "https://aistudiocdn.com/recharts@^3.3.0/"
-  }
-}
-</script>
+    <!-- Preconnect to critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://aistudiocdn.com">
+    
+    <!-- DNS Prefetch for API endpoints -->
+    <link rel="dns-prefetch" href="https://accreditex.onrender.com">
+    <link rel="dns-prefetch" href="https://firestore.googleapis.com">
+    
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "AccreditEx",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description": "Enterprise-grade healthcare accreditation management platform with AI-powered compliance tracking, audit management, and quality improvement tools.",
+      "url": "https://accreditex.web.app",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "description": "Free tier available"
+      },
+      "featureList": [
+        "JCI/CBAHI/DNV Standards Management",
+        "AI-Powered Gap Analysis",
+        "Audit Management",
+        "CAPA Tracking",
+        "Training & Competency Management",
+        "Real-time Compliance Dashboards",
+        "Document Control",
+        "Risk Management"
+      ]
+    }
+    </script>
+    
     <style>
       :root {
         --brand-primary-color: #4f46e5;
@@ -106,7 +155,33 @@
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Inline loading skeleton — gives browser immediate FCP while JS loads -->
+      <div id="app-skeleton" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;background:var(--color-background);font-family:system-ui,-apple-system,sans-serif;">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" style="animation:pulse 2s ease-in-out infinite;">
+          <path d="M12 2L2 7V17L12 22L22 17V7L12 2Z" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M2 7L12 12L22 7" stroke="#4f46e5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M12 22V12" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="margin-top:16px;font-size:1.875rem;font-weight:700;animation:pulse 2s ease-in-out infinite;">
+          <span style="color:var(--color-text-primary);">Accredit</span><span style="color:#4f46e5;">Ex</span>
+        </div>
+        <div style="margin-top:24px;width:200px;height:4px;background:#e2e8f0;border-radius:9999px;overflow:hidden;">
+          <div style="width:100%;height:100%;background:linear-gradient(90deg,#4f46e5 0%,#818cf8 50%,#4f46e5 100%);background-size:200% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:9999px;"></div>
+        </div>
+        <style>
+          @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+          @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+          @media(prefers-color-scheme:dark){#app-skeleton{background:#020617!important}#app-skeleton span:first-child{color:#e2e8f0!important}#app-skeleton>div:last-of-type>div{background:#334155!important}}
+        </style>
+      </div>
+    </div>
+    <noscript>
+      <div style="text-align:center;padding:4rem 2rem;font-family:system-ui,sans-serif;color:#334155;">
+        <h1 style="font-size:1.5rem;margin-bottom:1rem;">AccreditEx requires JavaScript</h1>
+        <p>Please enable JavaScript in your browser to use AccreditEx Healthcare Accreditation Management Platform.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/index.tsx"></script>
     <script>
         // Register smart service worker
@@ -115,7 +190,7 @@
                 // Clean up old caches first
                 const cacheNames = await caches.keys();
                 for (let cacheName of cacheNames) {
-                    if (cacheName !== 'accreditex-cache-v3') {
+                    if (cacheName !== 'accreditex-cache-v4') {
                         await caches.delete(cacheName);
                         console.log('Deleted old cache:', cacheName);
                     }

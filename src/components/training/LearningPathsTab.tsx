@@ -17,6 +17,7 @@ import {
 } from "@/components/icons";
 import { useUserStore } from "@/stores/useUserStore";
 import { aiAgentService } from "@/services/aiAgentService";
+import { useTranslation } from "@/hooks/useTranslation";
 
 // ── Seed data: 4 built-in learning paths ──────────────────
 
@@ -350,6 +351,7 @@ type ViewMode = "catalog" | "detail" | "myProgress";
 
 const LearningPathsTab: React.FC = () => {
   const { currentUser } = useUserStore();
+  const { t } = useTranslation();
   const isAdmin = currentUser?.role === UserRole.Admin;
 
   const [paths] = useState<LearningPath[]>(SEED_PATHS);
@@ -399,6 +401,30 @@ const LearningPathsTab: React.FC = () => {
       setAiLoading(false);
     }
   }, [currentUser, aiLoading]);
+
+  // ── Category label map using translations ────────────
+  const categoryLabels: Record<LearningPath["category"], string> = useMemo(
+    () => ({
+      onboarding: t("catOnboarding"),
+      compliance: t("catCompliance"),
+      clinical: t("catClinical"),
+      safety: t("catSafety"),
+      leadership: t("catLeadership"),
+      technical: t("catTechnical"),
+    }),
+    [t],
+  );
+
+  // ── Step type label map using translations ────────────
+  const stepTypeLabels: Record<LearningPathStep["type"], string> = useMemo(
+    () => ({
+      training: t("trainingModuleType"),
+      external_ce: t("externalCEType"),
+      assessment: t("assessmentType"),
+      reading: t("readingType"),
+    }),
+    [t],
+  );
 
   const filteredPaths = useMemo(
     () =>
@@ -477,7 +503,7 @@ const LearningPathsTab: React.FC = () => {
           }}
           size="sm"
         >
-          Catalog
+          {t("catalog")}
         </Button>
         <Button
           variant={view === "myProgress" ? "primary" : "ghost"}
@@ -487,7 +513,7 @@ const LearningPathsTab: React.FC = () => {
           }}
           size="sm"
         >
-          My Progress ({myEnrolled.length})
+          {t("myProgress")} ({myEnrolled.length})
         </Button>
         <div className="flex-1" />
         <Button
@@ -498,7 +524,7 @@ const LearningPathsTab: React.FC = () => {
           className="flex items-center gap-1.5 text-brand-primary"
         >
           <AcademicCapIcon className="h-4 w-4" />
-          {aiLoading ? "Analyzing..." : "AI Recommendations"}
+          {aiLoading ? t("analyzing") : t("aiRecommendations")}
         </Button>
       </div>
 
@@ -508,7 +534,7 @@ const LearningPathsTab: React.FC = () => {
           <div className="flex items-start justify-between mb-3">
             <h3 className="text-sm font-semibold text-brand-primary flex items-center gap-2">
               <AcademicCapIcon className="h-5 w-5" />
-              AI Training Recommendations
+              {t("aiTrainingRecommendations")}
             </h3>
             <button
               onClick={() => {
@@ -517,7 +543,7 @@ const LearningPathsTab: React.FC = () => {
               }}
               className="text-gray-400 hover:text-gray-600 text-xs"
             >
-              Dismiss
+              {t("dismiss")}
             </button>
           </div>
           {aiError ? (
@@ -543,7 +569,7 @@ const LearningPathsTab: React.FC = () => {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-dark-brand-surface dark:text-gray-300"
               }`}
             >
-              All
+              {t("all")}
             </button>
             {(
               Object.keys(
@@ -559,7 +585,7 @@ const LearningPathsTab: React.FC = () => {
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-dark-brand-surface dark:text-gray-300"
                 }`}
               >
-                {LEARNING_PATH_CATEGORY_LABELS[cat]}
+                {categoryLabels[cat]}
               </button>
             ))}
           </div>
@@ -583,11 +609,11 @@ const LearningPathsTab: React.FC = () => {
                     <span
                       className={`text-xs font-semibold px-2 py-0.5 rounded-full ${CATEGORY_COLORS[path.category]}`}
                     >
-                      {LEARNING_PATH_CATEGORY_LABELS[path.category]}
+                      {categoryLabels[path.category]}
                     </span>
                     {prog?.completedAt && (
                       <span className="text-xs font-medium text-green-600 flex items-center gap-1">
-                        <CheckCircleIcon className="h-4 w-4" /> Completed
+                        <CheckCircleIcon className="h-4 w-4" /> {t("completed")}
                       </span>
                     )}
                   </div>
@@ -600,25 +626,26 @@ const LearningPathsTab: React.FC = () => {
                   <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span className="flex items-center gap-1">
                       <BookOpenIcon className="h-3.5 w-3.5" />
-                      {path.steps.length} steps
+                      {path.steps.length} {t("steps")}
                     </span>
                     {path.estimatedHours && (
                       <span className="flex items-center gap-1">
                         <ClockIcon className="h-3.5 w-3.5" />~
-                        {path.estimatedHours}h
+                        {path.estimatedHours}
+                        {t("estimatedHours")}
                       </span>
                     )}
                     {!!path.ceCreditsTotal && (
                       <span className="flex items-center gap-1">
                         <AcademicCapIcon className="h-3.5 w-3.5" />
-                        {path.ceCreditsTotal} CE
+                        {path.ceCreditsTotal} {t("ceLabel")}
                       </span>
                     )}
                   </div>
                   {prog && !prog.completedAt && (
                     <div className="mt-3">
                       <div className="flex justify-between text-xs mb-1">
-                        <span className="text-gray-500">Progress</span>
+                        <span className="text-gray-500">{t("progress")}</span>
                         <span className="font-medium">{pct}%</span>
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
@@ -646,7 +673,7 @@ const LearningPathsTab: React.FC = () => {
             }}
             className="text-sm text-brand-primary hover:underline"
           >
-            &larr; Back to Catalog
+            {t("backToCatalog")}
           </button>
 
           <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
@@ -654,7 +681,7 @@ const LearningPathsTab: React.FC = () => {
               <span
                 className={`inline-block text-xs font-semibold px-2 py-0.5 rounded-full mb-2 ${CATEGORY_COLORS[selectedPath.category]}`}
               >
-                {LEARNING_PATH_CATEGORY_LABELS[selectedPath.category]}
+                {categoryLabels[selectedPath.category]}
               </span>
               <h2 className="text-2xl font-bold dark:text-dark-brand-text-primary">
                 {selectedPath.title}
@@ -663,12 +690,18 @@ const LearningPathsTab: React.FC = () => {
                 {selectedPath.description}
               </p>
               <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
-                <span>{selectedPath.steps.length} steps</span>
+                <span>
+                  {selectedPath.steps.length} {t("steps")}
+                </span>
                 {selectedPath.estimatedHours && (
-                  <span>~{selectedPath.estimatedHours} hours</span>
+                  <span>
+                    ~{selectedPath.estimatedHours} {t("hours")}
+                  </span>
                 )}
                 {!!selectedPath.ceCreditsTotal && (
-                  <span>{selectedPath.ceCreditsTotal} CE credits</span>
+                  <span>
+                    {selectedPath.ceCreditsTotal} {t("ceCreditsLabel")}
+                  </span>
                 )}
               </div>
             </div>
@@ -679,15 +712,15 @@ const LearningPathsTab: React.FC = () => {
                   onClick={() => enrollInPath(selectedPath)}
                 >
                   <PlayCircleIcon className="h-4 w-4 mr-1" />
-                  Enroll
+                  {t("enroll")}
                 </Button>
               ) : getProgress(selectedPath.id)?.completedAt ? (
                 <span className="flex items-center gap-1 text-green-600 font-medium">
-                  <CheckCircleIcon className="h-5 w-5" /> Completed
+                  <CheckCircleIcon className="h-5 w-5" /> {t("completed")}
                 </span>
               ) : (
                 <span className="text-sm text-brand-primary font-medium">
-                  In Progress
+                  {t("statusInProgress")}
                 </span>
               )}
             </div>
@@ -718,16 +751,16 @@ const LearningPathsTab: React.FC = () => {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs font-medium text-gray-400">
-                            Step {step.order}
+                            {t("stepLabel")} {step.order}
                           </span>
                           <span
                             className={`text-xs font-medium px-2 py-0.5 rounded-full ${STEP_TYPE_COLORS[step.type]}`}
                           >
-                            {STEP_TYPE_LABELS[step.type]}
+                            {stepTypeLabels[step.type]}
                           </span>
                           {step.requiredForCompletion && (
                             <span className="text-xs text-red-500 font-medium">
-                              Required
+                              {t("required")}
                             </span>
                           )}
                         </div>
@@ -741,14 +774,16 @@ const LearningPathsTab: React.FC = () => {
                         )}
                         {step.externalProvider && (
                           <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
-                            Provider: {step.externalProvider.providerName}{" "}
-                            &middot; {step.externalProvider.credits}{" "}
-                            {step.externalProvider.creditCategory} credits
+                            {t("providerLabel")}{" "}
+                            {step.externalProvider.providerName} &middot;{" "}
+                            {step.externalProvider.credits}{" "}
+                            {step.externalProvider.creditCategory}{" "}
+                            {t("credits")}
                           </p>
                         )}
                         {step.estimatedMinutes ? (
                           <span className="text-xs text-gray-400 mt-1 inline-block">
-                            ~{step.estimatedMinutes} min
+                            ~{step.estimatedMinutes} {t("estimatedMin")}
                           </span>
                         ) : null}
                       </div>
@@ -762,7 +797,9 @@ const LearningPathsTab: React.FC = () => {
                               ? "bg-green-500 border-green-500 text-white"
                               : "border-gray-300 dark:border-gray-600 hover:border-green-400"
                           }`}
-                          title={isDone ? "Mark incomplete" : "Mark complete"}
+                          title={
+                            isDone ? t("markIncomplete") : t("markComplete")
+                          }
                         >
                           {isDone && <CheckCircleIcon className="h-4 w-4" />}
                         </button>
@@ -783,14 +820,14 @@ const LearningPathsTab: React.FC = () => {
             <Card className="p-8 text-center">
               <BookOpenIcon className="h-10 w-10 text-gray-400 mx-auto mb-3" />
               <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                You haven't enrolled in any learning paths yet.
+                {t("notEnrolledYet")}
               </p>
               <Button
                 variant="primary"
                 className="mt-4"
                 onClick={() => setView("catalog")}
               >
-                Browse Catalog
+                {t("browseCatalog")}
               </Button>
             </Card>
           ) : (
@@ -812,7 +849,7 @@ const LearningPathsTab: React.FC = () => {
                     </h3>
                     {prog.completedAt ? (
                       <span className="text-sm text-green-600 flex items-center gap-1">
-                        <CheckCircleIcon className="h-4 w-4" /> Completed
+                        <CheckCircleIcon className="h-4 w-4" /> {t("completed")}
                       </span>
                     ) : (
                       <span className="text-sm text-brand-primary font-medium">
@@ -822,13 +859,17 @@ const LearningPathsTab: React.FC = () => {
                   </div>
                   <div className="flex items-center gap-4 text-xs text-gray-500 mb-2">
                     <span>
-                      {prog.stepsCompleted.length}/{path.steps.length} steps
+                      {prog.stepsCompleted.length}/{path.steps.length}{" "}
+                      {t("steps")}
                     </span>
                     {prog.earnedCredits > 0 && (
-                      <span>{prog.earnedCredits} CE earned</span>
+                      <span>
+                        {prog.earnedCredits} {t("ceEarned")}
+                      </span>
                     )}
                     <span>
-                      Started {new Date(prog.startedAt).toLocaleDateString()}
+                      {t("started")}{" "}
+                      {new Date(prog.startedAt).toLocaleDateString()}
                     </span>
                   </div>
                   {!prog.completedAt && (

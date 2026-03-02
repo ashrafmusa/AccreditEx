@@ -85,12 +85,24 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **Departmental Management**: Department dashboards, performance metrics, and task delegation.
 -   **Security Dashboard**: Audit logging, session management, usage analytics, and monitoring.
 -   **Settings**: 19 settings sections including LIMS Integration configuration.
--   **PWA**: Progressive Web App with service worker for offline-capable access.
+-   **PWA & Offline-First**: Progressive Web App with IndexedDB persistence (`idb`), `useOfflineSync` hook for background sync, Service Worker v4 with stale-while-revalidate caching, and enhanced offline indicator with pending-sync count.
+-   **Interactive Guided Tour**: Lightweight tooltip-based onboarding tour with 2 tour tracks (New User, Quality Manager), keyboard navigation, dark mode, and RTL support.
+-   **SEO Optimized**: Open Graph, Twitter Cards, JSON-LD structured data, dynamic meta descriptions for 17+ views, preconnect/DNS-prefetch hints.
+
+### Native Mobile (Capacitor 8.x) (NEW)
+-   **Cross-Platform Native Wrapper**: Single codebase deploys to Android (APK/AAB), iOS (IPA), and Web (PWA).
+-   **Native Camera Evidence Capture**: Take photos or pick from gallery directly within checklists via `@capacitor/camera`.
+-   **Push Notifications (FCM)**: 4 notification channels (task deadlines, audit reminders, document approvals, system alerts) with topic-based subscriptions.
+-   **Biometric Authentication**: Fingerprint and Face ID login via device keychain/keystore (capacitor-native-biometric).
+-   **Native Lifecycle Integration**: Status bar theming, splash screen, hardware back button handling, keyboard adjustments.
+-   **Platform Detection**: `capacitorPlatform.ts` utility with graceful web fallbacks for all native features.
 
 ## Technology Stack
 
 -   **Frontend**: React 19.1.1, TypeScript 5.x, Tailwind CSS v4 (native), Vite 6.x
+-   **Native Mobile**: Capacitor 8.x (10 plugins: camera, push-notifications, haptics, status-bar, splash-screen, app, keyboard, preferences, filesystem + capacitor-native-biometric)
 -   **State Management**: Zustand (9 stores: `useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`)
+-   **Offline Storage**: IndexedDB via `idb` (3 stores: `cachedData`, `pendingSync`, `meta`) + in-memory Firestore cache with 5-min TTL
 -   **Backend**: Google Firebase
     -   **Authentication**: Firebase Authentication (Email/Password)
     -   **Database**: Google Firestore (real-time)
@@ -109,11 +121,13 @@ AccreditEx is built on a clean, scalable, and modular architecture to ensure lon
 
 2.  **State Management (Zustand)**: 9 feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`) provide reactive state management decoupled from the UI.
 
-3.  **Service Layer (67+ services)**: Specialized services for each domain (accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, etc.). The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
+3.  **Service Layer (70+ services)**: Specialized services for each domain (accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, native camera, native push, native biometric, etc.). The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
 
 4.  **Integration Layer**: HIS Integration (18 files — Epic, Cerner, HL7, FHIR connectors) and LIMS Integration (10 files — Orchard, SoftLab, Sunquest connectors) provide healthcare system interoperability.
 
 5.  **AI Layer (`ai.ts` → `aiAgentService.ts`)**: Routes all AI requests through the FastAPI backend on Render. No third-party AI API keys are exposed in the browser.
+
+6.  **Native Mobile Layer (Capacitor 8.x)**: Platform-agnostic native bridge providing camera, push notifications, biometric auth, and device lifecycle integration. All native features include web fallbacks for PWA compatibility.
 
 ## Project Structure
 
@@ -134,21 +148,30 @@ src/
 │   └── *.json               # Firestore seed data
 ├── firebase/                # Firebase configuration and hooks
 ├── hooks/                   # Custom React hooks
+│   └── usePushNotifications.ts  # NEW: Push notification lifecycle hook
 ├── pages/                   # 33 page components
-│   ├── LabOperationsPage.tsx    # NEW: 5-tab lab operations hub
-│   ├── KnowledgeBasePage.tsx    # NEW: Searchable knowledge base
+│   ├── LabOperationsPage.tsx    # 5-tab lab operations hub
+│   ├── KnowledgeBasePage.tsx    # Searchable knowledge base
 │   └── ...                      # 31 additional page components
 ├── router/                  # AppRouter.tsx + routes.ts (34 routes)
-├── services/                # 67+ domain services
+├── services/                # 70+ domain services
 │   ├── hisIntegration/      # 18 files: Epic, Cerner, HL7, FHIR connectors
 │   ├── limsIntegration/     # 10 files: Orchard, SoftLab, Sunquest connectors
-│   ├── escalationService.ts # Automated escalation workflows
-│   ├── qcDataImportService.ts  # QC data import with validation
-│   └── ...                  # 60+ additional services
-├── stores/                  # 7 Zustand stores
+│   ├── nativeCameraService.ts   # NEW: Camera capture with web fallback
+│   ├── nativePushService.ts     # NEW: FCM push notifications
+│   ├── nativeBiometricService.ts # NEW: Biometric auth (fingerprint/face)
+│   ├── escalationService.ts     # Automated escalation workflows
+│   ├── qcDataImportService.ts   # QC data import with validation
+│   └── ...                      # 60+ additional services
+├── stores/                  # 9 Zustand stores
 ├── types/                   # 7 type definition files (including labOps.ts)
+├── utils/                   # Utility modules
+│   ├── capacitorPlatform.ts     # NEW: Platform detection & native fallbacks
+│   ├── capacitorInit.ts         # NEW: Native lifecycle initialization
+│   └── ...                      # Additional utilities
 ├── App.tsx                  # Root component with providers
 └── index.tsx                # Entry point
+capacitor.config.ts              # Capacitor native mobile configuration
 ```
 
 ## Backend & Data Persistence
@@ -205,4 +228,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-**Last Updated:** February 19, 2026 | **Version:** 2.0 | **Live:** https://accreditex.web.app
+**Last Updated:** February 28, 2026 | **Version:** 2.2 | **Live:** https://accreditex.web.app

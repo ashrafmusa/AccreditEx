@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import {
   CECredit,
@@ -50,6 +51,7 @@ const EMPTY_FORM: Omit<CECredit, "id"> = {
 type TabView = "overview" | "credits" | "form";
 
 const CECreditsTab: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, users } = useUserStore();
   const isAdmin = currentUser?.role === UserRole.Admin;
 
@@ -186,11 +188,10 @@ const CECreditsTab: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>
           <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            CE Credit Management
+            {t("ceCreditManagement")}
           </h3>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            Track continuing education credits, verify certificates, and monitor
-            compliance
+            {t("ceCreditDescription")}
           </p>
         </div>
         <div className="flex gap-2">
@@ -199,14 +200,14 @@ const CECreditsTab: React.FC = () => {
             onClick={() => setView("overview")}
             className="text-xs"
           >
-            Overview
+            {t("overview")}
           </Button>
           <Button
             variant={view === "credits" ? "primary" : "ghost"}
             onClick={() => setView("credits")}
             className="text-xs"
           >
-            Credits
+            {t("ceCredits")}
           </Button>
           <Button
             variant={view === "form" ? "primary" : "ghost"}
@@ -217,7 +218,7 @@ const CECreditsTab: React.FC = () => {
             }}
             className="text-xs flex items-center gap-1"
           >
-            <PlusIcon className="h-3 w-3" /> Log Credit
+            <PlusIcon className="h-3 w-3" /> {t("logCredit")}
           </Button>
         </div>
       </div>
@@ -232,7 +233,7 @@ const CECreditsTab: React.FC = () => {
                 {stats.totalCredits}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Total Credits Logged
+                {t("totalCreditsLogged")}
               </div>
             </div>
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 text-center">
@@ -240,7 +241,7 @@ const CECreditsTab: React.FC = () => {
                 {stats.verified}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Verified
+                {t("verified")}
               </div>
             </div>
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-center">
@@ -248,7 +249,7 @@ const CECreditsTab: React.FC = () => {
                 {stats.uniqueUsers}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Staff with Credits
+                {t("staffWithCredits")}
               </div>
             </div>
             <div className="bg-orange-50 dark:bg-orange-900/20 rounded-lg p-3 text-center">
@@ -256,7 +257,7 @@ const CECreditsTab: React.FC = () => {
                 {stats.expired}
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Expired Credits
+                {t("expiredCredits")}
               </div>
             </div>
           </div>
@@ -264,7 +265,7 @@ const CECreditsTab: React.FC = () => {
           {/* Category Breakdown */}
           <div>
             <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-              Credits by Category
+              {t("creditsByCategory")}
             </h4>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {(
@@ -287,7 +288,7 @@ const CECreditsTab: React.FC = () => {
                       {total}
                     </div>
                     <div className="text-[10px] text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      {catCredits.length} entries
+                      {catCredits.length} {t("entries")}
                     </div>
                   </div>
                 );
@@ -299,14 +300,14 @@ const CECreditsTab: React.FC = () => {
           {isAdmin && userSummaries.length > 0 && (
             <div>
               <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-                Staff Credit Summary (24 months)
+                {t("staffCreditSummary")}
               </h4>
               <div className="overflow-auto rounded-lg border border-brand-border dark:border-dark-brand-border">
                 <table className="min-w-full text-sm">
                   <thead className="bg-gray-50 dark:bg-gray-800">
                     <tr>
                       <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                        Staff
+                        {t("licStaff")}
                       </th>
                       {(
                         Object.entries(CE_CATEGORY_LABELS) as [
@@ -322,7 +323,7 @@ const CECreditsTab: React.FC = () => {
                         </th>
                       ))}
                       <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                        Total
+                        {t("total")}
                       </th>
                     </tr>
                   </thead>
@@ -367,7 +368,7 @@ const CECreditsTab: React.FC = () => {
               onChange={(e) => setFilterCategory(e.target.value)}
               className={`${inputCls} w-auto`}
             >
-              <option value="all">All Categories</option>
+              <option value="all">{t("allCategories2")}</option>
               {Object.entries(CE_CATEGORY_LABELS).map(([k, v]) => (
                 <option key={k} value={k}>
                   {v}
@@ -380,7 +381,7 @@ const CECreditsTab: React.FC = () => {
                 onChange={(e) => setFilterUser(e.target.value)}
                 className={`${inputCls} w-auto`}
               >
-                <option value="all">All Staff</option>
+                <option value="all">{t("allStaff")}</option>
                 {activeUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -392,8 +393,8 @@ const CECreditsTab: React.FC = () => {
 
           {filteredCredits.length === 0 ? (
             <EmptyState
-              title="No CE Credits"
-              description="Log a continuing education credit to start tracking."
+              title={t("noCECredits")}
+              description={t("noCECreditsHint")}
               icon={<CheckCircleIcon className="h-10 w-10 text-gray-400" />}
             />
           ) : (
@@ -402,30 +403,30 @@ const CECreditsTab: React.FC = () => {
                 <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Title
+                      {t("title")}
                     </th>
                     {isAdmin && (
                       <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                        Staff
+                        {t("licStaff")}
                       </th>
                     )}
                     <th className="px-3 py-2 text-left font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Provider
+                      {t("provider")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Category
+                      {t("categoryLabel")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Credits
+                      {t("credits")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Date
+                      {t("date")}
                     </th>
                     <th className="px-3 py-2 text-center font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Verified
+                      {t("verified")}
                     </th>
                     <th className="px-3 py-2 text-right font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      Actions
+                      {t("actions")}
                     </th>
                   </tr>
                 </thead>
@@ -439,7 +440,7 @@ const CECreditsTab: React.FC = () => {
                         {c.title}
                         {c.isExpired && (
                           <span className="ml-1 text-xs text-red-500">
-                            (expired)
+                            ({t("ceExpired")})
                           </span>
                         )}
                       </td>
@@ -477,20 +478,20 @@ const CECreditsTab: React.FC = () => {
                             onClick={() => handleVerify(c.id)}
                             className="text-green-600 dark:text-green-400 hover:underline text-xs"
                           >
-                            Verify
+                            {t("verify")}
                           </button>
                         )}
                         <button
                           onClick={() => handleEdit(c)}
                           className="text-brand-primary-600 dark:text-brand-primary-400 hover:underline text-xs"
                         >
-                          Edit
+                          {t("edit")}
                         </button>
                         <button
                           onClick={() => handleDelete(c.id)}
                           className="text-red-500 hover:underline text-xs"
                         >
-                          Delete
+                          {t("delete")}
                         </button>
                       </td>
                     </tr>
@@ -506,13 +507,13 @@ const CECreditsTab: React.FC = () => {
       {view === "form" && (
         <div className="bg-brand-surface-alt dark:bg-dark-brand-surface-alt rounded-lg p-4 space-y-4 max-w-2xl">
           <h4 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            {editingId ? "Edit CE Credit" : "Log CE Credit"}
+            {editingId ? t("editCECredit") : t("logCECredit")}
           </h4>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Staff Member *
+                {t("staffMember")} *
               </label>
               <select
                 value={form.userId}
@@ -521,7 +522,7 @@ const CECreditsTab: React.FC = () => {
                 }
                 className={inputCls}
               >
-                <option value="">Select...</option>
+                <option value="">{t("ceSelectPlaceholder")}</option>
                 {activeUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
@@ -531,7 +532,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Activity Title *
+                {t("activityTitle")} *
               </label>
               <input
                 value={form.title}
@@ -544,7 +545,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Provider *
+                {t("provider")} *
               </label>
               <input
                 value={form.provider}
@@ -557,7 +558,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Category *
+                {t("categoryLabel")} *
               </label>
               <select
                 value={form.category}
@@ -578,7 +579,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Credits *
+                {t("credits")} *
               </label>
               <input
                 type="number"
@@ -593,7 +594,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Completion Date *
+                {t("completionDate")} *
               </label>
               <input
                 type="date"
@@ -606,7 +607,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Expiry Date
+                {t("expiryDateLabel")}
               </label>
               <input
                 type="date"
@@ -622,7 +623,7 @@ const CECreditsTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Accreditation #
+                {t("accreditationNumber")}
               </label>
               <input
                 value={form.accreditationNumber ?? ""}
@@ -639,7 +640,7 @@ const CECreditsTab: React.FC = () => {
 
           <div>
             <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-              Notes
+              {t("ceFormNotes")}
             </label>
             <textarea
               value={form.notes ?? ""}
@@ -662,7 +663,7 @@ const CECreditsTab: React.FC = () => {
                 form.credits <= 0
               }
             >
-              {editingId ? "Update" : "Log Credit"}
+              {editingId ? t("ceUpdateBtn") : t("ceLogCreditBtn")}
             </Button>
             <Button
               variant="ghost"
@@ -672,7 +673,7 @@ const CECreditsTab: React.FC = () => {
                 setView("credits");
               }}
             >
-              Cancel
+              {t("ceCancelBtn")}
             </Button>
           </div>
         </div>

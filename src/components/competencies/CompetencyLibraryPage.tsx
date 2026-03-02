@@ -5,12 +5,17 @@ import { PlusIcon, IdentificationIcon, PencilIcon, TrashIcon } from "../icons";
 import { TableContainer } from "@/components/ui";
 import CompetencyModal from "./CompetencyModal";
 import { useAppStore } from "../../stores/useAppStore";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
 
 const CompetencyLibraryPage: React.FC = () => {
   const { t, lang } = useTranslation();
+  const { can } = usePermission();
+  const canCreate = can(Action.Create, Resource.Training);
+  const canUpdate = can(Action.Update, Resource.Training);
+  const canDelete = can(Action.Delete, Resource.Training);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCompetency, setEditingCompetency] = useState<Competency | null>(
-    null
+    null,
   );
 
   const {
@@ -64,13 +69,15 @@ const CompetencyLibraryPage: React.FC = () => {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleOpenCreateModal}
-          className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-sky-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto"
-        >
-          <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-          {t("addCompetency")}
-        </button>
+        {canCreate && (
+          <button
+            onClick={handleOpenCreateModal}
+            className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-sky-700 flex items-center justify-center font-semibold shadow-sm w-full md:w-auto"
+          >
+            <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+            {t("addCompetency")}
+          </button>
+        )}
       </div>
 
       <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">
@@ -108,18 +115,22 @@ const CompetencyLibraryPage: React.FC = () => {
                     {comp.description[lang]}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 rtl:space-x-reverse">
-                    <button
-                      onClick={() => handleOpenEditModal(comp)}
-                      className="p-1 text-gray-500 hover:text-brand-primary"
-                    >
-                      <PencilIcon className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(comp.id)}
-                      className="p-1 text-gray-500 hover:text-red-600"
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
+                    {canUpdate && (
+                      <button
+                        onClick={() => handleOpenEditModal(comp)}
+                        className="p-1 text-gray-500 hover:text-brand-primary"
+                      >
+                        <PencilIcon className="w-5 h-5" />
+                      </button>
+                    )}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDelete(comp.id)}
+                        className="p-1 text-gray-500 hover:text-red-600"
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -867,6 +867,34 @@ const iconPaths = {
       d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
     />
   ),
+  CameraIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+    />
+  ),
+  CameraCircleIcon: (
+    <>
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"
+      />
+      <path
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d="M15 13.5a3 3 0 11-6 0 3 3 0 016 0z"
+      />
+    </>
+  ),
+  FingerPrintIcon: (
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M7.864 4.243A7.5 7.5 0 0119.5 10.5c0 2.92-.556 5.709-1.568 8.268M5.742 6.364A7.465 7.465 0 004.5 10.5a48.667 48.667 0 00-1.18 8.592m10.808-8.034a3 3 0 10-4.478 2.661A7.5 7.5 0 0113.5 15c0 1.754-.174 3.467-.502 5.123m-4.143-9.724a3.001 3.001 0 00-1.473 2.469c-.267 2.75-.588 5.477-.963 8.178m6.706-10.845a3 3 0 00-5.078-.382"
+    />
+  ),
 };
 // --- Outline Icons ---
 export const Bars3Icon = createOutlineIcon(iconPaths.Bars3Icon);
@@ -1024,6 +1052,9 @@ export const EllipsisVerticalIcon = createOutlineIcon(
 export const PrinterIcon = createOutlineIcon(iconPaths.PrinterIcon);
 export const ArrowRightIcon = createOutlineIcon(iconPaths.ArrowRightIcon);
 export const BookOpenIcon = createOutlineIcon(iconPaths.BookOpenIcon);
+export const CameraIcon = createOutlineIcon(iconPaths.CameraIcon);
+export const CameraCircleIcon = createOutlineIcon(iconPaths.CameraCircleIcon);
+export const FingerPrintIcon = createOutlineIcon(iconPaths.FingerPrintIcon);
 // --- Alias Icons ---
 export const InfoIcon = InformationCircleIcon;
 export const AlertIcon = ExclamationTriangleIcon;

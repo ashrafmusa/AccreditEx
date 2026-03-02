@@ -21,6 +21,7 @@ import {
 import EmptyState from "@/components/common/EmptyState";
 import { Button, Input, LoadingSpinner } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
 
 interface ProjectListPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -42,6 +43,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const { currentUser, users } = useUserStore();
   const { accreditationPrograms, departments } = useAppStore();
   const toast = useToast();
+  const { can, isAdmin } = usePermission();
+  const canCreateProject = can(Action.Create, Resource.Project);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<ProjectStatus | "all">(
@@ -64,7 +67,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
-    n: () => setNavigation({ view: "createProject" }),
+    n: () => {
+      if (canCreateProject) setNavigation({ view: "createProject" });
+    },
     f: () => setShowFilters((prev) => !prev),
     a: () => setShowAnalytics((prev) => !prev),
     "/": () => {
@@ -270,7 +275,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   return (
     <div className="space-y-6">
-      {selectedProjects.length > 0 && (
+      {selectedProjects.length > 0 && isAdmin && (
         <div className="sticky top-4 z-40 animate-fadeIn">
           <BulkActionsToolbar
             selectedCount={selectedProjects.length}
@@ -320,13 +325,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             <ArchiveBoxIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
             {showArchived ? t("hideArchived") : t("showArchived")}
           </Button>
-          <Button
-            onClick={() => setNavigation({ view: "createProject" })}
-            className="w-full sm:w-auto"
-          >
-            <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-            {t("createNewProject")}
-          </Button>
+          {canCreateProject && (
+            <Button
+              onClick={() => setNavigation({ view: "createProject" })}
+              className="w-full sm:w-auto"
+            >
+              <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+              {t("createNewProject")}
+            </Button>
+          )}
         </div>
       </div>
 
