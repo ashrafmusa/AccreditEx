@@ -2,9 +2,63 @@
 trigger: always_on
 ---
 
-# GEMINI.md - Antigravity Kit
+# GEMINI.md - Antigravity Kit v2
 
 > This file defines how the AI behaves in this workspace.
+> **v2 Additions:** ReasoningBank · Model Router · Tier-Aware Skills · MCP Server
+> See `ARCHITECTURE.md` for full system map.
+
+---
+
+## ⚡ PHASE -1: REASONINGBANK CHECK (BEFORE EVERYTHING)
+
+> 🔴 **MANDATORY for COMPLEX CODE and DESIGN/UI requests.**
+
+```bash
+# Run before any planning — finds similar past decisions
+python scripts/reasoning_bank.py retrieve "{task}" --k 3
+```
+
+| Result | Action |
+|--------|--------|
+| **Similarity ≥ 0.85** | 🚀 **FAST PATH** — Show pattern to user, offer to skip planning phase |
+| **Similarity 0.60-0.84** | 💡 **CONTEXT** — Show as reference, still plan normally |
+| **Similarity < 0.60** | ✅ **NEW** — Proceed with normal flow |
+
+> **After every completed task:** Record to ReasoningBank:
+> `python scripts/reasoning_bank.py record --task "X" --decision "Y" --outcome "Z" --success true`
+
+---
+
+## 🔀 STEP 0: MODEL ROUTER (BEFORE AGENT INVOCATION)
+
+> 🔴 **MANDATORY for COMPLEX CODE requests.** Saves 15-60% tokens.
+
+```bash
+# Get optimal model + context strategy before invoking agent
+python scripts/router_cli.py "{task description}"
+```
+
+| Router Output | Your Action |
+|---------------|-------------|
+| `tier: flash, strategy: MINIMAL` | Load **Tier-1 skills only** |
+| `tier: pro, strategy: COMPRESSED` | Load **Tier-1 + relevant Tier-2 only** |
+| `tier: pro, strategy: FULL` | Load **all required skills** |
+| `tier: pro-extended` | Full context, deep reasoning mode |
+
+---
+
+## 📚 TIER-AWARE SKILL LOADING (v2)
+
+Do NOT load all skills blindly. Load by tier based on router strategy:
+
+| Tier | Skills | Load When |
+|------|--------|-----------|
+| **1 — Core** | `clean-code`, `brainstorming`, `plan-writing`, `intelligent-routing`, `behavioral-modes`, `parallel-agents` | **Always** |
+| **2 — Domain** | `frontend-design`, `mobile-design`, `api-patterns`, `database-design`, `testing-patterns`, `nextjs-react-expert`, `nodejs-best-practices`, `architecture`, `game-development`, `systematic-debugging` | **Domain match only** |
+| **3 — Utility** | `seo-fundamentals`, `vulnerability-scanner`, `performance-profiling`, `webapp-testing`, `lint-and-validate`, `tdd-workflow`, `app-builder`, `bash-linux`, `powershell-windows`, + 11 more | **Explicit need only** |
+
+> 🔴 **Rule:** MINIMAL strategy → Tier 1 only. COMPRESSED → Tier 1+2. FULL → All tiers.
 
 ---
 
@@ -31,14 +85,15 @@ Agent activated → Check frontmatter "skills:" → Read SKILL.md (INDEX) → Re
 
 **Before ANY action, classify the request:**
 
-| Request Type     | Trigger Keywords                           | Active Tiers                   | Result                      |
-| ---------------- | ------------------------------------------ | ------------------------------ | --------------------------- |
-| **QUESTION**     | "what is", "how does", "explain"           | TIER 0 only                    | Text Response               |
-| **SURVEY/INTEL** | "analyze", "list files", "overview"        | TIER 0 + Explorer              | Session Intel (No File)     |
-| **SIMPLE CODE**  | "fix", "add", "change" (single file)       | TIER 0 + TIER 1 (lite)         | Inline Edit                 |
-| **COMPLEX CODE** | "build", "create", "implement", "refactor" | TIER 0 + TIER 1 (full) + Agent | **{task-slug}.md Required** |
-| **DESIGN/UI**    | "design", "UI", "page", "dashboard"        | TIER 0 + TIER 1 + Agent        | **{task-slug}.md Required** |
-| **SLASH CMD**    | /create, /orchestrate, /debug              | Command-specific flow          | Variable                    |
+| Request Type | Trigger Keywords | Skills Tier | Model | Result |
+|---|---|---|---|---|
+| **QUESTION** | "what is", "how does", "explain" | TIER 0 only | flash | Text Response |
+| **SURVEY/INTEL** | "analyze", "list files", "overview" | TIER 0 + Explorer | flash | Session Intel (No File) |
+| **SIMPLE CODE** | "fix", "add", "change" (single file) | TIER 1 only | flash | Inline Edit |
+| **COMPLEX CODE** | "build", "create", "implement", "refactor" | TIER 1+2 + Agent | pro | **{task-slug}.md Required** |
+| **DESIGN/UI** | "design", "UI", "page", "dashboard" | TIER 1+2 + Agent | pro | **{task-slug}.md Required** |
+| **PATTERN MATCH** | ReasoningBank similarity ≥ 0.85 | TIER 1 only | flash | 🚀 Fast Path — skip planning |
+| **SLASH CMD** | /create, /orchestrate, /debug | Command-specific flow | pro | Variable |
 
 ---
 
@@ -81,19 +136,50 @@ When auto-applying an agent, inform the user:
 | 2 | Did I READ the agent's `.md` file (or recall its rules)? | → STOP. Open `.agent/agents/{agent}.md` |
 | 3 | Did I announce `🤖 Applying knowledge of @[agent]...`? | → STOP. Add announcement before response. |
 | 4 | Did I load required skills from agent's frontmatter? | → STOP. Check `skills:` field and read them. |
-
-**Failure Conditions:**
-
-- ❌ Writing code without identifying an agent = **PROTOCOL VIOLATION**
-- ❌ Skipping the announcement = **USER CANNOT VERIFY AGENT WAS USED**
-- ❌ Ignoring agent-specific rules (e.g., Purple Ban) = **QUALITY FAILURE**
-
-> 🔴 **Self-Check Trigger:** Every time you are about to write code or create UI, ask yourself:
-> "Have I completed the Agent Routing Checklist?" If NO → Complete it first.
+| 5 | **DID I RECOMMEND THE OPTIMAL MODEL?** | → **NEW**: See Response Format below. |
 
 ---
 
-## TIER 0: UNIVERSAL RULES (Always Active)
+## 🤖 RESPONSE FORMAT (Lobster Standard 🦞)
+
+**When responding in VS Code Copilot, always include the Efficiency Handshake advice:**
+
+```markdown
+🤖 **Applying knowledge of `@agent`...**
+⚖️ **Model Recommendation**: `[PRO / FLASH]` (Based on Complexity `X.X`)
+
+[Specialized Response]
+```
+
+> [!TIP]
+> **VS Code Note**: Agentica calculates the best model for cost/accuracy, but you must manually select it in the Copilot Chat dropdown to match the recommendation.
+
+---
+
+---
+
+---
+
+ ## ⚖️ EFFICIENCY HANDSHAKE (TIER 0)
+
+ > 🔴 **MANDATORY for LARGE FILE EDITS and ARCHITECTURAL TASKS.**
+
+ 1. **Phase 1: Scout (Flash-Lite)**:
+     - Run `grep_search` or `find_by_name` to identify relevant files/lines.
+     - **Autonomy**: Scout has full autonomy to read and search.
+ 2. **Phase 2: Context Trimming**:
+     - Use `python scripts/context_trimmer.py {file} {pattern} {window}`.
+     - **Window Size**: 50 lines (Standard) / 100+ lines (Architectural).
+ 3. **Phase 3: The Handshake**:
+     - Pass the *trimmed* context to the **Builder (Pro)** model.
+ 4. **Phase 4: Sentry Verify**:
+     - Use cheaper model to verify Pro's output.
+     - **Regression Check**: If an error is detected → **STOP & ASK**.
+
+ ---
+
+-## TIER 0: UNIVERSAL RULES (Always Active)
++## TIER 0: UNIVERSAL RULES (Always Active)
 
 ### 🌐 Language Handling
 
@@ -122,13 +208,16 @@ When user's prompt is NOT in English:
 
 ### 🗺️ System Map Read
 
-> 🔴 **MANDATORY:** Read `ARCHITECTURE.md` at session start to understand Agents, Skills, and Scripts.
+> 🔴 **MANDATORY:** Read `ARCHITECTURE.md` at session start to understand Agents, Skills, Scripts, Router, and Memory.
 
-**Path Awareness:**
+**Path Awareness (v2):**
 
-- Agents: `.agent/` (Project)
-- Skills: `.agent/skills/` (Project)
-- Runtime Scripts: `.agent/skills/<skill>/scripts/`
+- Agents: `agents/` → each has `.md` (rules) + `.yaml` (machine spec)
+- Skills: `skills/` → 3-tier hierarchy (see Tier-Aware Skill Loading above)
+- Router: `router/` → `router.js`, `complexity-scorer.js`, `token-estimator.js`
+- Memory: `memory/reasoning-bank/` → `decisions.json`, `patterns.json`
+- MCP: `mcp/server.js` → 11 tools for external integration
+- Scripts: `scripts/` → `reasoning_bank.py`, `router_cli.py`, `distill_patterns.py`, `verify_all.py`
 
 ### 🧠 Read → Understand → Apply
 
@@ -258,16 +347,37 @@ When user's prompt is NOT in English:
 
 ## 📁 QUICK REFERENCE
 
-### Agents & Skills
+### Agents (20 total, each has `.md` + `.yaml`)
 
-- **Masters**: `orchestrator`, `project-planner`, `security-auditor` (Cyber/Audit), `backend-specialist` (API/DB), `frontend-specialist` (UI/UX), `mobile-developer`, `debugger`, `game-developer`
-- **Key Skills**: `clean-code`, `brainstorming`, `app-builder`, `frontend-design`, `mobile-design`, `plan-writing`, `behavioral-modes`
+- **Orchestrators**: `orchestrator`, `project-planner`
+- **Code**: `frontend-specialist`, `backend-specialist`, `mobile-developer`, `database-architect`
+- **Quality**: `debugger`, `test-engineer`, `qa-automation-engineer`, `performance-optimizer`
+- **Security**: `security-auditor`, `penetration-tester`
+- **Discovery**: `explorer-agent`, `code-archaeologist`
+- **Ops**: `devops-engineer`, `documentation-writer`, `seo-specialist`
+- **Product**: `product-manager`, `product-owner`, `game-developer`
 
-### Key Scripts
+### Skills (36 total, 3 tiers)
 
-- **Verify**: `.agent/scripts/verify_all.py`, `.agent/scripts/checklist.py`
-- **Scanners**: `security_scan.py`, `dependency_analyzer.py`
+- **Tier 1 (Core)**: `clean-code`, `brainstorming`, `plan-writing`, `intelligent-routing`, `behavioral-modes`, `parallel-agents`
+- **Tier 2 (Domain)**: `frontend-design`, `mobile-design`, `api-patterns`, `database-design`, `testing-patterns`, `architecture` + 4 more
+- **Tier 3 (Utility)**: All others — load only on explicit need
+
+### v2 Scripts
+
+- **ReasoningBank**: `python scripts/reasoning_bank.py retrieve "task"` | `record` | `distill` | `stats`
+- **Router**: `python scripts/router_cli.py "task"` | `--stats`
+- **Patterns**: `python scripts/distill_patterns.py`
+- **Verify**: `python scripts/verify_all.py .`
+- **Checklist**: `python scripts/checklist.py .`
 - **Audits**: `ux_audit.py`, `mobile_audit.py`, `lighthouse_audit.py`, `seo_checker.py`
 - **Test**: `playwright_runner.py`, `test_runner.py`
+
+### MCP Server
+
+```bash
+cd mcp && npm install && node server.js
+# Exposes 11 tools: reasoningbank_*, router_*, memory_*, agent_*, skill_list
+```
 
 ---

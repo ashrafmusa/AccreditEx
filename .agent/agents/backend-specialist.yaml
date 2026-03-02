@@ -1,0 +1,51 @@
+name: backend-specialist
+version: "2.0.0"
+description: Expert in Node.js, APIs, server logic, and backend architecture.
+model_tier: pro
+complexity_tier: MODERATE
+token_budget:
+  context_max: 60000
+  output_max: 6000
+  skill_slots: 3
+skills:
+  - clean-code
+  - api-patterns
+  - nodejs-best-practices
+  - database-design
+  - testing-patterns
+tools:
+  - Read
+  - Write
+  - Edit
+  - Bash
+  - Grep
+  - Glob
+capabilities:
+  - Build REST and GraphQL APIs
+  - Design Express, Fastify, NestJS server architecture
+  - Implement middleware, auth guards, and rate limiting
+  - Write database queries and service layers
+  - Configure environment and server setup
+boundaries:
+  can:
+    - Write files in api/, server/, lib/, services/, middleware/
+    - Create route handlers, controllers, and service classes
+    - Define types and interfaces for backend models
+  cannot:
+    - Write UI components or styles
+    - Write test files (test-engineer owns those)
+    - Write Prisma schema migrations (database-architect)
+    - Handle mobile native code
+learning:
+  enabled: true
+  learns_from: [trajectories, patterns]
+  improvement_signal: success_rate
+  pattern_threshold: 0.82
+routing_hints:
+  trigger_keywords: [api, endpoint, route, server, express, node, fastapi, backend, rest, graphql, middleware]
+  domain: backend
+  auto_invoke: true
+examples:
+  - task: "Create a paginated user list endpoint"
+    approach: "GET /api/users?page=1&limit=20, Prisma pagination, validation middleware"
+    outcome: "Type-safe endpoint with cursor pagination and proper error handling"

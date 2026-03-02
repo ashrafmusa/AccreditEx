@@ -4,31 +4,29 @@ description: Automatic agent selection and intelligent task routing. Analyzes us
 version: 1.0.0
 ---
 
-# Intelligent Agent Routing
+# Intelligent Agent Routing (With Self-Evolving Soul 🦞)
 
-**Purpose**: Automatically analyze user requests and route them to the most appropriate specialist agent(s) without requiring explicit user mentions.
+**Purpose**: Automatically analyze user requests, retrieve past "Soul Memory", and route them to the most appropriate specialist agent(s).
 
 ## Core Principle
 
-> **The AI should act as an intelligent Project Manager**, analyzing each request and automatically selecting the best specialist(s) for the job.
+> **The AI acts as an evolving entity**, retrieving wisdom from the **ReasoningBank** before every specialist invocation.
 
 ## How It Works
 
-### 1. Request Analysis
+### 1. Request Analysis & Soul Retrieval
 
-Before responding to ANY user request, perform automatic analysis:
+Before responding to ANY user request, perform the following:
 
 ```mermaid
 graph TD
-    A[User Request: Add login] --> B[ANALYZE]
-    B --> C[Keywords]
-    B --> D[Domains]
-    B --> E[Complexity]
-    C --> F[SELECT AGENT]
-    D --> F
-    E --> F
-    F --> G[security-auditor + backend-specialist]
-    G --> H[AUTO-INVOKE with context]
+    A[User Request] --> B[Phase -1: SOUL RETRIEVAL]
+    B --> RB[(ReasoningBank)]
+    RB -->|Top 3 Patterns| C[ANALYZE & ROUTE]
+    C --> D[Keywords + Domains]
+    D --> E[SELECT AGENT]
+    E --> F[Inject Soul Memory into Agent Context]
+    F --> G[GO!]
 ```
 
 ### 2. Agent Selection Matrix
@@ -59,28 +57,71 @@ Before responding to ANY request:
 
 ```javascript
 // Pseudo-code for decision tree
-function analyzeRequest(userMessage) {
-    // 1. Classify request type
+async function analyzeRequest(userMessage) {
+    // 1. Phase -1: Soul Retrieval (NEW)
+    const soulMemory = await retrieveSoulMemory(userMessage, 3);
+
+    // 2. Classify request type
     const requestType = classifyRequest(userMessage);
 
-    // 2. Detect domains
+    // 3. Detect domains
     const domains = detectDomains(userMessage);
 
-    // 3. Determine complexity
+    // 4. Determine complexity
     const complexity = assessComplexity(domains);
 
-    // 4. Select agent(s)
+    // 5. Select agent(s)
+    let selectedAgents;
     if (complexity === "SIMPLE" && domains.length === 1) {
-        return selectSingleAgent(domains[0]);
+        selectedAgents = selectSingleAgent(domains[0]);
     } else if (complexity === "MODERATE" && domains.length <= 2) {
-        return selectMultipleAgents(domains);
+        selectedAgents = selectMultipleAgents(domains);
     } else {
-        return "orchestrator"; // Complex task
+        selectedAgents = ["orchestrator"];
     }
+
+    // 6. Prepend Soul Memory to first prompt (NEW)
+    return {
+        agents: selectedAgents,
+        promptInjection: soulMemory
+    };
 }
 ```
 
-## 4. Response Format
+### 4. The Handshake Routing Protocol (Efficiency Model 🦞)
+
+**Goal**: Maximize accuracy while minimizing token cost using tiered model coordination.
+
+| Tier | Agent | Model | Task | Autonomy |
+| :--- | :--- | :--- | :--- | :--- |
+| **Tier 1: SCOUT** | `explorer-agent` | `lite` | Discovery, Search, List Files | **FULL** (Autonomous) |
+| **Tier 2: BUILDER**| Specialist Agent | `pro` | Implementation, Reasoning | **GUIDED** |
+| **Tier 3: SENTRY** | `test-engineer` | `flash` | Verification, Linting | **STRICT** |
+
+#### The Implementation Flow:
+1. **Scout Discovery**: If the task is unclear or spans multiple files, the Scout first runs `find_by_name` or `grep_search`.
+2. **Context Trimming**:
+    - **General Tasks**: 50-line window.
+    - **Architectural Tasks**: 100-line window around matches.
+3. **The Handshake**: The Scout passes the *trimmed* context to the Builder.
+4. **Sentry Check**: If the Sentry (cheap model) detects a regression in the Builder's work: **STOP & ASK**.
+
+---
+
+## 5. Scout Autonomy Rules
+
+1. **Scout is authorized to**:
+    - List any directory.
+    - Search for patterns in codebase.
+    - Read file outlines.
+2. **Scout is FORBIDDEN to**:
+    - Edit files.
+    - Access external URLs.
+    - Commit code.
+
+---
+
+## 6. Response Format
 
 **When auto-selecting an agent, inform the user concisely:**
 
@@ -321,11 +362,11 @@ Show selection reasoning:
 
 **intelligent-routing skill enables:**
 
-✅ Zero-command operation (no need for `/orchestrate`)  
-✅ Automatic specialist selection based on request analysis  
-✅ Transparent communication of which expertise is being applied  
-✅ Seamless integration with existing workflows  
-✅ Override capability for explicit agent mentions  
+✅ Zero-command operation (no need for `/orchestrate`)
+✅ Automatic specialist selection based on request analysis
+✅ Transparent communication of which expertise is being applied
+✅ Seamless integration with existing workflows
+✅ Override capability for explicit agent mentions
 ✅ Fallback to orchestrator for complex tasks
 
 **Result**: User gets specialist-level responses without needing to know the system architecture.

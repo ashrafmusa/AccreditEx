@@ -1,17 +1,19 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
+import { Breadcrumbs } from "@/components/common/Breadcrumbs";
+import CommandPalette from "@/components/common/CommandPalette";
 import Header from "@/components/common/Header";
-import { NavigationState, Notification } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
+import KeyboardShortcutsModal from "@/components/common/KeyboardShortcutsModal";
 import MobileSidebar from "@/components/common/MobileSidebar";
 import NavigationRail from "@/components/common/NavigationRail";
-import CommandPalette from "@/components/common/CommandPalette";
-import { Breadcrumbs } from "@/components/common/Breadcrumbs";
 import { useBreadcrumbs } from "@/hooks/useBreadcrumbs";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import { useTranslation } from "@/hooks/useTranslation";
+import { NavigationState, Notification } from "@/types";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 // FIX: Corrected import path for notification service
 import { getNotificationsForUser } from "@/services/notificationServiceFirebase";
-import { useUserStore } from "@/stores/useUserStore";
-import { useProjectStore } from "@/stores/useProjectStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
 
 // Lazy-load GuidedTour — only loaded when tour is active (zero bundle cost otherwise)
 const GuidedTour = lazy(() => import("@/components/onboarding/GuidedTour"));
@@ -30,6 +32,7 @@ const Layout: React.FC<LayoutProps> = ({
   const { dir } = useTranslation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNavExpanded, setIsNavExpanded] = useState(false);
   const [showGuidedTour, setShowGuidedTour] = useState(false);
@@ -48,6 +51,58 @@ const Layout: React.FC<LayoutProps> = ({
 
   // Breadcrumbs from navigation state
   const breadcrumbItems = useBreadcrumbs(navigation);
+
+  // Global keyboard shortcuts
+  useKeyboardShortcuts([
+    {
+      key: "d",
+      handler: () => {
+        if (navigation.view !== "dashboard") {
+          setNavigation({ view: "dashboard" });
+        }
+      },
+    },
+    {
+      key: "p",
+      handler: () => {
+        if (navigation.view !== "projects") {
+          setNavigation({ view: "projects" });
+        }
+      },
+    },
+    {
+      key: "a",
+      handler: () => {
+        if (navigation.view !== "accreditationHub") {
+          setNavigation({ view: "accreditationHub" });
+        }
+      },
+    },
+    {
+      key: "t",
+      handler: () => {
+        if (navigation.view !== "training") {
+          setNavigation({ view: "training" });
+        }
+      },
+    },
+    {
+      key: "?",
+      shiftKey: true,
+      handler: () => setIsKeyboardShortcutsOpen(true),
+    },
+    {
+      key: "/",
+      handler: () => {
+        const searchInput = document.querySelector(
+          'input[type="search"], input[placeholder*="Search"], input[placeholder*="search"]',
+        ) as HTMLInputElement;
+        if (searchInput) {
+          searchInput.focus();
+        }
+      },
+    },
+  ]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -197,6 +252,11 @@ const Layout: React.FC<LayoutProps> = ({
           />
         </Suspense>
       )}
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcutsModal
+        isOpen={isKeyboardShortcutsOpen}
+        onClose={() => setIsKeyboardShortcutsOpen(false)}
+      />
     </>
   );
 };

@@ -24,7 +24,7 @@ const AnalyticsHubPage = lazy(() => import("@/pages/AnalyticsHubPage"));
 // Project Management
 const ProjectListPage = lazy(() => import("@/pages/ProjectListPage"));
 const ProjectDetailPage = lazy(() => import("@/pages/ProjectDetailPage"));
-const CreateProjectPage = lazy(() => import("@/pages/CreateProjectPage"));
+const CreateProjectWizard = lazy(() => import("@/pages/CreateProjectWizard"));
 
 // Standards and Requirements
 const StandardsPage = lazy(() => import("@/pages/StandardsPage"));
@@ -361,19 +361,9 @@ const MainRouter: React.FC<MainRouterProps> = ({
           />
         );
       case "createProject":
-        return (
-          <CreateProjectPage
-            navigation={navigation as any}
-            setNavigation={setNavigation}
-          />
-        );
+        return <CreateProjectWizard setNavigation={setNavigation} />;
       case "editProject":
-        return (
-          <CreateProjectPage
-            navigation={navigation as any}
-            setNavigation={setNavigation}
-          />
-        );
+        return <CreateProjectWizard setNavigation={setNavigation} />;
       case "standards": {
         const program = accreditationPrograms.find(
           (p) => p.id === navigation.programId,

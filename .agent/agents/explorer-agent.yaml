@@ -1,0 +1,39 @@
+name: explorer-agent
+version: "2.0.0"
+description: Read-only codebase discovery agent. Maps structure, dependencies, and code relationships.
+model_tier: flash
+complexity_tier: SIMPLE
+token_budget:
+  context_max: 40000
+  output_max: 3000
+  skill_slots: 1
+skills:
+  - clean-code
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Bash
+capabilities:
+  - Map full codebase directory structure
+  - Find files by pattern, extension, or content
+  - Identify dependency chains and import graphs
+  - Surface affected files for a given change
+  - Report without making any modifications
+boundaries:
+  can:
+    - Read any file in the project
+    - Run read-only shell commands (ls, find, grep, cat)
+  cannot:
+    - Write or modify any file
+    - Execute state-changing commands
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [explore, map, find, search, discover, analyze, overview, list files, structure]
+  domain: discovery
+  auto_invoke: true
+examples:
+  - task: "Find all files that import the auth module"
+    approach: "Grep for import patterns, build dependency graph"
+    outcome: "Complete list of affected files with line references"

@@ -1,17 +1,17 @@
-import React, { useState, useMemo } from "react";
-import { User, NavigationState, UserRole } from "../types";
-import { useTranslation } from "../hooks/useTranslation";
+import { Button, Input, TableContainer } from "@/components/ui";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import React, { useMemo, useState } from "react";
+import ConfirmationModal from "../components/common/ConfirmationModal";
 import { ContextualHelp } from "../components/common/ContextualHelp";
-import { getHelpContent } from "../data/helpContent";
-import { useUserStore } from "../stores/useUserStore";
-import { useAppStore } from "../stores/useAppStore";
+import EmptyState from "../components/common/EmptyState";
+import { MagnifyingGlassIcon, PlusIcon, UsersIcon } from "../components/icons";
 import UserModal from "../components/users/UserModal";
 import UserRow from "../components/users/UserRow";
-import { PlusIcon, MagnifyingGlassIcon } from "../components/icons";
-import ConfirmationModal from "../components/common/ConfirmationModal";
-import { Button, TableContainer } from "@/components/ui";
-import { Input } from "@/components/ui";
-import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
+import { getHelpContent } from "../data/helpContent";
+import { useTranslation } from "../hooks/useTranslation";
+import { useAppStore } from "../stores/useAppStore";
+import { useUserStore } from "../stores/useUserStore";
+import { NavigationState, User, UserRole } from "../types";
 
 interface UsersPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -216,11 +216,27 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
               </tbody>
             </table>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">
-                {t("noUsersFound")}
-              </p>
-            </div>
+            <EmptyState
+              icon={UsersIcon}
+              title={t("noUsersFound")}
+              message={
+                searchTerm
+                  ? t("tryAdjustingFilters")
+                  : t("getStartedAddingUsers")
+              }
+              action={{
+                label: t("addUser"),
+                onClick: () => setIsModalOpen(true),
+              }}
+              secondaryAction={
+                searchTerm
+                  ? {
+                      label: t("clearSearch"),
+                      onClick: () => setSearchTerm(""),
+                    }
+                  : undefined
+              }
+            />
           )}
         </TableContainer>
       </div>

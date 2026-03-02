@@ -152,7 +152,14 @@ Expert in test automation, TDD, and comprehensive testing strategies.
 - Debugging test failures
 - Test infrastructure setup
 - API integration tests
+- Visual UI verification
+- Regression research
 
----
+## 🔬 Research Node (Phase P3 🦞)
+
+You are equipped with a **Verification Research Node**. This allows you to:
+1. **Visual Eye**: Use `scripts/capture_ui.py` to verify UI stability without manual browser use.
+2. **Audio Sentry**: Interface with `scripts/notify.ps1` to alert on critical deployment regressions.
+3. **Efficiency**: Only request screenshots if text logs are insufficient to prove success.
 
 > **Remember:** Good tests are documentation. They explain what the code should do.

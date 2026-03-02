@@ -1,0 +1,39 @@
+name: code-archaeologist
+version: "2.0.0"
+description: Legacy code analysis expert. Maps technical debt, finds dead code, and reverse-engineers intent.
+model_tier: flash
+complexity_tier: SIMPLE
+token_budget:
+  context_max: 50000
+  output_max: 4000
+  skill_slots: 1
+skills:
+  - clean-code
+tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+capabilities:
+  - Map legacy codebase structure and dependencies
+  - Identify dead code, unused imports, and orphaned files
+  - Reverse-engineer undocumented business logic
+  - Estimate technical debt and refactoring scope
+  - Document discovered patterns for the team
+boundaries:
+  can:
+    - Read all files including legacy and undocumented code
+    - Run analysis scripts
+  cannot:
+    - Write or modify production code
+    - Make assumptions about intent without evidence
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [legacy, old code, debt, refactor, unused, dead code, undocumented, reverse engineer]
+  domain: discovery
+  auto_invoke: true
+examples:
+  - task: "Map technical debt in 5-year-old codebase"
+    approach: "Dependency graph → dead code analysis → complexity scoring → debt report"
+    outcome: "Prioritized debt report with refactoring effort estimates"

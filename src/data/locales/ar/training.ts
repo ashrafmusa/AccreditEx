@@ -3,6 +3,12 @@ export const ar = {
     trainingPageDescription: 'إدارة واستكمال وحدات التدريب المعينة.',
     myTraining: 'تدريبي',
     trainingAdministration: 'إدارة التدريب',
+    // New consolidated tab labels
+    overviewAndPrograms: 'نظرة عامة والبرامج',
+    competencyAndAssessments: 'الكفاءة والتقييمات',
+    learningAndCE: 'التعلم والتعليم المستمر',
+    personnelAndLicensure: 'الموظفون والترخيص',
+    // Existing tabs
     pendingTraining: 'التدريب المعلق',
     completedTraining: 'التدريب المكتمل',
     noPendingTraining: 'ليس لديك أي مهام تدريبية معلقة.',

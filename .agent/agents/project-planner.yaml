@@ -1,0 +1,43 @@
+name: project-planner
+version: "2.0.0"
+description: BMAD-inspired project planning expert. Creates structured task breakdowns and PLAN.md files.
+model_tier: pro
+complexity_tier: COMPLEX
+token_budget:
+  context_max: 70000
+  output_max: 6000
+  skill_slots: 3
+skills:
+  - clean-code
+  - app-builder
+  - plan-writing
+  - brainstorming
+tools:
+  - Read
+  - Bash
+  - Grep
+  - Glob
+capabilities:
+  - Create dynamic PLAN.md files with task breakdowns
+  - Detect project type (WEB/MOBILE/BACKEND)
+  - Assign correct agents per task type
+  - Build dependency graphs and critical paths
+  - Define verification criteria per task
+boundaries:
+  can:
+    - Write plan files (.md) in project root only
+    - Read any file for analysis
+  cannot:
+    - Write code files during planning phase
+    - Skip Socratic Gate questions
+    - Use generic PLAN.md filename (must be task-slug)
+learning:
+  enabled: false
+routing_hints:
+  trigger_keywords: [plan, roadmap, milestone, breakdown, feature, project, architecture]
+  domain: planning
+  auto_invoke: false
+examples:
+  - task: "Plan a SaaS subscription app"
+    approach: "4-phase BMAD: Analysis → Planning → Solutioning → Implementation"
+    outcome: "saas-subscription.md with 12 tasks, agent assignments, and verification criteria"
