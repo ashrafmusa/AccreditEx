@@ -33,6 +33,12 @@ All project documentation has been consolidated into comprehensive reports at th
    - Quick start guide
    - Installation instructions
 
+5. **[Comprehensive User Manual](user-manual/COMPREHENSIVE_USER_MANUAL.md)**
+   - End-user guide for all major modules
+   - Role-based usage (Admin, Project Lead, Team Member, Auditor)
+   - Step-by-step workflows for Supplier Quality and Change Control
+   - Troubleshooting and quick URL reference
+
 ### GitHub Templates
 
 - **[Issue Template](../.github/ISSUE_TEMPLATE.md)** - Bug reports and feature requests

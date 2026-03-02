@@ -40,10 +40,15 @@ tsc-*.txt
 
 # ─── Snapshots & Exports ─────────────────────────────────────────────────────
 *.web.app-*.html
+lighthouse-report.json
+*-lighthouse.json
 
 # ─── Editor & IDE ────────────────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/mcp.json
+!.vscode/launch.json
 .idea/
 .DS_Store
 *.suo
@@ -96,7 +101,18 @@ Thumbs.db
 Desktop.ini
 ehthumbs.db
 
+# ─── Capacitor Native Projects ───────────────────────────────────────────────
+android/
+ios/
+
 
 bulk-test-output.txt
 projectlist-test-output.txt
 ts_errors.txt
+
+# ─── Agentica v2 (AI toolkit) ────────────────────────────────────────────────
+# Commit decisions.json + patterns.json so the team shares learned patterns
+# Exclude large trajectory files and Python cache
+.agentica/memory/trajectories/
+.agentica/__pycache__/
+# Do NOT ignore .agentica/memory/reasoning-bank/ — it's valuable shared knowledge

@@ -1,11 +1,37 @@
-import React, { lazy, Suspense, useState } from "react";
-import { NavigationState, SettingsSection } from "@/types";
+import {
+  ArrowUpTrayIcon,
+  Bars3Icon,
+  BeakerIcon,
+  BellIcon,
+  BuildingOffice2Icon,
+  ChartBarIcon,
+  CircleStackIcon,
+  ClockIcon,
+  Cog6ToothIcon,
+  DocumentDuplicateIcon,
+  EyeIcon,
+  GlobeAltIcon,
+  IdentificationIcon,
+  InformationCircleIcon,
+  MagnifyingGlassIcon,
+  PaintBrushIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  StarIcon,
+  UserCircleIcon,
+  UsersIcon,
+  XMarkIcon,
+} from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
+import { NavigationState, SettingsSection } from "@/types";
+import React, { lazy, Suspense, useState } from "react";
 
 const ProfileSettingsPage = lazy(() => import("./ProfileSettingsPage"));
 const SecuritySettingsPage = lazy(() => import("./SecuritySettingsPage"));
 const AccreditationHubPage = lazy(() => import("@/pages/AccreditationHubPage"));
+const ChangeControlHubPage = lazy(() => import("@/pages/ChangeControlHubPage"));
+const SupplierHubPage = lazy(() => import("@/pages/SupplierHubPage"));
 const CompetencyLibraryPage = lazy(
   () => import("../competencies/CompetencyLibraryPage"),
 );
@@ -32,30 +58,6 @@ const DepartmentsPage = lazy(() => import("@/pages/DepartmentsPage"));
 const LIMSIntegrationSettingsPage = lazy(
   () => import("./LIMSIntegrationSettingsPage"),
 );
-import {
-  Cog6ToothIcon,
-  UserCircleIcon,
-  ShieldCheckIcon,
-  UsersIcon,
-  GlobeAltIcon,
-  CircleStackIcon,
-  InformationCircleIcon,
-  IdentificationIcon,
-  BellIcon,
-  EyeIcon,
-  PaintBrushIcon,
-  ChartBarIcon,
-  SparklesIcon,
-  Bars3Icon,
-  XMarkIcon,
-  MagnifyingGlassIcon,
-  ClockIcon,
-  DocumentDuplicateIcon,
-  StarIcon,
-  ArrowUpTrayIcon,
-  BuildingOffice2Icon,
-  BeakerIcon,
-} from "@/components/icons";
 
 interface SettingsLayoutProps {
   section: SettingsSection | undefined;
@@ -197,6 +199,20 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       adminOnly: true,
       category: t("admin"),
     },
+    {
+      id: "changeControl",
+      label: t("changeControlManagement"),
+      icon: DocumentDuplicateIcon,
+      adminOnly: true,
+      category: t("admin"),
+    },
+    {
+      id: "supplierHub",
+      label: t("supplierQualityManagement"),
+      icon: BuildingOffice2Icon,
+      adminOnly: true,
+      category: t("admin"),
+    },
     ...(isAdmin
       ? [
           {
@@ -283,6 +299,14 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         ) : (
           <ProfileSettingsPage />
         );
+      case "changeControl":
+        return isAdmin ? (
+          <ChangeControlHubPage setNavigation={setNavigation} />
+        ) : (
+          <ProfileSettingsPage />
+        );
+      case "supplierHub":
+        return isAdmin ? <SupplierHubPage /> : <ProfileSettingsPage />;
       case "firebaseSetup":
         return isAdmin ? <FirebaseSetupPage /> : <ProfileSettingsPage />;
       case "about":

@@ -23,6 +23,7 @@ import {
   EyeIcon,
 } from "../components/icons";
 import { Button, TableContainer } from "@/components/ui";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
 
 type ViewMode = "list" | "create" | "edit" | "view";
 
@@ -51,6 +52,10 @@ const PerformanceEvaluationPage: React.FC<{
   const { t } = useTranslation();
   const { users, currentUser } = useUserStore();
   const { departments, competencies } = useAppStore();
+  const { can } = usePermission();
+  const canCreate = can(Action.Create, Resource.Training);
+  const canUpdate = can(Action.Update, Resource.Training);
+  const canDelete = can(Action.Delete, Resource.Training);
 
   const [evaluations, setEvaluations] = useState<PerformanceEvaluation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -277,13 +282,15 @@ const PerformanceEvaluationPage: React.FC<{
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              onClick={() => handleEdit(selectedEval)}
-              size="sm"
-            >
-              {t("edit")}
-            </Button>
+            {canUpdate && (
+              <Button
+                variant="ghost"
+                onClick={() => handleEdit(selectedEval)}
+                size="sm"
+              >
+                {t("edit")}
+              </Button>
+            )}
             <Button
               variant="ghost"
               onClick={() => setViewMode("list")}
@@ -720,10 +727,12 @@ const PerformanceEvaluationPage: React.FC<{
             </p>
           </div>
         </div>
-        <Button onClick={handleCreate} className="w-full md:w-auto">
-          <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-          {t("newEvaluation")}
-        </Button>
+        {canCreate && (
+          <Button onClick={handleCreate} className="w-full md:w-auto">
+            <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+            {t("newEvaluation")}
+          </Button>
+        )}
       </div>
 
       {/* Filter */}
@@ -826,20 +835,24 @@ const PerformanceEvaluationPage: React.FC<{
                         >
                           <EyeIcon className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleEdit(evalItem)}
-                          className="p-1 hover:text-brand-primary"
-                          title={t("edit")}
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(evalItem.id)}
-                          className="p-1 hover:text-red-600"
-                          title={t("delete")}
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </button>
+                        {canUpdate && (
+                          <button
+                            onClick={() => handleEdit(evalItem)}
+                            className="p-1 hover:text-brand-primary"
+                            title={t("edit")}
+                          >
+                            <PencilIcon className="w-4 h-4" />
+                          </button>
+                        )}
+                        {canDelete && (
+                          <button
+                            onClick={() => handleDelete(evalItem.id)}
+                            className="p-1 hover:text-red-600"
+                            title={t("delete")}
+                          >
+                            <TrashIcon className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -854,9 +867,11 @@ const PerformanceEvaluationPage: React.FC<{
             <p className="mt-3 text-gray-500 dark:text-gray-400">
               {t("noEvaluations")}
             </p>
-            <Button onClick={handleCreate} className="mt-4" size="sm">
-              {t("newEvaluation")}
-            </Button>
+            {canCreate && (
+              <Button onClick={handleCreate} className="mt-4" size="sm">
+                {t("newEvaluation")}
+              </Button>
+            )}
           </div>
         )}
       </div>

@@ -173,12 +173,14 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "labOperations",
       label: t("labOperations") || "Lab Operations",
       icon: BeakerIcon,
+      adminOnly: true,
     },
     {
       nav: { view: "workflowAutomation" },
       key: "workflowAutomation",
       label: t("workflowAutomation") || "Workflow Automation",
       icon: BoltIcon,
+      adminOnly: true,
     },
   ];
 

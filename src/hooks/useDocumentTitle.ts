@@ -14,6 +14,7 @@ const getTitleForView = (navigation: NavigationState): string => {
     const baseTitles: Record<string, string> = {
         dashboard: 'Dashboard',
         analytics: 'Analytics',
+        analyticsHub: 'Analytics Hub',
         qualityInsights: 'Quality Insights',
         calendar: 'Calendar',
         riskHub: 'Risk Management',
@@ -36,6 +37,11 @@ const getTitleForView = (navigation: NavigationState): string => {
         surveyReport: 'Survey Report',
         dataHub: 'Data Hub',
         messaging: 'Messages',
+        accreditationHub: 'Accreditation Hub',
+        knowledgeBase: 'Knowledge Base',
+        labOperations: 'Lab Operations',
+        workflowAutomation: 'Workflow Automation',
+        reportBuilder: 'Report Builder',
     };
 
     let title = baseTitles[view] || 'Dashboard';
@@ -65,7 +71,7 @@ const getTitleForView = (navigation: NavigationState): string => {
         title = sectionTitles[section] || `Settings - ${section}`;
     }
 
-    return `${title} | AccreditEx`;
+    return `${title} | AccreditEx — Healthcare Accreditation Management`;
 };
 
 export const useDocumentTitle = (navigation: NavigationState) => {
@@ -82,22 +88,32 @@ export const useDocumentTitle = (navigation: NavigationState) => {
         }
 
         const descriptions: Record<string, string> = {
-            dashboard: 'AccreditEx Dashboard - Overview of your accreditation management system',
-            analytics: 'Analytics and reporting for accreditation compliance',
-            projects: 'Manage and track your accreditation projects',
-            documentControl: 'Control and manage your quality management documents',
-            trainingHub: 'Employee training and development programs',
-            settings: 'Configure your AccreditEx system settings',
+            dashboard: 'AccreditEx Dashboard - Real-time overview of accreditation compliance, project progress, and key quality metrics.',
+            analytics: 'Analytics and reporting for accreditation compliance trends and performance insights.',
+            analyticsHub: 'Deep-dive analytics hub with compliance dashboards, gap analysis, and trend visualizations.',
+            projects: 'Manage and track your healthcare accreditation projects with detailed checklists and progress tracking.',
+            documentControl: 'Document control center for policies, procedures, and evidence management with version tracking.',
+            trainingHub: 'Employee training hub — track competencies, certifications, and performance evaluations.',
+            settings: 'Configure your AccreditEx system settings, profile, and preferences.',
+            riskHub: 'Risk management hub — identify, assess, and mitigate organizational risks with heat maps and FMEA.',
+            auditHub: 'Audit hub — plan, schedule, and conduct internal audits with findings tracking.',
+            accreditationHub: 'Accreditation hub — manage JCI, CBAHI, DNV programs and standards compliance.',
+            dataHub: 'Data hub — centralized data management with import/export and validation tools.',
+            knowledgeBase: 'Knowledge base — accreditation guidelines, best practices, and reference materials.',
+            labOperations: 'Lab operations management — track laboratory quality, equipment, and test results.',
+            workflowAutomation: 'Workflow automation — create automated workflows for accreditation processes.',
+            messaging: 'Team messaging — collaborate with your accreditation team in real-time.',
+            calendar: 'Calendar — schedule audits, training sessions, and accreditation deadlines.',
+            myTasks: 'My Tasks — view and manage your assigned accreditation tasks and action items.',
         };
 
         metaDescription.setAttribute(
             'content',
-            descriptions[navigation.view] || 'AccreditEx - Accreditation Management System'
+            descriptions[navigation.view] || 'AccreditEx — Enterprise-grade healthcare accreditation management platform with AI-powered compliance tracking.'
         );
 
         return () => {
-            // Reset to default on unmount
-            document.title = 'AccreditEx';
+            document.title = 'AccreditEx — Healthcare Accreditation Management Platform';
         };
     }, [navigation]);
 };

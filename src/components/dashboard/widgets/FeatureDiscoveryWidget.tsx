@@ -56,7 +56,7 @@ export const FeatureDiscoveryWidget: React.FC<FeatureDiscoveryWidgetProps> = ({
         descriptionKey: "mockSurveyFeatureDesc",
         icon: AcademicCapIcon,
         gradient: "from-blue-500 to-cyan-600",
-        navigation: () => setNavigation({ view: "mockSurvey" }),
+        navigation: () => setNavigation({ view: "projects" }),
         category: "quality",
       },
       {

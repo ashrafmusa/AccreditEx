@@ -1,25 +1,25 @@
-import React, { useState, useEffect, useRef, Suspense } from "react";
-import { NavigationState } from "@/types";
-import Layout from "@/components/common/Layout";
 import { LanguageProvider } from "@/components/common/LanguageProvider";
+import Layout from "@/components/common/Layout";
+import LoadingScreen from "@/components/common/LoadingScreen";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { ToastProvider } from "@/components/common/Toast";
 import { useToast } from "@/hooks/useToast";
-import LoadingScreen from "@/components/common/LoadingScreen";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 // FIX: Corrected import path for useProjectStore
 import { useProjectStore } from "@/stores/useProjectStore";
 // FIX: Corrected import path for useUserStore
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
-import { useFirebaseAuth } from "@/firebase/firebaseHooks";
 import { getAuthInstance } from "@/firebase/firebaseConfig";
+import { useFirebaseAuth } from "@/firebase/firebaseHooks";
+import { useAppStore } from "@/stores/useAppStore";
+import { useUserStore } from "@/stores/useUserStore";
 
 // Lazy load heavy components
 const MainRouter = React.lazy(() => import("@/components/common/MainRouter"));
 // Import AppRouter but don't lazy load it as it's small and needed immediately
-import { AppRouter } from "@/router/AppRouter";
-import { useNavigation } from "@/hooks/useNavigation";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import { useNavigation } from "@/hooks/useNavigation";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
+import { AppRouter } from "@/router/AppRouter";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
@@ -27,8 +27,12 @@ const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
 const LandingPage = React.lazy(() => import("@/pages/LandingPage"));
 const PitchDeckPage = React.lazy(() => import("@/pages/PitchDeckPage"));
 
-// AI Assistant Component
-import { AIAssistant } from "@/components/ai/AIAssistant";
+// AI Assistant Component — lazy loaded (not needed until user is authenticated & idle)
+const AIAssistant = React.lazy(() =>
+  import("@/components/ai/AIAssistant").then((m) => ({
+    default: m.AIAssistant,
+  })),
+);
 
 const App: React.FC = () => {
   return (
@@ -111,6 +115,9 @@ const AppManager: React.FC = () => {
   // Use the document title hook for SEO
   useDocumentTitle(navigation);
 
+  // Initialize push notifications on native platforms
+  usePushNotifications();
+
   const currentUser = useUserStore((state) => state.currentUser);
   const [authChecked, setAuthChecked] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(
@@ -124,6 +131,14 @@ const AppManager: React.FC = () => {
 
   useEffect(() => {
     const auth = getAuthInstance();
+    // Optimization: Check current auth state synchronously to avoid unnecessary loading delay
+    const currentAuthUser = auth.currentUser;
+    if (currentAuthUser !== null) {
+      // Auth state already known (user logged in or definitely logged out)
+      setAuthChecked(true);
+    }
+
+    // Subscribe to auth changes
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setAuthChecked(true);
     });
@@ -132,9 +147,11 @@ const AppManager: React.FC = () => {
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("accreditex-onboarding-complete", "true");
+    localStorage.setItem("hasCompletedOnboarding", "true");
     setShowOnboarding(false);
   };
 
+  // Combine auth check with lazy loading - single loading screen
   if (!authChecked) {
     return <LoadingScreen />; // Show loading screen while checking auth
   }
@@ -144,7 +161,13 @@ const AppManager: React.FC = () => {
     // /pitch — Investor pitch deck
     if (location.pathname === "/pitch") {
       return (
-        <Suspense fallback={<LoadingScreen />}>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+            </div>
+          }
+        >
           <PitchDeckPage />
         </Suspense>
       );
@@ -153,7 +176,13 @@ const AppManager: React.FC = () => {
     // /login — Direct login page
     if (location.pathname === "/login") {
       return (
-        <Suspense fallback={<LoadingScreen />}>
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+            </div>
+          }
+        >
           <LoginPage />
         </Suspense>
       );
@@ -161,7 +190,13 @@ const AppManager: React.FC = () => {
 
     // Everything else — Marketing landing page
     return (
-      <Suspense fallback={<LoadingScreen />}>
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+          </div>
+        }
+      >
         <LandingPage onLogin={() => navigate("/login")} />
       </Suspense>
     );
@@ -190,8 +225,10 @@ const AppManager: React.FC = () => {
           </Suspense>
         </main>
       </Layout>
-      {/* AI Assistant - Always available when logged in */}
-      <AIAssistant />
+      {/* AI Assistant - Lazy loaded, available when logged in */}
+      <Suspense fallback={null}>
+        <AIAssistant />
+      </Suspense>
     </div>
   );
 };

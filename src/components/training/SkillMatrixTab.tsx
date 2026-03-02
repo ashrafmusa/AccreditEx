@@ -52,11 +52,11 @@ const STATUS_COLORS: Record<CellStatus, string> = {
 };
 
 const STATUS_LABELS: Record<CellStatus, string> = {
-  active: "Active",
-  expiring: "Expiring Soon",
-  expired: "Expired",
-  missing: "Not Assigned",
-  gap: "Required Gap",
+  active: "statusActive",
+  expiring: "statusExpiringSoon",
+  expired: "statusExpired",
+  missing: "statusNotAssigned",
+  gap: "statusRequiredGap",
 };
 
 const SkillMatrixTab: React.FC = () => {
@@ -132,7 +132,7 @@ const SkillMatrixTab: React.FC = () => {
       <EmptyState
         icon={<AcademicCapIcon className="h-12 w-12" />}
         title={t("noDataAvailable")}
-        description="Add competencies and users to view the skill matrix."
+        description={t("addCompetenciesAndUsers")}
       />
     );
   }
@@ -142,7 +142,7 @@ const SkillMatrixTab: React.FC = () => {
       {/* Header & Filters */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          Skill Matrix
+          {t("skillMatrixTitle")}
         </h3>
         <div className="flex flex-wrap gap-2">
           <select
@@ -162,7 +162,7 @@ const SkillMatrixTab: React.FC = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="text-sm border border-brand-border dark:border-dark-brand-border rounded-lg py-1.5 px-3 bg-brand-surface dark:bg-dark-brand-surface dark:text-dark-brand-text-primary"
           >
-            <option value="all">All Categories</option>
+            <option value="all">{t("allCategories")}</option>
             {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -176,31 +176,31 @@ const SkillMatrixTab: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         {[
           {
-            label: "Active",
+            label: t("smActive"),
             value: stats.active,
             color: "text-green-600 dark:text-green-400",
             bg: "bg-green-50 dark:bg-green-900/20",
           },
           {
-            label: "Expiring",
+            label: t("smExpiring"),
             value: stats.expiring,
             color: "text-yellow-600 dark:text-yellow-400",
             bg: "bg-yellow-50 dark:bg-yellow-900/20",
           },
           {
-            label: "Expired",
+            label: t("smExpired"),
             value: stats.expired,
             color: "text-red-600 dark:text-red-400",
             bg: "bg-red-50 dark:bg-red-900/20",
           },
           {
-            label: "Gaps",
+            label: t("smGaps"),
             value: stats.gaps,
             color: "text-blue-600 dark:text-blue-400",
             bg: "bg-blue-50 dark:bg-blue-900/20",
           },
           {
-            label: "Coverage",
+            label: t("smCoverage"),
             value:
               stats.total > 0
                 ? `${Math.round((stats.active / stats.total) * 100)}%`
@@ -225,7 +225,9 @@ const SkillMatrixTab: React.FC = () => {
             <span
               className={`inline-block h-3.5 w-3.5 rounded-sm ${colorClass}`}
             />
-            {STATUS_LABELS[key as CellStatus]}
+            {STATUS_LABELS[key as CellStatus]
+              ? t(STATUS_LABELS[key as CellStatus])
+              : key}
           </div>
         ))}
       </div>
@@ -236,7 +238,7 @@ const SkillMatrixTab: React.FC = () => {
           <thead className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-800">
             <tr>
               <th className="sticky left-0 z-20 bg-gray-50 dark:bg-gray-800 px-3 py-2 text-left font-semibold text-brand-text-primary dark:text-dark-brand-text-primary min-w-40 border-b border-brand-border dark:border-dark-brand-border">
-                Staff Member
+                {t("staffMember")}
               </th>
               {visibleCompetencies.map((comp) => (
                 <th
@@ -291,21 +293,27 @@ const SkillMatrixTab: React.FC = () => {
                     >
                       <div
                         className={`mx-auto h-6 w-6 rounded-sm ${STATUS_COLORS[cell.status]} ${cell.hasEvidence ? "border-2 border-white dark:border-gray-900" : ""} cursor-default transition-transform ${isHovered ? "scale-125" : ""}`}
-                        title={`${user.name} — ${comp.name[lang]}\nStatus: ${STATUS_LABELS[cell.status]}${cell.expiryDate ? `\nExpiry: ${cell.expiryDate}` : ""}${cell.hasEvidence ? "\n📎 Has evidence" : ""}`}
+                        title={`${user.name} — ${comp.name[lang]}\n${t("statusLabel")}: ${t(STATUS_LABELS[cell.status])}${cell.expiryDate ? `\n${t("expiryDate")}: ${cell.expiryDate}` : ""}${cell.hasEvidence ? `\n${t("evidenceAttached")}` : ""}`}
                       />
                       {/* Tooltip */}
                       {isHovered && cell.status !== "missing" && (
                         <div className="absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] rounded px-2 py-1 whitespace-nowrap pointer-events-none shadow-lg">
                           <div className="font-medium">
-                            {STATUS_LABELS[cell.status]}
+                            {t(STATUS_LABELS[cell.status])}
                           </div>
                           {cell.issueDate && (
-                            <div>Issued: {cell.issueDate}</div>
+                            <div>
+                              {t("issued")}: {cell.issueDate}
+                            </div>
                           )}
                           {cell.expiryDate && (
-                            <div>Expires: {cell.expiryDate}</div>
+                            <div>
+                              {t("expires")}: {cell.expiryDate}
+                            </div>
                           )}
-                          {cell.hasEvidence && <div>📎 Evidence attached</div>}
+                          {cell.hasEvidence && (
+                            <div>{t("evidenceAttached")}</div>
+                          )}
                         </div>
                       )}
                     </td>
@@ -319,7 +327,7 @@ const SkillMatrixTab: React.FC = () => {
 
       {activeUsers.length === 0 && (
         <div className="text-center py-8 text-brand-text-secondary dark:text-dark-brand-text-secondary text-sm">
-          No staff members found for selected filters.
+          {t("noStaffForFilters")}
         </div>
       )}
     </div>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
 import Header from "@/components/common/Header";
 import { NavigationState, Notification } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -12,6 +12,9 @@ import { getNotificationsForUser } from "@/services/notificationServiceFirebase"
 import { useUserStore } from "@/stores/useUserStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useAppStore } from "@/stores/useAppStore";
+
+// Lazy-load GuidedTour — only loaded when tour is active (zero bundle cost otherwise)
+const GuidedTour = lazy(() => import("@/components/onboarding/GuidedTour"));
 
 interface LayoutProps {
   navigation: NavigationState;
@@ -29,6 +32,8 @@ const Layout: React.FC<LayoutProps> = ({
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [showGuidedTour, setShowGuidedTour] = useState(false);
+  const [tourSteps, setTourSteps] = useState<any[]>([]);
 
   const currentUser = useUserStore((state) => state.currentUser)!;
   const projects = useProjectStore((state) => state.projects);
@@ -90,6 +95,25 @@ const Layout: React.FC<LayoutProps> = ({
     "editProject",
   ].includes(navigation.view);
   const isSettingsActive = navigation.view === "settings";
+
+  // Start guided tour for new users (after initial onboarding wizard)
+  useEffect(() => {
+    const hasCompletedOnboarding =
+      localStorage.getItem("hasCompletedOnboarding") === "true";
+    const hasCompletedTour =
+      localStorage.getItem("accreditex_tour_completed_new-user") === "true";
+
+    if (hasCompletedOnboarding && !hasCompletedTour) {
+      // Delay tour start to let the dashboard render fully
+      const timer = setTimeout(() => {
+        import("@/data/tourSteps").then(({ newUserTourSteps }) => {
+          setTourSteps(newUserTourSteps);
+          setShowGuidedTour(true);
+        });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   return (
     <>
@@ -162,6 +186,17 @@ const Layout: React.FC<LayoutProps> = ({
           </main>
         </div>
       </div>
+      {/* Guided Tour Overlay — lazy-loaded, only renders when active */}
+      {showGuidedTour && tourSteps.length > 0 && (
+        <Suspense fallback={null}>
+          <GuidedTour
+            tourId="new-user"
+            steps={tourSteps}
+            isActive={showGuidedTour}
+            onComplete={() => setShowGuidedTour(false)}
+          />
+        </Suspense>
+      )}
     </>
   );
 };

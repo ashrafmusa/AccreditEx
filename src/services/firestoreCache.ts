@@ -10,6 +10,7 @@
 import { QueryConstraint, getDocs, query, collection as firestoreCollection } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { freeTierMonitor } from './freeTierMonitor';
+import { cacheCollectionData, getCachedCollectionData } from './offlineStorage';
 
 interface CacheEntry<T> {
   data: T[];
@@ -23,6 +24,7 @@ class FirestoreCache {
 
   /**
    * Get cached data or fetch from Firestore
+   * Falls back to IndexedDB when offline
    * Significantly reduces read operations
    */
   async getCachedCollection<T>(
@@ -31,29 +33,57 @@ class FirestoreCache {
     ttl?: number
   ): Promise<T[]> {
     const cacheKey = this.generateCacheKey(collectionName, constraints);
-    
-    // Check if data is in cache and still valid
+
+    // Check if data is in memory cache and still valid
     if (this.isCacheValid(cacheKey)) {
       console.log(`[CACHE HIT] ${collectionName} - Saves 1 read operation`);
       return this.cache.get(cacheKey)!.data as T[];
+    }
+
+    // If offline, try IndexedDB persistent cache
+    if (!navigator.onLine) {
+      console.log(`[OFFLINE] ${collectionName} - Trying IndexedDB cache`);
+      const offlineData = await getCachedCollectionData<T>(collectionName);
+      if (offlineData.length > 0) {
+        // Also populate in-memory cache so subsequent reads are instant
+        this.cache.set(cacheKey, {
+          data: offlineData,
+          timestamp: Date.now(),
+          ttl: ttl || FirestoreCache.DEFAULT_TTL
+        });
+        return offlineData;
+      }
+      // No cached data available offline — return empty
+      return [];
     }
 
     // Cache miss - fetch from Firestore (1 read operation)
     console.log(`[CACHE MISS] ${collectionName} - Using 1 read operation`);
     const collectionRef = firestoreCollection(db, collectionName);
     const q = constraints ? query(collectionRef, ...constraints) : query(collectionRef);
-    
+
     const snapshot = await getDocs(q);
     const data = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as T));
 
     // Record read operation in monitoring
     freeTierMonitor.recordRead(1);
 
-    // Store in cache
+    // Store in memory cache
     this.cache.set(cacheKey, {
       data,
       timestamp: Date.now(),
       ttl: ttl || FirestoreCache.DEFAULT_TTL
+    });
+
+    // Persist to IndexedDB for offline access (fire-and-forget)
+    cacheCollectionData(
+      collectionName,
+      data.map((item: any) => ({
+        id: item.id || cacheKey,
+        ...item,
+      }))
+    ).catch(() => {
+      // Silent failure — IndexedDB persistence is best-effort
     });
 
     return data;
@@ -65,12 +95,16 @@ class FirestoreCache {
    */
   invalidate(collectionName: string): void {
     console.log(`[CACHE INVALIDATED] ${collectionName}`);
-    // Remove all entries for this collection
+    // Remove all entries for this collection from memory
     for (const key of this.cache.keys()) {
       if (key.startsWith(collectionName)) {
         this.cache.delete(key);
       }
     }
+    // Also clear IndexedDB cache (fire-and-forget)
+    import('./offlineStorage').then(({ clearCachedCollection }) => {
+      clearCachedCollection(collectionName).catch(() => { });
+    }).catch(() => { });
   }
 
   /**

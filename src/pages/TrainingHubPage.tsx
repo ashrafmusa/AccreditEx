@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense } from "react";
-import { NavigationState, UserRole } from "../types";
+import { NavigationState } from "../types";
 import { useTranslation } from "../hooks/useTranslation";
 import { useAppStore } from "../stores/useAppStore";
 import { useUserStore } from "../stores/useUserStore";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui";
 import { aiAgentService } from "@/services/aiAgentService";
 import AISuggestionModal from "@/components/ai/AISuggestionModal";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
 
 const PerformanceEvaluationPage = lazy(
   () => import("@/pages/PerformanceEvaluationPage"),
@@ -70,8 +71,11 @@ const TrainingHubPage: React.FC<TrainingHubPageProps> = ({ setNavigation }) => {
   const [aiModalContent, setAiModalContent] = useState("");
   const [aiModalTitle, setAiModalTitle] = useState("");
 
-  // Permission check: Viewer users get read-only UI
-  const isAdmin = currentUser?.role === UserRole.Admin;
+  // Permission check: only users who can create/assign training see the admin tab
+  const { can } = usePermission();
+  const canAdminTraining =
+    can(Action.Create, Resource.Training) ||
+    can(Action.Assign, Resource.Training);
 
   const handleAIAnalyze = async () => {
     setAiLoading(true);
@@ -98,7 +102,7 @@ Provide a structured analysis with:
 Format your response in clear Markdown with headers and bullet points.`;
 
       const response = await aiAgentService.chat(prompt, false);
-      setAiModalTitle("AI Training & Performance Analysis");
+      setAiModalTitle(t("aiTrainingAnalysis"));
       setAiModalContent(
         typeof response === "string" ? response : response.response || "",
       );
@@ -131,7 +135,7 @@ Format your response in clear Markdown with headers and bullet points.`;
           className="flex items-center gap-2 text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-300 dark:text-purple-400 dark:border-purple-800"
         >
           <SparklesIcon className="h-4 w-4" />
-          {aiLoading ? t("loading") + "..." : "AI Analyze"}
+          {aiLoading ? t("loading") + "..." : t("aiAnalyze")}
         </Button>
       </div>
 
@@ -147,7 +151,7 @@ Format your response in clear Markdown with headers and bullet points.`;
           >
             {t("myTraining")}
           </Button>
-          {isAdmin && (
+          {canAdminTraining && (
             <Button
               onClick={() => setActiveTab("admin")}
               variant={activeTab === "admin" ? "primary" : "ghost"}
@@ -175,42 +179,42 @@ Format your response in clear Markdown with headers and bullet points.`;
             variant={activeTab === "skillMatrix" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            Skill Matrix
+            {t("skillMatrix")}
           </Button>
           <Button
             onClick={() => setActiveTab("licenses")}
             variant={activeTab === "licenses" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            Licenses
+            {t("licenses")}
           </Button>
           <Button
             onClick={() => setActiveTab("personnelFiles")}
             variant={activeTab === "personnelFiles" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            Personnel Files
+            {t("personnelFiles")}
           </Button>
           <Button
             onClick={() => setActiveTab("capAssessment")}
             variant={activeTab === "capAssessment" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            CAP Assessment
+            {t("capAssessment")}
           </Button>
           <Button
             onClick={() => setActiveTab("ceCredits")}
             variant={activeTab === "ceCredits" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            CE Credits
+            {t("ceCredits")}
           </Button>
           <Button
             onClick={() => setActiveTab("learningPaths")}
             variant={activeTab === "learningPaths" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
-            Learning Paths
+            {t("learningPaths")}
           </Button>
         </nav>
       </div>
@@ -224,7 +228,7 @@ Format your response in clear Markdown with headers and bullet points.`;
             setNavigation={setNavigation}
           />
         )}
-        {isAdmin && activeTab === "admin" && (
+        {canAdminTraining && activeTab === "admin" && (
           <TrainingAdminTab
             trainingPrograms={trainingPrograms}
             users={users}

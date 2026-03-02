@@ -31,9 +31,21 @@ export default defineConfig(({ mode }) => {
       }
     },
     build: {
+      // Performance optimizations
+      target: 'es2020',
+      cssCodeSplit: true,
+      sourcemap: false,
+      // Increase chunk size warning limit (vendor chunks are expected to be large)
+      chunkSizeWarningLimit: 800,
       rollupOptions: {
         output: {
           manualChunks: {
+            // Core React — loaded first, cached long-term
+            'vendor-react': ['react', 'react-dom', 'react-router-dom'],
+            // State management — small, loads with app shell  
+            'vendor-zustand': ['zustand'],
+            // Firebase — defer until auth check
+            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
             // Heavy vendor libraries — load on demand
             'vendor-excel': ['exceljs'],
             'vendor-pdf': ['jspdf', 'jspdf-autotable'],
@@ -46,8 +58,13 @@ export default defineConfig(({ mode }) => {
               '@tiptap/extension-image',
             ],
             'vendor-recharts': ['recharts'],
-            'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
             'vendor-docx': ['docx'],
+            // UI icons — used everywhere but can load async
+            'vendor-icons': ['@heroicons/react/24/outline', '@heroicons/react/24/solid', '@heroicons/react/20/solid'],
+            // Globe 3D rendering — only used on landing/login pages (desktop only)
+            'vendor-globe': ['cobe', 'framer-motion'],
+            // Sanitization + utilities
+            'vendor-utils': ['dompurify', 'idb'],
           },
         },
       },

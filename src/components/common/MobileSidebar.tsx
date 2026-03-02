@@ -188,6 +188,25 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       icon: AcademicCapIcon,
     },
     {
+      nav: { view: "accreditationHub" },
+      key: "accreditationHub",
+      label: t("accreditationHub"),
+      icon: ShieldCheckIcon,
+    },
+    {
+      nav: { view: "knowledgeBase" },
+      key: "knowledgeBase",
+      label: t("knowledgeBase") || "Knowledge Base",
+      icon: DocumentTextIcon,
+    },
+    {
+      nav: { view: "labOperations" },
+      key: "labOperations",
+      label: t("labOperations") || "Lab Operations",
+      icon: ClipboardDocumentSearchIcon,
+      adminOnly: true,
+    },
+    {
       nav: { view: "workflowAutomation" },
       key: "workflowAutomation",
       label: t("workflowAutomation") || "Workflow Automation",
@@ -199,7 +218,6 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       key: "settings",
       label: t("settings"),
       icon: Cog6ToothIcon,
-      adminOnly: true,
       bottom: true,
     },
   ];

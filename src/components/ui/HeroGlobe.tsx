@@ -1,5 +1,5 @@
-import React from "react";
-import Globe from "@/components/ui/Globe";
+import React, { Suspense } from "react";
+const Globe = React.lazy(() => import("@/components/ui/Globe"));
 import type { GlobeSettings } from "@/types";
 
 /* ─── TYPES ──────────────────────────────────────────────────────────────── */
@@ -103,12 +103,18 @@ const HeroGlobe: React.FC<HeroGlobeProps> = ({ globeSettings }) => {
 
       {/* ── The Globe ─────────────────────────────────────────── */}
       <div className="absolute inset-0 z-10">
-        <Globe
-          width={480}
-          height={480}
-          {...settings}
-          userLocation={{ lat: 23.588, long: 58.3829 }}
-        />
+        <Suspense
+          fallback={
+            <div className="w-full h-full animate-pulse bg-white/5 rounded-full" />
+          }
+        >
+          <Globe
+            width={480}
+            height={480}
+            {...settings}
+            userLocation={{ lat: 23.588, long: 58.3829 }}
+          />
+        </Suspense>
       </div>
 
       {/* ── Floating city cards (4 cards, clean positions) ────── */}

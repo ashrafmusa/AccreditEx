@@ -249,7 +249,7 @@ const Hero: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 const TrustBar: React.FC = () => (
   <section className="bg-slate-50 dark:bg-slate-800/50 py-10 border-b border-slate-200 dark:border-slate-700">
     <div className="max-w-7xl mx-auto px-6 text-center">
-      <p className="text-xs font-semibold uppercase tracking-[2px] text-slate-400 mb-6">
+      <p className="text-xs font-semibold uppercase tracking-[2px] text-slate-500 mb-6">
         Supporting Accreditation Standards From
       </p>
       <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
@@ -269,7 +269,7 @@ const TrustBar: React.FC = () => (
               <div className={`text-xl md:text-2xl font-extrabold ${s.color}`}>
                 {s.name}
               </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
+              <div className="text-[11px] text-slate-500 mt-0.5">
                 {s.region}
               </div>
             </div>
@@ -288,7 +288,7 @@ const ProblemSection: React.FC = () => (
   <section className="py-24 bg-slate-50 dark:bg-slate-900/50" id="problem">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
           ⚠️ The Challenge
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -314,14 +314,14 @@ const ProblemSection: React.FC = () => (
             title: "Clinician Burnout Rate",
             desc: "Quality managers spend more time on paperwork than actual patient safety improvement.",
             bgColor: "bg-orange-50 dark:bg-orange-950/20",
-            iconColor: "text-orange-500",
+            iconColor: "text-orange-600",
           },
           {
             stat: "$2M+",
             title: "Cost of Non-Compliance",
             desc: "Lost accreditation means lost contracts, reputation damage, and potential patient safety risks.",
             bgColor: "bg-yellow-50 dark:bg-yellow-950/20",
-            iconColor: "text-yellow-600",
+            iconColor: "text-yellow-700",
           },
         ].map((p) => (
           <div
@@ -453,7 +453,7 @@ const Features: React.FC = () => (
   <section id="features" className="py-24 bg-white dark:bg-slate-900">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
           🏗️ Platform
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -602,7 +602,7 @@ const MarketSection: React.FC = () => (
   <section id="market" className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
           📈 Market
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -702,7 +702,7 @@ const CompetitiveSection: React.FC = () => {
     <section className="py-24 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
             🏆 Advantage
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -825,7 +825,7 @@ const Pricing: React.FC = () => (
   <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
           💳 Pricing
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -900,7 +900,7 @@ const TeamSection: React.FC = () => (
   <section id="team" className="py-24 bg-white dark:bg-slate-900">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
           👤 Team
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -945,9 +945,9 @@ const TeamSection: React.FC = () => (
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 max-w-4xl mx-auto">
         <div className="bg-slate-50 dark:bg-slate-800/50 p-7 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <h4 className="font-bold text-brand-text-primary dark:text-white mb-2">
+          <h3 className="font-bold text-brand-text-primary dark:text-white mb-2 text-base">
             🎯 Unique Positioning
-          </h4>
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
             Designed by a clinical quality professional who understands
             healthcare compliance from the inside — not just software developers
@@ -955,9 +955,9 @@ const TeamSection: React.FC = () => (
           </p>
         </div>
         <div className="bg-slate-50 dark:bg-slate-800/50 p-7 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <h4 className="font-bold text-brand-text-primary dark:text-white mb-2">
+          <h3 className="font-bold text-brand-text-primary dark:text-white mb-2 text-base">
             👥 Advisory Board
-          </h4>
+          </h3>
           <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
             Assembling an advisory board of clinical and technical mentors from
             the GCC healthcare sector. Currently exploring pilot partnerships
@@ -974,7 +974,7 @@ const RoadmapSection: React.FC = () => (
   <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
           🗺️ Roadmap
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -1017,9 +1017,9 @@ const RoadmapSection: React.FC = () => (
               <span className="text-teal-600 font-bold">{r.year}</span>
             </div>
             <div>
-              <h4 className="font-bold text-brand-text-primary dark:text-white">
+              <h3 className="font-bold text-brand-text-primary dark:text-white text-base">
                 {r.title}
-              </h4>
+              </h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 {r.desc}
               </p>
@@ -1066,7 +1066,7 @@ const FAQSection: React.FC = () => {
     <section id="faq" className="py-24 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-600 dark:text-teal-400 text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
             ❓ FAQ
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -1186,6 +1186,7 @@ const Footer: React.FC = () => (
               src="/logo.png"
               alt="AccreditEx"
               className="h-8 w-8 rounded-lg object-contain"
+              loading="lazy"
             />
             <span className="text-lg font-extrabold text-white">
               AccreditEx
@@ -1202,9 +1203,9 @@ const Footer: React.FC = () => (
         </div>
 
         <div>
-          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+          <h3 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
             Platform
-          </h4>
+          </h3>
           <ul className="space-y-2.5 text-sm">
             <li>
               <a
@@ -1250,9 +1251,9 @@ const Footer: React.FC = () => (
         </div>
 
         <div>
-          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+          <h3 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
             AI Tools
-          </h4>
+          </h3>
           <ul className="space-y-2.5 text-sm">
             <li>
               <a
@@ -1298,9 +1299,9 @@ const Footer: React.FC = () => (
         </div>
 
         <div>
-          <h4 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
+          <h3 className="text-white font-bold mb-4 text-sm uppercase tracking-wider">
             Contact
-          </h4>
+          </h3>
           <ul className="space-y-2.5 text-sm">
             <li>
               <a

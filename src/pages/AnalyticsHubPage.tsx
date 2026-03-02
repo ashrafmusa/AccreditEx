@@ -18,10 +18,12 @@ type AnalyticsHubTab = "overview" | "qualityInsights" | "reports";
 
 interface AnalyticsHubPageProps {
   setNavigation: (state: NavigationState) => void;
+  initialTab?: AnalyticsHubTab;
 }
 
 const AnalyticsHubPage: React.FC<AnalyticsHubPageProps> = ({
   setNavigation,
+  initialTab,
 }) => {
   const { t } = useTranslation();
   const { projects } = useProjectStore();
@@ -29,7 +31,9 @@ const AnalyticsHubPage: React.FC<AnalyticsHubPageProps> = ({
   const { departments, competencies, risks, userTrainingStatuses } =
     useAppStore();
 
-  const [activeTab, setActiveTab] = useState<AnalyticsHubTab>("overview");
+  const [activeTab, setActiveTab] = useState<AnalyticsHubTab>(
+    initialTab || "overview",
+  );
 
   // AI state
   const [aiLoading, setAiLoading] = useState(false);

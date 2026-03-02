@@ -11,6 +11,7 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Button, Modal, Input, TextArea, EmptyState } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   PlusIcon,
   TrashIcon,
@@ -159,6 +160,7 @@ const ChartTooltip = SharedChartTooltip;
 
 // ── Live Chart Component ─────────────────────────────────────
 const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const ct = getChartTheme(theme);
   const data = useMemo(() => resolveChart(config), [config]);
@@ -166,7 +168,7 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-gray-400">
         <ChartBarIcon className="h-8 w-8 mb-2 opacity-40" />
-        <p className="text-sm">No data available</p>
+        <p className="text-sm">{t("rbNoDataAvailable")}</p>
       </div>
     );
   }
@@ -528,6 +530,7 @@ const BlockPreview: React.FC<{
   onRemove: () => void;
   onEdit: () => void;
 }> = ({ block, onRemove, onEdit }) => {
+  const { t } = useTranslation();
   const widthClass =
     block.width === "half"
       ? "w-full md:w-[calc(50%-0.5rem)]"
@@ -551,7 +554,7 @@ const BlockPreview: React.FC<{
         return (
           <div>
             <Tag className={`${sizeClass} text-gray-900 dark:text-white`}>
-              {cfg.title || "Untitled"}
+              {cfg.title || t("rbUntitled")}
             </Tag>
             {cfg.subtitle && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
@@ -565,7 +568,7 @@ const BlockPreview: React.FC<{
         const cfg = block.config as TextBlockConfig;
         return (
           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-            {cfg.content || "Enter text..."}
+            {cfg.content || t("rbEnterText")}
           </p>
         );
       }
@@ -626,6 +629,7 @@ const BlockConfigModal: React.FC<{
   onSave: (block: ReportBlock) => void;
   onClose: () => void;
 }> = ({ block, onSave, onClose }) => {
+  const { t } = useTranslation();
   const [editBlock, setEditBlock] = useState<ReportBlock | null>(null);
 
   useEffect(() => {
@@ -646,18 +650,18 @@ const BlockConfigModal: React.FC<{
         return (
           <div className="space-y-3">
             <Input
-              label="Title"
+              label={t("rbTitle2")}
               value={(editBlock.config as HeaderBlockConfig).title || ""}
               onChange={(e) => updateConfig("title", e.target.value)}
             />
             <Input
-              label="Subtitle"
+              label={t("rbSubtitle")}
               value={(editBlock.config as HeaderBlockConfig).subtitle || ""}
               onChange={(e) => updateConfig("subtitle", e.target.value)}
             />
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Level
+                {t("rbLevel")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -703,7 +707,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
         return (
           <div className="space-y-2">
             <TextArea
-              label="Content"
+              label={t("rbContent")}
               value={(editBlock.config as TextBlockConfig).content || ""}
               onChange={(e) => updateConfig("content", e.target.value)}
               rows={4}
@@ -719,7 +723,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
               ) : (
                 <SparklesIcon className="h-3.5 w-3.5" />
               )}
-              {generating ? "Generating…" : "AI Generate Content"}
+              {generating ? t("rbGenerating") : t("rbAiGenerateContent")}
             </button>
           </div>
         );
@@ -730,13 +734,13 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
         return (
           <div className="space-y-3">
             <Input
-              label="Label"
+              label={t("rbLabel")}
               value={cfg.label || ""}
               onChange={(e) => updateConfig("label", e.target.value)}
             />
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Data Source
+                {t("rbDataSource")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -760,7 +764,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Field
+                {t("rbField")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -776,7 +780,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Aggregation
+                {t("rbAggregation")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -792,16 +796,16 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Format
+                {t("rbFormat")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                 value={cfg.format || "number"}
                 onChange={(e) => updateConfig("format", e.target.value)}
               >
-                <option value="number">Number</option>
-                <option value="percentage">Percentage</option>
-                <option value="currency">Currency</option>
+                <option value="number">{t("rbNumber")}</option>
+                <option value="percentage">{t("rbPercentage")}</option>
+                <option value="currency">{t("rbCurrency")}</option>
               </select>
             </div>
           </div>
@@ -813,13 +817,13 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
         return (
           <div className="space-y-3">
             <Input
-              label="Chart Title"
+              label={t("rbChartTitle")}
               value={cfg.title || ""}
               onChange={(e) => updateConfig("title", e.target.value)}
             />
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Data Source
+                {t("rbDataSource")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -843,7 +847,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Group By
+                {t("rbGroupBy")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -859,7 +863,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Chart Type
+                {t("rbChartType")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -885,7 +889,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
                 htmlFor="showLegend"
                 className="text-sm text-gray-700 dark:text-gray-300"
               >
-                Show Legend
+                {t("rbShowLegend")}
               </label>
             </div>
           </div>
@@ -898,7 +902,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
           <div className="space-y-3">
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Data Source
+                {t("rbDataSource")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -920,7 +924,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Columns (comma-separated)
+                {t("rbColumns")}
               </label>
               <Input
                 value={(cfg.columns || []).join(", ")}
@@ -935,13 +939,13 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
                 }
               />
               <p className="text-xs text-gray-400 mt-1">
-                Available:{" "}
+                {t("rbAvailable")}{" "}
                 {(DATA_SOURCE_FIELDS[cfg.dataSource] || []).join(", ")}
               </p>
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Max Rows
+                {t("rbMaxRows")}
               </label>
               <Input
                 type="number"
@@ -953,14 +957,14 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Sort Field
+                {t("rbSortField")}
               </label>
               <select
                 className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                 value={cfg.sortField || ""}
                 onChange={(e) => updateConfig("sortField", e.target.value)}
               >
-                <option value="">None</option>
+                <option value="">{t("rbNone")}</option>
                 {(DATA_SOURCE_FIELDS[cfg.dataSource] || []).map((f) => (
                   <option key={f} value={f}>
                     {f}
@@ -973,11 +977,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
       }
 
       default:
-        return (
-          <p className="text-sm text-gray-500">
-            No configuration needed for this block type.
-          </p>
-        );
+        return <p className="text-sm text-gray-500">{t("rbNoConfig")}</p>;
     }
   };
 
@@ -985,14 +985,14 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
     <Modal
       isOpen
       onClose={onClose}
-      title={`Configure ${BLOCK_TYPE_LABELS[editBlock.type]} Block`}
+      title={`${t("rbConfigure")} ${BLOCK_TYPE_LABELS[editBlock.type]} ${t("rbBlock")}`}
     >
       <div className="space-y-4">
         {renderFields()}
 
         <div>
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Width
+            {t("rbWidth")}
           </label>
           <select
             className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -1005,16 +1005,16 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
               )
             }
           >
-            <option value="full">Full Width</option>
-            <option value="half">Half</option>
-            <option value="third">Third</option>
-            <option value="quarter">Quarter</option>
+            <option value="full">{t("rbFullWidth")}</option>
+            <option value="half">{t("rbHalf")}</option>
+            <option value="third">{t("rbThird")}</option>
+            <option value="quarter">{t("rbQuarter")}</option>
           </select>
         </div>
 
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("rbCancel")}
           </Button>
           <Button
             onClick={() => {
@@ -1022,7 +1022,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
               onClose();
             }}
           >
-            Save Block
+            {t("rbSaveBlock")}
           </Button>
         </div>
       </div>
@@ -1036,6 +1036,7 @@ const SectionBuilder: React.FC<{
   onUpdate: (section: ReportSection) => void;
   onRemove: () => void;
 }> = ({ section, onUpdate, onRemove }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState(true);
   const [editingBlock, setEditingBlock] = useState<ReportBlock | null>(null);
 
@@ -1090,10 +1091,10 @@ const SectionBuilder: React.FC<{
             value={section.title}
             onChange={(e) => onUpdate({ ...section, title: e.target.value })}
             className="bg-transparent font-semibold text-sm text-gray-900 dark:text-white outline-none border-b border-transparent focus:border-indigo-500"
-            placeholder="Section Title"
+            placeholder={t("rbSectionTitle")}
           />
           <span className="text-xs text-gray-400">
-            ({section.blocks.length} blocks)
+            ({section.blocks.length} {t("rbBlocks")})
           </span>
         </div>
         <button
@@ -1124,7 +1125,7 @@ const SectionBuilder: React.FC<{
           {/* Add block toolbar */}
           <div className="flex flex-wrap gap-2 pt-2 border-t dark:border-gray-700">
             <span className="text-xs text-gray-500 dark:text-gray-400 self-center mr-1">
-              Add:
+              {t("rbAdd")}
             </span>
             {(
               [
@@ -1212,6 +1213,7 @@ const ReportInfoModal: React.FC<{
   onClose: () => void;
   isNew?: boolean;
 }> = ({ report, onSave, onClose, isNew }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState(report.name || "");
   const [description, setDescription] = useState(report.description || "");
   const [category, setCategory] = useState(report.category || "custom");
@@ -1232,24 +1234,24 @@ const ReportInfoModal: React.FC<{
     <Modal
       isOpen
       onClose={onClose}
-      title={isNew ? "New Report" : "Report Settings"}
+      title={isNew ? t("rbNewReport") : t("rbReportSettings")}
     >
       <div className="space-y-4">
         <Input
-          label="Report Name"
+          label={t("rbReportName")}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="My Custom Report"
+          placeholder={t("rbMyCustomReport")}
         />
         <TextArea
-          label="Description"
+          label={t("rbDescription2")}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           rows={2}
         />
         <div>
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Category
+            {t("rbCategory")}
           </label>
           <select
             className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -1267,7 +1269,7 @@ const ReportInfoModal: React.FC<{
         </div>
         <div>
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Page Orientation
+            {t("rbPageOrientation")}
           </label>
           <select
             className="mt-1 w-full rounded-lg border px-3 py-2 text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
@@ -1276,8 +1278,8 @@ const ReportInfoModal: React.FC<{
               setOrientation(e.target.value as "portrait" | "landscape")
             }
           >
-            <option value="portrait">Portrait</option>
-            <option value="landscape">Landscape</option>
+            <option value="portrait">{t("rbPortrait")}</option>
+            <option value="landscape">{t("rbLandscape")}</option>
           </select>
         </div>
         <div className="flex flex-wrap gap-4">
@@ -1288,7 +1290,7 @@ const ReportInfoModal: React.FC<{
               onChange={(e) => setIncludeHeader(e.target.checked)}
               className="rounded"
             />
-            Header
+            {t("rbHeader")}
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
             <input
@@ -1297,7 +1299,7 @@ const ReportInfoModal: React.FC<{
               onChange={(e) => setIncludeFooter(e.target.checked)}
               className="rounded"
             />
-            Footer
+            {t("rbFooter")}
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
             <input
@@ -1306,12 +1308,12 @@ const ReportInfoModal: React.FC<{
               onChange={(e) => setIncludePageNumbers(e.target.checked)}
               className="rounded"
             />
-            Page Numbers
+            {t("rbPageNumbers")}
           </label>
         </div>
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t("rbCancel")}
           </Button>
           <Button
             onClick={() => {
@@ -1328,7 +1330,7 @@ const ReportInfoModal: React.FC<{
             }}
             disabled={!name.trim()}
           >
-            {isNew ? "Create Report" : "Save Settings"}
+            {isNew ? t("rbCreateReport") : t("rbSaveSettings")}
           </Button>
         </div>
       </div>
@@ -1355,6 +1357,7 @@ const ReportBuilderPage: React.FC = () => {
     incrementGenerationCount,
   } = useReportBuilderStore();
   const currentUser = useUserStore((s) => s.currentUser);
+  const { t } = useTranslation();
 
   const [tab, setTab] = useState<ReportTab>("reports");
   const [showNewModal, setShowNewModal] = useState(false);
@@ -1618,7 +1621,7 @@ Provide:
 Format in clear Markdown.`;
 
       const response = await aiAgentService.chat(prompt, false);
-      setAiModalTitle("AI Report Recommendation");
+      setAiModalTitle(t("rbAiReportRec"));
       setAiModalContent(
         typeof response === "string" ? response : response.response || "",
       );
@@ -1632,10 +1635,10 @@ Format in clear Markdown.`;
 
   // ── Tabs ────────────────────────────────────────────────
   const tabs: { key: ReportTab; label: string }[] = [
-    { key: "reports", label: "My Reports" },
-    { key: "templates", label: "Templates" },
+    { key: "reports", label: t("rbMyReports") },
+    { key: "templates", label: t("rbTemplates") },
     ...(activeReport
-      ? [{ key: "builder" as ReportTab, label: "Builder" }]
+      ? [{ key: "builder" as ReportTab, label: t("rbBuilder") }]
       : []),
   ];
 
@@ -1650,10 +1653,10 @@ Format in clear Markdown.`;
             </div>
             <div>
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Custom Report Builder
+                {t("rbTitle")}
               </h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Design, customize, and export professional reports
+                {t("rbDescription")}
               </p>
             </div>
           </div>
@@ -1662,7 +1665,7 @@ Format in clear Markdown.`;
             className="bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30"
           >
             <PlusIcon className="h-4 w-4 mr-1.5" />
-            New Report
+            {t("rbNewReport")}
           </Button>
           <Button
             onClick={handleAISuggestTemplate}
@@ -1675,32 +1678,32 @@ Format in clear Markdown.`;
             ) : (
               <SparklesIcon className="h-4 w-4 mr-1.5" />
             )}
-            AI Suggest
+            {t("rbAiSuggest")}
           </Button>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
           <StatCard
-            label="Total Reports"
+            label={t("rbTotalReports")}
             value={stats.total}
             icon={<Squares2X2Icon className="h-5 w-5 text-indigo-600" />}
             color="bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800"
           />
           <StatCard
-            label="Published"
+            label={t("rbPublished")}
             value={stats.published}
             icon={<CheckCircleIcon className="h-5 w-5 text-emerald-600" />}
             color="bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800"
           />
           <StatCard
-            label="Drafts"
+            label={t("rbDrafts")}
             value={stats.drafts}
             icon={<PencilIcon className="h-5 w-5 text-amber-600" />}
             color="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
           />
           <StatCard
-            label="Total Generated"
+            label={t("rbTotalGenerated")}
             value={stats.totalGenerations}
             icon={<ArrowDownTrayIcon className="h-5 w-5 text-blue-600" />}
             color="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800"
@@ -1709,18 +1712,18 @@ Format in clear Markdown.`;
 
         {/* Tabs */}
         <div className="flex gap-1 bg-white/60 dark:bg-gray-800/60 rounded-lg p-1 w-fit">
-          {tabs.map((t) => (
+          {tabs.map((tabItem) => (
             <button
-              key={t.key}
+              key={tabItem.key}
               type="button"
-              onClick={() => setTab(t.key)}
+              onClick={() => setTab(tabItem.key)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
-                tab === t.key
+                tab === tabItem.key
                   ? "bg-white dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 shadow-sm"
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
-              {t.label}
+              {tabItem.label}
             </button>
           ))}
         </div>
@@ -1737,10 +1740,10 @@ Format in clear Markdown.`;
           reports.length === 0 ? (
             <EmptyState
               icon={<Squares2X2Icon className="h-12 w-12 text-indigo-300" />}
-              title="No Reports Yet"
-              description="Create a new report from scratch or start from a template."
+              title={t("rbNoReportsYet")}
+              description={t("rbNoReportsDesc")}
               action={{
-                label: "Create Report",
+                label: t("rbCreateReport"),
                 onClick: () => setShowNewModal(true),
               }}
             />
@@ -1775,7 +1778,7 @@ Format in clear Markdown.`;
                           report.category}
                       </span>
                       <span className="text-xs text-gray-400">
-                        {report.sections.length} sections
+                        {report.sections.length} {t("rbSections")}
                       </span>
                       <span className="text-xs text-gray-400">·</span>
                       <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -1794,7 +1797,7 @@ Format in clear Markdown.`;
                       }}
                     >
                       <PencilIcon className="h-3.5 w-3.5 mr-1" />
-                      Edit
+                      {t("rbEdit")}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1802,7 +1805,7 @@ Format in clear Markdown.`;
                       onClick={() => duplicateReport(report.id)}
                     >
                       <DocumentDuplicateIcon className="h-3.5 w-3.5 mr-1" />
-                      Duplicate
+                      {t("rbDuplicate")}
                     </Button>
                     <div className="flex-1" />
                     <Button
@@ -1810,7 +1813,7 @@ Format in clear Markdown.`;
                       size="sm"
                       className="text-red-500 hover:text-red-700"
                       onClick={() => {
-                        if (window.confirm("Delete this report?"))
+                        if (window.confirm(t("rbDeleteConfirm")))
                           deleteReport(report.id);
                       }}
                     >
@@ -1847,11 +1850,11 @@ Format in clear Markdown.`;
                     {REPORT_CATEGORY_LABELS[tpl.category]}
                   </span>
                   <span className="text-xs text-gray-400">
-                    {tpl.sections.length} sections
+                    {tpl.sections.length} {t("rbSections")}
                   </span>
                   <span className="text-xs text-gray-400">
                     {tpl.sections.reduce((acc, s) => acc + s.blocks.length, 0)}{" "}
-                    blocks
+                    {t("rbBlocks")}
                   </span>
                 </div>
                 <Button
@@ -1860,7 +1863,7 @@ Format in clear Markdown.`;
                   size="sm"
                 >
                   <PlusIcon className="h-3.5 w-3.5 mr-1" />
-                  Use Template
+                  {t("rbUseTemplate")}
                 </Button>
               </div>
             ))}
@@ -1879,7 +1882,7 @@ Format in clear Markdown.`;
                   }}
                   className="text-sm text-gray-500 hover:text-indigo-600"
                 >
-                  ← Back
+                  {t("rbBack")}
                 </button>
                 <div className="h-5 w-px bg-gray-200 dark:bg-gray-700" />
                 <input
@@ -1899,7 +1902,7 @@ Format in clear Markdown.`;
                   className={showPreview ? "bg-indigo-600 text-white" : ""}
                 >
                   <EyeIcon className="h-3.5 w-3.5 mr-1" />
-                  {showPreview ? "Edit Mode" : "Preview"}
+                  {showPreview ? t("rbEditMode") : t("rbPreview")}
                 </Button>
                 <div className="h-5 w-px bg-gray-200 dark:bg-gray-700" />
                 <Button
@@ -1907,7 +1910,7 @@ Format in clear Markdown.`;
                   size="sm"
                   onClick={() => setShowSettingsModal(true)}
                 >
-                  Settings
+                  {t("rbSettings")}
                 </Button>
                 <Button
                   variant="outline"
@@ -1921,7 +1924,7 @@ Format in clear Markdown.`;
                   ) : (
                     <SparklesIcon className="h-3.5 w-3.5 mr-1" />
                   )}
-                  AI Analyze
+                  {t("rbAiAnalyze")}
                 </Button>
                 <Button variant="outline" size="sm" onClick={handleExportCSV}>
                   <ArrowDownTrayIcon className="h-3.5 w-3.5 mr-1" />
@@ -1942,7 +1945,7 @@ Format in clear Markdown.`;
                 </Button>
                 <Button size="sm" onClick={saveReport}>
                   <CheckCircleIcon className="h-3.5 w-3.5 mr-1" />
-                  Save
+                  {t("rbSave")}
                 </Button>
               </div>
             </div>
@@ -1957,7 +1960,7 @@ Format in clear Markdown.`;
                       {activeReport.headerTitle || activeReport.name}
                     </h2>
                     <span className="text-sm opacity-80">
-                      Generated: {new Date().toLocaleDateString()}
+                      {t("rbGenerated")} {new Date().toLocaleDateString()}
                     </span>
                   </div>
                 )}
@@ -2007,7 +2010,7 @@ Format in clear Markdown.`;
                                           <Tag
                                             className={`${sz} text-gray-900 dark:text-white`}
                                           >
-                                            {c.title || "Untitled"}
+                                            {c.title || t("rbUntitled")}
                                           </Tag>
                                           {c.subtitle && (
                                             <p className="text-sm text-gray-500 mt-0.5">
@@ -2053,7 +2056,9 @@ Format in clear Markdown.`;
                 {activeReport.includeFooter && (
                   <div className="border-t dark:border-gray-700 px-6 py-3 flex justify-between text-xs text-gray-400">
                     <span>{activeReport.footerText || "AccreditEx"}</span>
-                    {activeReport.includePageNumbers && <span>Page 1</span>}
+                    {activeReport.includePageNumbers && (
+                      <span>{t("rbPage")} 1</span>
+                    )}
                   </div>
                 )}
               </div>
@@ -2081,7 +2086,7 @@ Format in clear Markdown.`;
                              flex items-center justify-center gap-2 text-sm font-medium"
                 >
                   <PlusIcon className="h-4 w-4" />
-                  Add Section
+                  {t("rbAddSection")}
                 </button>
               </>
             )}
@@ -2089,8 +2094,8 @@ Format in clear Markdown.`;
         ) : (
           <EmptyState
             icon={<Squares2X2Icon className="h-12 w-12 text-gray-300" />}
-            title="Select a report to edit"
-            description="Choose a report from the list or create a new one."
+            title={t("rbSelectReport")}
+            description={t("rbSelectReportDesc")}
           />
         )}
       </div>

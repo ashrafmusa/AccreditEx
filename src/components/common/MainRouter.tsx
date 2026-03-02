@@ -1,17 +1,16 @@
-import React, { useEffect, useState, Suspense, lazy } from "react";
-import { NavigationState, UserRole } from "@/types";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
-import EmptyState from "@/components/common/EmptyState";
 import LoadingScreen from "@/components/common/LoadingScreen";
+import UpgradePrompt from "@/components/common/UpgradePrompt";
 import { LockClosedIcon } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
-import { analytics } from "@/services/analyticsTrackingService";
 import { routes } from "@/router/routes";
-import { useModuleStore } from "@/stores/useModuleStore";
+import { analytics } from "@/services/analyticsTrackingService";
 import { getModuleForView } from "@/services/moduleService";
-import UpgradePrompt from "@/components/common/UpgradePrompt";
+import { useAppStore } from "@/stores/useAppStore";
+import { useModuleStore } from "@/stores/useModuleStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { NavigationState } from "@/types";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 
 // Performance Optimization: Lazy load all page components
 // This reduces the main bundle from 4.39MB to under 500KB
@@ -84,6 +83,12 @@ const WorkflowAutomationPage = lazy(
 // Report Builder
 const ReportBuilderPage = lazy(() => import("@/pages/ReportBuilderPage"));
 
+// Supplier Quality Management
+const SupplierHubPage = lazy(() => import("@/pages/SupplierHubPage"));
+
+// Change Control Management
+const ChangeControlHubPage = lazy(() => import("@/pages/ChangeControlHubPage"));
+
 // Loading component for lazy-loaded routes
 const RouteLoadingFallback: React.FC = () => <LoadingScreen />;
 
@@ -148,21 +153,15 @@ const MainRouter: React.FC<MainRouterProps> = ({
 
       // Allow settings for profile section for all users
       if (navigation.view === "settings") {
-        // MATCHING SettingsLayout.tsx availability
+        // Non-admin users can only access personal settings sections
         const userAllowedSections = [
-          "visual", // Default page
           "profile",
-          "security",
           "notifications",
           "accessibility",
-          "settingsPresets",
-          "versionHistory",
-          "usageTracking", // System metric
-          "firebaseUsage", // System metric
           "about",
         ];
 
-        const currentSection = navigation.section || "visual";
+        const currentSection = navigation.section || "profile";
 
         if (!userAllowedSections.includes(currentSection)) {
           isUnauthorized = true;
@@ -176,6 +175,9 @@ const MainRouter: React.FC<MainRouterProps> = ({
           departmentDetail: "Department Details",
           auditHub: "Audit Management",
           dataHub: "Data Management",
+          labOperations: "Lab Operations",
+          workflowAutomation: "Workflow Automation",
+          reportBuilder: "Report Builder",
         };
         const viewName =
           viewNames[navigation.view as keyof typeof viewNames] || "this area";
@@ -318,6 +320,13 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <DashboardPage setNavigation={setNavigation} />;
       case "analyticsHub":
         return <AnalyticsHubPage setNavigation={setNavigation} />;
+      case "qualityInsights":
+        return (
+          <AnalyticsHubPage
+            setNavigation={setNavigation}
+            initialTab="qualityInsights"
+          />
+        );
       case "calendar":
         return <CalendarPage setNavigation={setNavigation} />;
       case "riskHub":
@@ -466,6 +475,10 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <WorkflowAutomationPage />;
       case "reportBuilder":
         return <ReportBuilderPage />;
+      case "supplierHub":
+        return <SupplierHubPage />;
+      case "changeControlHub":
+        return <ChangeControlHubPage />;
       default:
         return <DashboardPage setNavigation={setNavigation} />;
     }

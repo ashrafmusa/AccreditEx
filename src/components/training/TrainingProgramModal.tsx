@@ -247,7 +247,7 @@ const TrainingProgramModal: FC<TrainingProgramModalProps> = ({
                   >
                     <div className="flex justify-between items-center">
                       <label className="font-medium">
-                        Question {qIndex + 1}
+                        {t("questionLabel")} {qIndex + 1}
                       </label>
                       <button
                         type="button"
@@ -300,7 +300,7 @@ const TrainingProgramModal: FC<TrainingProgramModalProps> = ({
                         />
                         <input
                           type="text"
-                          placeholder={`Option ${oIndex + 1} (EN)`}
+                          placeholder={`${t("optionEn")} ${oIndex + 1}`}
                           value={opt.en}
                           onChange={(e) =>
                             handleOptionChange(
@@ -314,7 +314,7 @@ const TrainingProgramModal: FC<TrainingProgramModalProps> = ({
                         />
                         <input
                           type="text"
-                          placeholder={`Option ${oIndex + 1} (AR)`}
+                          placeholder={`${t("optionAr")} ${oIndex + 1}`}
                           value={opt.ar}
                           onChange={(e) =>
                             handleOptionChange(

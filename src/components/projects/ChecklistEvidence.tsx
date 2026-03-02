@@ -6,6 +6,7 @@ import {
   CircleStackIcon,
   PlusIcon,
   UploadIcon,
+  CameraIcon,
 } from "@/components/icons";
 import { useAppStore } from "@/stores/useAppStore";
 import DocumentPicker from "../common/DocumentPicker";
@@ -16,6 +17,7 @@ import DocumentEditorModal from "../documents/DocumentEditorModal";
 import DOCXViewerModal from "../documents/DOCXViewerModal";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { getDocumentViewAction } from "@/utils/documentViewingHelper";
+import { smartCapturePhoto } from "@/services/nativeCameraService";
 
 interface ChecklistEvidenceProps {
   item: ChecklistItem;
@@ -39,6 +41,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [viewingPDF, setViewingPDF] = useState<AppDocument | null>(null);
   const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
@@ -97,6 +100,57 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         error instanceof Error ? error.message : "Upload failed";
       alert(`Upload failed: ${errorMessage}`);
     } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  const handleCameraCapture = async () => {
+    setIsCapturing(true);
+    try {
+      const photo = await smartCapturePhoto();
+      if (!photo) {
+        setIsCapturing(false);
+        return; // User cancelled
+      }
+
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      // Create a File object from the captured photo blob
+      const file = new File([photo.blob], photo.fileName, {
+        type: photo.mimeType,
+      });
+
+      // Upload to Cloudinary
+      const fileUrl = await cloudinaryService.uploadDocument(
+        file,
+        `projects/${project.id}/checklist/${item.id}`,
+        (progress) => setUploadProgress(progress.progress),
+      );
+
+      // Create document in Firebase
+      const createdDoc = await addControlledDocument({
+        name: { en: photo.fileName, ar: photo.fileName },
+        type: "Evidence",
+        fileUrl,
+        projectId: project.id,
+        tags: [
+          `checklist:${item.id}`,
+          `project:${project.id}`,
+          "camera-capture",
+        ],
+      } as any);
+
+      // Link to checklist item
+      onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
+    } catch (error) {
+      console.error("Camera capture error:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Capture failed";
+      alert(`Capture failed: ${errorMessage}`);
+    } finally {
+      setIsCapturing(false);
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -174,6 +228,16 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
       {/* Action Buttons */}
       {!isFinalized && (
         <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleCameraCapture}
+            disabled={isCapturing || isUploading}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-md transition-colors disabled:opacity-50"
+          >
+            <CameraIcon className="w-4 h-4" />
+            {isCapturing
+              ? t("capturing") || "Capturing..."
+              : t("capturePhoto") || "Capture Photo"}
+          </button>
           <button
             onClick={() => setShowUploader(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 rounded-md transition-colors"

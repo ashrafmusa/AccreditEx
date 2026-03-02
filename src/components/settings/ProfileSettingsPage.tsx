@@ -437,6 +437,7 @@ const ProfileSettingsPage: React.FC = () => {
                   <input
                     type={showPassword ? "text" : "password"}
                     id="password"
+                    autoComplete="new-password"
                     value={password}
                     onChange={(e) => handlePasswordChange(e.target.value)}
                     placeholder={

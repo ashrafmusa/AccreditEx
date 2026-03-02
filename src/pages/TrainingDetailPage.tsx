@@ -32,25 +32,27 @@ const TrainingDetailPage: React.FC<TrainingDetailPageProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (Object.keys(answers).length !== trainingProgram.quiz.length) {
-      toast.error("Please answer all questions.");
+      toast.error(t("pleaseAnswerAll"));
       return;
     }
     const { score, passed, certificateId } = await submitQuiz(
       trainingProgram.id,
-      answers
+      answers,
     );
     setQuizResult({ score, passed });
     if (passed && certificateId) {
-      toast.success(`Quiz passed! Score: ${score}%. Certificate generated.`);
+      toast.success(t("quizPassedWithCert").replace("{score}", String(score)));
       setTimeout(
         () => setNavigation({ view: "certificate", certificateId }),
-        2000
+        2000,
       );
     } else if (passed) {
-      toast.success(`Quiz passed! Score: ${score}%.`);
+      toast.success(t("quizPassed").replace("{score}", String(score)));
     } else {
       toast.error(
-        `Quiz failed. Score: ${score}%. A score of ${trainingProgram.passingScore}% is required to pass.`
+        t("quizFailed")
+          .replace("{score}", String(score))
+          .replace("{passing}", String(trainingProgram.passingScore)),
       );
     }
   };

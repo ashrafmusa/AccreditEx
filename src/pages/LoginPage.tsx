@@ -1,12 +1,24 @@
-
-import React, { useState } from 'react';
-import { UserRole } from '../types';
-import { useTranslation } from '../hooks/useTranslation';
-import { EyeIcon, EyeSlashIcon, LogoIcon, ExclamationTriangleIcon, SpinnerIcon } from '../components/icons';
-import { useUserStore } from '../stores/useUserStore';
-import { useAppStore } from '../stores/useAppStore';
-import Globe from '../components/ui/Globe';
+import React, { useState, useEffect, Suspense } from "react";
+import { UserRole } from "../types";
+import { useTranslation } from "../hooks/useTranslation";
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  LogoIcon,
+  ExclamationTriangleIcon,
+  SpinnerIcon,
+  FingerPrintIcon,
+} from "../components/icons";
+import { useUserStore } from "../stores/useUserStore";
+import { useAppStore } from "../stores/useAppStore";
+const Globe = React.lazy(() => import("../components/ui/Globe"));
 import { Button, Input, ErrorMessage } from "@/components/ui";
+import {
+  checkBiometricAvailability,
+  biometricLogin,
+  enableBiometric,
+  type BiometricStatus,
+} from "@/services/nativeBiometricService";
 
 interface LoginPageProps {
   // onLogin prop is no longer needed
@@ -19,8 +31,41 @@ const LoginPage: React.FC<LoginPageProps> = () => {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [biometricLoading, setBiometricLoading] = useState(false);
+  const [biometricStatus, setBiometricStatus] =
+    useState<BiometricStatus | null>(null);
   const login = useUserStore((state) => state.login);
   const appSettings = useAppStore((state) => state.appSettings);
+
+  // Check biometric availability on mount
+  useEffect(() => {
+    checkBiometricAvailability().then((status) => {
+      if (status.isAvailable && status.isEnabled) {
+        setBiometricStatus(status);
+      }
+    });
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    setBiometricLoading(true);
+    setError("");
+    try {
+      const credentials = await biometricLogin();
+      if (credentials) {
+        const user = await login(credentials.email, credentials.password);
+        if (!user) {
+          setError(t("invalidCredentials"));
+        }
+      }
+    } catch {
+      setError(
+        t("biometricFailed") ||
+          "Biometric authentication failed. Please use your password.",
+      );
+    } finally {
+      setBiometricLoading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +75,15 @@ const LoginPage: React.FC<LoginPageProps> = () => {
       const user = await login(email, password);
       if (!user) {
         setError(t("invalidCredentials"));
+      } else {
+        // Offer to enable biometric on successful login (native only)
+        checkBiometricAvailability().then((status) => {
+          if (status.isAvailable && !status.isEnabled && email && password) {
+            enableBiometric(email, password).catch(() => {
+              // Silently fail — biometric is optional
+            });
+          }
+        });
       }
       // onLogin is no longer needed here; the auth listener handles the UI change.
     } finally {
@@ -116,7 +170,9 @@ const LoginPage: React.FC<LoginPageProps> = () => {
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="text-gray-400"
-                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
                       >
                         {showPassword ? (
                           <EyeSlashIcon className="h-5 w-5" />
@@ -156,6 +212,25 @@ const LoginPage: React.FC<LoginPageProps> = () => {
 
               {error && <ErrorMessage message={error} />}
 
+              {/* Biometric Login Button (native only) */}
+              {biometricStatus?.isAvailable && biometricStatus?.isEnabled && (
+                <button
+                  type="button"
+                  onClick={handleBiometricLogin}
+                  disabled={biometricLoading}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-4 border-2 border-brand-primary text-brand-primary hover:bg-brand-primary/10 rounded-lg font-medium transition-colors disabled:opacity-50"
+                >
+                  {biometricLoading ? (
+                    <SpinnerIcon className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <FingerPrintIcon className="w-5 h-5" />
+                  )}
+                  {biometricStatus.biometryType === "face"
+                    ? t("loginWithFace") || "Sign in with Face ID"
+                    : t("loginWithFingerprint") || "Sign in with Fingerprint"}
+                </button>
+              )}
+
               <div>
                 <Button
                   type="submit"
@@ -174,12 +249,18 @@ const LoginPage: React.FC<LoginPageProps> = () => {
       {/* Right Side: Globe */}
       <div className="hidden lg:flex relative items-center justify-center p-8 dot-grid overflow-hidden">
         <div className="w-[700px] h-[700px] max-w-full max-h-full">
-          <Globe
-            width={700}
-            height={700}
-            {...globeSettings}
-            userLocation={userLocation}
-          />
+          <Suspense
+            fallback={
+              <div className="w-full h-full animate-pulse bg-slate-200 dark:bg-slate-700 rounded-full" />
+            }
+          >
+            <Globe
+              width={700}
+              height={700}
+              {...globeSettings}
+              userLocation={userLocation}
+            />
+          </Suspense>
         </div>
       </div>
     </div>

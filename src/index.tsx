@@ -2,6 +2,10 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "@/App";
+import { initializeCapacitor } from "@/utils/capacitorInit";
+
+// Initialize Capacitor native plugins (no-op on web)
+initializeCapacitor();
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {

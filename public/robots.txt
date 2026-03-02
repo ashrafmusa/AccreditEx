@@ -1,0 +1,10 @@
+# AccreditEx - Healthcare Accreditation Management Platform
+# https://accreditex.web.app
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /__/
+
+# Sitemaps
+Sitemap: https://accreditex.web.app/sitemap.xml
