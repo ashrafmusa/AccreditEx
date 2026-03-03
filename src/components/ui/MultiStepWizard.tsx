@@ -3,9 +3,14 @@
  * Reusable wizard container for multi-step forms
  */
 
-import React, { useState, useCallback } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { CheckIcon } from '@heroicons/react/24/solid';
+import {
+  CheckIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+} from "@/components/icons";
+import { Button } from "@/components/ui/Button";
+import { useTranslation } from "@/hooks/useTranslation";
+import React, { useCallback } from "react";
 
 export interface WizardStep {
   id: string;
@@ -37,10 +42,12 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
   canGoBack = true,
   isSubmitting = false,
   children,
-  className = '',
+  className = "",
 }) => {
+  const { t } = useTranslation();
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
+  const progressPercent = Math.round(((currentStep + 1) / steps.length) * 100);
 
   const handleNext = useCallback(() => {
     if (isLastStep) {
@@ -56,132 +63,153 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
     }
   }, [currentStep, isFirstStep, canGoBack, onStepChange]);
 
-  const handleStepClick = useCallback((stepIndex: number) => {
-    // Only allow clicking on previous steps
-    if (stepIndex < currentStep) {
-      onStepChange(stepIndex);
-    }
-  }, [currentStep, onStepChange]);
+  const handleStepClick = useCallback(
+    (stepIndex: number) => {
+      if (stepIndex < currentStep) {
+        onStepChange(stepIndex);
+      }
+    },
+    [currentStep, onStepChange],
+  );
 
   return (
-    <div className={`space-y-8 ${className}`}>
-      {/* Progress Steps */}
-      <nav aria-label="Progress">
-        <ol className="flex items-center justify-between">
-          {steps.map((step, index) => {
-            const isCompleted = index < currentStep;
-            const isCurrent = index === currentStep;
-            const isClickable = index < currentStep;
+    <div className={`space-y-0 ${className}`}>
+      {/* ── Progress Header ── */}
+      <div className="px-6 pt-6 pb-5 border-b border-brand-border dark:border-dark-brand-border">
+        {/* Step counter + label row */}
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("step") || "Step"} {currentStep + 1} {t("of") || "of"}{" "}
+            {steps.length}
+          </p>
+          <p className="text-sm font-semibold text-brand-primary">
+            {steps[currentStep]?.title}
+          </p>
+        </div>
 
-            return (
-              <li
-                key={step.id}
-                className={`flex-1 ${index !== steps.length - 1 ? 'pr-8' : ''}`}
-              >
-                <button
-                  type="button"
-                  onClick={() => handleStepClick(index)}
-                  disabled={!isClickable}
-                  className={`group flex flex-col border-l-4 py-2 pl-4 hover:border-l-4 md:border-l-0 md:border-t-4 md:pb-0 md:pl-0 md:pt-4 transition-colors ${
-                    isCompleted
-                      ? 'border-brand-primary cursor-pointer'
-                      : isCurrent
-                      ? 'border-brand-primary'
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                  aria-current={isCurrent ? 'step' : undefined}
-                >
-                  <div className="flex items-center gap-3">
-                    {/* Step Number/Checkmark */}
+        {/* Thin progress bar */}
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1 mb-5">
+          <div
+            className="bg-brand-primary h-1 rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${progressPercent}%` }}
+            role="progressbar"
+            aria-valuenow={currentStep + 1}
+            aria-valuemin={1}
+            aria-valuemax={steps.length}
+          />
+        </div>
+
+        {/* Step bubbles */}
+        <nav aria-label="Progress">
+          <ol className="flex items-start justify-between gap-1">
+            {steps.map((step, index) => {
+              const isCompleted = index < currentStep;
+              const isCurrent = index === currentStep;
+              const isClickable = index < currentStep;
+
+              return (
+                <li key={step.id} className="flex-1 min-w-0">
+                  <button
+                    type="button"
+                    onClick={() => handleStepClick(index)}
+                    disabled={!isClickable}
+                    className={`w-full flex flex-col items-center text-center transition-opacity ${
+                      isClickable
+                        ? "cursor-pointer hover:opacity-80"
+                        : "cursor-default"
+                    }`}
+                    aria-current={isCurrent ? "step" : undefined}
+                  >
+                    {/* Circle */}
                     <span
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all duration-200 mb-1.5 ${
                         isCompleted
-                          ? 'border-brand-primary bg-brand-primary text-white'
+                          ? "border-brand-primary bg-brand-primary text-white shadow-sm shadow-brand-primary/30"
                           : isCurrent
-                          ? 'border-brand-primary bg-white dark:bg-gray-800 text-brand-primary'
-                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                            ? "border-brand-primary bg-brand-surface dark:bg-dark-brand-surface text-brand-primary ring-4 ring-brand-primary/10"
+                            : "border-gray-300 dark:border-gray-600 bg-brand-surface dark:bg-dark-brand-surface text-gray-400 dark:text-gray-500"
                       }`}
                     >
                       {isCompleted ? (
-                        <CheckIcon className="h-6 w-6" aria-hidden="true" />
+                        <CheckIcon className="h-4 w-4" aria-hidden="true" />
                       ) : (
-                        <span className="text-sm font-medium">{index + 1}</span>
+                        <span className="text-xs font-bold">{index + 1}</span>
                       )}
                     </span>
 
-                    {/* Step Info */}
-                    <div className="flex flex-col items-start text-left">
-                      <span
-                        className={`text-sm font-medium ${
-                          isCurrent
-                            ? 'text-brand-primary'
-                            : isCompleted
-                            ? 'text-gray-900 dark:text-gray-100'
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}
-                      >
-                        {step.title}
-                        {step.isOptional && (
-                          <span className="ml-2 text-xs text-gray-400">(Optional)</span>
-                        )}
+                    {/* Label — hidden on very small screens */}
+                    <span
+                      className={`hidden sm:block text-xs font-medium leading-tight truncate max-w-full px-0.5 ${
+                        isCurrent
+                          ? "text-brand-primary"
+                          : isCompleted
+                            ? "text-brand-text-primary dark:text-dark-brand-text-primary"
+                            : "text-brand-text-secondary dark:text-dark-brand-text-secondary"
+                      }`}
+                    >
+                      {step.title}
+                    </span>
+                    {step.isOptional && (
+                      <span className="hidden sm:block text-xs text-gray-400 mt-0.5">
+                        ({t("optional") || "Optional"})
                       </span>
-                      {step.description && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                          {step.description}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
-
-      {/* Step Content */}
-      <div className="min-h-[400px]">
-        {children}
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
       </div>
 
-      {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-6 border-t border-gray-200 dark:border-gray-700">
+      {/* ── Step Content ── */}
+      <div className="px-6 py-6 min-h-[420px]">{children}</div>
+
+      {/* ── Navigation Footer ── */}
+      <div className="flex items-center justify-between px-6 py-4 border-t border-brand-border dark:border-dark-brand-border bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary rounded-b-lg">
+        {/* Back */}
         <div>
-          {!isFirstStep && (
-            <button
+          {!isFirstStep ? (
+            <Button
               type="button"
+              variant="outline"
+              size="md"
               onClick={handleBack}
               disabled={!canGoBack || isSubmitting}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <ChevronLeftIcon className="h-5 w-5 mr-2" aria-hidden="true" />
-              Back
-            </button>
+              <ChevronLeftIcon className="h-4 w-4 mr-1.5" aria-hidden="true" />
+              {t("back") || "Back"}
+            </Button>
+          ) : (
+            <div />
           )}
         </div>
 
+        {/* Right side actions */}
         <div className="flex items-center gap-3">
           {onCancel && (
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="md"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              Cancel
-            </button>
+              {t("cancel") || "Cancel"}
+            </Button>
           )}
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="md"
             onClick={handleNext}
             disabled={!canGoNext || isSubmitting}
-            className="inline-flex items-center px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {isSubmitting ? (
               <>
                 <svg
-                  className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                  className="animate-spin -ml-0.5 mr-2 h-4 w-4"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -193,22 +221,32 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
                     r="10"
                     stroke="currentColor"
                     strokeWidth="4"
-                  ></circle>
+                  />
                   <path
                     className="opacity-75"
                     fill="currentColor"
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
+                  />
                 </svg>
-                {isLastStep ? 'Creating...' : 'Processing...'}
+                {isLastStep
+                  ? t("creating") || "Creating..."
+                  : t("processing") || "Processing..."}
+              </>
+            ) : isLastStep ? (
+              <>
+                <CheckIcon className="h-4 w-4 mr-1.5" aria-hidden="true" />
+                {t("complete") || "Complete"}
               </>
             ) : (
               <>
-                {isLastStep ? 'Complete' : 'Next'}
-                {!isLastStep && <ChevronRightIcon className="h-5 w-5 ml-2" aria-hidden="true" />}
+                {t("next") || "Next"}
+                <ChevronRightIcon
+                  className="h-4 w-4 ml-1.5"
+                  aria-hidden="true"
+                />
               </>
             )}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -228,7 +266,7 @@ interface FormStepProps {
 export const FormStep: React.FC<FormStepProps> = ({
   stepId,
   children,
-  className = '',
+  className = "",
 }) => {
   return (
     <div

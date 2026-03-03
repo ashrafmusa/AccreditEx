@@ -1,4 +1,5 @@
 # AccrediTex — GitHub Copilot Instructions (Powered by Agentica v2)
+
 # Auto-loaded by GitHub Copilot Chat in this workspace.
 
 ## Project: AccrediTex
@@ -6,6 +7,7 @@
 **AccrediTex** is a SaaS accreditation management platform.
 
 **Full Stack:**
+
 - **Frontend:** React 19, TypeScript 5.8, TailwindCSS v4, Framer Motion v11
 - **Routing:** react-router-dom v7 (`src/router/AppRouter.tsx`)
 - **State:** Zustand v5 (`src/stores/`)
@@ -23,47 +25,50 @@
 
 ## Which Agent To Use (Auto-selected based on request)
 
-| Task | Agent |
-|------|-------|
-| React components, UI, TailwindCSS | `@frontend-specialist` |
-| Firebase queries, services, Firestore | `@backend-specialist` |
-| Capacitor iOS/Android features | `@mobile-developer` |
-| Firestore schema, indexes, rules | `@database-architect` |
-| Any bug, error, TypeScript error | `@debugger` |
-| Auth, Firestore rules, JWT, security | `@security-auditor` |
-| GitHub Actions, Firebase deploy | `@devops-engineer` |
-| Jest unit tests, Playwright E2E | `@test-engineer` |
-| Performance, Lighthouse, bundle size | `@performance-optimizer` |
-| Multi-feature planning | `@orchestrator` |
+| Task                                  | Agent                    |
+| ------------------------------------- | ------------------------ |
+| React components, UI, TailwindCSS     | `@frontend-specialist`   |
+| Firebase queries, services, Firestore | `@backend-specialist`    |
+| Capacitor iOS/Android features        | `@mobile-developer`      |
+| Firestore schema, indexes, rules      | `@database-architect`    |
+| Any bug, error, TypeScript error      | `@debugger`              |
+| Auth, Firestore rules, JWT, security  | `@security-auditor`      |
+| GitHub Actions, Firebase deploy       | `@devops-engineer`       |
+| Jest unit tests, Playwright E2E       | `@test-engineer`         |
+| Performance, Lighthouse, bundle size  | `@performance-optimizer` |
+| Multi-feature planning                | `@orchestrator`          |
 
 ---
 
 ## AccrediTex Architecture Rules
 
 ### State Management
+
 ```typescript
 // ✅ Always use Zustand stores — never local useState for shared data
 // Store location: src/stores/use{Name}Store.ts
 // 13 total stores: Core (useAppStore), Projects, Auth (useUserStore),
 // Theme (useCustomizationStore), AI, HIS, Lab, Workflow, Reports,
 // ChangeControl, Modules, Suppliers, Tenant
-import { useProjectStore } from '@/stores/useProjectStore';
+import { useProjectStore } from "@/stores/useProjectStore";
 const projects = useProjectStore((state) => state.projects);
 ```
 
 ### Firebase Queries — Services Layer
+
 ```typescript
 // ✅ All Firestore queries go in src/services/ or src/firebase/
 // NEVER query Firestore directly from a component
 // src/services/projectService.ts
 export async function getProject(id: string): Promise<Project | null> {
-  const ref = doc(db, 'projects', id);
+  const ref = doc(db, "projects", id);
   const snap = await getDoc(ref);
-  return snap.exists() ? { id: snap.id, ...snap.data() } as Project : null;
+  return snap.exists() ? ({ id: snap.id, ...snap.data() } as Project) : null;
 }
 ```
 
 ### Internationalization (MANDATORY)
+
 ```typescript
 // ✅ ALL user-facing strings MUST use i18n — no hardcoded English strings
 // Real i18n system: src/data/locales/ (22 EN + 22 AR module files)
@@ -74,6 +79,7 @@ return <h1>{t('dashboard.title')}</h1>;
 ```
 
 ### Type Safety — No `any`
+
 ```typescript
 // ✅ All types in src/types/
 // ❌ NEVER use 'any'
@@ -81,17 +87,19 @@ return <h1>{t('dashboard.title')}</h1>;
 ```
 
 ### TailwindCSS v4 + Brand Tokens
+
 ```tsx
 // ✅ Use brand tokens — they support whitelabeling and dark mode
-className="bg-brand-background dark:bg-dark-brand-background"
-className="text-brand-text-primary dark:dark-brand-text-primary"
-className="bg-brand-primary hover:bg-brand-primary/90"
+className = "bg-brand-background dark:bg-dark-brand-background";
+className = "text-brand-text-primary dark:dark-brand-text-primary";
+className = "bg-brand-primary hover:bg-brand-primary/90";
 
 // ❌ NEVER use purple/violet/indigo as primary colors in AccrediTex
 // ❌ NEVER use hardcoded hex colors in className
 ```
 
 ### Testing Rules
+
 ```typescript
 // Unit tests: src/test/**/*.test.ts | *.test.tsx
 // AAA pattern mandatory:
@@ -109,9 +117,10 @@ jest.mock('@/firebase/firebaseConfig');
 ```
 
 ### Mobile (Capacitor) — Use mobile-developer ONLY
+
 ```typescript
 // ✅ Capacitor APIs — always check platform first
-import { Capacitor } from '@capacitor/core';
+import { Capacitor } from "@capacitor/core";
 if (Capacitor.isNativePlatform()) {
   // native-only code
 }
@@ -120,16 +129,44 @@ if (Capacitor.isNativePlatform()) {
 
 ---
 
-## MCP Tools — Use Me First
+## MCP Tools — MANDATORY Workflow (Every Task)
 
-Before starting any feature:
-1. `reasoningbank_retrieve` — check if we solved this before
-2. `router_route` — confirm which model/strategy to use
-3. After success: `reasoningbank_record` — save the pattern
+**These steps are REQUIRED for every task — features, bug fixes, debugging, refactors, and analysis.**
+
+### Before starting ANY task:
+
+1. `reasoningbank_retrieve` — search for prior solutions to this exact problem
+2. `memory_search` — find any stored context about this component/file
+3. `router_route` — confirm the optimal model/strategy
+
+### After completing ANY task successfully:
+
+4. `reasoningbank_record` — record what was done, why it worked, and what to avoid
+   - Include: `task`, `decision`, `outcome`, `success: true`, relevant `tags`
+   - Tags must include: component names, error type, pattern name, "accreditex"
+5. `reasoningbank_distill` — call after every 3–5 recorded decisions to extract reusable patterns
+
+### Record format — always include these fields:
+
+```
+task:     "Fix X in Y" — specific and searchable
+decision: Root cause + exact fix applied (file, line, approach)
+outcome:  What changed, what was verified (build pass, no errors, etc.)
+success:  true / false
+tags:     ["component-name", "error-type", "pattern", "accreditex"]
+```
+
+### What MUST be recorded (not optional):
+
+- Every bug fix (React errors, TypeScript errors, runtime crashes)
+- Every architectural decision (hook split, service refactor, store change)
+- Every pattern that caused confusion or non-obvious fix
+- Every service worker, Firebase, Capacitor, or auth-related change
 
 ---
 
 ## Folder Structure
+
 ```
 src/
 ├── components/      # 295 feature components across 33 domains
@@ -158,6 +195,7 @@ scripts/            # Deployment & utility scripts (deploy-render.ps1, test-ai-a
 ---
 
 ## Quick Commands
+
 ```bash
 npm run dev              # Start dev server
 npm run test             # Run Jest unit tests

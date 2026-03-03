@@ -690,6 +690,8 @@ export interface Project {
   finalizationDate?: string;
   pdcaCycles?: PDCACycle[];
   teamMembers?: string[];
+  teamMemberRoles?: Record<string, string>;
+  standardIds?: string[];
   departmentId?: string;
   departmentIds?: string[];
 }

@@ -19,6 +19,14 @@ export interface PredictiveAuditRiskResult {
     reasons: string[];
 }
 
+/** Extended AI-powered result — superset of rule-based result (B1) */
+export interface AIPredictiveAuditRiskResult extends PredictiveAuditRiskResult {
+    aiNarrative: string;           // AI-written paragraph explaining the risk
+    recommendations: string[];     // Actionable steps to reduce risk
+    confidencePercent: number;     // AI's self-reported confidence 0–100
+    isAIGenerated: true;
+}
+
 const QUALITY_OUTCOME_SNAPSHOT_STORAGE_KEY =
     "accreditex_quality_outcome_monthly_snapshots";
 
@@ -193,4 +201,82 @@ export const calculatePredictiveAuditRisk = (input: {
         level,
         reasons,
     };
+};
+
+/**
+ * AI-powered predictive accreditation risk scoring (B1)
+ *
+ * Calls the AI agent with the same metrics as the rule-based scorer
+ * and returns a richer result with narrative, recommendations and confidence.
+ * Falls back gracefully to rule-based result if AI call fails.
+ */
+export const aiCalculatePredictiveAuditRisk = async (input: {
+    readinessScore: number;
+    evidenceIntegrityIndex: number;
+    criticalOpenFindings: number;
+    openCapas: number;
+    reviewerSignOffRatePercent: number;
+}): Promise<AIPredictiveAuditRiskResult> => {
+    // Always have the rule-based baseline for fallback / comparison
+    const rulebased = calculatePredictiveAuditRisk(input);
+
+    const prompt = `You are an expert healthcare accreditation consultant analysing an organisation's audit readiness.
+
+Current metrics:
+- Readiness Score: ${input.readinessScore}%  (target ≥ 85%)
+- Evidence Integrity Index: ${input.evidenceIntegrityIndex}%  (target ≥ 90%)
+- Critical Open Findings: ${input.criticalOpenFindings}  (target 0)
+- Open CAPAs: ${input.openCapas}  (target < 5)
+- Reviewer Sign-off Rate: ${input.reviewerSignOffRatePercent}%  (target ≥ 80%)
+
+The rule-based engine has scored this organisation's predicted audit risk as: ${rulebased.score}/100 (${rulebased.level})
+Rule-based reasons: ${rulebased.reasons.join('; ')}
+
+Your task:
+1. Validate or refine the risk score (0–100) using your expert judgement.
+2. Write a concise 2-3 sentence narrative explaining the key risk drivers.
+3. List 3–5 actionable recommendations to reduce audit risk.
+4. Provide your confidence in this assessment (0–100%).
+
+Respond ONLY in this exact JSON format (no markdown, no explanation outside it):
+{
+  "score": <integer 0-100>,
+  "level": "<Low|Medium|High>",
+  "reasons": ["<reason 1>", "<reason 2>"],
+  "aiNarrative": "<2-3 sentence narrative>",
+  "recommendations": ["<rec 1>", "<rec 2>", "<rec 3>"],
+  "confidencePercent": <integer 0-100>
+}`;
+
+    try {
+        // Dynamically import to avoid circular deps in service layer
+        const { aiAgentService } = await import('@/services/aiAgentService');
+        const response = await aiAgentService.chat(prompt, false);
+        const text = (response.response || '').trim();
+
+        // Strip possible markdown code fences
+        const jsonText = text.replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, '').trim();
+        const parsed = JSON.parse(jsonText);
+
+        return {
+            score: Number(parsed.score ?? rulebased.score),
+            level: (parsed.level === 'Low' || parsed.level === 'Medium' || parsed.level === 'High')
+                ? parsed.level
+                : rulebased.level,
+            reasons: Array.isArray(parsed.reasons) ? parsed.reasons : rulebased.reasons,
+            aiNarrative: String(parsed.aiNarrative ?? ''),
+            recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
+            confidencePercent: Number(parsed.confidencePercent ?? 75),
+            isAIGenerated: true,
+        };
+    } catch {
+        // Graceful fallback: return rule-based result wrapped as AI result
+        return {
+            ...rulebased,
+            aiNarrative: '',
+            recommendations: [],
+            confidencePercent: 0,
+            isAIGenerated: true,
+        };
+    }
 };

@@ -9,14 +9,15 @@
  * - Set start & end dates (with AI timeline suggestion)
  */
 
+import { LanguageContext } from "@/components/common/LanguageProvider";
 import { CalendarIcon, SparklesIcon, UsersIcon } from "@/components/icons";
 import { Button, ErrorMessage } from "@/components/ui";
 import DatePicker from "@/components/ui/DatePicker";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
-import { User } from "@/types";
-import React, { useState } from "react";
+import { User, UserRole } from "@/types";
+import React, { useContext, useState } from "react";
 import { WizardData } from "./useProjectWizard";
 
 interface Step3TeamTimelineProps {
@@ -39,6 +40,7 @@ export const Step3TeamTimeline: React.FC<Step3TeamTimelineProps> = ({
   departments,
 }) => {
   const { t } = useTranslation();
+  const { lang } = useContext(LanguageContext);
   const toast = useToast();
   const [isGeneratingTimeline, setIsGeneratingTimeline] = useState(false);
 
@@ -51,14 +53,33 @@ export const Step3TeamTimeline: React.FC<Step3TeamTimelineProps> = ({
   };
 
   /**
-   * Handle team member toggle
+   * Handle team member toggle (A2: assign default role on add)
    */
   const handleTeamMemberToggle = (userId: string) => {
-    const newTeamMemberIds = data.teamMemberIds.includes(userId)
+    const isSelected = data.teamMemberIds.includes(userId);
+    const newTeamMemberIds = isSelected
       ? data.teamMemberIds.filter((id) => id !== userId)
       : [...data.teamMemberIds, userId];
 
-    updateData({ teamMemberIds: newTeamMemberIds });
+    // Remove role when deselecting; set default role when selecting
+    // Guard against undefined teamMemberRoles (old localStorage drafts)
+    const newRoles = { ...(data.teamMemberRoles ?? {}) };
+    if (isSelected) {
+      delete newRoles[userId];
+    } else {
+      newRoles[userId] = newRoles[userId] ?? UserRole.TeamMember;
+    }
+
+    updateData({ teamMemberIds: newTeamMemberIds, teamMemberRoles: newRoles });
+  };
+
+  /**
+   * Handle role change for a team member (A2)
+   */
+  const handleMemberRoleChange = (userId: string, role: string) => {
+    updateData({
+      teamMemberRoles: { ...(data.teamMemberRoles ?? {}), [userId]: role },
+    });
   };
 
   /**
@@ -235,28 +256,59 @@ RATIONALE: (one sentence explaining the timeline)`;
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 max-h-[200px] overflow-y-auto space-y-2">
           {users
             .filter((u) => u.id !== data.leadId)
-            .map((user) => (
-              <label
-                key={user.id}
-                className="flex items-center gap-3 p-2 rounded hover:bg-brand-surface-secondary dark:hover:bg-dark-brand-surface-secondary cursor-pointer"
-              >
-                <input
-                  type="checkbox"
-                  checked={data.teamMemberIds.includes(user.id)}
-                  onChange={() => handleTeamMemberToggle(user.id)}
-                  className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
-                    {user.name}
+            .map((user) => {
+              const isChecked = data.teamMemberIds.includes(user.id);
+              return (
+                <label
+                  key={user.id}
+                  className="flex items-center gap-3 p-2 rounded hover:bg-brand-surface-secondary dark:hover:bg-dark-brand-surface-secondary cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => handleTeamMemberToggle(user.id)}
+                    className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
+                      {user.name}
+                    </div>
+                    <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                      {user.role}{" "}
+                      {user.departmentId ? `• ${user.departmentId}` : ""}
+                    </div>
                   </div>
-                  <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                    {user.role}{" "}
-                    {user.departmentId ? `• ${user.departmentId}` : ""}
-                  </div>
-                </div>
-              </label>
-            ))}
+                  {/* A2: per-member role selector (only visible when checked) */}
+                  {isChecked && (
+                    <select
+                      value={
+                        (data.teamMemberRoles ?? {})[user.id] ??
+                        UserRole.TeamMember
+                      }
+                      onChange={(e) =>
+                        handleMemberRoleChange(user.id, e.target.value)
+                      }
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-xs rounded border border-brand-border dark:border-dark-brand-border bg-white dark:bg-gray-800 text-brand-text-primary dark:text-dark-brand-text-primary px-2 py-1 focus:ring-brand-primary"
+                      title={t("projectRole") || "Project role"}
+                    >
+                      <option value={UserRole.TeamMember}>
+                        {t("teamMember") || "Team Member"}
+                      </option>
+                      <option value={UserRole.Auditor}>
+                        {t("auditor") || "Auditor"}
+                      </option>
+                      <option value={UserRole.Viewer}>
+                        {t("viewer") || "Viewer"}
+                      </option>
+                      <option value={UserRole.ProjectLead}>
+                        {t("projectLead") || "Project Lead"}
+                      </option>
+                    </select>
+                  )}
+                </label>
+              );
+            })}
         </div>
         {data.teamMemberIds.length > 0 && (
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
@@ -286,7 +338,9 @@ RATIONALE: (one sentence explaining the timeline)`;
                     : "bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-brand-primary-light"
                 }`}
               >
-                {dept.name}
+                {typeof dept.name === "string"
+                  ? dept.name
+                  : dept.name[lang as "en" | "ar"] || dept.name.en}
               </button>
             ))}
           </div>
