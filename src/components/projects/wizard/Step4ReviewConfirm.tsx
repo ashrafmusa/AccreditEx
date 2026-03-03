@@ -9,6 +9,7 @@
  * - Final confirmation
  */
 
+import { LanguageContext } from "@/components/common/LanguageProvider";
 import {
   CalendarIcon,
   CheckCircleIcon,
@@ -21,7 +22,7 @@ import { Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccreditationProgram, Standard, User } from "@/types";
 import { ProjectTemplate } from "@/types/templates";
-import React from "react";
+import React, { useContext } from "react";
 import { WizardData } from "./useProjectWizard";
 
 interface Step4ReviewConfirmProps {
@@ -44,6 +45,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
   departments,
 }) => {
   const { t } = useTranslation();
+  const { lang } = useContext(LanguageContext);
 
   // Get selected entities
   const selectedTemplate = templates.find((t) => t.id === data.templateId);
@@ -257,7 +259,9 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
                         key={dept.id}
                         className="inline-flex items-center px-2 py-1 rounded bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary text-xs"
                       >
-                        {dept.name}
+                        {typeof dept.name === "string"
+                          ? dept.name
+                          : dept.name[lang as "en" | "ar"] || dept.name.en}
                       </span>
                     ))}
                   </div>

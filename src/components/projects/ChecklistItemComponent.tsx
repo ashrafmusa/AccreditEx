@@ -1,30 +1,38 @@
-import React, { useMemo, useState, useCallback } from "react";
-import {
-  ChecklistItem,
-  Project,
-  ComplianceStatus,
-  Comment,
-  AppDocument,
-} from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
-  TrashIcon,
   PencilIcon,
   PlusIcon,
+  TrashIcon,
 } from "@/components/icons";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { aiAgentService } from "@/services/aiAgentService";
+import { suggestReusableEvidenceForChecklistItem } from "@/services/crossStandardMappingService";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import {
+  AppDocument,
+  ChecklistItem,
+  Comment,
+  ComplianceStatus,
+  Project,
+} from "@/types";
+import { STATUS_COLORS, statusToTranslationKey } from "@/utils/complianceUtils";
+import React, { useCallback, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import ChecklistComments from "./ChecklistComments";
 import ChecklistEvidence from "./ChecklistEvidence";
-import { useUserStore } from "@/stores/useUserStore";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useToast } from "@/hooks/useToast";
-import { aiAgentService } from "@/services/aiAgentService";
-import { useAppStore } from "@/stores/useAppStore";
-import { suggestReusableEvidenceForChecklistItem } from "@/services/crossStandardMappingService";
-import { statusToTranslationKey, STATUS_COLORS } from "@/utils/complianceUtils";
-import AISuggestionModal from "@/components/ai/AISuggestionModal";
-import { useNavigate } from "react-router-dom";
+
+/** Safely resolves a department/document name that may be LocalizedString or plain string */
+const resolveName = (name: unknown, lang = "en"): string => {
+  if (!name) return "";
+  if (typeof name === "string") return name;
+  const n = name as Record<string, string>;
+  return n[lang] || n.en || n.ar || "";
+};
 
 interface ChecklistItemComponentProps {
   item: ChecklistItem;
@@ -35,12 +43,18 @@ interface ChecklistItemComponentProps {
 }
 
 const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
-  item,
+  item: rawItem,
   project,
   isFinalized = false,
   onUpdate,
   onDelete,
 }) => {
+  // Normalize: evidenceFiles / comments may be absent on legacy or newly-created items
+  const item: ChecklistItem = {
+    ...rawItem,
+    evidenceFiles: rawItem.evidenceFiles ?? [],
+    comments: rawItem.comments ?? [],
+  };
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
   const { createPDCACycle, createCAPA } = useProjectStore();
@@ -79,6 +93,16 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
 
   // Safely get standardId with fallback
   const itemStandardId = item.standardId || "";
+
+  // Look up the full Standard object so we can show the description
+  const itemStandard = useMemo(
+    () =>
+      standards.find(
+        (s) =>
+          s.standardId === itemStandardId && s.programId === project.programId,
+      ) ?? standards.find((s) => s.standardId === itemStandardId),
+    [standards, itemStandardId, project.programId],
+  );
 
   const reusableEvidenceSuggestions = useMemo(
     () =>
@@ -420,7 +444,7 @@ Based on this information, provide:
       const attachedList =
         attachedDocs.length > 0
           ? attachedDocs
-              .map((d) => '- ✅ "' + d.name.en + '" (' + d.type + ")")
+              .map((d) => '- ✅ "' + resolveName(d.name) + '" (' + d.type + ")")
               .join("\n")
           : "- None attached yet";
       const candidateList =
@@ -429,7 +453,7 @@ Based on this information, provide:
           .map(
             (d) =>
               '- 📄 "' +
-              d.name.en +
+              resolveName(d.name) +
               '" (Type: ' +
               d.type +
               ", Category: " +
@@ -482,7 +506,7 @@ Be specific and actionable. Reference real document names from the system when p
       const stdId = item.standardId.toLowerCase();
       const matched = candidateDocs
         .filter((d) => {
-          const name = d.name.en.toLowerCase();
+          const name = resolveName(d.name).toLowerCase();
           const tags = (d.tags || []).join(" ").toLowerCase();
           const cat = (d.category || "").toLowerCase();
           return (
@@ -672,9 +696,21 @@ Action Plan: ${item.actionPlan || "None"}`;
               {t(statusToTranslationKey(item.status) as any)}
             </span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
             <span className="font-medium">{t("standard")}:</span>
-            <span>{item.standardId}</span>
+            <span className="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-600">
+              {item.standardId || "—"}
+            </span>
+            {itemStandard?.description && (
+              <span
+                className="text-gray-500 dark:text-gray-400 truncate max-w-md"
+                title={itemStandard.description}
+              >
+                {itemStandard.description.length > 80
+                  ? `${itemStandard.description.slice(0, 80)}…`
+                  : itemStandard.description}
+              </span>
+            )}
             {item.departmentId &&
               (() => {
                 const dept = (useAppStore.getState().departments || []).find(
@@ -684,7 +720,7 @@ Action Plan: ${item.actionPlan || "None"}`;
                   <>
                     <span className="mx-2">•</span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
-                      🏢 {dept.name.en || dept.name.ar}
+                      🏢 {resolveName(dept.name)}
                     </span>
                   </>
                 ) : null;
@@ -1244,7 +1280,7 @@ Existing Notes: ${item.notes || "None"}`;
                   .filter((d) => d.isActive !== false)
                   .map((d) => (
                     <option key={d.id} value={d.id}>
-                      {d.name.en || d.name.ar}
+                      {resolveName(d.name)}
                     </option>
                   ))}
               </select>

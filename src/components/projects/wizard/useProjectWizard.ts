@@ -28,6 +28,7 @@ export interface WizardData {
     // Step 3: Team & Timeline
     leadId: string;
     teamMemberIds: string[];
+    teamMemberRoles: Record<string, string>; // userId -> role (A2)
     departmentIds: string[];
     startDate: Date | undefined;
     endDate: Date | undefined;
@@ -47,6 +48,7 @@ const initialWizardData: WizardData = {
     standardIds: [],
     leadId: '',
     teamMemberIds: [],
+    teamMemberRoles: {},
     departmentIds: [],
     startDate: new Date(),
     endDate: undefined,
@@ -54,14 +56,26 @@ const initialWizardData: WizardData = {
     aiEnhanced: false,
 };
 
-export const useProjectWizard = () => {
+export interface UseProjectWizardOptions {
+    initialData?: Partial<WizardData>;
+    isEditMode?: boolean;
+    editProjectId?: string;
+}
+
+export const useProjectWizard = (options: UseProjectWizardOptions = {}) => {
+    const { initialData, isEditMode = false } = options;
+
     const [currentStep, setCurrentStep] = useState(0);
-    const [data, setData] = useState<WizardData>(initialWizardData);
+    const [data, setData] = useState<WizardData>(() => ({
+        ...initialWizardData,
+        ...initialData,
+    }));
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
     const [touched, setTouched] = useState<Record<string, boolean>>({});
 
-    // Load saved draft on mount
+    // Load saved draft on mount — only in create mode (not edit)
     useEffect(() => {
+        if (isEditMode) return; // Skip draft restore in edit mode
         const savedDraft = localStorage.getItem(STORAGE_KEY);
         if (savedDraft) {
             try {
@@ -69,11 +83,14 @@ export const useProjectWizard = () => {
                 // Convert date strings back to Date objects
                 if (parsed.startDate) parsed.startDate = new Date(parsed.startDate);
                 if (parsed.endDate) parsed.endDate = new Date(parsed.endDate);
-                setData(parsed);
+                // Merge with initialWizardData to ensure all fields exist
+                // (guards against old drafts missing newly added fields like teamMemberRoles)
+                setData({ ...initialWizardData, ...parsed });
             } catch (error) {
                 console.error('Failed to parse saved wizard draft:', error);
             }
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Save draft on data change (debounced)
@@ -100,49 +117,40 @@ export const useProjectWizard = () => {
     }, []);
 
     /**
-     * Validate current step
+     * Compute validation for the current step — PURE, no state updates.
+     * Safe to call during render.
      */
-    const validateCurrentStep = useCallback((): ValidationResult => {
-        let result: ValidationResult;
-
+    const computeCurrentStepValidation = useCallback((): ValidationResult => {
         switch (currentStep) {
-            case 0: // Step 1
-                result = validateStep1({
-                    projectName: data.projectName,
-                    description: data.description,
-                });
-                break;
-            case 1: // Step 2
-                result = validateStep2({
-                    programId: data.programId,
-                    standardIds: data.standardIds,
-                });
-                break;
-            case 2: // Step 3
-                result = validateStep3({
-                    leadId: data.leadId,
-                    startDate: data.startDate,
-                    endDate: data.endDate,
-                });
-                break;
-            case 3: // Step 4 (Review - no validation needed)
-                result = { isValid: true, errors: {} };
-                break;
+            case 0:
+                return validateStep1({ projectName: data.projectName, description: data.description });
+            case 1:
+                return validateStep2({ programId: data.programId, standardIds: data.standardIds });
+            case 2:
+                return validateStep3({ leadId: data.leadId, startDate: data.startDate, endDate: data.endDate });
+            case 3:
+                return { isValid: true, errors: {} };
             default:
-                result = { isValid: false, errors: {} };
+                return { isValid: false, errors: {} };
         }
-
-        setValidationErrors(result.errors);
-        return result;
     }, [currentStep, data]);
 
     /**
-     * Check if can proceed to next step
+     * Validate current step AND update validationErrors state.
+     * Only call from event handlers (goToNextStep, goToStep) — NOT during render.
+     */
+    const validateCurrentStep = useCallback((): ValidationResult => {
+        const result = computeCurrentStepValidation();
+        setValidationErrors(result.errors);
+        return result;
+    }, [computeCurrentStepValidation]);
+
+    /**
+     * Check if can proceed to next step — pure, safe during render.
      */
     const canProceedToNextStep = useCallback((): boolean => {
-        const validation = validateCurrentStep();
-        return validation.isValid;
-    }, [validateCurrentStep]);
+        return computeCurrentStepValidation().isValid;
+    }, [computeCurrentStepValidation]);
 
     /**
      * Go to next step (with validation)

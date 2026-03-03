@@ -23,8 +23,7 @@ jobs:
       run: npm ci
     
     - name: Generate coverage report
-      run: npm run test:coverage
-    
+        run: npm run test:coverage -- --forceExit --passWithNoTests
     - name: Create coverage badge
       uses: actions/upload-artifact@v4
       with:

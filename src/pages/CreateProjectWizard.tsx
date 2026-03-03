@@ -1,39 +1,86 @@
 /**
  * CreateProjectWizard - Main Controller
  * Phase 1: Forms & Wizards Enhancement
+ * Phase 2: A1 Edit mode, A2 Team roles, A3 Conditional standards
  *
- * Multi-step wizard for project creation
- * Replaces monolithic 985-line CreateProjectPage
- * Target: 3-5 min completion (vs 8-12 min before)
+ * Multi-step wizard for project creation AND editing
  */
 
 import { Step1TemplateBasics } from "@/components/projects/wizard/Step1TemplateBasics";
 import { Step2ProgramStandards } from "@/components/projects/wizard/Step2ProgramStandards";
 import { Step3TeamTimeline } from "@/components/projects/wizard/Step3TeamTimeline";
 import { Step4ReviewConfirm } from "@/components/projects/wizard/Step4ReviewConfirm";
-import { useProjectWizard } from "@/components/projects/wizard/useProjectWizard";
+import {
+  WizardData,
+  useProjectWizard,
+} from "@/components/projects/wizard/useProjectWizard";
 import { MultiStepWizard, WizardStep } from "@/components/ui/MultiStepWizard";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
-import { NavigationState, Project, ProjectStatus } from "@/types";
-import React, { useState } from "react";
+import {
+  ChecklistItem,
+  ComplianceStatus,
+  NavigationState,
+  Project,
+  ProjectStatus,
+} from "@/types";
+import React, { useMemo, useState } from "react";
 
 interface CreateProjectWizardProps {
   setNavigation?: (state: NavigationState) => void;
+  /** Present to activate edit mode — pre-fills wizard from existing project */
+  projectId?: string;
 }
 
 /**
  * CreateProjectWizard Component
- * 4-step guided project creation
+ * 4-step guided project creation + editing
  */
 const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
   setNavigation,
+  projectId,
 }) => {
   const { t } = useTranslation();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Global state
+  const { addProject, updateProject, projects } = useProjectStore();
+  const { users } = useUserStore();
+  const { projectTemplates, accreditationPrograms, standards, departments } =
+    useAppStore();
+  const { showToast } = useToast();
+
+  // A1: Derive edit mode and convert existing project → WizardData initial values
+  const isEditMode = Boolean(projectId);
+  const existingProject = useMemo(
+    () => projects.find((p) => p.id === projectId),
+    [projects, projectId],
+  );
+
+  const initialData = useMemo((): Partial<WizardData> | undefined => {
+    if (!existingProject) return undefined;
+    const leadUser = existingProject.projectLead;
+    return {
+      projectName: existingProject.name,
+      description: existingProject.description || "",
+      programId: existingProject.programId,
+      standardIds: existingProject.standardIds ?? [],
+      leadId: leadUser?.id ?? "",
+      teamMemberIds: existingProject.teamMembers ?? [],
+      teamMemberRoles: existingProject.teamMemberRoles ?? {},
+      departmentIds: existingProject.departmentIds ?? [],
+      startDate: existingProject.startDate
+        ? new Date(existingProject.startDate)
+        : new Date(),
+      endDate: existingProject.endDate
+        ? new Date(existingProject.endDate)
+        : undefined,
+      checklistItems: existingProject.checklist ?? [],
+    };
+  }, [existingProject]);
 
   // Wizard state management
   const {
@@ -50,14 +97,7 @@ const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
     resetWizard,
     clearDraft,
     canProceedToNextStep,
-  } = useProjectWizard();
-
-  // Global state
-  const { addProject } = useProjectStore();
-  const { users } = useUserStore();
-  const { projectTemplates, accreditationPrograms, standards, departments } =
-    useAppStore();
-  const { showToast } = useToast();
+  } = useProjectWizard({ initialData, isEditMode, editProjectId: projectId });
 
   /**
    * Define wizard steps
@@ -92,45 +132,143 @@ const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
   ];
 
   /**
-   * Handle final submission
+   * Build a proper ChecklistItem[] from the wizard state.
+   * - Selected standards → one ChecklistItem each (item = description, standardId set)
+   * - Template checklist items that already have item+standardId are preserved as-is
+   * - Template items without standardId are kept as freeform items
+   */
+  const buildChecklist = (): ChecklistItem[] => {
+    // Separate already-proper ChecklistItems (have item + standardId) from template blobs
+    const existing = (data.checklistItems as any[]).filter(
+      (i) => typeof i.item === "string" && i.standardId,
+    ) as ChecklistItem[];
+    const existingStdIds = new Set(existing.map((i) => i.standardId));
+
+    // Freeform template items (no standardId) — convert title→item, give defaults
+    const freeform: ChecklistItem[] = (data.checklistItems as any[])
+      .filter((i) => !i.standardId)
+      .map((i, idx) => ({
+        id: i.id || `tmpl-${Date.now()}-${idx}`,
+        item: i.item || i.title || "",
+        standardId: "",
+        status: i.status || ComplianceStatus.NotStarted,
+        assignedTo: i.assignedTo || "",
+        dueDate: i.dueDate || "",
+        actionPlan: i.actionPlan || "",
+        notes: i.notes || "",
+        evidenceFiles: i.evidenceFiles || [],
+        comments: i.comments || [],
+        ...(i.departmentId != null ? { departmentId: i.departmentId } : {}),
+      }));
+
+    // Generate one ChecklistItem per selected standard (skip those already covered)
+    const fromStandards: ChecklistItem[] = data.standardIds
+      .filter((stdId) => !existingStdIds.has(stdId))
+      .map((stdId) => {
+        const std =
+          standards.find(
+            (s) => s.standardId === stdId && s.programId === data.programId,
+          ) ?? standards.find((s) => s.standardId === stdId);
+        return {
+          id: `item-${stdId}-${Date.now()}`,
+          item: std?.description || stdId,
+          standardId: stdId,
+          status: ComplianceStatus.NotStarted,
+          assignedTo: "",
+          dueDate: "",
+          actionPlan: "",
+          notes: "",
+          evidenceFiles: [],
+          comments: [],
+        };
+      });
+
+    return [...existing, ...fromStandards, ...freeform];
+  };
+
+  /**
+   * Handle final submission — create OR update depending on mode (A1)
    */
   const handleSubmit = async () => {
     setIsSubmitting(true);
 
     try {
-      // Convert wizard data to Project object
-      const newProject: Omit<Project, "id"> = {
-        name: data.projectName,
-        description: data.description || "",
-        programId: data.programId!,
-        startDate: data.startDate?.toISOString() || new Date().toISOString(),
-        endDate: data.endDate?.toISOString(),
-        status: ProjectStatus.NotStarted,
-        progress: 0,
-        checklist: data.checklistItems,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as any;
+      // Find user object for projectLead
+      const leadUser = users.find((u) => u.id === data.leadId);
 
-      // Add project
-      await addProject(newProject);
+      if (isEditMode && existingProject) {
+        // --- EDIT MODE: Update existing project ---
+        const updatedProject: Project = {
+          ...existingProject,
+          name: data.projectName,
+          description: data.description || "",
+          programId: data.programId,
+          startDate: data.startDate?.toISOString() || existingProject.startDate,
+          endDate: data.endDate?.toISOString(),
+          projectLead: leadUser
+            ? ({
+                id: leadUser.id,
+                name: leadUser.name,
+                email: leadUser.email,
+                role: leadUser.role,
+                departmentId: leadUser.departmentId,
+              } as any)
+            : existingProject.projectLead,
+          teamMembers: data.teamMemberIds,
+          teamMemberRoles: data.teamMemberRoles,
+          departmentIds: data.departmentIds,
+          standardIds: data.standardIds,
+          checklist: buildChecklist(),
+          updatedAt: new Date().toISOString(),
+        };
 
-      // Clear draft
-      clearDraft();
+        await updateProject(updatedProject);
+        showToast(
+          t("projectUpdatedSuccessfully") || "Project updated successfully!",
+          "success",
+        );
+      } else {
+        // --- CREATE MODE: Add new project ---
+        const newProject: Omit<Project, "id"> = {
+          name: data.projectName,
+          description: data.description || "",
+          programId: data.programId,
+          startDate: data.startDate?.toISOString() || new Date().toISOString(),
+          endDate: data.endDate?.toISOString(),
+          status: ProjectStatus.NotStarted,
+          progress: 0,
+          projectLead: leadUser
+            ? ({
+                id: leadUser.id,
+                name: leadUser.name,
+                email: leadUser.email,
+                role: leadUser.role,
+                departmentId: leadUser.departmentId,
+              } as any)
+            : undefined,
+          teamMembers: data.teamMemberIds,
+          teamMemberRoles: data.teamMemberRoles,
+          departmentIds: data.departmentIds,
+          standardIds: data.standardIds,
+          checklist: buildChecklist(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as any;
 
-      // Success toast
-      showToast(
-        t("projectCreatedSuccessfully") || "Project created successfully!",
-        "success",
-      );
+        await addProject(newProject);
+        clearDraft();
+        showToast(
+          t("projectCreatedSuccessfully") || "Project created successfully!",
+          "success",
+        );
+      }
 
       // Navigate to projects list
       setNavigation?.({ view: "projects" });
     } catch (error) {
-      console.error("Error creating project:", error);
+      console.error("Error saving project:", error);
       showToast(
-        t("errorCreatingProject") ||
-          "Error creating project. Please try again.",
+        t("errorSavingProject") || "Error saving project. Please try again.",
         "error",
       );
     } finally {
@@ -144,11 +282,11 @@ const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
   const handleCancel = () => {
     if (data.projectName || data.description) {
       // Show confirmation if user has entered data
-      const confirm = window.confirm(
-        t("confirmCancelWizard") ||
-          "Are you sure you want to cancel? Your draft is saved and you can resume later.",
-      );
-      if (!confirm) return;
+      const confirmMsg = isEditMode
+        ? t("confirmCancelEdit") || "Discard unsaved changes?"
+        : t("confirmCancelWizard") ||
+          "Are you sure you want to cancel? Your draft is saved and you can resume later.";
+      if (!window.confirm(confirmMsg)) return;
     }
 
     setNavigation?.({ view: "projects" });
@@ -219,6 +357,46 @@ const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
   return (
     <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Page heading — changes based on create vs. edit mode (A1) */}
+        <div className="mb-5 flex items-start gap-4">
+          <button
+            type="button"
+            onClick={() => setNavigation?.({ view: "projects" })}
+            className="mt-1 flex-shrink-0 p-1.5 rounded-lg text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-brand-surface-secondary dark:hover:bg-dark-brand-surface-secondary hover:text-brand-text-primary dark:hover:text-dark-brand-text-primary transition-colors"
+            aria-label={t("back") || "Back"}
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
+              />
+            </svg>
+          </button>
+          <div>
+            <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {isEditMode
+                ? t("editProject") || "Edit Project"
+                : t("createNewProject") || "Create New Project"}
+            </h1>
+            {isEditMode && existingProject ? (
+              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
+                {existingProject.name}
+              </p>
+            ) : (
+              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
+                {t("createProjectSubtitle") ||
+                  "Fill in the details below to set up your accreditation project."}
+              </p>
+            )}
+          </div>
+        </div>
         <MultiStepWizard
           steps={steps}
           currentStep={currentStep}
@@ -228,7 +406,7 @@ const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
           canGoNext={canProceedToNextStep()}
           canGoBack={true}
           isSubmitting={isSubmitting}
-          className="bg-white dark:bg-gray-800 shadow-lg rounded-lg"
+          className="bg-brand-surface dark:bg-dark-brand-surface shadow-xl rounded-xl overflow-hidden"
         >
           {renderStep()}
         </MultiStepWizard>

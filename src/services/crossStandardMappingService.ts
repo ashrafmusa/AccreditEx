@@ -163,7 +163,7 @@ export const suggestReusableEvidenceForChecklistItem = (params: {
     );
     const relatedStandardIds = new Set(
         [standardId, ...relatedStandards.map((standard) => standard.standardId)]
-            .map((id) => id.toLowerCase()),
+            .map((id) => (id || "").toLowerCase()),
     );
     const relatedTerms = new Set([
         ...tokenize(checklistText),

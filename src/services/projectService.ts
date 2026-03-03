@@ -1,38 +1,52 @@
-import {
-  collection,
-  getDocs,
-  getDoc,
-  addDoc,
-  doc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  onSnapshot,
-  Timestamp,
-  writeBatch,
-  orderBy
-} from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
-import { freeTierMonitor } from './freeTierMonitor';
 import {
-  ProjectCard,
-  ChecklistItem,
   CAPAReport,
-  PDCACycle,
-  PDCAStage,
-  PDCAStageRecord,
+  ChecklistItem,
   Comment,
   DesignControlItem,
   MockSurvey,
-  ProjectStatus,
-  ComplianceStatus,
-  Project
+  PDCACycle,
+  PDCAStage,
+  PDCAStageRecord,
+  Project,
+  ProjectStatus
 } from '@/types';
-import { canCloseCapa } from './tqmReadinessService';
 import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  orderBy,
+  Timestamp,
+  updateDoc,
+  where,
+  writeBatch
+} from 'firebase/firestore';
+import { freeTierMonitor } from './freeTierMonitor';
+import { canCloseCapa } from './tqmReadinessService';
 
 const projectsCollection = collection(db, 'projects');
+
+/**
+ * Recursively remove undefined values from an object before writing to Firestore.
+ * Firestore rejects documents containing `undefined` at any nesting level.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const deepCleanUndefined = (obj: any): any => {
+  if (Array.isArray(obj)) return obj.map(deepCleanUndefined);
+  if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .filter(([, v]) => v !== undefined)
+        .map(([k, v]) => [k, deepCleanUndefined(v)])
+    );
+  }
+  return obj;
+};
 
 // ========================================
 // CRUD Operations
@@ -93,7 +107,7 @@ export const createProject = async (projectData: Omit<Project, 'id'>): Promise<P
     activityLog: projectData.activityLog || []
   };
 
-  const docRef = await addDoc(projectsCollection, newProject);
+  const docRef = await addDoc(projectsCollection, deepCleanUndefined(newProject));
   freeTierMonitor.recordWrite(1);
   return { id: docRef.id, ...newProject } as Project;
 };
@@ -112,10 +126,10 @@ export const updateProject = async (projectId: string, updates: Partial<Project>
     }
 
     const docRef = doc(db, 'projects', projectId);
-    await updateDoc(docRef, {
+    await updateDoc(docRef, deepCleanUndefined({
       ...sanitized,
       updatedAt: Timestamp.now().toDate().toISOString()
-    });
+    }));
 
     freeTierMonitor.recordWrite(1);
   } catch (error) {

@@ -1,14 +1,22 @@
-import React, { useState, useMemo, useCallback } from "react";
-import { Project, ComplianceStatus, ChecklistItem, Department } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import ChecklistItemComponent from "./ChecklistItemComponent";
-import { SearchIcon, XMarkIcon } from "../icons";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useAppStore } from "@/stores/useAppStore";
-import { useToast } from "@/hooks/useToast";
-import { aiAgentService } from "@/services/aiAgentService";
 import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { aiAgentService } from "@/services/aiAgentService";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { ChecklistItem, ComplianceStatus, Project } from "@/types";
 import { statusToTranslationKey } from "@/utils/complianceUtils";
+import React, { useCallback, useMemo, useState } from "react";
+import { SearchIcon, XMarkIcon } from "../icons";
+import ChecklistItemComponent from "./ChecklistItemComponent";
+
+/** Safely resolves a department name that may be LocalizedString or plain string */
+const resolveName = (name: unknown, lang = "en"): string => {
+  if (!name) return "";
+  if (typeof name === "string") return name;
+  const n = name as Record<string, string>;
+  return n[lang] || n.en || n.ar || "";
+};
 
 /** A single AI-proposed standard→department mapping */
 interface DeptAssignmentProposal {
@@ -23,7 +31,11 @@ interface ProjectChecklistProps {
   onUpdateProject: (project: Project) => void;
 }
 
-const ProjectChecklist: React.FC<ProjectChecklistProps> = ({ project }) => {
+const ProjectChecklist: React.FC<ProjectChecklistProps> = ({
+  project: _project,
+}) => {
+  // Normalize: checklist may be absent on newly-created projects from Firestore
+  const project = { ..._project, checklist: _project.checklist ?? [] };
   const { t } = useTranslation();
   const { updateChecklistItem, updateProject } = useProjectStore();
   const toast = useToast();
@@ -73,7 +85,7 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({ project }) => {
         ).length,
         noEvidence: project.checklist.filter(
           (i) =>
-            i.evidenceFiles.length === 0 &&
+            (i.evidenceFiles ?? []).length === 0 &&
             i.status !== ComplianceStatus.NotApplicable,
         ).length,
         overdue: project.checklist.filter(
@@ -200,7 +212,7 @@ Please provide:
         (i) =>
           i.status === ComplianceStatus.NonCompliant ||
           i.status === ComplianceStatus.PartiallyCompliant ||
-          (i.evidenceFiles.length === 0 &&
+          ((i.evidenceFiles ?? []).length === 0 &&
             i.status !== ComplianceStatus.NotApplicable &&
             i.status !== ComplianceStatus.Compliant) ||
           (i.dueDate &&
@@ -218,7 +230,7 @@ Please provide:
         .slice(0, 50)
         .map(
           (item, i) =>
-            `${i + 1}. ID:${item.id} | [${item.status}] ${item.standardId}: ${item.item.slice(0, 100)}${item.evidenceFiles.length === 0 ? " [NO EVIDENCE]" : ""}${item.dueDate && new Date(item.dueDate) < new Date() ? " [OVERDUE]" : ""}`,
+            `${i + 1}. ID:${item.id} | [${item.status}] ${item.standardId}: ${item.item.slice(0, 100)}${(item.evidenceFiles ?? []).length === 0 ? " [NO EVIDENCE]" : ""}${item.dueDate && new Date(item.dueDate) < new Date() ? " [OVERDUE]" : ""}`,
         )
         .join("\n");
 
@@ -291,7 +303,7 @@ Assess risk based on: compliance status severity, evidence gaps, overdue status,
       const deptLines = activeDepts
         .map((d) => {
           const desc = d.description?.en || d.description?.ar || "";
-          return `- id: "${d.id}", name: "${d.name.en || d.name.ar}"${desc ? `, scope: "${desc.slice(0, 120)}"` : ""}`;
+          return `- id: "${d.id}", name: "${resolveName(d.name)}"${desc ? `, scope: "${desc.slice(0, 120)}"` : ""}`;
         })
         .join("\n");
 
@@ -367,8 +379,8 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           { dept: (typeof activeDepts)[0]; keywords: string[] }
         >();
         for (const dept of activeDepts) {
-          const nameEn = (dept.name.en || "").toLowerCase();
-          const nameAr = (dept.name.ar || "").toLowerCase();
+          const nameEn = resolveName(dept.name, "en").toLowerCase();
+          const nameAr = resolveName(dept.name, "ar").toLowerCase();
           const descEn = (dept.description?.en || "").toLowerCase();
           const keywords = [
             nameEn,
@@ -389,7 +401,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
 
           for (const [, { dept, keywords }] of deptKeywords) {
             let score = 0;
-            const nameEn = (dept.name.en || "").toLowerCase();
+            const nameEn = resolveName(dept.name, "en").toLowerCase();
 
             // Exact dept ID in text → highest score
             if (textLower.includes(dept.id)) score += 100;
@@ -454,8 +466,8 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
         const lowerResponse = responseText.toLowerCase();
 
         for (const dept of activeDepts) {
-          const nameEn = (dept.name.en || "").toLowerCase();
-          const nameAr = (dept.name.ar || "").toLowerCase();
+          const nameEn = resolveName(dept.name, "en").toLowerCase();
+          const nameAr = resolveName(dept.name, "ar").toLowerCase();
           const searchNames = [dept.id, nameEn, nameAr].filter(
             (n) => n && n.length > 2,
           );
@@ -710,7 +722,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                 .filter((d) => d.isActive !== false)
                 .map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.name.en || d.name.ar}
+                    {resolveName(d.name)}
                   </option>
                 ))}
             </select>
@@ -934,7 +946,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                     ([deptId, stats]) => {
                       const dept = departments.find((d) => d.id === deptId);
                       return {
-                        name: dept ? dept.name.en || dept.name.ar : deptId,
+                        name: dept ? resolveName(dept.name) || deptId : deptId,
                         ...stats,
                         deptId,
                       };

@@ -104,6 +104,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
   const [unauthorizedAttempt, setUnauthorizedAttempt] = useState(false);
   const [unauthorizedMessage, setUnauthorizedMessage] = useState("");
   const { t } = useTranslation();
+  const isViewEnabled = useModuleStore((s) => s.isViewEnabled);
 
   const { projects, updateMockSurvey, applySurveyFindingsToProject } =
     useProjectStore();
@@ -185,17 +186,33 @@ const MainRouter: React.FC<MainRouterProps> = ({
       }
 
       if (isUnauthorized) {
-        setUnauthorizedAttempt(true);
-        setUnauthorizedMessage(message);
-        setNavigation({ view: "dashboard" });
-      } else {
-        setUnauthorizedAttempt(false);
+        if (!unauthorizedAttempt) {
+          setUnauthorizedAttempt(true);
+        }
+        if (unauthorizedMessage !== message) {
+          setUnauthorizedMessage(message);
+        }
+        if (navigation.view !== "dashboard") {
+          setNavigation({ view: "dashboard" });
+        }
       }
     } else if (currentUser && isAdmin) {
       // FIX: Explicitly clear unauthorized state if user IS admin
-      setUnauthorizedAttempt(false);
+      if (unauthorizedAttempt) {
+        setUnauthorizedAttempt(false);
+      }
+      if (unauthorizedMessage) {
+        setUnauthorizedMessage("");
+      }
     }
-  }, [navigation, currentUser, setNavigation]);
+  }, [
+    navigation.view,
+    navigation.section,
+    currentUser?.role,
+    setNavigation,
+    unauthorizedAttempt,
+    unauthorizedMessage,
+  ]);
 
   // ── Analytics: track page/view changes ────────────────
   useEffect(() => {
@@ -290,6 +307,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
             <button
               onClick={() => {
                 setUnauthorizedAttempt(false);
+                setUnauthorizedMessage("");
                 setNavigation({ view: "dashboard" });
               }}
               className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
@@ -303,7 +321,6 @@ const MainRouter: React.FC<MainRouterProps> = ({
   }
 
   // Module-based route guard: check if current view's module is enabled
-  const isViewEnabled = useModuleStore((s) => s.isViewEnabled);
   const moduleDef = getModuleForView(navigation.view);
   if (moduleDef && !isViewEnabled(navigation.view)) {
     return (
@@ -363,7 +380,12 @@ const MainRouter: React.FC<MainRouterProps> = ({
       case "createProject":
         return <CreateProjectWizard setNavigation={setNavigation} />;
       case "editProject":
-        return <CreateProjectWizard setNavigation={setNavigation} />;
+        return (
+          <CreateProjectWizard
+            setNavigation={setNavigation}
+            projectId={navigation.projectId}
+          />
+        );
       case "standards": {
         const program = accreditationPrograms.find(
           (p) => p.id === navigation.programId,

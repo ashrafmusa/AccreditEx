@@ -11,7 +11,7 @@ import { CheckCircleIcon, ShieldCheckIcon } from "@/components/icons";
 import { ErrorMessage } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccreditationProgram, Standard } from "@/types";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { WizardData } from "./useProjectWizard";
 
 interface Step2ProgramStandardsProps {
@@ -35,13 +35,39 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  // A3: local search state for filtering standards
+  const [standardSearch, setStandardSearch] = useState("");
+
   /**
-   * Filter standards by selected program
+   * Filter standards by selected program, then by search query (A3)
    */
   const relevantStandards = useMemo(() => {
     if (!data.programId) return [];
-    return allStandards.filter((std) => std.programId === data.programId);
-  }, [data.programId, allStandards]);
+    const byProgram = allStandards.filter(
+      (std) => std.programId === data.programId,
+    );
+    if (!standardSearch.trim()) return byProgram;
+    const q = standardSearch.toLowerCase();
+    return byProgram.filter(
+      (std) =>
+        std.standardId.toLowerCase().includes(q) ||
+        std.description?.toLowerCase().includes(q) ||
+        std.section?.toLowerCase().includes(q),
+    );
+  }, [data.programId, allStandards, standardSearch]);
+
+  /**
+   * Group filtered standards by section (A3)
+   */
+  const groupedStandards = useMemo(() => {
+    const groups: Record<string, Standard[]> = {};
+    for (const std of relevantStandards) {
+      const key = std.section || t("general") || "General";
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(std);
+    }
+    return groups;
+  }, [relevantStandards, t]);
 
   /**
    * Get selected program details
@@ -51,7 +77,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
   }, [data.programId, programs]);
 
   /**
-   * Handle program selection
+   * Handle program selection — also clears search (A3)
    */
   const handleProgramChange = (programId: string) => {
     updateData({
@@ -59,6 +85,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
       // Clear standards when program changes
       standardIds: [],
     });
+    setStandardSearch("");
     touchField("programId");
   };
 
@@ -168,9 +195,9 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
       </div>
 
       {/* Standards Selection (Conditional) */}
-      {data.programId && relevantStandards.length > 0 && (
+      {data.programId && (relevantStandards.length > 0 || standardSearch) && (
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-3">
             <div>
               <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
                 {t("applicableStandards")}{" "}
@@ -204,6 +231,20 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
             </div>
           </div>
 
+          {/* A3: Search input */}
+          <div className="mb-3">
+            <input
+              type="text"
+              value={standardSearch}
+              onChange={(e) => setStandardSearch(e.target.value)}
+              placeholder={
+                t("searchStandards") ||
+                "Search standards by ID, section or description…"
+              }
+              className="w-full rounded-lg border border-brand-border dark:border-dark-brand-border bg-white dark:bg-gray-800 text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary"
+            />
+          </div>
+
           {/* Selected Count Badge */}
           {data.standardIds.length > 0 && (
             <div className="mb-4 inline-flex items-center gap-2 bg-brand-primary-light dark:bg-brand-primary/10 text-brand-primary rounded-full px-3 py-1 text-sm font-medium">
@@ -212,58 +253,73 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
             </div>
           )}
 
-          {/* Standards List */}
-          <div className="space-y-2 max-h-[400px] overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-            {relevantStandards.map((standard) => {
-              const isSelected = data.standardIds.includes(standard.standardId);
-
-              return (
-                <label
-                  key={standard.standardId}
-                  className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                    isSelected
-                      ? "border-brand-primary bg-brand-surface dark:bg-dark-brand-surface"
-                      : "border-transparent hover:bg-brand-surface-secondary dark:hover:bg-dark-brand-surface-secondary"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isSelected}
-                    onChange={() => handleStandardToggle(standard.standardId)}
-                    className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
-                        {standard.standardId}
-                      </span>
-                      {standard.criticality && (
-                        <span
-                          className={`text-xs px-2 py-0.5 rounded ${
-                            standard.criticality === "High"
-                              ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                              : standard.criticality === "Medium"
-                                ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                                : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
-                          }`}
-                        >
-                          {standard.criticality}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                      {standard.description}
+          {/* A3: Standards grouped by section */}
+          {relevantStandards.length > 0 ? (
+            <div className="space-y-4 max-h-[440px] overflow-y-auto pr-1">
+              {Object.entries(groupedStandards).map(
+                ([section, sectionStandards]) => (
+                  <div key={section}>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-text-secondary dark:text-dark-brand-text-secondary mb-2 px-1">
+                      {section}
                     </p>
-                    {standard.description && (
-                      <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1 line-clamp-2">
-                        {standard.description}
-                      </p>
-                    )}
+                    <div className="space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+                      {sectionStandards.map((standard) => {
+                        const isSelected = data.standardIds.includes(
+                          standard.standardId,
+                        );
+                        return (
+                          <label
+                            key={standard.standardId}
+                            className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                              isSelected
+                                ? "border-brand-primary bg-brand-surface dark:bg-dark-brand-surface"
+                                : "border-transparent hover:bg-brand-surface-secondary dark:hover:bg-dark-brand-surface-secondary"
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() =>
+                                handleStandardToggle(standard.standardId)
+                              }
+                              className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
+                                  {standard.standardId}
+                                </span>
+                                {standard.criticality && (
+                                  <span
+                                    className={`text-xs px-2 py-0.5 rounded ${
+                                      standard.criticality === "High"
+                                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                        : standard.criticality === "Medium"
+                                          ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                                          : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                                    }`}
+                                  >
+                                    {standard.criticality}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1 line-clamp-2">
+                                {standard.description}
+                              </p>
+                            </div>
+                          </label>
+                        );
+                      })}
+                    </div>
                   </div>
-                </label>
-              );
-            })}
-          </div>
+                ),
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary py-4 text-center">
+              {t("noStandardsMatchSearch") || "No standards match your search."}
+            </p>
+          )}
 
           {validationErrors.standardIds && touched.standardIds && (
             <ErrorMessage message={validationErrors.standardIds} />

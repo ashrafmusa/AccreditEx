@@ -10,7 +10,7 @@ import SupplierForm from "./SupplierForm";
 
 interface SupplierListProps {
   suppliers: Supplier[];
-  filters: { status?: string; risk Level?: RiskLevel | ""; search?: string };
+  filters: { status?: string; riskLevel?: RiskLevel | ""; search?: string };
   onFiltersChange: {
     statusFilter: string;
     riskFilter: RiskLevel | "";
