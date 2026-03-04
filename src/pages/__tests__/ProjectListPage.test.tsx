@@ -35,6 +35,10 @@ jest.mock("@/hooks/useKeyboardNavigation", () => ({
   useKeyboardShortcuts: () => mockUseKeyboardShortcuts(),
 }));
 
+jest.mock("@/hooks/usePermission", () => ({
+  usePermission: () => ({ isAdmin: true, can: () => true }),
+}));
+
 // Mock components
 jest.mock("@/components/projects/ProjectCard", () => {
   return function MockProjectCard({ project, onSelect, onToggleSelect }: any) {
