@@ -22,7 +22,7 @@ export default function ChangeRequestForm({
 }: ChangeRequestFormProps) {
   const { t } = useTranslation();
   const toast = useToast();
-  const { user } = useUserStore();
+  const { currentUser } = useUserStore();
   const { createRequest, loading } = useChangeControlStore();
 
   const [formData, setFormData] = useState({
@@ -97,34 +97,37 @@ export default function ChangeRequestForm({
     }
 
     try {
-      await createRequest({
-        title: formData.title.trim(),
-        description: formData.description.trim(),
-        changeType: formData.changeType,
-        priority: formData.priority,
-        businessJustification: formData.businessJustification.trim(),
-        expectedBenefits: formData.expectedBenefits.trim(),
-        detailedDescription: formData.detailedDescription.trim(),
-        scope: formData.scope.trim(),
-        tags: formData.tags,
-        impact: {
-          estimatedHours: formData.estimatedHours,
-          affectedSystems: [],
-          affectedProcesses: [],
-          affectedDocuments: [],
-          dependentChanges: [],
-          riskAssessment: "",
-          riskLevel: "low",
-          mitigation: "",
-          backoutPlan: "",
-        },
-        plannedStartDate: formData.plannedStartDate
-          ? new Date(formData.plannedStartDate)
-          : undefined,
-        plannedEndDate: formData.plannedEndDate
-          ? new Date(formData.plannedEndDate)
-          : undefined,
-      } as any);
+      await createRequest(
+        {
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          changeType: formData.changeType,
+          priority: formData.priority,
+          businessJustification: formData.businessJustification.trim(),
+          expectedBenefits: formData.expectedBenefits.trim(),
+          detailedDescription: formData.detailedDescription.trim(),
+          scope: formData.scope.trim(),
+          tags: formData.tags,
+          impact: {
+            estimatedHours: formData.estimatedHours,
+            affectedSystems: [],
+            affectedProcesses: [],
+            affectedDocuments: [],
+            dependentChanges: [],
+            riskAssessment: "",
+            riskLevel: "low",
+            mitigation: "",
+            backoutPlan: "",
+          },
+          plannedStartDate: formData.plannedStartDate
+            ? new Date(formData.plannedStartDate)
+            : undefined,
+          plannedEndDate: formData.plannedEndDate
+            ? new Date(formData.plannedEndDate)
+            : undefined,
+        } as any,
+        currentUser?.id || "",
+      );
 
       onSuccess();
     } catch (error) {

@@ -22,7 +22,7 @@ export default function ApprovalWorkflow({
 }: ApprovalWorkflowProps) {
   const { t } = useTranslation();
   const toast = useToast();
-  const { user } = useUserStore();
+  const { currentUser } = useUserStore();
   const { submitRequest, addApprovalRecord, loading } = useChangeControlStore();
 
   const [showApprovalForm, setShowApprovalForm] = useState(false);
@@ -33,7 +33,11 @@ export default function ApprovalWorkflow({
 
   const handleSubmitForApproval = async () => {
     try {
-      await submitRequest(request.id, request.requiredApprovals || 1);
+      await submitRequest(
+        request.id,
+        request.requiredApprovals || 1,
+        currentUser?.id || "",
+      );
       onUpdate();
       toast.success(t("submittedForApproval") || "Submitted for approval");
     } catch (error) {
@@ -44,21 +48,25 @@ export default function ApprovalWorkflow({
   };
 
   const handleAddApproval = async () => {
-    if (!user) {
+    if (!currentUser) {
       toast.error(t("mustBeLoggedIn") || "You must be logged in");
       return;
     }
 
     try {
-      await addApprovalRecord(request.id, {
-        approverId: user.uid,
-        approverName: user.displayName || "Unknown",
-        approverRole: user.role || "user",
-        status: approvalData.status,
-        comments: approvalData.comments,
-        dateSubmitted: new Date(),
-        dateReviewed: new Date(),
-      } as any);
+      await addApprovalRecord(
+        request.id,
+        {
+          approverId: currentUser.id,
+          approverName: currentUser.name || "Unknown",
+          approverRole: currentUser.role || "user",
+          status: approvalData.status,
+          comments: approvalData.comments,
+          dateSubmitted: new Date(),
+          dateReviewed: new Date(),
+        } as any,
+        currentUser?.id || "",
+      );
 
       setShowApprovalForm(false);
       setApprovalData({ status: "approved", comments: "" });
@@ -170,7 +178,9 @@ export default function ApprovalWorkflow({
                       </span>
                     </div>
                     <p className="text-sm text-brand-text-secondary mb-2">
-                      {new Date(approval.dateReviewed).toLocaleString()}
+                      {approval.dateReviewed
+                        ? new Date(approval.dateReviewed).toLocaleString()
+                        : "-"}
                     </p>
                     {approval.comments && (
                       <p className="text-sm bg-gray-50 p-2 rounded border border-gray-200 text-brand-text-secondary">

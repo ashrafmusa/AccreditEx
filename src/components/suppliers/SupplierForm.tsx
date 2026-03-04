@@ -33,7 +33,7 @@ export default function SupplierForm({
   supplier,
 }: SupplierFormProps) {
   const { t } = useTranslation();
-  const { user } = useUserStore();
+  const { currentUser } = useUserStore();
   const { createSupplier, updateSupplier } = useSupplierStore();
 
   const [formData, setFormData] = useState<Omit<Supplier, "id"> | Supplier>(
@@ -61,8 +61,8 @@ export default function SupplierForm({
       notes: "",
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: user?.id || "",
-      updatedBy: user?.id || "",
+      createdBy: currentUser?.id || "",
+      updatedBy: currentUser?.id || "",
     },
   );
 
@@ -71,16 +71,16 @@ export default function SupplierForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!currentUser) return;
 
     try {
       setLoading(true);
       setError("");
 
       if (supplier && "id" in formData && formData.id) {
-        await updateSupplier(formData as Supplier, user.id);
+        await updateSupplier(formData as Supplier, currentUser?.id || "");
       } else {
-        await createSupplier(formData, user.id);
+        await createSupplier(formData, currentUser?.id || "");
       }
 
       await onSuccess();

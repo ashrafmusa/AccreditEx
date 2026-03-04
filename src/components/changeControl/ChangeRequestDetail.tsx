@@ -6,6 +6,7 @@
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useChangeControlStore } from "@/stores/useChangeControlStore";
+import { useUserStore } from "@/stores/useUserStore";
 import {
   ChangePriority,
   ChangeRequest,
@@ -36,6 +37,7 @@ export default function ChangeRequestDetail({
 }: ChangeRequestDetailProps) {
   const { t } = useTranslation();
   const toast = useToast();
+  const { currentUser } = useUserStore();
   const { updateRequest, deleteRequest, loading } = useChangeControlStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState(request);
@@ -58,7 +60,7 @@ export default function ChangeRequestDetail({
 
   const handleSave = async () => {
     try {
-      await updateRequest(editData.id, editData);
+      await updateRequest(editData.id, editData, currentUser?.id || "");
       setIsEditing(false);
       onUpdate();
       toast.success(t("changeRequestUpdated") || "Change request updated");
@@ -338,7 +340,9 @@ export default function ChangeRequestDetail({
                     {t("estimatedHours")}
                   </h3>
                   <p className="text-brand-text-secondary text-sm">
-                    {request.impact.estimatedHours || 0}
+                    {(request.impact as any).estimatedImplementationHours ??
+                      (request.impact as any).estimatedHours ??
+                      0}
                   </p>
                 </div>
               </div>
@@ -419,10 +423,9 @@ export default function ChangeRequestDetail({
                     {request.implementation.implementedByName || "-"}
                   </p>
                   <p className="text-sm text-green-700">
-                    {format(
-                      new Date(request.implementation.implementationDate),
-                      "PPP p",
-                    )}
+                    {new Date(
+                      request.implementation.implementationDate,
+                    ).toLocaleString()}
                   </p>
                 </div>
               </div>

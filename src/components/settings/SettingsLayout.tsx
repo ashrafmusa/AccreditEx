@@ -300,11 +300,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
           <ProfileSettingsPage />
         );
       case "changeControl":
-        return isAdmin ? (
-          <ChangeControlHubPage setNavigation={setNavigation} />
-        ) : (
-          <ProfileSettingsPage />
-        );
+        return isAdmin ? <ChangeControlHubPage /> : <ProfileSettingsPage />;
       case "supplierHub":
         return isAdmin ? <SupplierHubPage /> : <ProfileSettingsPage />;
       case "firebaseSetup":

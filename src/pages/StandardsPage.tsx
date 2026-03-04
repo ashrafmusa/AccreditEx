@@ -775,9 +775,7 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
                 : undefined
             }
             secondaryAction={
-              searchTerm ||
-              selectedCriticality !== "all" ||
-              selectedComplianceStatus !== "all"
+              searchTerm || riskFilter !== "all"
                 ? {
                     label: t("clearFilters"),
                     onClick: clearFilters,

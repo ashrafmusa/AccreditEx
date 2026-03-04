@@ -21,14 +21,14 @@ export default function SupplierDetail({
   onUpdate,
 }: SupplierDetailProps) {
   const { t } = useTranslation();
-  const { user } = useUserStore();
+  const { currentUser } = useUserStore();
   const { updateSupplier, deleteSupplier } = useSupplierStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editedSupplier, setEditedSupplier] = useState(supplier);
 
   const handleSave = async () => {
-    if (user) {
-      await updateSupplier(editedSupplier, user.id);
+    if (currentUser) {
+      await updateSupplier(editedSupplier, currentUser.id);
       setIsEditing(false);
       await onUpdate();
     }
