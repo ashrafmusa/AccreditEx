@@ -62,6 +62,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+FIREBASE_SERVICE_ACCOUNT_ACCREDITEX.json
 .deploy-config
 
 # ─── Firebase Credentials (CRITICAL) ─────────────────────────────────────────
