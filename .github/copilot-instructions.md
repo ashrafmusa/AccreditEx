@@ -129,6 +129,29 @@ if (Capacitor.isNativePlatform()) {
 
 ---
 
+## Auto-Recording — Session Start Protocol (MANDATORY)
+
+**BEFORE DOING ANYTHING ELSE at the start of every session:**
+
+1. Check if `logs/pending-reasoningbank.jsonl` exists and is non-empty:
+   ```
+   read_file("logs/pending-reasoningbank.jsonl")
+   ```
+2. If the file has entries, for **each JSON line** call `reasoningbank_record` with:
+   - `task` → the `task` field
+   - `decision` → the `decision` field
+   - `outcome` → the `outcome` field
+   - `success` → the `success` field (boolean)
+   - `tags` → the `tags` array
+3. After recording ALL entries, **clear the file** (write empty string to it)
+4. Call `reasoningbank_distill` once after processing ≥ 3 entries
+5. Only then proceed to the user's request
+
+This processes commits captured by the git post-commit hook (`scripts/hooks/post-commit`).
+New fix records can also be queued manually: `.\scripts\record-fix.ps1 -Task "..." -Decision "..." -Tags "..."`
+
+---
+
 ## MCP Tools — MANDATORY Workflow (Every Task)
 
 **These steps are REQUIRED for every task — features, bug fixes, debugging, refactors, and analysis.**

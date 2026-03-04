@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+# AccrediTex — Auto ReasoningBank Capture Hook
+# Runs after every `git commit` and appends a structured record
+# to logs/pending-reasoningbank.jsonl for the Copilot agent to process.
+#
+# Install: run scripts/install-hooks.ps1   OR   scripts/install-hooks.sh
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PENDING_FILE="$REPO_ROOT/logs/pending-reasoningbank.jsonl"
+mkdir -p "$REPO_ROOT/logs"
+
+# ── Gather commit metadata ────────────────────────────────────────────────────
+HASH=$(git rev-parse --short HEAD)
+MSG=$(git log -1 --pretty=format:"%s")
+AUTHOR=$(git log -1 --pretty=format:"%an")
+DATE=$(git log -1 --pretty=format:"%ci")
+BODY=$(git log -1 --pretty=format:"%b" | tr '\n' ' ' | sed 's/"/\\"/g')
+STATS=$(git diff-tree --no-commit-id -r --stat HEAD | tail -1 | tr -d '\n')
+
+# Changed files (JSON array)
+FILES_JSON=$(git diff-tree --no-commit-id -r --name-only HEAD \
+  | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' \
+  | awk 'BEGIN{printf "["} NR>1{printf ","} {printf "\"%s\"", $0} END{printf "]"}')
+
+# ── Determine task category from conventional commit prefix ───────────────────
+PREFIX=$(echo "$MSG" | grep -oP '^[a-z]+(?=[\(:])')
+case "$PREFIX" in
+  fix|bugfix)   CATEGORY="bug-fix" ;;
+  feat|feature) CATEGORY="feature" ;;
+  refactor)     CATEGORY="refactor" ;;
+  test)         CATEGORY="test-improvement" ;;
+  chore)        CATEGORY="chore" ;;
+  perf)         CATEGORY="performance" ;;
+  docs)         CATEGORY="documentation" ;;
+  ci|build)     CATEGORY="devops" ;;
+  *)            CATEGORY="general" ;;
+esac
+
+# ── Skip trivial / non-code commits ──────────────────────────────────────────
+if [[ "$CATEGORY" == "chore" && "$MSG" != *fix* ]]; then
+  exit 0
+fi
+
+# ── Build JSONL entry ─────────────────────────────────────────────────────────
+ENTRY=$(cat <<EOF
+{"hash":"$HASH","task":"$MSG","decision":"$MSG${BODY:+ | Details: $BODY}","outcome":"Committed $STATS","success":true,"tags":["$CATEGORY","accreditex","git-commit"],"files":$FILES_JSON,"author":"$AUTHOR","date":"$DATE","_status":"pending"}
+EOF
+)
+
+echo "$ENTRY" >> "$PENDING_FILE"
+echo "[ReasoningBank] Queued: $HASH — $MSG"
