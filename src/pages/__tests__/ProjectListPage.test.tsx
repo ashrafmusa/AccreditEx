@@ -1,7 +1,6 @@
-import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import ProjectListPage from "../ProjectListPage";
 import { ProjectStatus } from "@/types";
+import { fireEvent, render, screen } from "@testing-library/react";
+import ProjectListPage from "../ProjectListPage";
 
 // Mock all the hooks and stores
 const mockUseTranslation = jest.fn();
@@ -35,9 +34,13 @@ jest.mock("@/hooks/useKeyboardNavigation", () => ({
   useKeyboardShortcuts: () => mockUseKeyboardShortcuts(),
 }));
 
-jest.mock("@/hooks/usePermission", () => ({
-  usePermission: () => ({ isAdmin: true, can: () => true }),
-}));
+jest.mock("@/hooks/usePermission", () => {
+  const actual = jest.requireActual("@/hooks/usePermission");
+  return {
+    ...actual,
+    usePermission: () => ({ isAdmin: true, can: () => true }),
+  };
+});
 
 // Mock components
 jest.mock("@/components/projects/ProjectCard", () => {
