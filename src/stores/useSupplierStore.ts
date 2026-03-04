@@ -6,7 +6,7 @@
 import { handleError } from '@/services/errorHandling';
 import { logger } from '@/services/logger';
 import * as supplierService from '@/services/supplierService';
-import { NonConformance, Supplier, SupplierAudit, SupplierMetrics, VendorScorecard } from '@/types/supplier';
+import { NonConformance, RiskLevel, Supplier, SupplierAudit, SupplierMetrics, VendorScorecard } from '@/types/supplier';
 import { create } from 'zustand';
 
 interface SupplierState {
@@ -18,7 +18,7 @@ interface SupplierState {
     unsubscribe: (() => void) | null;
     filters: {
         status?: string;
-        riskLevel?: string;
+        riskLevel?: RiskLevel;
         search?: string;
     };
 
@@ -55,7 +55,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info(`Fetched ${suppliers.length} suppliers`);
         } catch (error) {
             const appError = handleError(error, 'Failed to fetch suppliers');
-            set({ error: appError.message, loading: false });
+            set({ error: appError, loading: false });
             logger.error('fetchAllSuppliers error:', appError);
         }
     },
@@ -72,7 +72,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             }
         } catch (error) {
             const appError = handleError(error, 'Failed to fetch supplier');
-            set({ error: appError.message, loading: false });
+            set({ error: appError, loading: false });
             logger.error('fetchSupplier error:', appError);
         }
     },
@@ -91,7 +91,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             return supplier;
         } catch (error) {
             const appError = handleError(error, 'Failed to create supplier');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('createSupplier error:', appError);
             throw appError;
         }
@@ -107,7 +107,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info(`Supplier updated: ${supplier.id}`);
         } catch (error) {
             const appError = handleError(error, 'Failed to update supplier');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('updateSupplier error:', appError);
             throw appError;
         }
@@ -123,7 +123,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info(`Supplier deleted: ${supplierId}`);
         } catch (error) {
             const appError = handleError(error, 'Failed to delete supplier');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('deleteSupplier error:', appError);
             throw appError;
         }
@@ -144,7 +144,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info(`Supplier scorecard updated: ${supplierId}`);
         } catch (error) {
             const appError = handleError(error, 'Failed to update scorecard');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('updateSupplierScorecard error:', appError);
             throw appError;
         }
@@ -164,7 +164,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info(`Supplier audit created for: ${supplierId}`);
         } catch (error) {
             const appError = handleError(error, 'Failed to create supplier audit');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('createSupplierAudit error:', appError);
             throw appError;
         }
@@ -184,7 +184,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info(`Non-conformance created for: ${supplierId}`);
         } catch (error) {
             const appError = handleError(error, 'Failed to create non-conformance');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('createNonConformance error:', appError);
             throw appError;
         }
@@ -197,7 +197,7 @@ export const useSupplierStore = create<SupplierState>((set) => ({
             logger.info('Supplier metrics fetched');
         } catch (error) {
             const appError = handleError(error, 'Failed to fetch metrics');
-            set({ error: appError.message });
+            set({ error: appError });
             logger.error('fetchMetrics error:', appError);
         }
     },

@@ -28,7 +28,7 @@ const ChangeMetricsCard = lazy(
 export default function ChangeControlHubPage() {
   const { t } = useTranslation();
   const toast = useToast();
-  const { user } = useUserStore();
+  const { currentUser: _currentUser } = useUserStore();
   const {
     requests,
     currentRequest,

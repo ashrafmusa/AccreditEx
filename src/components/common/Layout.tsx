@@ -81,8 +81,8 @@ const Layout: React.FC<LayoutProps> = ({
     {
       key: "t",
       handler: () => {
-        if (navigation.view !== "training") {
-          setNavigation({ view: "training" });
+        if (navigation.view !== "trainingHub") {
+          setNavigation({ view: "trainingHub" });
         }
       },
     },

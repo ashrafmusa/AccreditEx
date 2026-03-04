@@ -220,7 +220,7 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
               icon={UsersIcon}
               title={t("noUsersFound")}
               message={
-                searchTerm
+                searchQuery
                   ? t("tryAdjustingFilters")
                   : t("getStartedAddingUsers")
               }
@@ -229,10 +229,10 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
                 onClick: () => setIsModalOpen(true),
               }}
               secondaryAction={
-                searchTerm
+                searchQuery
                   ? {
                       label: t("clearSearch"),
-                      onClick: () => setSearchTerm(""),
+                      onClick: () => setSearchQuery(""),
                     }
                   : undefined
               }

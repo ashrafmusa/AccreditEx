@@ -10,8 +10,8 @@
  * @module nativeCameraService
  */
 
-import { Camera, CameraResultType, CameraSource, type Photo } from '@capacitor/camera';
 import { isNativePlatform, isPluginAvailable } from '@/utils/capacitorPlatform';
+import { Camera, CameraResultType, CameraSource, type Photo } from '@capacitor/camera';
 
 export interface CapturedPhoto {
     /** Base64-encoded image data (without prefix) */
@@ -60,7 +60,7 @@ export const capturePhoto = async (): Promise<CapturedPhoto | null> => {
             correctOrientation: true,
             width: 1920,
             height: 1920,
-            presentationStyle: 'fullScreen',
+            presentationStyle: 'fullscreen',
         });
 
         return processPhoto(photo);

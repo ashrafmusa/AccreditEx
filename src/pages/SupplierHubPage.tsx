@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 export default function SupplierHubPage() {
   const { t } = useTranslation();
   const toast = useToast();
-  const { user } = useUserStore();
+  const { currentUser: _currentUser } = useUserStore();
   const {
     suppliers,
     currentSupplier,
