@@ -43,6 +43,15 @@ export type EquipmentCategory =
     | "pipette"
     | "balance"
     | "safety_cabinet"
+    // ── Hospital / Clinical Assets (Enhancement 4.4) ──
+    | "medical_device"
+    | "imaging"
+    | "surgical"
+    | "pharmacy"
+    | "it_equipment"
+    | "hvac"
+    | "fire_safety"
+    | "vehicle"
     | "other";
 
 export const EQUIPMENT_CATEGORY_LABELS: Record<EquipmentCategory, string> = {
@@ -56,8 +65,49 @@ export const EQUIPMENT_CATEGORY_LABELS: Record<EquipmentCategory, string> = {
     pipette: "Pipette / Dispenser",
     balance: "Balance / Scale",
     safety_cabinet: "Biosafety Cabinet",
+    medical_device: "Medical Device",
+    imaging: "Imaging Equipment",
+    surgical: "Surgical / OR Equipment",
+    pharmacy: "Pharmacy Equipment",
+    it_equipment: "IT / Network Equipment",
+    hvac: "HVAC / Ventilation",
+    fire_safety: "Fire Safety Equipment",
+    vehicle: "Vehicle / Transport",
     other: "Other",
 };
+
+export type AssetType = "lab" | "clinical" | "facility" | "it";
+
+export type AssetRiskLevel = "low" | "medium" | "high" | "critical";
+
+export const ASSET_TYPE_LABELS: Record<AssetType, string> = {
+    lab: "Lab Equipment",
+    clinical: "Clinical Asset",
+    facility: "Facility / Infrastructure",
+    it: "IT / Technology",
+};
+
+/** Compute a simple asset risk level from overdue/age factors. */
+export function computeAssetRiskLevel(eq: {
+    nextCalibrationDue?: string;
+    nextMaintenanceDue?: string;
+    purchaseDate?: string;
+    status: string;
+}): AssetRiskLevel {
+    const today = new Date().toISOString().split("T")[0];
+    const calOverdue = eq.nextCalibrationDue && eq.nextCalibrationDue < today;
+    const maintOverdue = eq.nextMaintenanceDue && eq.nextMaintenanceDue < today;
+    const ageYears = eq.purchaseDate
+        ? (Date.now() - new Date(eq.purchaseDate).getTime()) / (365.25 * 24 * 3600 * 1000)
+        : 0;
+
+    if (eq.status === "decommissioned") return "low";
+    if (calOverdue && maintOverdue) return "critical";
+    if (calOverdue || maintOverdue) return "high";
+    if (ageYears > 10) return "high";
+    if (ageYears > 7) return "medium";
+    return "low";
+}
 
 export interface Equipment {
     id: string;
@@ -67,6 +117,10 @@ export interface Equipment {
     serialNumber: string;
     assetTag?: string;
     category: EquipmentCategory;
+    /** Asset type classification — Enhancement 4.4 */
+    assetType?: AssetType;
+    /** Compliance standard IDs this asset is linked to — Enhancement 4.4 */
+    complianceStandardIds?: string[];
     labSection: string; // Chemistry, Hematology, etc.
     location: string;
     status: EquipmentStatus;

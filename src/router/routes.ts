@@ -77,6 +77,9 @@ export const routes: RouteConfig[] = [
     // Knowledge Base
     { path: "/knowledge-base", view: "knowledgeBase", requiresAuth: true },
 
+    // Multi-Facility Dashboard
+    { path: "/multi-facility", view: "multiFacility", requiresAuth: true, requiresAdmin: true },
+
     // Lab Operations
     { path: "/lab-operations", view: "labOperations", requiresAuth: true, requiresAdmin: true },
 
@@ -168,6 +171,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/knowledge-base";
         case "labOperations":
             return "/lab-operations";
+        case "multiFacility":
+            return "/multi-facility";
         case "workflowAutomation":
             return "/workflow-automation";
         case "qualityInsights":
@@ -215,6 +220,7 @@ export const pathToNavigationState = (
     if (path === "/accreditation") return { view: "accreditationHub" };
     if (path === "/knowledge-base") return { view: "knowledgeBase" };
     if (path === "/lab-operations") return { view: "labOperations" };
+    if (path === "/multi-facility") return { view: "multiFacility" };
     if (path === "/workflow-automation") return { view: "workflowAutomation" };
     if (path === "/report-builder") return { view: "reportBuilder" };
     if (path === "/suppliers") return { view: "supplierHub" };

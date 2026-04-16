@@ -1,8 +1,10 @@
 /**
  * Equipment Management Tab
  * Full CRUD for lab equipment with status badges, calibration/maintenance due dates
+ * Enhancement 4.4: QR code generation + risk scoring + expanded asset categories
  */
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
+import QRCode from "qrcode";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type {
   Equipment,
@@ -10,11 +12,13 @@ import type {
   EquipmentCategory,
   CalibrationRecord,
   CalibrationResult,
+  AssetRiskLevel,
 } from "@/types/labOps";
 import {
   EQUIPMENT_STATUS_LABELS,
   EQUIPMENT_CATEGORY_LABELS,
   CALIBRATION_RESULT_LABELS,
+  computeAssetRiskLevel,
 } from "@/types/labOps";
 import { Button, Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -25,6 +29,8 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   SearchIcon,
+  PrinterIcon,
+  XMarkIcon,
 } from "@/components/icons";
 
 const statusColor: Record<EquipmentStatus, string> = {
@@ -66,6 +72,8 @@ const EquipmentTab: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showCalForm, setShowCalForm] = useState(false);
+  const [showQrModal, setShowQrModal] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState("");
 
   // Add form state
   const [form, setForm] = useState<Partial<Equipment>>({
@@ -123,6 +131,24 @@ const EquipmentTab: React.FC = () => {
   const isOverdue = (dateStr?: string) => {
     if (!dateStr) return false;
     return dateStr < today;
+  };
+
+  const handleShowQr = useCallback(async (eq: Equipment) => {
+    const label = [eq.name, eq.serialNumber, eq.assetTag].filter(Boolean).join(" | ");
+    try {
+      const url = await QRCode.toDataURL(label, { width: 256, margin: 2 });
+      setQrDataUrl(url);
+      setShowQrModal(true);
+    } catch {
+      // ignore QR generation errors
+    }
+  }, []);
+
+  const riskBadgeClass: Record<AssetRiskLevel, string> = {
+    low: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+    medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+    high: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+    critical: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   };
 
   const handleAdd = () => {
@@ -192,9 +218,53 @@ const EquipmentTab: React.FC = () => {
   // ── Detail View ──────────────────────
 
   if (selected) {
+    const riskLevel = computeAssetRiskLevel(selected);
     return (
       <div className="space-y-4">
-        <div className="flex items-center gap-2">
+        {/* QR Code Modal */}
+        {showQrModal && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+            onClick={() => setShowQrModal(false)}
+          >
+            <div
+              className="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-2xl flex flex-col items-center gap-4 max-w-xs w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between w-full">
+                <h3 className="font-semibold text-lg dark:text-dark-brand-text-primary">
+                  {selected.name}
+                </h3>
+                <button
+                  onClick={() => setShowQrModal(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+              {qrDataUrl && (
+                <img
+                  src={qrDataUrl}
+                  alt="Asset QR Code"
+                  className="w-48 h-48 rounded"
+                />
+              )}
+              <p className="text-xs text-gray-500 text-center">
+                {selected.serialNumber}
+                {selected.assetTag && <> · {selected.assetTag}</>}
+              </p>
+              <a
+                href={qrDataUrl}
+                download={`qr-${selected.serialNumber || selected.id}.png`}
+                className="text-sm text-brand-primary underline"
+              >
+                Download PNG
+              </a>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2 flex-wrap">
           <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
             {t("back")}
           </Button>
@@ -206,6 +276,21 @@ const EquipmentTab: React.FC = () => {
           >
             {EQUIPMENT_STATUS_LABELS[selected.status]}
           </span>
+          {/* Risk badge — Enhancement 4.4 */}
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${riskBadgeClass[riskLevel]}`}
+          >
+            {riskLevel} risk
+          </span>
+          {/* QR Code button — Enhancement 4.4 */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => handleShowQr(selected)}
+            className="ml-auto flex items-center gap-1"
+          >
+            <PrinterIcon className="h-4 w-4" /> QR Code
+          </Button>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -653,6 +738,7 @@ const EquipmentTab: React.FC = () => {
               <th className="px-3 py-2 font-medium">{t("thCategory")}</th>
               <th className="px-3 py-2 font-medium">{t("thSection")}</th>
               <th className="px-3 py-2 font-medium">{t("thStatus")}</th>
+              <th className="px-3 py-2 font-medium">Risk</th>
               <th className="px-3 py-2 font-medium">{t("thNextCal")}</th>
               <th className="px-3 py-2 font-medium">{t("thNextPM")}</th>
             </tr>
@@ -681,6 +767,14 @@ const EquipmentTab: React.FC = () => {
                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${statusColor[eq.status]}`}
                   >
                     {EQUIPMENT_STATUS_LABELS[eq.status]}
+                  </span>
+                </td>
+                <td className="px-3 py-2.5">
+                  {/* Risk badge — Enhancement 4.4 */}
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-medium capitalize ${riskBadgeClass[computeAssetRiskLevel(eq)]}`}
+                  >
+                    {computeAssetRiskLevel(eq)}
                   </span>
                 </td>
                 <td

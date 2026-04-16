@@ -1,4 +1,5 @@
 import { ar as analyticsAr } from './ar/analytics';
+import { ar as multiFacilityAr } from './ar/multiFacility';
 import { ar as auditAr } from './ar/audit';
 import { ar as calendarAr } from './ar/calendar';
 import { ar as commonAr } from './ar/common';
@@ -23,6 +24,7 @@ import { ar as templatesAr } from './ar/templates';
 import { ar as trainingAr } from './ar/training';
 import { ar as workflowAutomationAr } from './ar/workflowAutomation';
 import { en as analyticsEn } from './en/analytics';
+import { en as multiFacilityEn } from './en/multiFacility';
 import { en as auditEn } from './en/audit';
 import { en as calendarEn } from './en/calendar';
 import { en as commonEn } from './en/common';
@@ -73,6 +75,7 @@ export const locales = {
     ...workflowAutomationEn,
     ...templatesEn,
     ...landingEn,
+    ...multiFacilityEn,
   },
   ar: {
     ...commonAr,
@@ -99,5 +102,6 @@ export const locales = {
     ...workflowAutomationAr,
     ...templatesAr,
     ...landingAr,
+    ...multiFacilityAr,
   }
 };

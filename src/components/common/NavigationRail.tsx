@@ -3,6 +3,7 @@ import {
   BeakerIcon,
   BoltIcon,
   BookOpenIcon,
+  BuildingOffice2Icon,
   CalendarDaysIcon,
   ChartBarSquareIcon,
   ChartPieIcon,
@@ -176,6 +177,13 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "labOperations",
       label: t("labOperations") || "Lab Operations",
       icon: BeakerIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "multiFacility" },
+      key: "multiFacility",
+      label: t("multiFacilityDashboard") || "Multi-Facility",
+      icon: BuildingOffice2Icon,
       adminOnly: true,
     },
     {

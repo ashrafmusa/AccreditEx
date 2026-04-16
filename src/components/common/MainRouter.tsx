@@ -76,6 +76,11 @@ const KnowledgeBasePage = lazy(() => import("@/pages/KnowledgeBasePage"));
 // Lab Operations
 const LabOperationsPage = lazy(() => import("@/pages/LabOperationsPage"));
 
+// Multi-Facility Dashboard
+const MultiFacilityDashboardPage = lazy(
+  () => import("@/pages/MultiFacilityDashboardPage"),
+);
+
 // Workflow Automation
 const WorkflowAutomationPage = lazy(
   () => import("@/pages/WorkflowAutomationPage"),
@@ -489,6 +494,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <KnowledgeBasePage />;
       case "labOperations":
         return <LabOperationsPage />;
+      case "multiFacility":
+        return <MultiFacilityDashboardPage />;
       case "workflowAutomation":
         return <WorkflowAutomationPage />;
       case "reportBuilder":
