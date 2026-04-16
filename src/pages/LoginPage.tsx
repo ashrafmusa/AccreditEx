@@ -267,6 +267,28 @@ const LoginPage: React.FC<LoginPageProps> = () => {
                   "Need access? Contact your hospital administrator. Accounts are provisioned by your organization."}
               </p>
 
+              <p className="text-xs text-slate-400 dark:text-slate-500 text-center">
+                By signing in you agree to our{" "}
+                <a
+                  href="/terms-of-service.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-brand-primary"
+                >
+                  Terms of Service
+                </a>{" "}
+                and{" "}
+                <a
+                  href="/privacy-policy.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline hover:text-brand-primary"
+                >
+                  Privacy Policy
+                </a>
+                .
+              </p>
+
               {resetNotice && (
                 <div
                   role="status"

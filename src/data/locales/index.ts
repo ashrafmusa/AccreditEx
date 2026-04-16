@@ -9,6 +9,7 @@ import { ar as documentsAr } from './ar/documents';
 import { ar as hisIntegrationAr } from './ar/his-integration';
 import { ar as knowledgeBaseAr } from './ar/knowledgeBase';
 import { ar as labOperationsAr } from './ar/labOperations';
+import { ar as landingAr } from './ar/landing';
 import { ar as messagingAr } from './ar/messaging';
 import { ar as onboardingAr } from './ar/onboarding';
 import { ar as performanceAr } from './ar/performance';
@@ -32,6 +33,7 @@ import { en as documentsEn } from './en/documents';
 import { en as hisIntegrationEn } from './en/his-integration';
 import { en as knowledgeBaseEn } from './en/knowledgeBase';
 import { en as labOperationsEn } from './en/labOperations';
+import { en as landingEn } from './en/landing';
 import { en as messagingEn } from './en/messaging';
 import { en as onboardingEn } from './en/onboarding';
 import { en as performanceEn } from './en/performance';
@@ -70,6 +72,7 @@ export const locales = {
     ...labOperationsEn,
     ...workflowAutomationEn,
     ...templatesEn,
+    ...landingEn,
   },
   ar: {
     ...commonAr,
@@ -95,5 +98,6 @@ export const locales = {
     ...labOperationsAr,
     ...workflowAutomationAr,
     ...templatesAr,
+    ...landingAr,
   }
 };

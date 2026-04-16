@@ -1,4 +1,5 @@
 import HeroGlobe from "@/components/ui/HeroGlobe";
+import { useTranslation } from "@/hooks/useTranslation";
 import { submitDemoRequest } from "@/services/demoRequestService";
 import { useAppStore } from "@/stores/useAppStore";
 import React, { useEffect, useState } from "react";
@@ -22,6 +23,7 @@ const DemoRequestModal: React.FC<{
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
+  const { t } = useTranslation();
 
   if (!open) return null;
 
@@ -68,32 +70,34 @@ const DemoRequestModal: React.FC<{
           <div className="text-center py-8">
             <div className="text-5xl mb-4">✅</div>
             <h3 className="text-2xl font-bold text-brand-text-primary dark:text-white mb-2">
-              Thank You!
+              {t("landing_demo_successTitle") || "Thank You!"}
             </h3>
             <p className="text-slate-500 dark:text-slate-400">
-              We received your request and will get back to you within 24 hours.
+              {t("landing_demo_successBody") ||
+                "We received your request and will get back to you within 24 hours."}
             </p>
             <button
               onClick={handleClose}
               className="mt-6 px-6 py-2.5 rounded-lg bg-brand-primary text-white font-semibold hover:bg-brand-primary transition-colors"
             >
-              Close
+              {t("landing_demo_close") || "Close"}
             </button>
           </div>
         ) : (
           <>
             <h3 className="text-2xl font-bold text-brand-text-primary dark:text-white mb-1">
-              Request a Demo
+              {t("landing_demo_title") || "Request a Demo"}
             </h3>
             <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
-              Fill in your details and our team will schedule a personalized
-              demo.
+              {t("landing_demo_subtitle") ||
+                "Fill in your details and our team will schedule a personalized demo."}
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Full Name <span className="text-red-500">*</span>
+                  {t("landing_demo_name") || "Full Name"}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -106,7 +110,8 @@ const DemoRequestModal: React.FC<{
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Work Email <span className="text-red-500">*</span>
+                  {t("landing_demo_email") || "Work Email"}{" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
@@ -119,7 +124,7 @@ const DemoRequestModal: React.FC<{
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Organization
+                  {t("landing_demo_org") || "Organization"}
                 </label>
                 <input
                   type="text"
@@ -133,7 +138,7 @@ const DemoRequestModal: React.FC<{
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Message
+                  {t("landing_demo_message") || "Message"}
                 </label>
                 <textarea
                   value={form.message}
@@ -153,7 +158,9 @@ const DemoRequestModal: React.FC<{
                 disabled={submitting}
                 className="w-full py-3 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
               >
-                {submitting ? "Submitting..." : "Submit Request"}
+                {submitting
+                  ? t("landing_demo_submitting") || "Submitting..."
+                  : t("landing_demo_submit") || "Submit Request"}
               </button>
             </form>
           </>
@@ -1089,7 +1096,9 @@ const TeamSection: React.FC = () => (
           <h3 className="text-2xl font-extrabold text-brand-text-primary dark:text-white">
             Ashraf Abu baker Musa Ishag
           </h3>
-          <p className="text-brand-primary font-semibold mt-1 mb-5">Founder & CEO</p>
+          <p className="text-brand-primary font-semibold mt-1 mb-5">
+            Founder & CEO
+          </p>
           <ul className="space-y-2.5">
             {[
               "🎓 B.Sc. Medical Laboratory Science, ISQUA Fellow",
@@ -1514,7 +1523,27 @@ const Footer: React.FC = () => (
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-sm">© 2026 AccreditEx. All rights reserved.</p>
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <p className="text-sm">© 2026 AccreditEx. All rights reserved.</p>
+          <div className="flex items-center gap-4 text-sm">
+            <a
+              href="/privacy-policy.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/60 hover:text-white transition-colors underline underline-offset-2"
+            >
+              Privacy Policy
+            </a>
+            <a
+              href="/terms-of-service.html"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-white/60 hover:text-white transition-colors underline underline-offset-2"
+            >
+              Terms of Service
+            </a>
+          </div>
+        </div>
         <div className="flex items-center gap-2.5">
           {["React", "TypeScript", "Firebase", "AI-Powered"].map((b) => (
             <span

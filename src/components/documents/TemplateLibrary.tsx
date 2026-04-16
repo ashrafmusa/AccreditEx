@@ -1,6 +1,6 @@
-import { useLanguage } from "@/components/common/LanguageProvider";
 import { ComplianceTemplate } from "@/data/complianceTemplates";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   fetchAllTemplates,
   getComplianceStandards,
@@ -24,7 +24,8 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
   onSelectTemplate,
   onInsertTemplate,
 }) => {
-  const { t, isRTL } = useLanguage();
+  const { t, dir } = useTranslation();
+  const isRTL = dir === "rtl";
   const { showToast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
