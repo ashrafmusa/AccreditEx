@@ -44,11 +44,7 @@ lighthouse-report.json
 *-lighthouse.json
 
 # ─── Editor & IDE ────────────────────────────────────────────────────────────
-.vscode/*
-!.vscode/extensions.json
-!.vscode/settings.json
-!.vscode/mcp.json
-!.vscode/launch.json
+.vscode/
 .idea/
 .DS_Store
 *.suo
@@ -72,7 +68,11 @@ serviceAccountKey.json
 **/serviceAccountKey.json
 
 # ─── Confidential Internal Docs ──────────────────────────────────────────────
-docs/internal/CLIENT_CONFIGURATION_GUIDE.md
+docs/
+FEATURE_DEVELOPMENT_ROADMAP.md
+MARKET_ANALYSIS_ENHANCEMENT_PLAN.md
+*.lighthouse.json
+accreditex.web.app-*.json
 
 # ─── Private Keys & Certificates ─────────────────────────────────────────────
 *.pem
@@ -112,8 +112,6 @@ projectlist-test-output.txt
 ts_errors.txt
 
 # ─── Agentica v2 (AI toolkit) ────────────────────────────────────────────────
-# Commit decisions.json + patterns.json so the team shares learned patterns
-# Exclude large trajectory files and Python cache
-.agentica/memory/trajectories/
-.agentica/__pycache__/
-# Do NOT ignore .agentica/memory/reasoning-bank/ — it's valuable shared knowledge
+# Exclude ALL agentica memory/reasoning (internal dev decisions — not for public)
+.agentica/
+.agent/
