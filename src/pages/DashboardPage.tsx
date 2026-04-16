@@ -1,12 +1,14 @@
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import AuditorDashboard from "@/components/dashboard/AuditorDashboard";
+import ClinicDashboard from "@/components/dashboard/ClinicDashboard";
 import MyTasksWidget from "@/components/dashboard/MyTasksWidget";
 import ProjectLeadDashboard from "@/components/dashboard/ProjectLeadDashboard";
 import TeamMemberDashboard from "@/components/dashboard/TeamMemberDashboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState, Risk, UserRole } from "@/types";
 import { normalizeUserRole } from "@/utils/roleAccess";
@@ -25,6 +27,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   const { projects } = useProjectStore();
   const { accreditationPrograms } = useAppStore();
   const { t } = useTranslation();
+  const { currentOrganization } = useTenantStore();
   const normalizedRole = currentUser
     ? (normalizeUserRole(currentUser.role) as UserRole)
     : null;
@@ -124,6 +127,14 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   }
 
   const renderDashboard = () => {
+    // Org-type override: clinic/PHC gets a specialized dashboard regardless of role
+    if (
+      currentOrganization?.type === "clinic" ||
+      currentOrganization?.type === "other"
+    ) {
+      return <ClinicDashboard setNavigation={setNavigation} />;
+    }
+
     // Normalize role to handle both 'Project Lead' and 'ProjectLead' formats
     const userRole = normalizeUserRole(currentUser.role) as UserRole;
 
