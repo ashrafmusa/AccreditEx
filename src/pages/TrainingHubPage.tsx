@@ -30,6 +30,9 @@ const PersonnelFilesTab = lazy(
 const CAPAssessmentTab = lazy(
   () => import("@/components/training/CAPAssessmentTab"),
 );
+const SmcsCompetencyTrackerTab = lazy(
+  () => import("@/components/training/SmcsCompetencyTrackerTab"),
+);
 const CECreditsTab = lazy(() => import("@/components/training/CECreditsTab"));
 const LearningPathsTab = lazy(
   () => import("@/components/training/LearningPathsTab"),
@@ -39,7 +42,7 @@ type TrainingHubTab = "overview" | "competency" | "learning" | "personnel";
 
 type SubTab = {
   overview: "myTraining" | "admin";
-  competency: "competencies" | "evaluations" | "capAssessment";
+  competency: "competencies" | "evaluations" | "capAssessment" | "smcsTracker";
   learning: "learningPaths" | "ceCredits";
   personnel: "personnelFiles" | "licenses" | "skillMatrix";
 };
@@ -231,6 +234,15 @@ Format your response in clear Markdown with headers and bullet points.`;
             >
               {t("capAssessment")}
             </Button>
+            <Button
+              onClick={() => setCompetencySubTab("smcsTracker")}
+              variant={
+                competencySubTab === "smcsTracker" ? "secondary" : "ghost"
+              }
+              size="sm"
+            >
+              SMCS Competency
+            </Button>
           </nav>
         )}
 
@@ -321,6 +333,11 @@ Format your response in clear Markdown with headers and bullet points.`;
         {activeTab === "competency" && competencySubTab === "capAssessment" && (
           <Suspense fallback={<LoadingScreen />}>
             <CAPAssessmentTab />
+          </Suspense>
+        )}
+        {activeTab === "competency" && competencySubTab === "smcsTracker" && (
+          <Suspense fallback={<LoadingScreen />}>
+            <SmcsCompetencyTrackerTab />
           </Suspense>
         )}
         {activeTab === "learning" && learningSubTab === "learningPaths" && (

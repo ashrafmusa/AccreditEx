@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui";
 import { useConfirmStore } from "@/stores/useConfirmStore";
-import React, { useState } from "react";
+import React, { lazy, Suspense, useState } from "react";
 import ProgramCard from "../components/accreditation/ProgramCard";
 import ProgramImportExport from "../components/accreditation/ProgramImportExport";
 import ProgramImportWizardModal from "../components/accreditation/ProgramImportWizardModal";
@@ -18,6 +18,10 @@ import { useAppStore } from "../stores/useAppStore";
 import { useProjectStore } from "../stores/useProjectStore";
 import { useUserStore } from "../stores/useUserStore";
 import { AccreditationProgram, NavigationState, UserRole } from "../types";
+const EwsScoreModal = lazy(() => import("@/components/clinical/EwsScoreModal"));
+const BurnsCalculatorModal = lazy(
+  () => import("@/components/clinical/BurnsCalculatorModal"),
+);
 
 interface AccreditationHubPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -28,6 +32,8 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
 }) => {
   const { t } = useTranslation();
   const toast = useToast();
+  const [showEws, setShowEws] = useState(false);
+  const [showBurns, setShowBurns] = useState(false);
   const {
     accreditationPrograms,
     standards,
@@ -190,6 +196,21 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
                   ? "✓ OHAS/SMCS Seeded"
                   : "🏥 Seed OHAS/SMCS (14 Projects)"}
             </Button>
+            {/* SMCS Clinical Calculators */}
+            <Button
+              variant="secondary"
+              onClick={() => setShowEws(true)}
+              title="NEWS2 Early Warning Score Calculator — SMCS.87"
+            >
+              📊 NEWS2 Score
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => setShowBurns(true)}
+              title="Burns Parkland Fluid Resuscitation Calculator"
+            >
+              🔥 Burns Calculator
+            </Button>
           </div>
           <ProgramImportExport
             programs={accreditationPrograms}
@@ -249,6 +270,18 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
           onConfirmImport={handleImportPrograms}
           existingProgramCount={accreditationPrograms.length}
         />
+      )}
+
+      {showEws && (
+        <Suspense fallback={null}>
+          <EwsScoreModal onClose={() => setShowEws(false)} />
+        </Suspense>
+      )}
+
+      {showBurns && (
+        <Suspense fallback={null}>
+          <BurnsCalculatorModal onClose={() => setShowBurns(false)} />
+        </Suspense>
       )}
     </div>
   );
