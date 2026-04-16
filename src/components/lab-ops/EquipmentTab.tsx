@@ -3,35 +3,32 @@
  * Full CRUD for lab equipment with status badges, calibration/maintenance due dates
  * Enhancement 4.4: QR code generation + risk scoring + expanded asset categories
  */
-import React, { useState, useMemo, useCallback } from "react";
-import QRCode from "qrcode";
-import { useLabOpsStore } from "@/stores/useLabOpsStore";
-import type {
-  Equipment,
-  EquipmentStatus,
-  EquipmentCategory,
-  CalibrationRecord,
-  CalibrationResult,
-  AssetRiskLevel,
-} from "@/types/labOps";
 import {
-  EQUIPMENT_STATUS_LABELS,
-  EQUIPMENT_CATEGORY_LABELS,
-  CALIBRATION_RESULT_LABELS,
-  computeAssetRiskLevel,
-} from "@/types/labOps";
-import { Button, Card } from "@/components/ui";
-import { useTranslation } from "@/hooks/useTranslation";
-import {
-  PlusIcon,
-  CheckCircleIcon,
-  XCircleIcon,
   ExclamationTriangleIcon,
-  ClockIcon,
-  SearchIcon,
+  PlusIcon,
   PrinterIcon,
+  SearchIcon,
   XMarkIcon,
 } from "@/components/icons";
+import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useLabOpsStore } from "@/stores/useLabOpsStore";
+import type {
+  AssetRiskLevel,
+  CalibrationRecord,
+  CalibrationResult,
+  Equipment,
+  EquipmentCategory,
+  EquipmentStatus,
+} from "@/types/labOps";
+import {
+  CALIBRATION_RESULT_LABELS,
+  computeAssetRiskLevel,
+  EQUIPMENT_CATEGORY_LABELS,
+  EQUIPMENT_STATUS_LABELS,
+} from "@/types/labOps";
+import QRCode from "qrcode";
+import React, { useCallback, useMemo, useState } from "react";
 
 const statusColor: Record<EquipmentStatus, string> = {
   active:
@@ -134,7 +131,9 @@ const EquipmentTab: React.FC = () => {
   };
 
   const handleShowQr = useCallback(async (eq: Equipment) => {
-    const label = [eq.name, eq.serialNumber, eq.assetTag].filter(Boolean).join(" | ");
+    const label = [eq.name, eq.serialNumber, eq.assetTag]
+      .filter(Boolean)
+      .join(" | ");
     try {
       const url = await QRCode.toDataURL(label, { width: 256, margin: 2 });
       setQrDataUrl(url);
@@ -146,7 +145,8 @@ const EquipmentTab: React.FC = () => {
 
   const riskBadgeClass: Record<AssetRiskLevel, string> = {
     low: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    medium: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+    medium:
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
     high: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
     critical: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
   };

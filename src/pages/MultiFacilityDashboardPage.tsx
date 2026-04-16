@@ -2,33 +2,33 @@
  * Multi-Facility Analytics Dashboard
  * Cross-facility compliance overview and benchmarking for corporate/group organizations.
  */
-import React, { useEffect, useMemo, useState } from "react";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
-  Cell,
-} from "recharts";
-import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
-import { useTenantStore } from "@/stores/useTenantStore";
-import {
-  getOrganizationFacilityReport,
-  type OrganizationFacilityReport,
-  type FacilityMetrics,
-} from "@/services/multiFacilityService";
-import { getChartTheme, CHART_COLORS } from "@/utils/chartTheme.tsx";
 import {
   BuildingOffice2Icon,
   ChartBarIcon,
   ExclamationTriangleIcon,
   MapPinIcon,
 } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  getOrganizationFacilityReport,
+  type FacilityMetrics,
+  type OrganizationFacilityReport,
+} from "@/services/multiFacilityService";
+import { useTenantStore } from "@/stores/useTenantStore";
+import { CHART_COLORS, getChartTheme } from "@/utils/chartTheme.tsx";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -238,7 +238,8 @@ const MultiFacilityDashboardPage: React.FC = () => {
           }
         }
       } catch {
-        if (!cancelled) setError(t("multiFacilityError"));
+        if (!cancelled)
+          setError("Failed to load facility data. Please try again.");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -248,7 +249,7 @@ const MultiFacilityDashboardPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [organizationId, currentOrganization?.name, t]);
+  }, [organizationId, currentOrganization?.name]);
 
   const ct = getChartTheme(theme);
 
@@ -332,10 +333,7 @@ const MultiFacilityDashboardPage: React.FC = () => {
               icon={<BuildingOffice2Icon className="h-5 w-5" />}
               label={t("mfFacilities")}
               value={report.facilityMetrics.length}
-              sub={
-                currentOrganization?.name ??
-                report.organizationName
-              }
+              sub={currentOrganization?.name ?? report.organizationName}
             />
             <SummaryCard
               icon={<ChartBarIcon className="h-5 w-5" />}
