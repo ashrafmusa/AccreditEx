@@ -1,25 +1,27 @@
-import React, { useState, useRef, useEffect } from "react";
-import { AppDocument } from "../../types";
+import { useAppStore } from "@/stores/useAppStore";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { AppDocument } from "../../types";
 import {
-  PencilIcon,
-  TrashIcon,
-  LinkIcon,
+  ArchiveBoxIcon,
+  ArrowDownTrayIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
-  ArchiveBoxIcon,
-  EyeIcon,
-  ArrowDownTrayIcon,
   EllipsisVerticalIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  LinkIcon,
+  PencilIcon,
+  TrashIcon,
 } from "../icons";
-import { useAppStore } from "@/stores/useAppStore";
 
 type ColumnKey = "name" | "status" | "version" | "reviewDate" | "actions";
 
 interface DocumentRowProps {
   doc: AppDocument;
-  canModify: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canApprove: boolean;
   onApprove: (doc: AppDocument) => void;
   onDelete: (docId: string) => void;
   onView: (doc: AppDocument) => void;
@@ -126,7 +128,9 @@ const StatusIcon: React.FC<{ status: string; className?: string }> = ({
 
 const DocumentRow: React.FC<DocumentRowProps> = ({
   doc,
-  canModify,
+  canUpdate,
+  canDelete,
+  canApprove,
   onApprove,
   onDelete,
   onView,
@@ -359,7 +363,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
         <td className="px-6 py-4 text-right rtl:text-left text-sm font-medium">
           <div className="flex items-center justify-end rtl:justify-start gap-1">
             {/* Approve button */}
-            {canModify && doc.status === "Pending Review" && (
+            {canApprove && doc.status === "Pending Review" && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -387,7 +391,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
             </button>
 
             {/* Edit button */}
-            {canModify && (
+            {canUpdate && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -417,7 +421,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
             )}
 
             {/* More actions menu */}
-            {canModify && (
+            {canDelete && (
               <div className="relative" ref={moreMenuRef}>
                 <button
                   onClick={(e) => {

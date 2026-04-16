@@ -133,11 +133,11 @@ const HeroGlobe: React.FC<HeroGlobeProps> = ({ globeSettings }) => {
               <div className="text-[11px] font-bold text-white leading-tight">
                 {hub.city}
               </div>
-              <div className="text-[9px] text-teal-300/70 font-medium leading-tight">
+              <div className="text-[9px] text-brand-primary/70 font-medium leading-tight">
                 {hub.label}
               </div>
             </div>
-            <div className="w-1.5 h-1.5 rounded-full bg-teal-400 animate-pulse ml-0.5" />
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-primary/70 animate-pulse ml-0.5" />
           </div>
         </div>
       ))}

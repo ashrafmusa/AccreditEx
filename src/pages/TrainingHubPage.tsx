@@ -137,7 +137,7 @@ Format your response in clear Markdown with headers and bullet points.`;
           onClick={handleAIAnalyze}
           variant="ghost"
           disabled={aiLoading}
-          className="flex items-center gap-2 text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-300 dark:text-purple-400 dark:border-purple-800"
+          className="flex items-center gap-2 text-brand-primary hover:text-brand-primary border border-brand-primary/40 hover:border-brand-primary/40 dark:text-brand-primary dark:border-brand-primary/40"
         >
           <SparklesIcon className="h-4 w-4" />
           {aiLoading ? t("loading") + "..." : t("aiAnalyze")}

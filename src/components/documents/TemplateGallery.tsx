@@ -22,7 +22,7 @@ const categoryColors: Record<string, string> = {
   manual:
     "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
   form: "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300",
-  checklist: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300",
+  checklist: "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
 };
 
 export const TemplateGallery: React.FC<TemplateGalleryProps> = ({

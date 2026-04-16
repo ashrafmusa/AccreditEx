@@ -14,7 +14,25 @@ export const ar = {
     // Document Editor Modal
     editMode: 'وضع التعديل',
     viewMode: 'وضع العرض',
-    selectStandard: 'اختر معيارًا للبدء...',
+    commentsHelp: 'عرض أو إضافة تعليقات',
+    help: 'مساعدة',
+    documentAuditor: 'مدقق المستند',
+    overallCompliance: 'المطابقة الإجمالية',
+    structure: 'البنية',
+    completeness: 'الاكتمال',
+    language: 'اللغة',
+    readability: 'سهولة القراءة',
+    issues: 'المشاكل',
+    aiSuggestions: 'اقتراحات تحسين الذكاء الاصطناعي',
+    generateSuggestions: 'إنشاء الاقتراحات بمساعدة الذكاء الاصطناعي',
+    generating: 'جاري الإنشاء...',
+    exportReport: 'تصدير التقرير',
+    reportExported: 'تم تصدير تقرير المطابقة',
+    reportExportFailed: 'فشل تصدير التقرير',
+    complianceAnalysisFailed: 'فشل تحليل مطابقة المستند',
+    suggestionsGenerated: 'تم إنشاء اقتراحات الذكاء الاصطناعي',
+    failedToGenerateSuggestions: 'فشل في إنشاء الاقتراحات',
+    analyzingDocument: 'جاري تحليل المستند...',
     generatePolicy: 'إنشاء من معيار',
     improveWriting: 'تحسين الكتابة',
     translate: 'ترجمة إلى اللغة الأخرى',
@@ -107,6 +125,9 @@ export const ar = {
 
     // Document Operations Success
     documentCreatedSuccessfully: 'تم إنشاء المستند بنجاح',
+    viewAllComments: 'عرض جميع التعليقات',
+    viewOpenComments: 'عرض التعليقات المفتوحة',
+    viewResolvedComments: 'عرض التعليقات المحلولة',
     documentSavedSuccessfully: 'تم حفظ المستند بنجاح',
     documentDeletedSuccessfully: 'تم حذف المستند بنجاح',
     documentApprovedSuccessfully: 'تم اعتماد المستند بنجاح',
@@ -190,7 +211,6 @@ export const ar = {
     aiProcessing: 'الذكاء الاصطناعي يعالج...',
     generateProcessMapDesc: 'إنشاء خريطة عمليات من وصف',
     describeProcessPlaceholder: 'صف عمليتك بالتفصيل. مثال: \'إنشاء عملية مراجعة المستندات حيث يتم تقديم المستندات ومراجعتها من قبل المدير والموافقة عليها أو رفضها ثم نشرها أو إعادتها للمراجعة.\'',
-    generating: 'جاري الإنشاء...',
     suggestedNextSteps: 'الخطوات التالية المقترحة',
     addThisStep: 'أضف هذه الخطوة',
     processOptimizations: 'اقتراحات تحسين العملية',
@@ -465,7 +485,6 @@ export const ar = {
     storage: 'التخزين',
 
     // Document Editor Sidebar
-    completeness: 'الاكتمال',
     hasContent: 'يحتوي محتوى',
     hasTags: 'يحتوي وسوم',
     hasCategory: 'يحتوي فئة',
@@ -565,6 +584,22 @@ export const ar = {
     applied: '✓ تم التطبيق',
     apply: 'تطبيق',
 
+    // Document Creation Wizard (New)
+    createDocument: 'إنشاء مستند',
+    chooseCreationMethod: 'اختر طريقة الإنشاء',
+    aiGenerate: 'إنشاء بالذكاء الاصطناعي',
+    aiGenerateDesc: 'استخدم الذكاء الاصطناعي مع 54 قالب',
+    blankDocument: 'مستند فارغ',
+    blankDocumentDesc: 'ابدأ من الصفر',
+    uploadFileDesc: 'استيراد مستند موجود',
+    enterDocumentName: 'أدخل اسم المستند',
+    workInstruction: 'تعليمات العمل',
+    form: 'نموذج',
+    record: 'سجل',
+    fileUploadedSuccessfully: 'تم تحميل الملف بنجاح',
+    aiDocumentCreated: 'تم إنشاء المستند بالذكاء الاصطناعي بنجاح',
+    failedToUploadFile: 'فشل تحميل الملف',
+
     // Common
     close: 'إغلاق',
     view: 'عرض',
@@ -574,4 +609,14 @@ export const ar = {
     cancel: 'إلغاء',
     save: 'حفظ',
     home: 'الرئيسية',
+
+    // Batch Audit & Compliance Dashboard
+    batchAudit: 'تدقيق الامتثال الجماعي',
+    batchAuditHint: 'قم بتدقيق عدة مستندات في نفس الوقت',
+    changeControl: 'التحكم في التغييرات',
+    changeControlHint: 'عرض طلبات التغيير المرتبطة بالتدقيق',
+    auditing: 'جاري التدقيق...',
+    auditInProgress: 'جاري التنفيذ...',
+    complianceDashboard: 'لوحة معلومات الامتثال',
+    auditChangeControl: 'التدقيق والتحكم في التغييرات',
 };

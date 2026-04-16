@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Standard, StandardCriticality, StandardDocument } from "@/types";
-
-type SubStandard = { id: string; description: string };
-import { useTranslation } from "@/hooks/useTranslation";
-import { useUserStore } from "@/stores/useUserStore";
-import Modal from "@/components/ui/Modal";
 import StandardDocumentManager from "@/components/accreditation/StandardDocumentManager";
 import { inputClasses, labelClasses } from "@/components/ui/constants";
+import Modal from "@/components/ui/Modal";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useUserStore } from "@/stores/useUserStore";
+import { Standard, StandardCriticality, StandardDocument } from "@/types";
+import React, { useEffect, useState } from "react";
 import { PlusIcon, TrashIcon } from "../icons";
+
+type SubStandard = { id: string; description: string };
 
 interface StandardModalProps {
   isOpen: boolean;
@@ -185,7 +185,7 @@ const StandardModal: React.FC<StandardModalProps> = ({
           <h4 className="font-medium mb-2">{t("measuresSubStandards")}</h4>
           <div className="space-y-2 max-h-40 overflow-y-auto pr-2">
             {subStandards.map((sub, index) => (
-              <div key={index} className="flex items-center gap-2">
+              <div key={sub.id || index} className="flex items-center gap-2">
                 <input
                   type="text"
                   value={sub.id}

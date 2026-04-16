@@ -1,29 +1,29 @@
-import React, { useMemo, useState, useEffect } from "react";
-import {
-  NavigationState,
-  ProjectStatus,
-  ComplianceStatus,
-  User,
-} from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import StatCard from "@/components/common/StatCard";
-import StatCardSkeleton from "@/components/common/StatCardSkeleton";
 import ChartSkeleton from "@/components/common/ChartSkeleton";
 import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useUserStore } from "@/stores/useUserStore";
-import DashboardHeader from "./DashboardHeader";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import StatCard from "@/components/common/StatCard";
+import StatCardSkeleton from "@/components/common/StatCardSkeleton";
 import {
-  FolderIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  UsersIcon,
-  ClockIcon,
   CheckBadgeIcon,
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
+  UsersIcon,
 } from "@/components/icons";
 import ProjectCard from "@/components/projects/ProjectCard";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import { useUserStore } from "@/stores/useUserStore";
+import {
+  ComplianceStatus,
+  NavigationState,
+  ProjectStatus,
+  User,
+} from "@/types";
+import React, { useEffect, useMemo, useState } from "react";
+import DashboardHeader from "./DashboardHeader";
 
 interface DashboardPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -156,8 +156,16 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
     }
   }, [myProjects]);
 
-  const handleDelete = (projectId: string) => {
-    if (window.confirm(t("areYouSureDeleteProject"))) {
+  const handleDelete = async (projectId: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteProject"),
+          t("deleteProject") || "Delete Project",
+          t("delete") || "Delete",
+        )
+    ) {
       deleteProject(projectId);
     }
   };
@@ -176,7 +184,63 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
           setNavigation={setNavigation}
           title={t("projectLeadDashboardTitle")}
           greeting={t("dashboardGreeting")}
+          roleShortcuts={[
+            {
+              label: t("createNewProject") || "Create New Project",
+              navigation: { view: "createProject" },
+            },
+            {
+              label: t("documentControl") || "Document Control",
+              navigation: { view: "documentControl" },
+            },
+            {
+              label: t("openCapaReports") || "Open CAPA Reports",
+              navigation: { view: "projects", filter: "openCapa" },
+            },
+          ]}
         />
+
+        {/* Quick Actions - Click-depth reduction for top ProjectLead journeys */}
+        <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-xl border border-brand-border dark:border-dark-brand-border shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {t("quickActions") || "Quick Actions"}
+            </h2>
+            <span className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+              {t("projectLead")}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <button
+              onClick={() => setNavigation({ view: "createProject" })}
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("createNewProject")}
+            </button>
+            <button
+              onClick={() => setNavigation({ view: "documentControl" })}
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("documentControl")}
+            </button>
+            <button
+              onClick={() =>
+                setNavigation({ view: "projects", filter: "inProgress" })
+              }
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("inProgress")}
+            </button>
+            <button
+              onClick={() =>
+                setNavigation({ view: "projects", filter: "openCapa" })
+              }
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("openCapaReports")}
+            </button>
+          </div>
+        </div>
 
         {isLoading ? (
           <div>
@@ -199,7 +263,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 title={t("myProjects")}
                 value={leadStats.totalProjects}
                 icon={FolderIcon}
-                color="from-blue-500 to-blue-700 bg-linear-to-br"
+                color="from-blue-500 to-brand-primary/80 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "projects" })}
               />
               <StatCard

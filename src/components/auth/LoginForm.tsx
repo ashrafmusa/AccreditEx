@@ -1,9 +1,11 @@
+import { sendPasswordResetEmail } from "firebase/auth";
 import React, { useState } from "react";
+import { getAuthInstance } from "../../firebase/firebaseConfig";
 import { useTranslation } from "../../hooks/useTranslation";
 import {
+  ExclamationTriangleIcon,
   EyeIcon,
   EyeSlashIcon,
-  ExclamationTriangleIcon,
   SpinnerIcon,
 } from "../icons";
 
@@ -18,10 +20,32 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading, error }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetNotice, setResetNotice] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setResetNotice("");
     onLogin(email, password);
+  };
+
+  const handleForgotPassword = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+    setResetNotice("");
+    if (!normalizedEmail) {
+      setResetNotice(t("enterEmailForReset"));
+      return;
+    }
+    setResetLoading(true);
+    try {
+      const auth = getAuthInstance();
+      await sendPasswordResetEmail(auth, normalizedEmail);
+      setResetNotice(t("passwordResetSent"));
+    } catch {
+      setResetNotice(t("passwordResetFailed"));
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   return (
@@ -101,14 +125,26 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading, error }) => {
           </label>
         </div>
         <div className="text-sm">
-          <a
-            href="#"
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={resetLoading}
             className="font-medium text-brand-primary hover:text-sky-500"
           >
-            {t("forgotPassword")}
-          </a>
+            {resetLoading ? t("sendingReset") : t("forgotPassword")}
+          </button>
         </div>
       </div>
+
+      {resetNotice && (
+        <p className="text-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded">
+          {resetNotice}
+        </p>
+      )}
+
+      <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+        {t("enterpriseAccessNotice")}
+      </p>
 
       {error && (
         <div

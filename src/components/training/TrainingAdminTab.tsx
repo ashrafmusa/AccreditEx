@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { TrainingProgram, User, Department } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
-import { PlusIcon, PencilIcon, TrashIcon, AcademicCapIcon } from "../icons";
-import TrainingProgramModal from "./TrainingProgramModal";
-import AssignTrainingModal from "./AssignTrainingModal";
-import EmptyState from "../common/EmptyState";
 import { TableContainer } from "@/components/ui";
+import React, { useState } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
+import { Department, TrainingProgram, User } from "../../types";
+import EmptyState from "../common/EmptyState";
+import { AcademicCapIcon, PencilIcon, PlusIcon, TrashIcon } from "../icons";
+import AssignTrainingModal from "./AssignTrainingModal";
+import TrainingProgramModal from "./TrainingProgramModal";
 
 interface Props {
   trainingPrograms: TrainingProgram[];
@@ -49,8 +49,16 @@ const TrainingAdminTab: React.FC<Props> = ({
     setIsProgramModalOpen(false);
   };
 
-  const handleDelete = (programId: string) => {
-    if (window.confirm(t("areYouSureDeleteTraining"))) {
+  const handleDelete = async (programId: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteTraining"),
+          t("deleteTraining") || "Delete Training",
+          t("delete") || "Delete",
+        )
+    ) {
       onDelete(programId);
     }
   };

@@ -22,9 +22,22 @@ class SecureStorage {
     }
 
     /**
-     * Simple base64 encoding (NOT secure encryption, just obfuscation)
-     * For production, use server-side storage for sensitive data
+     * Obfuscation only — NOT cryptographic encryption.
+     * Sensitive data (auth tokens, API keys) must NEVER be stored in localStorage.
+     * This utility is safe for non-sensitive UI state only.
+     * Security fix (2026-04-17): Added explicit block on known sensitive key patterns.
      */
+    private readonly BLOCKED_KEY_PATTERNS = [
+        'api-key', 'api_key', 'apikey',
+        'auth-token', 'auth_token', 'firebase-auth',
+        'secret', 'password', 'credential',
+    ];
+
+    private isBlockedKey(key: string): boolean {
+        const lower = key.toLowerCase();
+        return this.BLOCKED_KEY_PATTERNS.some(p => lower.includes(p));
+    }
+
     private encode(data: string): string {
         try {
             return btoa(encodeURIComponent(data));
@@ -74,7 +87,16 @@ class SecureStorage {
             const namespacedKey = this.getKey(key);
             const { encode = this.isSensitive(key), ttl } = options;
 
-            // Warn if sensitive data is being stored
+            // Block storage of known-sensitive key patterns
+            if (this.isBlockedKey(key)) {
+                console.error(
+                    `[SecureStorage] BLOCKED: Refusing to store sensitive data in localStorage: "${key}". ` +
+                    'Sensitive data must be held in server-side sessions only.'
+                );
+                return false;
+            }
+
+            // Warn if potentially sensitive data is being stored
             if (this.isSensitive(key)) {
                 console.warn(
                     `[SecureStorage] Storing potentially sensitive data: ${key}. ` +

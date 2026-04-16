@@ -5,9 +5,9 @@
  * Used by the Layout component to display contextual navigation breadcrumbs.
  */
 
-import { useMemo } from 'react';
-import { NavigationState, NavigationView } from '@/types';
 import { BreadcrumbItem } from '@/components/common/Breadcrumbs';
+import { NavigationState, NavigationView } from '@/types';
+import { useMemo } from 'react';
 
 // ── Breadcrumb label mapping ─────────────────────────────
 
@@ -37,6 +37,7 @@ const VIEW_LABELS: Partial<Record<NavigationView, string>> = {
     mockSurvey: 'Mock Survey',
     surveyReport: 'Survey Report',
     certificate: 'Certificate',
+    pricing: 'Plans & Pricing',
 };
 
 // ── Parent view mapping (for generating breadcrumb trails) ──

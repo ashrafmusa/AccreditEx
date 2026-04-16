@@ -23,9 +23,9 @@ const statusColor: Record<PTStatus, string> = {
   testing:
     "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
   submitted:
-    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
   reviewed:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
   acceptable:
     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   unacceptable: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
@@ -298,7 +298,7 @@ const ProficiencyTestingTab: React.FC = () => {
             </div>
             {selected.sampleReceivedDate && (
               <div className="flex gap-3 items-center">
-                <span className="w-3 h-3 rounded-full bg-indigo-500 shrink-0" />
+                <span className="w-3 h-3 rounded-full bg-brand-primary/70 shrink-0" />
                 <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
                   {t("sampleReceived")}
                 </span>
@@ -309,7 +309,7 @@ const ProficiencyTestingTab: React.FC = () => {
             )}
             {selected.resultSubmittedDate && (
               <div className="flex gap-3 items-center">
-                <span className="w-3 h-3 rounded-full bg-purple-500 shrink-0" />
+                <span className="w-3 h-3 rounded-full bg-brand-primary/70 shrink-0" />
                 <span className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
                   {t("submittedTimeline")}
                 </span>

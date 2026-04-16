@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import { documentTemplates, DocumentTemplate } from '@/data/documentTemplates';
+import { LibraryTemplate, templateLibrary } from '@/data/templateLibrary';
 import { aiAgentService } from './aiAgentService';
 
 export interface DocumentGenerationRequest {
@@ -101,9 +101,9 @@ export class AIDocumentGeneratorService {
     const startTime = Date.now();
 
     try {
-      const template = documentTemplates.find(t => t.id === request.templateId);
+      const template = templateLibrary.find(t => t.id === request.templateId);
       if (!template) {
-        throw new Error('Template not found');
+        throw new Error(`Template not found: ${request.templateId}`);
       }
 
       // Get AI suggestions for content generation
@@ -137,11 +137,11 @@ export class AIDocumentGeneratorService {
   /**
    * Get content suggestions from AI based on template and context
    */
-  private async getContentSuggestions(template: DocumentTemplate, context: any): Promise<string[]> {
+  private async getContentSuggestions(template: LibraryTemplate, context: any): Promise<string[]> {
     const prompt = `I need to generate a document using the ${template.name} template. 
     Context: ${JSON.stringify(context)}
     Template description: ${template.description}
-    Template content: ${template.structure.join('\n').substring(0, 500)}...
+    Expected sections: ${template.sections.join(', ')}
 
     Suggest 3-5 key content sections or specific details that should be included to make this document comprehensive and compliant.
     Focus on:
@@ -166,13 +166,13 @@ export class AIDocumentGeneratorService {
   /**
    * Generate content from template with AI assistance
    */
-  private async generateContentFromTemplate(template: DocumentTemplate, context: any, suggestions: string[]): Promise<string> {
+  private async generateContentFromTemplate(template: LibraryTemplate, context: any, suggestions: string[]): Promise<string> {
     const prompt = `You are a senior healthcare accreditation consultant. Generate a complete, accreditation-ready document based on the following template and context.
 
 Template Name: ${template.name}
 Template Description: ${template.description}
-Template Structure:
-${template.structure.join('\n')}
+Template Sections:
+${template.sections.join('\n')}
 
 Context: ${JSON.stringify(context)}
 
@@ -181,6 +181,12 @@ ${suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
 
 OUTPUT FORMAT — follow strictly:
 - Return ONLY valid HTML content (NO markdown, NO code fences, NO commentary or preamble).
+- Start the document with a top header table in SOP format using this exact structure:
+  - A 3-column table where the first column is a blank/logo cell spanning 3 rows.
+  - Row 1: center/right area merged and containing "Institute Name".
+  - Row 2: "Document Title:" and "Issue Date:".
+  - Row 3: "Document Code:" and "Issue:".
+  - Keep borders visible for all cells and use professional spacing.
 - Use <h2> for document title. Use <h3> for major sections. Use <h4> for subsections.
 - Use <p> for paragraphs — never output bare text without tags.
 - Use <ul>/<ol> with <li> for lists. Use <ol> for sequential steps/procedures.
@@ -188,7 +194,7 @@ OUTPUT FORMAT — follow strictly:
 - Use <strong> for mandatory terms ("shall", "must") and key emphasis. Use <em> for defined terms.
 - Use <blockquote> for important warnings, safety notes, and critical callouts.
 - Number sections consistently (1.0, 2.0, … and 2.1, 2.2 for subsections).
-- Include a Document Control Block at the top with: Document No., Version, Effective Date, Review Date, Approved By.
+- Do NOT add any separate top metadata block (e.g., "Document No.", "Version", "Effective Date", "Review Date", "Approved By") outside the SOP header table.
 - Include a Revision History table at the bottom with columns: Version, Date, Author, Changes.
 
 WRITING STANDARDS:
@@ -197,7 +203,7 @@ WRITING STANDARDS:
 - Every section must have substantive, detailed content (minimum 3-4 sentences per section).
 - Cross-reference relevant accreditation standards in parentheses (CBAHI ESR-XX, JCI IPSG.X, ISO clause references).
 - Include realistic healthcare content appropriate for a hospital accreditation setting.
-- Follow the template structure, but add document control and revision history even if not in the template.
+- Follow the template structure and include revision history even if not in the template.
 
 Return ONLY the HTML content.`;
 
@@ -205,7 +211,94 @@ Return ONLY the HTML content.`;
     let content = (response.response || '').trim();
     // Strip markdown fences if AI wraps output
     content = content.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
-    return content;
+    return this.ensureSOPHeaderTable(content, template, context);
+  }
+
+  /**
+   * Ensure generated document starts with a standardized SOP header table.
+   * This guards against prompt drift so output consistently matches UI/business expectations.
+   */
+  private ensureSOPHeaderTable(content: string, template: LibraryTemplate, context: any): string {
+    // Clean any model-generated header/control artifacts first, then prepend exactly one canonical header.
+    const cleanedContent = this.removeExistingSopHeaderArtifacts(content);
+
+    const instituteName =
+      (typeof context?.instituteName === 'string' && context.instituteName.trim()) ||
+      'Institute Name';
+
+    const documentTitle =
+      (typeof context?.documentTitle === 'string' && context.documentTitle.trim()) ||
+      template.name;
+
+    const headerTable = `
+<table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;" aria-label="SOP Document Header">
+  <tbody>
+    <tr>
+      <td rowspan="3" style="width: 22%; border: 1px solid #000;"><div style="min-height: 64px;"></div></td>
+      <td colspan="2" style="border: 1px solid #000; font-weight: 700; font-size: 1.05rem; padding: 8px 10px;">${this.escapeHtml(instituteName)}</td>
+    </tr>
+    <tr>
+      <td style="width: 53%; border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Document Title: ${this.escapeHtml(documentTitle)}</td>
+      <td style="width: 25%; border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Issue Date:</td>
+    </tr>
+    <tr>
+      <td style="border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Document Code:</td>
+      <td style="border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Issue:</td>
+    </tr>
+  </tbody>
+</table>
+`.trim();
+
+    return `${headerTable}\n\n${cleanedContent}`.trim();
+  }
+
+  private removeExistingSopHeaderArtifacts(content: string): string {
+    let sanitized = content.trim();
+
+    // 1) Remove any table that appears to be the SOP header table.
+    sanitized = sanitized.replace(/<table[\s\S]*?<\/table>/gi, (tableHtml) => {
+      const tableText = tableHtml
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/&nbsp;/gi, ' ')
+        .replace(/\s+/g, ' ')
+        .toLowerCase();
+
+      const looksLikeSopHeader =
+        tableText.includes('document title') &&
+        tableText.includes('document code') &&
+        (tableText.includes('issue date') || tableText.includes('issue :') || tableText.includes('issue:'));
+
+      return looksLikeSopHeader ? '' : tableHtml;
+    });
+
+    // 2) Remove loose top metadata lines/blocks often generated by LLMs after the header.
+    const metadataLabel =
+      '(?:Document\\s*(?:No\\.?|Number|Code|Title)|Version|Effective\\s*Date|Review\\s*Date|Approved\\s*By|Issue\\s*Date|Issue)';
+
+    sanitized = sanitized.replace(
+      new RegExp(`<(?:p|div|span|strong|b)[^>]*>\\s*${metadataLabel}\\s*:[\\s\\S]*?<\\/(?:p|div|span|strong|b)>`, 'gi'),
+      '',
+    );
+
+    // Also remove plain-text metadata lines if present.
+    sanitized = sanitized.replace(new RegExp(`(^|\\n)\\s*${metadataLabel}\\s*:\\s*.*(?=\\n|$)`, 'gim'), '\\n');
+
+    // 3) Collapse excessive blank lines left by removals.
+    sanitized = sanitized
+      .replace(/(?:\r?\n\s*){3,}/g, '\n\n')
+      .replace(/>\s{2,}</g, '><')
+      .trim();
+
+    return sanitized;
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   /**
@@ -346,9 +439,9 @@ Return each issue as a separate line. If the document is well-compliant, note ar
    * Generate AI-powered document outline
    */
   async generateDocumentOutline(templateId: string, context: any): Promise<string[]> {
-    const template = documentTemplates.find(t => t.id === templateId);
+    const template = templateLibrary.find(t => t.id === templateId);
     if (!template) {
-      throw new Error('Template not found');
+      throw new Error(`Template not found: ${templateId}`);
     }
 
     const prompt = `Generate a comprehensive document outline for ${template.name}.

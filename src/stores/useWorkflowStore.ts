@@ -6,26 +6,26 @@
  * singleton for trigger evaluation and action execution.
  */
 
-import { create } from 'zustand';
-import {
-    collection,
-    getDocs,
-    addDoc,
-    updateDoc,
-    deleteDoc,
-    doc,
-    query,
-    orderBy,
-    limit as firestoreLimit,
-} from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
+import { logger } from '@/services/logger';
+import { workflowEngine } from '@/services/workflowEngine';
 import {
+    WORKFLOW_TEMPLATES,
     WorkflowDefinition,
     WorkflowExecutionLog,
-    WORKFLOW_TEMPLATES,
 } from '@/types/workflow';
-import { workflowEngine } from '@/services/workflowEngine';
-import { logger } from '@/services/logger';
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    limit as firestoreLimit,
+    getDocs,
+    orderBy,
+    query,
+    updateDoc,
+} from 'firebase/firestore';
+import { create } from 'zustand';
 
 // ── Firestore collection names ──────────────────────────────
 const WORKFLOWS_COLLECTION = 'workflowDefinitions';
@@ -73,7 +73,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         set({ loading: true, error: null });
         try {
             const ref = collection(db, WORKFLOWS_COLLECTION);
-            const q = query(ref, orderBy('createdAt', 'desc'));
+            const q = query(ref, orderBy('createdAt', 'desc'), firestoreLimit(500));
             const snapshot = await getDocs(q);
             const workflows = snapshot.docs.map(
                 (d) => ({ ...d.data(), id: d.id }) as WorkflowDefinition,

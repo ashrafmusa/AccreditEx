@@ -1,5 +1,5 @@
-import { CustomRole, CustomPermission, UserRole } from '@/types';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, Timestamp } from 'firebase/firestore';
+import { CustomPermission, CustomRole, UserRole } from '@/types';
+import { Timestamp, addDoc, collection, deleteDoc, doc, limit as firestoreLimit, getDocs, query, updateDoc, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 
 const COLLECTION_NAME = 'custom_roles';
@@ -37,7 +37,7 @@ export const createCustomRole = async (
 };
 
 export const getAllCustomRoles = async (): Promise<CustomRole[]> => {
-    const snapshot = await getDocs(collection(db, COLLECTION_NAME));
+    const snapshot = await getDocs(query(collection(db, COLLECTION_NAME), firestoreLimit(500)));
     return snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -45,7 +45,7 @@ export const getAllCustomRoles = async (): Promise<CustomRole[]> => {
 };
 
 export const getActiveCustomRoles = async (): Promise<CustomRole[]> => {
-    const q = query(collection(db, COLLECTION_NAME), where('isActive', '==', true));
+    const q = query(collection(db, COLLECTION_NAME), where('isActive', '==', true), firestoreLimit(500));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => ({
         id: doc.id,

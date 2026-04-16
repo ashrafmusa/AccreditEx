@@ -1,20 +1,21 @@
+import { useAppStore } from "@/stores/useAppStore";
+import { useUserStore } from "@/stores/useUserStore";
 import React, {
-  useState,
-  useRef,
-  useEffect,
   useCallback,
+  useEffect,
   useMemo,
+  useRef,
+  useState,
 } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
-import { useAppStore } from "@/stores/useAppStore";
 import {
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  XMarkIcon,
   CalendarDaysIcon,
-  UserIcon,
-  TagIcon,
   ClockIcon,
+  FunnelIcon,
+  MagnifyingGlassIcon,
+  TagIcon,
+  UserIcon,
+  XMarkIcon,
 } from "../icons";
 
 // ---------------------------------------------------------------------------
@@ -26,6 +27,7 @@ interface DocumentSearchProps {
   onFilter: (filters: DocumentFilters) => void;
   resultCount?: number;
   availableTags?: string[];
+  availableCategories?: string[];
 }
 
 export interface DocumentFilters {
@@ -41,7 +43,7 @@ export interface DocumentFilters {
 // Constants
 // ---------------------------------------------------------------------------
 
-const SEARCH_HISTORY_KEY = "accreditex_search_history";
+const SEARCH_HISTORY_KEY_PREFIX = "accreditex_search_history";
 const MAX_HISTORY = 5;
 const DEBOUNCE_MS = 300;
 
@@ -49,18 +51,18 @@ const DEBOUNCE_MS = 300;
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getSearchHistory(): string[] {
+function getSearchHistory(storageKey: string): string[] {
   try {
-    const raw = localStorage.getItem(SEARCH_HISTORY_KEY);
+    const raw = localStorage.getItem(storageKey);
     return raw ? (JSON.parse(raw) as string[]) : [];
   } catch {
     return [];
   }
 }
 
-function saveSearchHistory(history: string[]): void {
+function saveSearchHistory(storageKey: string, history: string[]): void {
   localStorage.setItem(
-    SEARCH_HISTORY_KEY,
+    storageKey,
     JSON.stringify(history.slice(0, MAX_HISTORY)),
   );
 }
@@ -138,9 +140,12 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
   onFilter,
   resultCount,
   availableTags = [],
+  availableCategories = [],
 }) => {
   const { t, lang } = useTranslation();
   const { departments } = useAppStore();
+  const currentUser = useUserStore((state) => state.currentUser);
+  const searchHistoryKey = `${SEARCH_HISTORY_KEY_PREFIX}_${currentUser?.id || "anonymous"}`;
 
   // ---- State ---------------------------------------------------------------
   const [query, setQuery] = useState("");
@@ -148,9 +153,13 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
   const [filters, setFilters] = useState<DocumentFilters>({});
 
   // Search history & suggestions
-  const [searchHistory, setSearchHistory] =
-    useState<string[]>(getSearchHistory);
+  const [searchHistory, setSearchHistory] = useState<string[]>(() =>
+    getSearchHistory(searchHistoryKey),
+  );
   const [showSuggestions, setShowSuggestions] = useState(false);
+  useEffect(() => {
+    setSearchHistory(getSearchHistory(searchHistoryKey));
+  }, [searchHistoryKey]);
 
   // Tag input
   const [tagInput, setTagInput] = useState("");
@@ -212,13 +221,13 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
               value.trim(),
               ...prev.filter((h) => h !== value.trim()),
             ].slice(0, MAX_HISTORY);
-            saveSearchHistory(next);
+            saveSearchHistory(searchHistoryKey, next);
             return next;
           });
         }
       }, DEBOUNCE_MS);
     },
-    [onSearch],
+    [onSearch, searchHistoryKey],
   );
 
   // Cleanup debounce on unmount
@@ -549,23 +558,11 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
                 <option value="">
                   {t("allCategories") || "All Categories"}
                 </option>
-                <option value="Quality Management">
-                  {t("qualityManagement") || "Quality Management"}
-                </option>
-                <option value="Safety">{t("safety") || "Safety"}</option>
-                <option value="Operations">
-                  {t("operations") || "Operations"}
-                </option>
-                <option value="Human Resources">
-                  {t("humanResources") || "Human Resources"}
-                </option>
-                <option value="Finance">{t("finance") || "Finance"}</option>
-                <option value="IT">
-                  {t("informationTechnology") || "Information Technology"}
-                </option>
-                <option value="Compliance">
-                  {t("compliance") || "Compliance"}
-                </option>
+                {availableCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
               </select>
             </div>
 

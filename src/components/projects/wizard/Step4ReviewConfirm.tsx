@@ -319,7 +319,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
             <div className="max-h-[300px] overflow-y-auto space-y-2">
               {data.checklistItems.slice(0, 10).map((item, index) => (
                 <div
-                  key={index}
+                  key={item.item || item.title || index}
                   className="flex items-start gap-2 p-2 rounded bg-brand-surface dark:bg-dark-brand-surface"
                 >
                   <CheckCircleIcon className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />

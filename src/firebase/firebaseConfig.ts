@@ -1,8 +1,8 @@
-import * as firebase from "firebase/app";
-import { getAuth, Auth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
 import { authTokenOptimizer } from "@/services/authTokenOptimizer";
+import * as firebase from "firebase/app";
+import { Auth, getAuth } from "firebase/auth";
+import { enableIndexedDbPersistence, getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 const processEnv = (typeof process !== 'undefined' ? process.env : {}) as Record<string, string | undefined>;
 
@@ -72,7 +72,3 @@ try {
     // Handle cases where persistence is already enabled
 }
 
-console.log('🔥 Firebase initialized:', {
-    projectId: firebaseConfig.projectId,
-    authDomain: firebaseConfig.authDomain
-});

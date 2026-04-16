@@ -5,23 +5,23 @@
  * with Firestore persistence and template instantiation.
  */
 
-import { create } from 'zustand';
+import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import {
-    collection,
-    getDocs,
+    REPORT_TEMPLATES,
+    ReportDefinition,
+} from '@/types/reportBuilder';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import {
     addDoc,
-    updateDoc,
+    collection,
     deleteDoc,
     doc,
-    query,
+    limit as firestoreLimit,
+    getDocs,
     orderBy,
+    updateDoc
 } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseConfig';
-import { getAuthInstance } from '@/firebase/firebaseConfig';
-import {
-    ReportDefinition,
-    REPORT_TEMPLATES,
-} from '@/types/reportBuilder';
+import { create } from 'zustand';
 
 // ── Firestore collection ────────────────────────────────────
 const COLLECTION = 'reportDefinitions';
@@ -63,7 +63,8 @@ export const useReportBuilderStore = create<ReportBuilderState>((set, get) => ({
     fetchReports: async () => {
         set({ loading: true, error: null });
         try {
-            const q = query(collection(db, COLLECTION), orderBy('updatedAt', 'desc'));
+            // H2 fix: scope query to current org to prevent cross-org data leak
+            const q = getTenantQuery(COLLECTION, orderBy('updatedAt', 'desc'), firestoreLimit(500));
             const snap = await getDocs(q);
             const reports: ReportDefinition[] = snap.docs.map((d) => ({
                 ...(d.data() as Omit<ReportDefinition, 'id'>),
@@ -82,6 +83,8 @@ export const useReportBuilderStore = create<ReportBuilderState>((set, get) => ({
         const auth = getAuthInstance();
         const data: Omit<ReportDefinition, 'id'> = {
             ...report,
+            // H2 fix: stamp organizationId to enforce tenant isolation
+            ...getTenantStamp(),
             createdBy: report.createdBy || auth.currentUser?.uid || 'unknown',
             createdAt: now,
             updatedAt: now,

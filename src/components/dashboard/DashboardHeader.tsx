@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { NavigationState } from "@/types";
+import {
+  ArrowPathIcon,
+  ClipboardDocumentCheckIcon,
+  DownloadIcon,
+  PlusIcon,
+} from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
-import {
-  PlusIcon,
-  ClipboardDocumentCheckIcon,
-  ArrowPathIcon,
-  DownloadIcon,
-} from "@/components/icons";
+import { NavigationState } from "@/types";
+import React, { useEffect, useState } from "react";
 
 interface DashboardHeaderProps {
   setNavigation: (state: NavigationState) => void;
@@ -15,6 +15,7 @@ interface DashboardHeaderProps {
   greeting: string;
   onRefresh?: () => void;
   onExport?: () => void;
+  roleShortcuts?: Array<{ label: string; navigation: NavigationState }>;
 }
 
 // Helper function to format relative time
@@ -37,6 +38,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   greeting,
   onRefresh,
   onExport,
+  roleShortcuts = [],
 }) => {
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
@@ -53,6 +55,37 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     }, 60000);
     return () => clearInterval(interval);
   }, [lastUpdated, t]);
+
+  useEffect(() => {
+    if (roleShortcuts.length === 0) return;
+
+    const handleRoleShortcutKeydown = (e: KeyboardEvent) => {
+      if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      const keyNumber = Number(e.key);
+      if (Number.isNaN(keyNumber) || keyNumber < 1) return;
+      const shortcut = roleShortcuts[keyNumber - 1];
+      if (!shortcut) return;
+
+      e.preventDefault();
+      setNavigation(shortcut.navigation);
+    };
+
+    window.addEventListener("keydown", handleRoleShortcutKeydown);
+    return () =>
+      window.removeEventListener("keydown", handleRoleShortcutKeydown);
+  }, [roleShortcuts, setNavigation]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -89,11 +122,27 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
             {t("lastUpdated") || "Last updated"}: {relativeTime}
           </p>
+          {roleShortcuts.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {roleShortcuts.map((shortcut) => (
+                <button
+                  key={shortcut.label}
+                  onClick={() => setNavigation(shortcut.navigation)}
+                  aria-label={shortcut.label}
+                  aria-keyshortcuts={`Alt+${roleShortcuts.indexOf(shortcut) + 1}`}
+                  className="px-3 py-1.5 text-xs font-semibold rounded-full border border-brand-border dark:border-dark-brand-border text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+                >
+                  {shortcut.label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
+            aria-label={t("refresh") || "Refresh"}
             title={t("refreshData") || "Refresh data"}
             className="text-sm font-semibold text-brand-primary-600 dark:text-brand-primary-400 bg-white dark:bg-dark-brand-surface px-4 py-2.5 rounded-lg hover:bg-brand-primary-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto border border-brand-border dark:border-dark-brand-border shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -105,6 +154,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           {onExport && (
             <button
               onClick={onExport}
+              aria-label={t("export") || "Export"}
               title={t("exportDashboardData")}
               className="text-sm font-semibold text-brand-primary-600 dark:text-brand-primary-400 bg-white dark:bg-dark-brand-surface px-4 py-2.5 rounded-lg hover:bg-brand-primary-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto border border-brand-border dark:border-dark-brand-border shadow-sm"
             >
@@ -114,6 +164,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           )}
           <button
             onClick={() => setNavigation({ view: "myTasks" })}
+            aria-label={t("viewMyTasks")}
             className="text-sm font-semibold text-brand-primary-600 dark:text-brand-primary-400 bg-white dark:bg-dark-brand-surface px-4 py-2.5 rounded-lg hover:bg-brand-primary-50 dark:hover:bg-slate-800/60 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto border border-brand-border dark:border-dark-brand-border shadow-sm"
           >
             <ClipboardDocumentCheckIcon className="w-5 h-5" />{" "}
@@ -121,6 +172,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           </button>
           <button
             onClick={() => setNavigation({ view: "createProject" })}
+            aria-label={t("createNewProject")}
             className="text-sm font-semibold text-white bg-brand-primary px-4 py-2.5 rounded-lg hover:bg-sky-700 transition-colors flex items-center justify-center gap-2 w-full sm:w-auto shadow-lg hover:shadow-sky-500/50"
           >
             <PlusIcon className="w-5 h-5" />{" "}

@@ -279,14 +279,23 @@ const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
   /**
    * Handle cancel
    */
-  const handleCancel = () => {
+  const handleCancel = async () => {
     if (data.projectName || data.description) {
       // Show confirmation if user has entered data
       const confirmMsg = isEditMode
         ? t("confirmCancelEdit") || "Discard unsaved changes?"
         : t("confirmCancelWizard") ||
           "Are you sure you want to cancel? Your draft is saved and you can resume later.";
-      if (!window.confirm(confirmMsg)) return;
+      if (
+        !(await useConfirmStore
+          .getState()
+          .confirm(
+            confirmMsg,
+            t("cancelProject") || "Cancel",
+            t("discard") || "Discard",
+          ))
+      )
+        return;
     }
 
     setNavigation?.({ view: "projects" });

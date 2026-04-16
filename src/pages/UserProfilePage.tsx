@@ -108,7 +108,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = (props) => {
         {/* Right Column - Quick Stats */}
         <div className="space-y-6">
           {/* Profile Completeness Card */}
-          <div className="bg-linear-to-br from-rose-50 to-blue-50 dark:from-pink-900/20 dark:to-blue-900/20 p-6 rounded-lg border border-rose-200 dark:border-pink-700">
+          <div className="bg-linear-to-br from-rose-50 to-brand-primary/80 dark:from-pink-900/20 dark:to-brand-primary/80/20 p-6 rounded-lg border border-rose-200 dark:border-pink-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
               {t("profileStatus")}
             </h3>
@@ -124,7 +124,7 @@ const UserProfilePage: React.FC<UserProfilePageProps> = (props) => {
                 </div>
                 <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-linear-to-r from-rose-500 to-blue-500 transition-all duration-300"
+                    className="h-full bg-linear-to-r from-rose-500 to-brand-primary/80 transition-all duration-300"
                     style={{ width: `${profileCompleteness.percentage}%` }}
                   />
                 </div>

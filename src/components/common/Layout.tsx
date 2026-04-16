@@ -10,7 +10,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { NavigationState, Notification } from "@/types";
 import React, { lazy, Suspense, useEffect, useState } from "react";
 // FIX: Corrected import path for notification service
-import { getNotificationsForUser } from "@/services/notificationServiceFirebase";
+import {
+  getNotificationsForUser,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/services/notificationServiceFirebase";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
@@ -128,8 +132,6 @@ const Layout: React.FC<LayoutProps> = ({
 
   const handleMarkAsRead = async (notificationId: string | "all") => {
     try {
-      const { markNotificationAsRead, markAllNotificationsAsRead } =
-        await import("@/services/notificationServiceFirebase");
       if (notificationId === "all") {
         await markAllNotificationsAsRead(currentUser.id);
       } else {

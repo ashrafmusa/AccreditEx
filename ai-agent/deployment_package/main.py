@@ -651,6 +651,128 @@ async def get_metrics():
         "cache_stats": cache.get_stats()
     }
 
+# ─────────────────────────────────────────────────────────────
+# Stripe Webhook — updates org plan in Firestore after payment
+# Called by Stripe (no auth header) — verified by webhook signature
+# ─────────────────────────────────────────────────────────────
+
+STRIPE_PLAN_MAP = {
+    # Map Stripe price IDs → AccrediTex plan tier strings
+    # Set STRIPE_PRICE_CLINIC, STRIPE_PRICE_HOSPITAL, STRIPE_PRICE_NETWORK in Render env vars
+}
+
+def _get_stripe_plan_map() -> dict:
+    return {
+        os.getenv("STRIPE_PRICE_CLINIC", ""): "starter",
+        os.getenv("STRIPE_PRICE_HOSPITAL", ""): "professional",
+        os.getenv("STRIPE_PRICE_NETWORK", ""): "enterprise",
+    }
+
+
+@app.post("/stripe/webhook", tags=["stripe"])
+async def stripe_webhook(request: Request):
+    """
+    Stripe webhook endpoint — receives payment events and updates Firestore.
+    Events handled:
+      - checkout.session.completed → activate paid plan
+      - invoice.paid               → renew subscription expiry
+      - customer.subscription.deleted → downgrade to free
+    """
+    import stripe as stripe_lib  # lazy import — only used here
+
+    webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET")
+    stripe_secret = os.getenv("STRIPE_SECRET_KEY")
+
+    if not webhook_secret or not stripe_secret:
+        logger.error("Stripe env vars (STRIPE_WEBHOOK_SECRET, STRIPE_SECRET_KEY) not configured")
+        raise HTTPException(status_code=500, detail="Stripe not configured on server")
+
+    stripe_lib.api_key = stripe_secret
+
+    payload = await request.body()
+    sig_header = request.headers.get("stripe-signature", "")
+
+    try:
+        event = stripe_lib.Webhook.construct_event(payload, sig_header, webhook_secret)
+    except stripe_lib.errors.SignatureVerificationError as e:
+        logger.warning(f"Stripe webhook signature failed: {e}")
+        raise HTTPException(status_code=400, detail="Invalid Stripe signature")
+
+    from firebase_admin import firestore as fs
+    db = fs.client()
+    plan_map = _get_stripe_plan_map()
+    now = datetime.utcnow().isoformat()
+
+    event_type = event["type"]
+    data_obj = event["data"]["object"]
+
+    if event_type == "checkout.session.completed":
+        org_id = data_obj.get("metadata", {}).get("organizationId")
+        plan = data_obj.get("metadata", {}).get("plan")
+        customer_id = data_obj.get("customer")
+        sub_id = data_obj.get("subscription")
+
+        if org_id and plan:
+            # Security fix (2026-04-17): Verify org-customer binding before updating plan.
+            # Prevents an attacker from forging metadata to upgrade a different org's plan.
+            # On first checkout the org won't have a stripeCustomerId yet (None or ""),
+            # so we allow the first bind. On renewals the IDs must match exactly.
+            org_ref = db.collection("organizations").document(org_id)
+            org_snap = org_ref.get()
+            if not org_snap.exists:
+                logger.error(f"Webhook: org not found org={org_id}")
+                raise HTTPException(status_code=400, detail="Organization not found")
+
+            stored_customer_id = org_snap.to_dict().get("stripeCustomerId")
+            if stored_customer_id and stored_customer_id != customer_id:
+                logger.error(
+                    f"Webhook: customer mismatch org={org_id} "
+                    f"stored={stored_customer_id} event={customer_id}"
+                )
+                raise HTTPException(status_code=400, detail="Customer ID mismatch")
+
+            from datetime import timedelta
+            expires = (datetime.utcnow() + timedelta(days=32)).isoformat()
+            org_ref.update({
+                "plan": plan,
+                "trialActive": False,
+                "subscriptionExpiresAt": expires,
+                "stripeCustomerId": customer_id,
+                "stripeSubscriptionId": sub_id,
+                "updatedAt": now,
+            })
+            logger.info(f"Plan activated: org={org_id} plan={plan}")
+
+    elif event_type == "invoice.paid":
+        sub_id = data_obj.get("subscription")
+        if sub_id:
+            sub = stripe_lib.Subscription.retrieve(sub_id)
+            org_id = sub.get("metadata", {}).get("organizationId")
+            price_id = sub["items"]["data"][0]["price"]["id"] if sub.get("items", {}).get("data") else None
+            plan = plan_map.get(price_id or "")
+            period_end = datetime.utcfromtimestamp(sub.get("current_period_end", 0)).isoformat()
+
+            if org_id:
+                update = {"subscriptionExpiresAt": period_end, "updatedAt": now}
+                if plan:
+                    update["plan"] = plan
+                db.collection("organizations").document(org_id).update(update)
+                logger.info(f"Subscription renewed: org={org_id}")
+
+    elif event_type == "customer.subscription.deleted":
+        org_id = data_obj.get("metadata", {}).get("organizationId")
+        if org_id:
+            db.collection("organizations").document(org_id).update({
+                "plan": "free",
+                "subscriptionExpiresAt": None,
+                "stripeSubscriptionId": None,
+                "updatedAt": now,
+            })
+            logger.info(f"Subscription cancelled: org={org_id} → downgraded to free")
+
+    return {"received": True}
+
+
 # Run the application
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))

@@ -1,24 +1,24 @@
-import React, { useState, useEffect, Suspense } from "react";
-import { UserRole } from "../types";
-import { useTranslation } from "../hooks/useTranslation";
+import { Button, ErrorMessage, Input } from "@/components/ui";
+import { getAuthInstance } from "@/firebase/firebaseConfig";
 import {
-  EyeIcon,
-  EyeSlashIcon,
-  LogoIcon,
-  ExclamationTriangleIcon,
-  SpinnerIcon,
-  FingerPrintIcon,
-} from "../components/icons";
-import { useUserStore } from "../stores/useUserStore";
-import { useAppStore } from "../stores/useAppStore";
-const Globe = React.lazy(() => import("../components/ui/Globe"));
-import { Button, Input, ErrorMessage } from "@/components/ui";
-import {
-  checkBiometricAvailability,
   biometricLogin,
+  checkBiometricAvailability,
   enableBiometric,
   type BiometricStatus,
 } from "@/services/nativeBiometricService";
+import { sendPasswordResetEmail } from "firebase/auth";
+import React, { Suspense, useEffect, useState } from "react";
+import {
+  EyeIcon,
+  EyeSlashIcon,
+  FingerPrintIcon,
+  LogoIcon,
+  SpinnerIcon,
+} from "../components/icons";
+import { useTranslation } from "../hooks/useTranslation";
+import { useAppStore } from "../stores/useAppStore";
+import { useUserStore } from "../stores/useUserStore";
+const Globe = React.lazy(() => import("../components/ui/Globe"));
 
 interface LoginPageProps {
   // onLogin prop is no longer needed
@@ -32,10 +32,21 @@ const LoginPage: React.FC<LoginPageProps> = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetNotice, setResetNotice] = useState("");
   const [biometricStatus, setBiometricStatus] =
     useState<BiometricStatus | null>(null);
   const login = useUserStore((state) => state.login);
   const appSettings = useAppStore((state) => state.appSettings);
+  const fallbackGlobeSettings = {
+    baseColor: "#1e3a5f",
+    markerColor: "#2dd4bf",
+    glowColor: "#14b8a6",
+    scale: 1.05,
+    darkness: 0.35,
+    lightIntensity: 2.0,
+    rotationSpeed: 0.004,
+  };
 
   // Check biometric availability on mount
   useEffect(() => {
@@ -49,12 +60,17 @@ const LoginPage: React.FC<LoginPageProps> = () => {
   const handleBiometricLogin = async () => {
     setBiometricLoading(true);
     setError("");
+    setResetNotice("");
     try {
       const credentials = await biometricLogin();
       if (credentials) {
         const user = await login(credentials.email, credentials.password);
         if (!user) {
-          setError(t("invalidCredentials"));
+          setError(
+            t("invalidCredentialsEnterprise") ||
+              t("invalidCredentials") ||
+              "Invalid credentials or account not provisioned for your organization.",
+          );
         }
       }
     } catch {
@@ -70,11 +86,16 @@ const LoginPage: React.FC<LoginPageProps> = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setResetNotice("");
     setLoading(true);
     try {
       const user = await login(email, password);
       if (!user) {
-        setError(t("invalidCredentials"));
+        setError(
+          t("invalidCredentialsEnterprise") ||
+            t("invalidCredentials") ||
+            "Invalid credentials or account not provisioned for your organization.",
+        );
       } else {
         // Offer to enable biometric on successful login (native only)
         checkBiometricAvailability().then((status) => {
@@ -91,11 +112,38 @@ const LoginPage: React.FC<LoginPageProps> = () => {
     }
   };
 
-  if (!appSettings) {
-    return null; // Or a loading state
-  }
+  const handleForgotPassword = async () => {
+    setError("");
+    setResetNotice("");
 
-  const globeSettings = appSettings.globeSettings;
+    const normalizedEmail = email.trim();
+    if (!normalizedEmail) {
+      setError(
+        t("enterEmailForReset") ||
+          "Enter your work email first, then use Forgot Password.",
+      );
+      return;
+    }
+
+    setResetLoading(true);
+    try {
+      const auth = getAuthInstance();
+      await sendPasswordResetEmail(auth, normalizedEmail);
+      setResetNotice(
+        t("passwordResetSent") ||
+          "Password reset email sent. Please check your inbox.",
+      );
+    } catch {
+      setError(
+        t("passwordResetFailed") ||
+          "Could not send reset email. Contact your hospital administrator if the issue persists.",
+      );
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const globeSettings = appSettings?.globeSettings ?? fallbackGlobeSettings;
   const userLocation = { lat: 24.7136, long: 46.6753 }; // Riyadh, Saudi Arabia
 
   return (
@@ -195,20 +243,38 @@ const LoginPage: React.FC<LoginPageProps> = () => {
                   />
                   <label
                     htmlFor="remember-me"
-                    className="ml-2 block text-sm text-gray-900 dark:text-gray-200"
+                    className="ms-2 block text-sm text-gray-900 dark:text-gray-200"
                   >
                     {t("rememberMe")}
                   </label>
                 </div>
                 <div className="text-sm">
-                  <a
-                    href="#"
+                  <button
+                    type="button"
+                    onClick={handleForgotPassword}
+                    disabled={resetLoading}
                     className="font-medium text-brand-primary hover:text-sky-600"
                   >
-                    {t("forgotPassword")}
-                  </a>
+                    {resetLoading
+                      ? t("sendingReset") || "Sending..."
+                      : t("forgotPassword")}
+                  </button>
                 </div>
               </div>
+
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {t("enterpriseAccessNotice") ||
+                  "Need access? Contact your hospital administrator. Accounts are provisioned by your organization."}
+              </p>
+
+              {resetNotice && (
+                <div
+                  role="status"
+                  className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-800 dark:bg-emerald-900/20 dark:text-emerald-300"
+                >
+                  {resetNotice}
+                </div>
+              )}
 
               {error && <ErrorMessage message={error} />}
 

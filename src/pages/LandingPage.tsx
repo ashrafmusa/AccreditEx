@@ -1,14 +1,173 @@
-import React, { useState, useEffect } from "react";
-import { useAppStore } from "@/stores/useAppStore";
 import HeroGlobe from "@/components/ui/HeroGlobe";
+import { submitDemoRequest } from "@/services/demoRequestService";
+import { useAppStore } from "@/stores/useAppStore";
+import React, { useEffect, useState } from "react";
 
 /* ─── TYPES ──────────────────────────────────────────────────────────────── */
 interface LandingPageProps {
   onLogin: () => void;
 }
 
+/* ─── DEMO REQUEST MODAL ─────────────────────────────────────────────────── */
+const DemoRequestModal: React.FC<{
+  open: boolean;
+  onClose: () => void;
+}> = ({ open, onClose }) => {
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    organization: "",
+    message: "",
+  });
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
+
+  if (!open) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim()) return;
+    setSubmitting(true);
+    setError("");
+    try {
+      await submitDemoRequest(form);
+      setSubmitted(true);
+    } catch {
+      setError("Something went wrong. Please try again or email us directly.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleClose = () => {
+    setForm({ name: "", email: "", organization: "", message: "" });
+    setSubmitted(false);
+    setError("");
+    onClose();
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+      onClick={handleClose}
+    >
+      <div
+        className="relative w-full max-w-lg bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={handleClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white text-xl"
+          aria-label="Close"
+        >
+          ✕
+        </button>
+
+        {submitted ? (
+          <div className="text-center py-8">
+            <div className="text-5xl mb-4">✅</div>
+            <h3 className="text-2xl font-bold text-brand-text-primary dark:text-white mb-2">
+              Thank You!
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400">
+              We received your request and will get back to you within 24 hours.
+            </p>
+            <button
+              onClick={handleClose}
+              className="mt-6 px-6 py-2.5 rounded-lg bg-brand-primary text-white font-semibold hover:bg-brand-primary transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        ) : (
+          <>
+            <h3 className="text-2xl font-bold text-brand-text-primary dark:text-white mb-1">
+              Request a Demo
+            </h3>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">
+              Fill in your details and our team will schedule a personalized
+              demo.
+            </p>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Full Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none"
+                  placeholder="Dr. Sarah Ahmed"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Work Email <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={form.email}
+                  onChange={(e) => setForm({ ...form, email: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none"
+                  placeholder="sarah@hospital.org"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Organization
+                </label>
+                <input
+                  type="text"
+                  value={form.organization}
+                  onChange={(e) =>
+                    setForm({ ...form, organization: e.target.value })
+                  }
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none"
+                  placeholder="King Fahad Hospital"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Message
+                </label>
+                <textarea
+                  value={form.message}
+                  onChange={(e) =>
+                    setForm({ ...form, message: e.target.value })
+                  }
+                  rows={3}
+                  className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-primary focus:border-transparent outline-none resize-none"
+                  placeholder="Tell us about your accreditation needs..."
+                />
+              </div>
+
+              {error && <p className="text-red-500 text-sm">{error}</p>}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-[1.01] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Submitting..." : "Submit Request"}
+              </button>
+            </form>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 /* ─── NAVIGATION BAR ─────────────────────────────────────────────────────── */
-const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+const Navbar: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
+  onLogin,
+  onRequestDemo,
+}) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -77,12 +236,12 @@ const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
           >
             Login
           </button>
-          <a
-            href="https://accreditex.web.app"
-            className="px-5 py-2 text-sm font-semibold rounded-lg bg-linear-to-r from-teal-600 to-blue-600 text-white shadow-lg hover:shadow-xl transition-all"
+          <button
+            onClick={onRequestDemo}
+            className="px-5 py-2 text-sm font-semibold rounded-lg bg-linear-to-r from-brand-primary to-brand-primary/80 text-white shadow-lg hover:shadow-xl transition-all"
           >
-            Launch App →
-          </a>
+            Request Demo
+          </button>
         </div>
 
         <button
@@ -143,7 +302,10 @@ const Navbar: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 };
 
 /* ─── HERO SECTION ───────────────────────────────────────────────────────── */
-const Hero: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
+const Hero: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
+  onLogin,
+  onRequestDemo,
+}) => {
   const appSettings = useAppStore((s) => s.appSettings);
   const globeSettings = appSettings?.globeSettings;
 
@@ -169,10 +331,10 @@ const Hero: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
 
       <div className="relative max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center pt-28 pb-16 w-full">
         <div className="space-y-8 text-white">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-sm font-semibold">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/15 border border-brand-primary/40/30 text-brand-primary text-sm font-semibold">
             <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-300 opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-300" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary/70 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-primary/70" />
             </span>
             AI-Native Healthcare Platform
           </div>
@@ -180,51 +342,52 @@ const Hero: React.FC<{ onLogin: () => void }> = ({ onLogin }) => {
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-[1.1] tracking-tight">
             From Audit Panic
             <br />
-            to <span className="text-teal-400">Continuous Excellence</span>
+            to <span className="text-brand-primary">Continuous Excellence</span>
           </h1>
 
           <p className="text-lg text-white/70 max-w-lg leading-relaxed">
-            AccreditEx automates healthcare accreditation with AI-powered
-            compliance tracking, real-time risk monitoring, and intelligent
-            document management — built by a clinical quality expert.
+            AccreditEx helps hospitals and healthcare organizations achieve and
+            maintain accreditation with AI-powered compliance tracking,
+            real-time risk monitoring, and intelligent document management.
           </p>
 
           <div className="flex flex-wrap gap-4">
-            <a
-              href="#pricing"
-              className="px-8 py-3.5 rounded-xl bg-linear-to-r from-teal-600 to-blue-600 text-white font-semibold shadow-xl shadow-teal-600/30 hover:shadow-teal-600/50 hover:scale-[1.02] transition-all"
+            <button
+              onClick={onRequestDemo}
+              className="px-8 py-3.5 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold shadow-xl shadow-teal-600/30 hover:shadow-teal-600/50 hover:scale-[1.02] transition-all"
             >
-              Start Free Trial →
-            </a>
-            <a
-              href="#features"
+              Request a Demo →
+            </button>
+            <button
+              onClick={onRequestDemo}
               className="px-8 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white font-semibold hover:bg-white/15 transition-all"
             >
-              Explore Features ↓
-            </a>
+              Talk to Sales
+            </button>
           </div>
 
           {/* Trust badges */}
           <div className="pt-4 flex flex-wrap items-center gap-5 text-xs text-white/50">
             <span className="flex items-center gap-1.5">
-              <span className="text-green-400">●</span> No credit card required
+              <span className="text-green-400">●</span> Role-based access
+              control
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="text-green-400">●</span> SOC 2-ready
+              <span className="text-green-400">●</span> Multi-tenant data
+              isolation
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-green-400">●</span> Firebase-secured
               infrastructure
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="text-green-400">●</span> HIPAA-aligned
-              architecture
             </span>
           </div>
 
           {/* Hero stats */}
           <div className="flex gap-10 pt-6 border-t border-white/10">
             {[
-              { value: "15+", label: "AI-Powered Tools" },
-              { value: "240+", label: "Standards Loaded" },
-              { value: "1,043", label: "Sub-Standards" },
+              { value: "18+", label: "AI-Powered Tools" },
+              { value: "256", label: "Standards Loaded" },
+              { value: "1,100+", label: "Sub-Standards" },
             ].map((s) => (
               <div key={s.label}>
                 <div className="text-3xl font-extrabold text-white">
@@ -250,17 +413,21 @@ const TrustBar: React.FC = () => (
   <section className="bg-slate-50 dark:bg-slate-800/50 py-10 border-b border-slate-200 dark:border-slate-700">
     <div className="max-w-7xl mx-auto px-6 text-center">
       <p className="text-xs font-semibold uppercase tracking-[2px] text-slate-500 mb-6">
-        Supporting Accreditation Standards From
+        Accreditation Standards Coverage
       </p>
       <div className="flex justify-center items-center gap-8 md:gap-12 flex-wrap">
         {[
-          { name: "CBAHI", region: "Saudi Arabia", color: "text-teal-600" },
-          { name: "JCI", region: "International", color: "text-blue-600" },
-          { name: "DOH", region: "Abu Dhabi", color: "text-teal-700" },
-          { name: "ISO 15189", region: "Laboratory", color: "text-amber-600" },
           {
-            name: "DHA",
-            region: "Dubai",
+            name: "OHAS",
+            region: "Oman • 256 Standards",
+            color: "text-brand-primary",
+          },
+          { name: "CBAHI", region: "Coming Soon", color: "text-blue-600" },
+          { name: "JCI", region: "Planned", color: "text-brand-primary" },
+          { name: "ISO 15189", region: "Planned", color: "text-amber-600" },
+          {
+            name: "DOH",
+            region: "Planned",
             color: "text-slate-700 dark:text-white",
           },
         ].map((s, i, arr) => (
@@ -288,7 +455,7 @@ const ProblemSection: React.FC = () => (
   <section className="py-24 bg-slate-50 dark:bg-slate-900/50" id="problem">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
           ⚠️ The Challenge
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -439,7 +606,7 @@ const featuresList = [
   {
     icon: "/global-display-svgrepo-com.svg",
     title: "Standards Library",
-    desc: "Pre-loaded accreditation programs (CBAHI, JCI, DOH) with 240+ standards and 1,043 sub-standards.",
+    desc: "Pre-loaded accreditation standards (OHAS) with 256 standards and 1,100+ sub-standards. More programs coming soon.",
     subs: [
       "Cross-standard mapping",
       "Evidence reuse suggestions",
@@ -453,7 +620,7 @@ const Features: React.FC = () => (
   <section id="features" className="py-24 bg-white dark:bg-slate-900">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
           🏗️ Platform
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -469,9 +636,9 @@ const Features: React.FC = () => (
         {featuresList.map((f) => (
           <div
             key={f.title}
-            className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-teal-400/30 hover:shadow-xl transition-all relative overflow-hidden"
+            className="group p-8 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 hover:border-brand-primary/40/30 hover:shadow-xl transition-all relative overflow-hidden"
           >
-            <div className="absolute top-0 left-0 right-0 h-[3px] bg-linear-to-r from-teal-500 to-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+            <div className="absolute top-0 left-0 right-0 h-[3px] bg-linear-to-r from-brand-primary to-brand-primary/80 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
             <img
               src={f.icon}
               alt={f.title}
@@ -488,7 +655,7 @@ const Features: React.FC = () => (
               {f.subs.map((s) => (
                 <li
                   key={s}
-                  className="text-xs text-slate-400 dark:text-slate-500 pl-4 relative before:content-['✓'] before:absolute before:left-0 before:text-teal-500 before:font-bold"
+                  className="text-xs text-slate-400 dark:text-slate-500 pl-4 relative before:content-['✓'] before:absolute before:left-0 before:text-brand-primary before:font-bold"
                 >
                   {s}
                 </li>
@@ -569,11 +736,11 @@ const AIEngine: React.FC = () => (
   <section id="ai-engine" className="py-24 bg-slate-900 text-white">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/15 text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/15 text-brand-primary text-sm font-semibold mb-4">
           🤖 AI Engine
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold">
-          15+ AI-Powered Tools Built In
+          18+ AI-Powered Tools Built In
         </h2>
         <p className="mt-4 text-white/60 max-w-2xl mx-auto">
           Not just a chatbot — a comprehensive AI system trained on healthcare
@@ -585,7 +752,7 @@ const AIEngine: React.FC = () => (
         {aiTools.map((t) => (
           <div
             key={t.title}
-            className="p-6 rounded-2xl bg-white/4 border border-white/8 hover:bg-teal-500/8 hover:border-teal-500/20 hover:-translate-y-1 transition-all"
+            className="p-6 rounded-2xl bg-white/4 border border-white/8 hover:bg-brand-primary/70/8 hover:border-brand-primary/40/20 hover:-translate-y-1 transition-all"
           >
             <div className="text-3xl mb-4">{t.icon}</div>
             <h3 className="text-sm font-bold text-white mb-1.5">{t.title}</h3>
@@ -602,7 +769,7 @@ const MarketSection: React.FC = () => (
   <section id="market" className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
           📈 Market
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -627,8 +794,8 @@ const MarketSection: React.FC = () => (
             label: "SAM",
             value: "$4.37B",
             desc: "Compliance & Quality (2026)",
-            border: "border-teal-500",
-            bg: "bg-teal-50 dark:bg-teal-950/20",
+            border: "border-brand-primary/40",
+            bg: "bg-brand-primary/5 dark:bg-brand-primary/95/20",
           },
           {
             label: "SOM",
@@ -661,15 +828,15 @@ const CompetitiveSection: React.FC = () => {
   const rows = [
     { cap: "Practitioner-Built", us: "✓ Full", meg: "✗", rld: "✗", vas: "✗" },
     {
-      cap: "GCC Regional Templates",
-      us: "✓ DOH/DHA/MOH",
+      cap: "GCC Regional Standards",
+      us: "✓ OHAS (expanding)",
       meg: "Partial",
       rld: "✗",
       vas: "Limited",
     },
     {
       cap: "AI-Continuous Auditing",
-      us: "✓ 15+ AI Tools",
+      us: "✓ 18+ AI Tools",
       meg: "Basic",
       rld: "Basic",
       vas: "✓",
@@ -684,7 +851,7 @@ const CompetitiveSection: React.FC = () => {
     { cap: "PWA / Offline-First", us: "✓", meg: "✗", rld: "✗", vas: "✗" },
     {
       cap: "Pre-loaded Standards",
-      us: "✓ 240+ / 1,043 Sub",
+      us: "✓ 256 / 1,100+ Sub",
       meg: "✗",
       rld: "✗",
       vas: "✗",
@@ -702,7 +869,7 @@ const CompetitiveSection: React.FC = () => {
     <section className="py-24 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
             🏆 Advantage
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -721,7 +888,7 @@ const CompetitiveSection: React.FC = () => {
                 <th className="text-left py-4 px-5 font-bold text-brand-text-primary dark:text-white">
                   Capability
                 </th>
-                <th className="text-center py-4 px-5 font-bold text-teal-600">
+                <th className="text-center py-4 px-5 font-bold text-brand-primary">
                   AccreditEx
                 </th>
                 <th className="text-center py-4 px-5 font-medium text-slate-400">
@@ -744,7 +911,7 @@ const CompetitiveSection: React.FC = () => {
                   <td className="py-3.5 px-5 font-semibold text-brand-text-primary dark:text-white">
                     {r.cap}
                   </td>
-                  <td className="py-3.5 px-5 text-center text-teal-600 font-bold">
+                  <td className="py-3.5 px-5 text-center text-brand-primary font-bold">
                     {r.us}
                   </td>
                   <td className="py-3.5 px-5 text-center text-slate-400">
@@ -781,8 +948,7 @@ const pricingTiers = [
       "Basic AI tools",
       "Email support",
     ],
-    cta: "Get Started",
-    ctaHref: "https://accreditex.web.app",
+    cta: "Request a Demo",
   },
   {
     name: "Enterprise",
@@ -800,8 +966,7 @@ const pricingTiers = [
       "Priority support + SLA",
       "API access",
     ],
-    cta: "Start Free Trial",
-    ctaHref: "https://accreditex.web.app",
+    cta: "Request a Demo",
   },
   {
     name: "Custom",
@@ -817,15 +982,16 @@ const pricingTiers = [
       "On-premise deployment option",
     ],
     cta: "Contact Sales",
-    ctaHref: "mailto:ashraf.a.m.ishag@gmail.com",
   },
 ];
 
-const Pricing: React.FC = () => (
+const Pricing: React.FC<{ onRequestDemo: () => void }> = ({
+  onRequestDemo,
+}) => (
   <section id="pricing" className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
           💳 Pricing
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -843,12 +1009,12 @@ const Pricing: React.FC = () => (
             key={tier.name}
             className={`relative flex flex-col rounded-2xl p-8 border text-center transition-all ${
               tier.highlight
-                ? "bg-white dark:bg-slate-800 border-teal-500 shadow-2xl shadow-teal-500/15 scale-[1.04]"
+                ? "bg-white dark:bg-slate-800 border-brand-primary/40 shadow-2xl shadow-teal-500/15 scale-[1.04]"
                 : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:shadow-xl"
             }`}
           >
             {tier.highlight && (
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 rounded-full bg-linear-to-r from-teal-500 to-blue-500 text-white text-[11px] font-bold tracking-wider">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1 rounded-full bg-linear-to-r from-brand-primary to-brand-primary/80 text-white text-[11px] font-bold tracking-wider">
                 {tier.badge}
               </div>
             )}
@@ -874,20 +1040,20 @@ const Pricing: React.FC = () => (
                   key={f}
                   className="flex items-center gap-3 text-sm text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-700/50 pb-2.5"
                 >
-                  <span className="text-teal-500 font-bold">✓</span> {f}
+                  <span className="text-brand-primary font-bold">✓</span> {f}
                 </li>
               ))}
             </ul>
-            <a
-              href={tier.ctaHref}
-              className={`block w-full py-3 rounded-xl font-semibold text-sm transition-all ${
+            <button
+              onClick={onRequestDemo}
+              className={`block w-full py-3 rounded-xl font-semibold text-sm transition-all cursor-pointer ${
                 tier.highlight
-                  ? "bg-linear-to-r from-teal-500 to-blue-500 text-white shadow-lg hover:shadow-xl"
-                  : "bg-slate-100 dark:bg-slate-700 text-brand-text-primary dark:text-white hover:bg-teal-500 hover:text-white"
+                  ? "bg-linear-to-r from-brand-primary to-brand-primary/80 text-white shadow-lg hover:shadow-xl"
+                  : "bg-slate-100 dark:bg-slate-700 text-brand-text-primary dark:text-white hover:bg-brand-primary/70 hover:text-white"
               }`}
             >
               {tier.cta}
-            </a>
+            </button>
           </div>
         ))}
       </div>
@@ -900,7 +1066,7 @@ const TeamSection: React.FC = () => (
   <section id="team" className="py-24 bg-white dark:bg-slate-900">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
           👤 Team
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -916,14 +1082,14 @@ const TeamSection: React.FC = () => (
         <img
           src="/CEO.jpg"
           alt="Ashraf Abu baker Musa Ishag — Founder & CEO"
-          className="w-36 h-36 rounded-full object-cover border-4 border-teal-400 shadow-lg shadow-teal-500/20 shrink-0"
+          className="w-36 h-36 rounded-full object-cover border-4 border-brand-primary/40 shadow-lg shadow-teal-500/20 shrink-0"
           loading="lazy"
         />
         <div>
           <h3 className="text-2xl font-extrabold text-brand-text-primary dark:text-white">
             Ashraf Abu baker Musa Ishag
           </h3>
-          <p className="text-teal-600 font-semibold mt-1 mb-5">Founder & CEO</p>
+          <p className="text-brand-primary font-semibold mt-1 mb-5">Founder & CEO</p>
           <ul className="space-y-2.5">
             {[
               "🎓 B.Sc. Medical Laboratory Science, ISQUA Fellow",
@@ -974,7 +1140,7 @@ const RoadmapSection: React.FC = () => (
   <section className="py-24 bg-slate-50 dark:bg-slate-900/50">
     <div className="max-w-7xl mx-auto px-6">
       <div className="text-center mb-16">
-        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
           🗺️ Roadmap
         </span>
         <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -1010,11 +1176,11 @@ const RoadmapSection: React.FC = () => (
         ].map((r, i) => (
           <div
             key={i}
-            className="flex gap-6 pl-8 relative border-l-[3px] border-teal-500"
+            className="flex gap-6 pl-8 relative border-l-[3px] border-brand-primary/40"
           >
-            <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-teal-500" />
+            <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-brand-primary/70" />
             <div className="min-w-20">
-              <span className="text-teal-600 font-bold">{r.year}</span>
+              <span className="text-brand-primary font-bold">{r.year}</span>
             </div>
             <div>
               <h3 className="font-bold text-brand-text-primary dark:text-white text-base">
@@ -1066,7 +1232,7 @@ const FAQSection: React.FC = () => {
     <section id="faq" className="py-24 bg-white dark:bg-slate-900">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-400 text-sm font-semibold mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
             ❓ FAQ
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
@@ -1092,7 +1258,7 @@ const FAQSection: React.FC = () => {
                   {faq.q}
                 </span>
                 <span
-                  className={`text-teal-500 text-xl font-bold transition-transform ${openIdx === i ? "rotate-45" : ""}`}
+                  className={`text-brand-primary text-xl font-bold transition-transform ${openIdx === i ? "rotate-45" : ""}`}
                 >
                   +
                 </span>
@@ -1111,7 +1277,9 @@ const FAQSection: React.FC = () => {
 };
 
 /* ─── CTA SECTION ────────────────────────────────────────────────────────── */
-const CTASection: React.FC = () => (
+const CTASection: React.FC<{ onRequestDemo: () => void }> = ({
+  onRequestDemo,
+}) => (
   <section className="py-24 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden text-white">
     <div
       className="absolute inset-0"
@@ -1125,22 +1293,22 @@ const CTASection: React.FC = () => (
         Ready to Transform Healthcare Quality?
       </h2>
       <p className="text-lg text-white/60 mb-10 max-w-xl mx-auto">
-        Join the platform that's moving healthcare from annual audit panic to
-        continuous clinical excellence.
+        See how AccreditEx helps healthcare organizations move from annual audit
+        panic to continuous clinical excellence.
       </p>
       <div className="flex flex-wrap justify-center gap-4 mb-8">
-        <a
-          href="https://accreditex.web.app"
-          className="px-8 py-4 rounded-xl bg-linear-to-r from-teal-500 to-blue-500 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
+        <button
+          onClick={onRequestDemo}
+          className="px-8 py-4 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
         >
-          Start Free Trial →
-        </a>
-        <a
-          href="mailto:ashraf.a.m.ishag@gmail.com"
+          Request a Demo →
+        </button>
+        <button
+          onClick={onRequestDemo}
           className="px-8 py-4 rounded-xl border border-white/20 bg-white/10 text-white font-semibold hover:bg-white/15 transition-all"
         >
-          Contact Founder
-        </a>
+          Talk to Sales
+        </button>
         <a
           href="/pitch"
           className="px-8 py-4 rounded-xl border border-white/20 bg-white/6 text-white font-semibold hover:bg-white/15 transition-all"
@@ -1150,26 +1318,30 @@ const CTASection: React.FC = () => (
       </div>
       <div className="flex justify-center gap-6 flex-wrap text-xs text-white/50">
         <span className="flex items-center gap-1.5">
-          <span className="text-green-400">✓</span> 14-day free trial
+          <span className="text-green-400">✓</span> Enterprise-grade security
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="text-green-400">✓</span> No credit card required
+          <span className="text-green-400">✓</span> CBAHI, JCI, ISO 15189 ready
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="text-green-400">✓</span> Setup in under 5 minutes
+          <span className="text-green-400">✓</span> Deployed in under a week
         </span>
       </div>
       <div className="flex justify-center gap-3 mt-6 flex-wrap">
-        {["CBAHI", "JCI", "ISO 15189", "DOH Abu Dhabi", "AI-Native"].map(
-          (b) => (
-            <span
-              key={b}
-              className="px-3.5 py-1 rounded-full bg-white/6 border border-white/10 text-xs font-semibold text-white/60"
-            >
-              {b}
-            </span>
-          ),
-        )}
+        {[
+          "OHAS",
+          "CBAHI (Soon)",
+          "JCI (Planned)",
+          "ISO 15189 (Planned)",
+          "AI-Native",
+        ].map((b) => (
+          <span
+            key={b}
+            className="px-3.5 py-1 rounded-full bg-white/6 border border-white/10 text-xs font-semibold text-white/60"
+          >
+            {b}
+          </span>
+        ))}
       </div>
     </div>
   </section>
@@ -1210,7 +1382,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Dashboard
               </a>
@@ -1218,7 +1390,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Projects
               </a>
@@ -1226,7 +1398,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Documents
               </a>
@@ -1234,7 +1406,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Risk Hub
               </a>
@@ -1242,7 +1414,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Training
               </a>
@@ -1258,7 +1430,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 AI Assistant
               </a>
@@ -1266,7 +1438,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Document Generator
               </a>
@@ -1274,7 +1446,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Gap Analysis
               </a>
@@ -1282,7 +1454,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Risk Assessment
               </a>
@@ -1290,7 +1462,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 Translation
               </a>
@@ -1306,7 +1478,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="mailto:ashraf.a.m.ishag@gmail.com"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 ✉️ Email
               </a>
@@ -1314,7 +1486,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://linkedin.com/in/ashraf-ishag"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -1324,7 +1496,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="https://accreditex.web.app"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 🚀 Launch App
               </a>
@@ -1332,7 +1504,7 @@ const Footer: React.FC = () => (
             <li>
               <a
                 href="/pitch"
-                className="hover:text-teal-400 transition-colors"
+                className="hover:text-brand-primary transition-colors"
               >
                 📊 Pitch Deck
               </a>
@@ -1360,22 +1532,29 @@ const Footer: React.FC = () => (
 
 /* ─── LANDING PAGE ───────────────────────────────────────────────────────── */
 const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
+  const [showDemoModal, setShowDemoModal] = useState(false);
+  const openDemoModal = () => setShowDemoModal(true);
+
   return (
     <div className="bg-white dark:bg-slate-900">
-      <Navbar onLogin={onLogin} />
-      <Hero onLogin={onLogin} />
+      <Navbar onLogin={onLogin} onRequestDemo={openDemoModal} />
+      <Hero onLogin={onLogin} onRequestDemo={openDemoModal} />
       <TrustBar />
       <ProblemSection />
       <Features />
       <AIEngine />
       <MarketSection />
       <CompetitiveSection />
-      <Pricing />
+      <Pricing onRequestDemo={openDemoModal} />
       <TeamSection />
       <RoadmapSection />
       <FAQSection />
-      <CTASection />
+      <CTASection onRequestDemo={openDemoModal} />
       <Footer />
+      <DemoRequestModal
+        open={showDemoModal}
+        onClose={() => setShowDemoModal(false)}
+      />
     </div>
   );
 };

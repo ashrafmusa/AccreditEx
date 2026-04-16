@@ -20,18 +20,20 @@
  * See: RBAC_SECURITY_CHANGELOG.md for full details.
  */
 
-import { initializeApp, deleteApp, getApps, FirebaseApp } from 'firebase/app';
-import {
-    getAuth,
-    createUserWithEmailAndPassword,
-    sendPasswordResetEmail,
-    signOut as firebaseSignOut,
-    Auth
-} from 'firebase/auth';
-import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db, getAuthInstance } from '@/firebase/firebaseConfig';
-import { User, UserRole } from '@/types';
 import { logger } from '@/services/logger';
+import { useTenantStore } from '@/stores/useTenantStore';
+import { useUserStore } from '@/stores/useUserStore';
+import { User, UserRole } from '@/types';
+import { FirebaseApp, getApps, initializeApp } from 'firebase/app';
+import {
+    Auth,
+    createUserWithEmailAndPassword,
+    signOut as firebaseSignOut,
+    getAuth,
+    sendPasswordResetEmail
+} from 'firebase/auth';
+import { collection, deleteDoc, doc, getCountFromServer, getDoc, query, setDoc, where } from 'firebase/firestore';
 
 // =====================================================
 // SECONDARY APP FOR USER CREATION
@@ -105,6 +107,27 @@ export async function createUserSecurely(
     if (!userData.email || !userData.name || !userData.role) {
         throw new Error('Email, name, and role are required to create a user');
     }
+
+    // ── maxUsers enforcement ──────────────────────────────────────
+    const org = useTenantStore.getState().currentOrganization;
+    if (org?.maxUsers) {
+        const orgId = useTenantStore.getState().organizationId;
+        if (orgId) {
+            // Count active users in this org
+            const usersRef = collection(db, 'users');
+            const countSnap = await getCountFromServer(
+                query(usersRef, where('organizationId', '==', orgId), where('isActive', '==', true))
+            );
+            const currentCount = countSnap.data().count;
+            if (currentCount >= org.maxUsers) {
+                throw new Error(
+                    `User limit reached. Your plan allows a maximum of ${org.maxUsers} users. ` +
+                    `You currently have ${currentCount} active users. Please upgrade your plan to add more users.`
+                );
+            }
+        }
+    }
+    // ─────────────────────────────────────────────────────────────
 
     const tempPassword = generateTempPassword();
     const secAuth = getSecondaryAuth();
@@ -305,8 +328,6 @@ export async function ensureUserMigrated(): Promise<User | null> {
         return null;
     }
 
-    // Import dynamically to avoid circular dependency
-    const { useUserStore } = await import('@/stores/useUserStore');
     const currentUser = useUserStore.getState().currentUser;
 
     if (!currentUser) {

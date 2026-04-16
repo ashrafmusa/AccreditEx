@@ -326,7 +326,7 @@ const STEP_TYPE_LABELS: Record<LearningPathStep["type"], string> = {
 const STEP_TYPE_COLORS: Record<LearningPathStep["type"], string> = {
   training: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   external_ce:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/40 dark:text-brand-primary",
   assessment:
     "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300",
   reading:
@@ -335,13 +335,13 @@ const STEP_TYPE_COLORS: Record<LearningPathStep["type"], string> = {
 
 const CATEGORY_COLORS: Record<LearningPath["category"], string> = {
   onboarding:
-    "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/40 dark:text-brand-primary",
   compliance: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
   clinical: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
   safety:
     "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
   leadership:
-    "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/40 dark:text-brand-primary",
   technical: "bg-gray-100 text-gray-700 dark:bg-gray-900/40 dark:text-gray-300",
 };
 
@@ -773,7 +773,7 @@ const LearningPathsTab: React.FC = () => {
                           </p>
                         )}
                         {step.externalProvider && (
-                          <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
+                          <p className="text-xs text-brand-primary dark:text-brand-primary mt-1">
                             {t("providerLabel")}{" "}
                             {step.externalProvider.providerName} &middot;{" "}
                             {step.externalProvider.credits}{" "}

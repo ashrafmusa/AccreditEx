@@ -88,8 +88,16 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
     setIsModalOpen(false);
   };
 
-  const handleDeletePlan = (planId: string) => {
-    if (window.confirm(t("areYouSureDeleteAuditPlan"))) {
+  const handleDeletePlan = async (planId: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteAuditPlan"),
+          t("deleteAuditPlan") || "Delete Audit Plan",
+          t("delete") || "Delete",
+        )
+    ) {
       deleteAuditPlan(planId);
     }
   };
@@ -202,7 +210,7 @@ Format your response in clear Markdown with headers and bullet points.`;
           onClick={handleAIAnalyze}
           variant="ghost"
           disabled={aiLoading}
-          className="flex items-center gap-2 text-purple-600 hover:text-purple-700 border border-purple-200 hover:border-purple-300 dark:text-purple-400 dark:border-purple-800"
+          className="flex items-center gap-2 text-brand-primary hover:text-brand-primary border border-brand-primary/40 hover:border-brand-primary/40 dark:text-brand-primary dark:border-brand-primary/40"
         >
           <SparklesIcon className="h-4 w-4" />
           {aiLoading ? t("loading") + "..." : t("aiAnalyze")}

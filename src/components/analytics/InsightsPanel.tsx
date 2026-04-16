@@ -1,13 +1,13 @@
-import React, { useState } from "react";
-import { useInsights } from "../../hooks/useAnalyticsHooks";
 import {
+  AlertCircle,
   AlertTriangle,
+  CheckCircle,
+  Info,
   Lightbulb,
   TrendingUp,
-  CheckCircle,
-  AlertCircle,
-  Info,
 } from "lucide-react";
+import React, { useState } from "react";
+import { useInsights } from "../../hooks/useAnalyticsHooks";
 
 interface InsightsPanelProps {
   configId: string;
@@ -134,7 +134,7 @@ export const InsightsPanel: React.FC<InsightsPanelProps> = ({ configId }) => {
       <div className="space-y-3">
         {insights.map((insight, index) => (
           <div
-            key={index}
+            key={`${insight.type}-${index}`}
             className={`border rounded-lg p-4 transition-all cursor-pointer ${getInsightColor(insight.type)}`}
             onClick={() =>
               setExpandedIndex(expandedIndex === index ? null : index)

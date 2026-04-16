@@ -92,6 +92,12 @@ export const routes: RouteConfig[] = [
     // Change Control
     { path: "/change-control", view: "changeControlHub", requiresAuth: true, requiresAdmin: true },
 
+    // Template Library
+    { path: "/templates", view: "templateLibrary", requiresAuth: true },
+
+    // Pricing
+    { path: "/pricing", view: "pricing", requiresAuth: false },
+
     // Redirect legacy standalone routes to parent hubs
     { path: "/performance", view: "trainingHub", requiresAuth: true },
     { path: "/quality-rounding", view: "auditHub", requiresAuth: true },
@@ -117,7 +123,11 @@ export const navigationStateToPath = (state: NavigationState): string => {
         case "auditHub":
             return "/audit";
         case "documentControl":
-            return "/documents";
+            const docPath = "/documents";
+            if (state.templateId) {
+                return docPath + "?templateId=" + encodeURIComponent(state.templateId);
+            }
+            return docPath;
         case "projects":
             return "/projects";
         case "projectDetail":
@@ -168,6 +178,10 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/suppliers";
         case "changeControlHub":
             return "/change-control";
+        case "templateLibrary":
+            return "/templates";
+        case "pricing":
+            return "/pricing";
         default:
             return "/dashboard";
     }
@@ -205,11 +219,14 @@ export const pathToNavigationState = (
     if (path === "/report-builder") return { view: "reportBuilder" };
     if (path === "/suppliers") return { view: "supplierHub" };
     if (path === "/change-control") return { view: "changeControlHub" };
+    if (path === "/templates") return { view: "templateLibrary" };
+    if (path === "/pricing") return { view: "pricing" };
     if (path === "/quality-insights") return { view: "qualityInsights" };
     if (path === "/reports") return { view: "analyticsHub" };
     if (path === "/competencies") return { view: "trainingHub" };
     if (path === "/ai-document-generator") return { view: "documentControl" };
     if (path === "/performance") return { view: "trainingHub" };
+    if (path === "/pricing") return { view: "pricing" };
     if (path === "/quality-rounding") return { view: "auditHub" };
     if (path === "/projects") return { view: "projects" };
     if (path === "/projects/create") return { view: "createProject" };

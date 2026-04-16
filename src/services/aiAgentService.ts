@@ -8,9 +8,9 @@
  * @version 1.0.0
  */
 
-import { useUserStore } from '@/stores/useUserStore';
-import { useAppStore } from '@/stores/useAppStore';
 import { getAuthInstance } from '@/firebase/firebaseConfig';
+import { useAppStore } from '@/stores/useAppStore';
+import { useUserStore } from '@/stores/useUserStore';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -71,7 +71,6 @@ const MAX_RETRIES = 2;
 
 export class AIAgentService {
     private baseUrl: string;
-    private apiKey: string;
     private threadId: string | null = null;
 
     constructor() {
@@ -95,17 +94,14 @@ export class AIAgentService {
             this.baseUrl = envIsLocalhost || !envUrl ? RENDER_URL : envUrl;
         }
 
-        // API key: read from env var only (no hardcoded fallback).
-        this.apiKey = import.meta.env.VITE_AI_AGENT_API_KEY || '';
-
-        if (!this.apiKey) {
-            console.warn('⚠️ VITE_AI_AGENT_API_KEY is not set — AI features will fail.');
-        }
+        // Security fix (2026-04-17 SEC-H1): API key no longer read from frontend env.
+        // Auth is now handled exclusively via Firebase ID tokens (Bearer).
+        // The API_KEY stays on the Render server only (never bundled into client JS).
 
         if (import.meta.env.DEV) {
             console.log('🤖 AI Agent Service initialized:', {
                 baseUrl: this.baseUrl,
-                hasApiKey: !!this.apiKey,
+                auth: 'Firebase Bearer token',
             });
         }
     }    /**
@@ -200,16 +196,19 @@ export class AIAgentService {
 
     /**
      * Get common headers for API requests.
-     * Sends both X-API-Key and Firebase ID token (Authorization: Bearer)
-     * for dual-authentication support.
+     * Security fix (2026-04-17 SEC-H1): Removed X-API-Key from frontend.
+     * The API key must never be bundled in client JS — it would be visible
+     * in the browser's network tab and source maps.
+     *
+     * Auth path: Firebase ID token (Authorization: Bearer) only.
+     * The Render backend validates this via firebase_admin.verify_id_token().
      */
     private async getHeaders(): Promise<HeadersInit> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
-            'X-API-Key': this.apiKey,
         };
 
-        // Add Firebase ID token for user-level authentication
+        // Firebase ID token — required for all authenticated AI requests
         try {
             const { auth } = await import('@/firebase/firebaseConfig');
             const user = auth.currentUser;
@@ -218,7 +217,6 @@ export class AIAgentService {
                 headers['Authorization'] = `Bearer ${token}`;
             }
         } catch (e) {
-            // Non-fatal: API key auth will still work
             console.warn('[AI Agent] Could not attach Firebase token:', e);
         }
 

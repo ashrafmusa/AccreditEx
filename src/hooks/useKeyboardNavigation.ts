@@ -20,14 +20,35 @@ export const useKeyboardShortcuts = (shortcuts: KeyboardShortcut[] | ShortcutMap
       ? shortcuts
       : Object.entries(shortcuts).map(([key, handler]) => ({ key, handler }));
 
+    const isEditableTarget = (target: EventTarget | null): boolean => {
+      if (!(target instanceof HTMLElement)) return false;
+      if (target.isContentEditable) return true;
+      if (target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]')) {
+        return true;
+      }
+      return false;
+    };
+
     const handleKeyDown = (event: KeyboardEvent) => {
+      // Never intercept native browser shortcuts (Ctrl/Cmd + C/V/X/A/Z/Y/F/P/R/W/T).
+      // These must always reach the browser regardless of registered shortcuts.
+      const NATIVE_CTRL_KEYS = new Set(['c', 'v', 'x', 'a', 'z', 'y', 'f', 'p', 'r', 'w', 't']);
+      if ((event.ctrlKey || event.metaKey) && NATIVE_CTRL_KEYS.has(event.key.toLowerCase())) {
+        return;
+      }
+
+      // Do not hijack typing in form fields with single-key shortcuts.
+      if (isEditableTarget(event.target) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        return;
+      }
+
       for (const shortcut of normalizedShortcuts) {
         const ctrlMatch = shortcut.ctrlKey === undefined || shortcut.ctrlKey === event.ctrlKey;
         const shiftMatch = shortcut.shiftKey === undefined || shortcut.shiftKey === event.shiftKey;
         const altMatch = shortcut.altKey === undefined || shortcut.altKey === event.altKey;
 
         if (
-          event.key === shortcut.key &&
+          event.key.toLowerCase() === shortcut.key.toLowerCase() &&
           ctrlMatch &&
           shiftMatch &&
           altMatch

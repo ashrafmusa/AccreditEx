@@ -1,8 +1,11 @@
+import CookieBanner from "@/components/common/CookieBanner";
+import GlobalConfirmDialog from "@/components/common/GlobalConfirmDialog";
 import { LanguageProvider } from "@/components/common/LanguageProvider";
 import Layout from "@/components/common/Layout";
 import LoadingScreen from "@/components/common/LoadingScreen";
 import { ThemeProvider } from "@/components/common/ThemeProvider";
 import { ToastProvider } from "@/components/common/Toast";
+import TrialBanner from "@/components/common/TrialBanner";
 import { useToast } from "@/hooks/useToast";
 import React, { Suspense, useEffect, useRef, useState } from "react";
 // FIX: Corrected import path for useProjectStore
@@ -10,6 +13,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 // FIX: Corrected import path for useUserStore
 import { getAuthInstance } from "@/firebase/firebaseConfig";
 import { useFirebaseAuth } from "@/firebase/firebaseHooks";
+import { SecurityService } from "@/services/securityService";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
 
@@ -39,7 +43,7 @@ const App: React.FC = () => {
     <ThemeProvider>
       <LanguageProvider>
         <ToastProvider>
-          <AppInitializer />
+          <AppInitializer /> <CookieBanner />{" "}
         </ToastProvider>
       </LanguageProvider>
     </ThemeProvider>
@@ -50,6 +54,26 @@ const AppInitializer: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const toast = useToast();
   const initialized = useRef(false);
+  const currentPath =
+    typeof window !== "undefined" ? window.location.pathname : "/";
+  const shouldBlockForInitialization =
+    currentPath !== "/" && currentPath !== "/login" && currentPath !== "/pitch";
+
+  const withTimeout = async <T,>(
+    promise: Promise<T>,
+    timeoutMs: number,
+  ): Promise<T> => {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        setTimeout(
+          () =>
+            reject(new Error(`Initialization timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  };
 
   const fetchAllAppData = useAppStore((state) => state.fetchAllData);
   const appSettings = useAppStore((state) => state.appSettings);
@@ -67,7 +91,7 @@ const AppInitializer: React.FC = () => {
       try {
         // OPTIMIZATION: Only fetch critical app settings on startup
         // Users and projects load on-demand via lazy loading
-        await fetchAllAppData();
+        await withTimeout(fetchAllAppData(), 15000);
 
         // Optionally pre-fetch users and projects in background after settings load
         // This happens after the UI is interactive
@@ -95,7 +119,7 @@ const AppInitializer: React.FC = () => {
     }
   }, [appSettings?.primaryColor]);
 
-  if (isLoading || !appSettings) {
+  if (isLoading && shouldBlockForInitialization) {
     return <LoadingScreen />;
   }
 
@@ -126,6 +150,46 @@ const AppManager: React.FC = () => {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  useFirebaseAuth(); // This hook handles user state
+
+  // SEC-H3: Automatic session timeout (2026-04-17)
+  // Polls every 60 s; if the user has been inactive beyond the configured timeout
+  // window, they are logged out automatically.
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const security = SecurityService.getInstance();
+
+    // Track any user interaction to refresh the "last activity" timestamp
+    const resetActivity = () => security.updateLastActivity();
+    const events = [
+      "mousemove",
+      "keydown",
+      "pointerdown",
+      "scroll",
+      "touchstart",
+    ];
+    events.forEach((ev) =>
+      window.addEventListener(ev, resetActivity, { passive: true }),
+    );
+
+    // Initialize timestamp on mount so the countdown starts from now
+    security.updateLastActivity();
+
+    const timer = setInterval(async () => {
+      const timedOut = await security.checkSessionTimeout();
+      if (timedOut) {
+        await security.logoutDueToInactivity();
+        navigate("/login");
+      }
+    }, 60_000); // check every 60 seconds
+
+    return () => {
+      clearInterval(timer);
+      events.forEach((ev) => window.removeEventListener(ev, resetActivity));
+    };
+  }, [currentUser, navigate]);
 
   useFirebaseAuth(); // This hook handles user state
 
@@ -218,6 +282,7 @@ const AppManager: React.FC = () => {
       >
         Skip to main content
       </a>
+      <TrialBanner setNavigation={setNavigation} />
       <Layout setNavigation={setNavigation} navigation={navigation}>
         <main id="main-content">
           <Suspense fallback={<LoadingScreen />}>
@@ -229,6 +294,8 @@ const AppManager: React.FC = () => {
       <Suspense fallback={null}>
         <AIAssistant />
       </Suspense>
+      {/* Global confirm dialog - driven by useConfirmStore, replaces window.confirm */}
+      <GlobalConfirmDialog />
     </div>
   );
 };

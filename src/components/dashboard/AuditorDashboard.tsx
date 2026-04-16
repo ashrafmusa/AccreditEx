@@ -187,7 +187,7 @@ const AuditorDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) => {
                       title={t('scheduledAudits')} 
                       value={auditStats.totalScheduledAudits} 
                       icon={ClipboardDocumentCheckIcon} 
-                      color="from-blue-500 to-blue-700 bg-linear-to-br"
+                      color="from-blue-500 to-brand-primary/80 bg-linear-to-br"
                       onClick={() => setNavigation({ view: 'auditHub' })}
                     />
                     <StatCard 

@@ -1,6 +1,7 @@
-import React, { useState, useEffect, FC } from "react";
-import { AuditPlan, Project, User } from "../../types";
+import { isEligibleAuditor } from "@/utils/roleAccess";
+import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { AuditPlan, Project, User } from "../../types";
 
 interface AuditPlanModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ const AuditPlanModal: FC<AuditPlanModalProps> = ({
 }) => {
   const { t, dir } = useTranslation();
   const isEditMode = !!existingPlan;
+
+  const eligibleAuditors = users.filter(isEligibleAuditor);
 
   const [name, setName] = useState("");
   const [projectId, setProjectId] = useState("");
@@ -143,7 +146,7 @@ const AuditPlanModal: FC<AuditPlanModalProps> = ({
                   required
                 >
                   <option value="">{t("selectAuditor")}</option>
-                  {users.map((u) => (
+                  {eligibleAuditors.map((u) => (
                     <option key={u.id} value={u.id}>
                       {u.name}
                     </option>

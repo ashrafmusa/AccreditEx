@@ -6,13 +6,14 @@
  * Provides a friendly message and upgrade CTA.
  */
 
-import React from "react";
-import type { ModuleId } from "@/types/modules";
+import { ArrowTrendingUpIcon, LockClosedIcon } from "@/components/icons";
 import { MODULE_REGISTRY } from "@/data/moduleRegistry";
+import { useNavigation } from "@/hooks/useNavigation";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getRequiredPlan } from "@/services/moduleService";
 import { useTenantStore } from "@/stores/useTenantStore";
-import { useTranslation } from "@/hooks/useTranslation";
-import { LockClosedIcon, ArrowTrendingUpIcon } from "@/components/icons";
+import type { ModuleId } from "@/types/modules";
+import React from "react";
 
 interface UpgradePromptProps {
   moduleId: ModuleId;
@@ -21,6 +22,7 @@ interface UpgradePromptProps {
 const UpgradePrompt: React.FC<UpgradePromptProps> = ({ moduleId }) => {
   const { t } = useTranslation();
   const currentOrg = useTenantStore((s) => s.currentOrganization);
+  const { setNavigation } = useNavigation();
   const moduleDef = MODULE_REGISTRY[moduleId];
   const requiredPlan = getRequiredPlan(moduleId);
   const currentPlan = currentOrg?.plan || "free";
@@ -71,10 +73,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ moduleId }) => {
         {/* Upgrade CTA */}
         <div className="mt-2">
           <button
-            onClick={() => {
-              // Navigate to settings/billing when available
-              // For now, show contact admin message
-            }}
+            onClick={() => setNavigation({ view: "pricing" })}
             className="inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             <ArrowTrendingUpIcon className="h-5 w-5" />

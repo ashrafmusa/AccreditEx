@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { PDCAStage, PDCAStageHistory } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
-import { XMarkIcon } from "../icons";
 import { aiAgentService } from "@/services/aiAgentService";
+import { PDCAStage } from "@/types";
+import React, { useState } from "react";
+import { XMarkIcon } from "../icons";
 
 interface PDCAStageTransitionFormProps {
   currentStage: PDCAStage;
@@ -165,7 +165,7 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
             </h3>
             <div className="space-y-2 bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary rounded-lg p-4">
               {checklist.map((item, index) => (
-                <div key={index} className="flex items-start">
+                <div key={`${item}-${index}`} className="flex items-start">
                   <div className="shrink-0 w-5 h-5 rounded border-2 border-brand-primary mt-0.5 mr-3" />
                   <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
                     {item}
@@ -249,7 +249,7 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
             <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <ul className="list-disc list-inside text-sm text-red-600 dark:text-red-400">
                 {validationErrors.map((error, index) => (
-                  <li key={index}>{error}</li>
+                  <li key={`${error}-${index}`}>{error}</li>
                 ))}
               </ul>
             </div>

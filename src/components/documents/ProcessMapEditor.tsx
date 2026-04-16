@@ -1,45 +1,44 @@
-import React, { useState, useCallback, useEffect, useRef } from "react";
+import { aiAgentService } from "@/services/aiAgentService";
 import DOMPurify from "dompurify";
+import { toPng } from "html-to-image";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import ReactFlow, {
-  Node,
-  Edge,
-  Controls,
+  addEdge,
   Background,
   BackgroundVariant,
-  addEdge,
   Connection,
-  useNodesState,
-  useEdgesState,
-  MarkerType,
-  Panel,
-  MiniMap,
-  ReactFlowProvider,
-  NodeTypes,
-  useReactFlow,
+  Controls,
+  Edge,
   getRectOfNodes,
   getTransformForBounds,
   Handle,
+  MarkerType,
+  MiniMap,
+  Node,
+  NodeTypes,
   Position,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { toPng } from "html-to-image";
-import { AppDocument } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
-import { aiAgentService } from "@/services/aiAgentService";
+import { AppDocument } from "../../types";
 import {
-  XMarkIcon,
-  PlusIcon,
-  TrashIcon,
-  CheckIcon,
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
-  PhotoIcon,
-  QuestionMarkCircleIcon,
-  MagnifyingGlassPlusIcon,
-  MagnifyingGlassMinusIcon,
-  SparklesIcon,
+  CheckIcon,
   DocumentDuplicateIcon,
+  MagnifyingGlassMinusIcon,
+  MagnifyingGlassPlusIcon,
+  PhotoIcon,
+  PlusIcon,
+  QuestionMarkCircleIcon,
+  SparklesIcon,
   Squares2X2Icon,
+  TrashIcon,
+  XMarkIcon,
 } from "../icons";
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -384,6 +383,7 @@ const ProcessMapEditorContent: React.FC<
   const [nodeLabel, setNodeLabel] = useState("");
   const [showAddNodePanel, setShowAddNodePanel] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [snapToGrid, setSnapToGrid] = useState(true);
@@ -1167,17 +1167,15 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
   };
 
   const handleClear = () => {
-    if (
-      window.confirm(
-        t("confirmClearProcessMap") ||
-          "Are you sure you want to clear the entire process map?",
-      )
-    ) {
-      setNodes([]);
-      setEdges([]);
-      setHasChanges(true);
-      setTimeout(saveToHistory, 100);
-    }
+    setShowClearConfirm(true);
+  };
+
+  const executeClear = () => {
+    setShowClearConfirm(false);
+    setNodes([]);
+    setEdges([]);
+    setHasChanges(true);
+    setTimeout(saveToHistory, 100);
   };
 
   const handleAutoLayout = () => {
@@ -1513,8 +1511,8 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
               disabled={isAIProcessing}
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
                 showAIMenu || isAIProcessing
-                  ? "bg-violet-100 dark:bg-violet-900/40 text-violet-700 dark:text-violet-300"
-                  : "bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 hover:bg-violet-100 dark:hover:bg-violet-900/40"
+                  ? "bg-brand-primary/10 dark:bg-brand-primary/90/40 text-brand-primary dark:text-brand-primary"
+                  : "bg-brand-primary/5 dark:bg-brand-primary/90/20 text-brand-primary dark:text-brand-primary hover:bg-brand-primary/10 dark:hover:bg-brand-primary/90/40"
               }`}
             >
               {isAIProcessing ? (
@@ -1553,7 +1551,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                   }}
                   className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center gap-2"
                 >
-                  <SparklesIcon className="w-4 h-4 text-violet-500" />
+                  <SparklesIcon className="w-4 h-4 text-brand-primary" />
                   {t("generateFromText") || "Generate from Text"}
                 </button>
                 <button
@@ -1803,7 +1801,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
             className={`absolute top-3 right-4 max-w-xs z-20 ${glassRound} shadow-lg p-3`}
           >
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold text-violet-600 dark:text-violet-400 flex items-center gap-1.5">
+              <span className="text-xs font-semibold text-brand-primary dark:text-brand-primary flex items-center gap-1.5">
                 <SparklesIcon className="w-3.5 h-3.5" />
                 {t("suggestedNextSteps") || "Suggestions"}
               </span>
@@ -1869,12 +1867,12 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
             {t("connections") || "edges"}
           </span>
           {isExporting && (
-            <span className="text-violet-500 animate-pulse">
+            <span className="text-brand-primary animate-pulse">
               {t("exporting") || "Exporting..."}
             </span>
           )}
           {isAIProcessing && (
-            <span className="text-violet-500 animate-pulse">
+            <span className="text-brand-primary animate-pulse">
               {t("aiProcessing") || "AI processing..."}
             </span>
           )}
@@ -2066,7 +2064,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
               placeholder={
                 "e.g. A patient admission process:\n1. Patient arrives at reception\n2. Triage nurse assesses urgency\n3. If emergency → go to ER, else → register in OPD\n4. Doctor consultation\n5. Discharge or admit to ward"
               }
-              className="w-full h-36 p-3 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 resize-none focus:ring-2 focus:ring-violet-200 dark:focus:ring-violet-800 focus:border-violet-300 dark:focus:border-violet-600"
+              className="w-full h-36 p-3 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 resize-none focus:ring-2 focus:ring-brand-primary dark:focus:ring-brand-primary focus:border-brand-primary/40 dark:focus:border-brand-primary/40"
             />
             {aiGenerateError && (
               <p className="mt-2 text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 rounded-lg px-3 py-2">
@@ -2087,7 +2085,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
               <button
                 onClick={handleGenerateFromAI}
                 disabled={isAIProcessing || !aiDescription.trim()}
-                className="px-4 py-2 text-sm font-semibold bg-violet-600 text-white rounded-lg hover:bg-violet-700 disabled:opacity-40 transition-colors"
+                className="px-4 py-2 text-sm font-semibold bg-brand-primary text-white rounded-lg hover:bg-brand-primary disabled:opacity-40 transition-colors"
               >
                 {isAIProcessing
                   ? t("generating") || "Generating..."
@@ -2225,7 +2223,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                       code: "HESN",
                       desc: t("hesnDesc") || "Health Electronic Surveillance",
                       color:
-                        "border-teal-200 hover:border-teal-400 hover:bg-teal-50/50 dark:border-teal-700 dark:hover:border-teal-500 dark:hover:bg-teal-900/20",
+                        "border-brand-primary/40 hover:border-brand-primary/40 hover:bg-brand-primary/5/50 dark:border-brand-primary/40 dark:hover:border-brand-primary/40 dark:hover:bg-brand-primary/90/20",
                     },
                   ].map((std) => (
                     <button
@@ -2437,6 +2435,42 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                 className="px-4 py-1.5 bg-slate-200 dark:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-slate-300 dark:hover:bg-slate-500 transition-colors"
               >
                 {t("close") || "Close"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========== CLEAR CONFIRMATION DIALOG ========== */}
+      {showClearConfirm && (
+        <div
+          className="fixed inset-0 z-70 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          onClick={() => setShowClearConfirm(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4"
+            dir={dir}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h4 className="text-base font-semibold text-gray-900 dark:text-white mb-2">
+              {t("clearProcessMap") || "Clear Process Map"}
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+              {t("confirmClearProcessMap") ||
+                "Are you sure you want to clear the entire process map? This cannot be undone."}
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                {t("cancel") || "Cancel"}
+              </button>
+              <button
+                onClick={executeClear}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                {t("clearAll") || "Clear All"}
               </button>
             </div>
           </div>

@@ -23,6 +23,7 @@ import {
   getStandardsGovernanceStatus,
   saveStandardsBaseline,
 } from "@/services/standardsGovernanceService";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import {
   AccreditationProgram,
@@ -257,9 +258,14 @@ const StandardsPage: React.FC<StandardsPageProps> = ({
 
   const handleDelete = async (standardId: string) => {
     if (
-      !window.confirm(
-        t("areYouSureDeleteStandard") || "Are you sure? This cannot be undone.",
-      )
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteStandard") ||
+            "Are you sure? This cannot be undone.",
+          t("deleteStandard") || "Delete Standard",
+          t("delete") || "Delete",
+        ))
     ) {
       return;
     }

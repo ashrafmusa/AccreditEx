@@ -1,14 +1,15 @@
-import React, { useState, useMemo } from "react";
-import { Risk } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
+import { TableContainer } from "@/components/ui";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import React, { useMemo, useState } from "react";
 import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useAppStore } from "../../stores/useAppStore";
 import { useUserStore } from "../../stores/useUserStore";
+import { Risk } from "../../types";
+import { PencilIcon, PlusIcon, TrashIcon } from "../icons";
 import RiskMatrix from "./RiskMatrix";
 import RiskModal from "./RiskModal";
-import { PlusIcon, PencilIcon, TrashIcon } from "../icons";
-import { TableContainer } from "@/components/ui";
-import { usePermission, Action, Resource } from "@/hooks/usePermission";
 
 const RiskRegisterTab: React.FC = () => {
   const { t } = useTranslation();
@@ -55,12 +56,16 @@ const RiskRegisterTab: React.FC = () => {
     const riskTitle = risk?.title || "Risk";
 
     if (
-      !window.confirm(
-        `${
-          t("areYouSureDeleteRisk") ||
-          "Are you sure you want to delete this risk?"
-        } "${riskTitle}"?`,
-      )
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          `${
+            t("areYouSureDeleteRisk") ||
+            "Are you sure you want to delete this risk?"
+          } "${riskTitle}"?`,
+          t("deleteRisk") || "Delete Risk",
+          t("delete") || "Delete",
+        ))
     ) {
       return;
     }

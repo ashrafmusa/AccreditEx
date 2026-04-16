@@ -98,8 +98,8 @@ const AIButton: React.FC<{
     title={label}
     className={`inline-flex items-center gap-1 text-xs font-medium rounded-md transition-all
       ${compact ? "px-2 py-1" : "px-2.5 py-1.5"}
-      bg-linear-to-r from-violet-500 to-blue-500 text-white
-      hover:from-violet-600 hover:to-blue-600
+      bg-linear-to-r from-brand-primary to-brand-primary/80 text-white
+      hover:from-brand-primary hover:to-brand-primary/80
       disabled:opacity-50 disabled:cursor-not-allowed
       shadow-sm hover:shadow`}
   >
@@ -713,7 +713,7 @@ Return ONLY the HTML content.`;
                 <div
                   className={`w-10 h-10 rounded-lg flex items-center justify-center ${
                     type === "Procedure"
-                      ? "bg-purple-100 dark:bg-purple-900/30"
+                      ? "bg-brand-primary/10 dark:bg-brand-primary/90/30"
                       : type === "Report"
                         ? "bg-rose-100 dark:bg-rose-900/30"
                         : "bg-blue-100 dark:bg-blue-900/30"
@@ -722,7 +722,7 @@ Return ONLY the HTML content.`;
                   <SparklesIcon
                     className={`w-5 h-5 ${
                       type === "Procedure"
-                        ? "text-purple-600 dark:text-purple-400"
+                        ? "text-brand-primary dark:text-brand-primary"
                         : type === "Report"
                           ? "text-rose-600 dark:text-rose-400"
                           : "text-blue-600 dark:text-blue-400"
@@ -763,9 +763,9 @@ Return ONLY the HTML content.`;
 
             {/* AI Fill All Banner */}
             {hasName && (
-              <div className="mt-3 flex items-center gap-3 p-2.5 rounded-lg bg-linear-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 border border-violet-100 dark:border-violet-800/30">
-                <SparklesIcon className="w-4 h-4 text-violet-500 shrink-0" />
-                <p className="text-xs text-violet-700 dark:text-violet-300 flex-1">
+              <div className="mt-3 flex items-center gap-3 p-2.5 rounded-lg bg-linear-to-r from-brand-primary to-brand-primary/80 dark:from-brand-primary/20 dark:to-brand-primary/80/20 border border-brand-primary/40 dark:border-brand-primary/40/30">
+                <SparklesIcon className="w-4 h-4 text-brand-primary shrink-0" />
+                <p className="text-xs text-brand-primary dark:text-brand-primary flex-1">
                   {t("aiAutoFillDescription") ||
                     "Let AI auto-translate, suggest category & tags based on the document name"}
                 </p>
@@ -891,7 +891,7 @@ Return ONLY the HTML content.`;
                       type === "Policy"
                         ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                         : type === "Procedure"
-                          ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                          ? "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary"
                           : "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
                     }`}
                   >
@@ -1006,13 +1006,13 @@ Return ONLY the HTML content.`;
                   {tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-violet-50 dark:bg-violet-900/20 text-violet-700 dark:text-violet-300 rounded-full text-xs font-medium border border-violet-100 dark:border-violet-800/30"
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-brand-primary/5 dark:bg-brand-primary/90/20 text-brand-primary dark:text-brand-primary rounded-full text-xs font-medium border border-brand-primary/40 dark:border-brand-primary/40/30"
                     >
                       {tag}
                       <button
                         type="button"
                         onClick={() => handleRemoveTag(tag)}
-                        className="hover:text-violet-900 dark:hover:text-violet-100"
+                        className="hover:text-brand-primary dark:hover:text-brand-primary/60"
                         disabled={isUploading}
                       >
                         <XMarkIcon className="w-3 h-3" />
@@ -1056,7 +1056,7 @@ Return ONLY the HTML content.`;
 
             {/* AI Generate Initial Content */}
             {hasName && (
-              <div className="border border-violet-200 dark:border-violet-800/40 rounded-lg overflow-hidden">
+              <div className="border border-brand-primary/40 dark:border-brand-primary/40/40 rounded-lg overflow-hidden">
                 <button
                   type="button"
                   onClick={() => {
@@ -1067,12 +1067,12 @@ Return ONLY the HTML content.`;
                     }
                     if (!next) setGeneratedContent(undefined);
                   }}
-                  className="w-full flex items-center justify-between px-4 py-3 bg-linear-to-r from-violet-50 to-blue-50 dark:from-violet-900/20 dark:to-blue-900/20 hover:from-violet-100 hover:to-blue-100 dark:hover:from-violet-900/30 dark:hover:to-blue-900/30 transition-colors"
+                  className="w-full flex items-center justify-between px-4 py-3 bg-linear-to-r from-brand-primary to-brand-primary/80 dark:from-brand-primary/20 dark:to-brand-primary/80/20 hover:from-brand-primary hover:to-brand-primary/80 dark:hover:from-brand-primary/30 dark:hover:to-brand-primary/80/30 transition-colors"
                   disabled={aiAnyLoading && !aiGeneratingContent}
                 >
                   <span className="flex items-center gap-2">
-                    <SparklesIcon className="w-4 h-4 text-violet-500" />
-                    <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+                    <SparklesIcon className="w-4 h-4 text-brand-primary" />
+                    <span className="text-sm font-medium text-brand-primary dark:text-brand-primary">
                       {t("aiGenerateInitialContent") ||
                         "AI Generate Initial Content"}
                     </span>
@@ -1080,7 +1080,7 @@ Return ONLY the HTML content.`;
                   <span
                     className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors ${
                       generateInitialContent
-                        ? "bg-violet-500"
+                        ? "bg-brand-primary/70"
                         : "bg-gray-300 dark:bg-gray-600"
                     }`}
                   >
@@ -1092,9 +1092,9 @@ Return ONLY the HTML content.`;
                   </span>
                 </button>
                 {generateInitialContent && (
-                  <div className="px-4 py-3 bg-white dark:bg-gray-800/50 border-t border-violet-100 dark:border-violet-800/30">
+                  <div className="px-4 py-3 bg-white dark:bg-gray-800/50 border-t border-brand-primary/40 dark:border-brand-primary/40/30">
                     {aiGeneratingContent ? (
-                      <div className="flex items-center gap-2 text-sm text-violet-600 dark:text-violet-400">
+                      <div className="flex items-center gap-2 text-sm text-brand-primary dark:text-brand-primary">
                         <Spinner />
                         <span>
                           {t("generatingContent") ||
@@ -1112,7 +1112,7 @@ Return ONLY the HTML content.`;
                             type="button"
                             onClick={handleGenerateInitialContent}
                             disabled={aiAnyLoading}
-                            className="text-xs text-violet-600 dark:text-violet-400 hover:underline"
+                            className="text-xs text-brand-primary dark:text-brand-primary hover:underline"
                           >
                             {t("regenerate") || "Regenerate"}
                           </button>

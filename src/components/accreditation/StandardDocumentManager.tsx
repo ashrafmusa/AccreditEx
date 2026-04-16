@@ -1,18 +1,19 @@
-import React, { useState, useRef } from "react";
-import { StandardDocument } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useToast } from "@/hooks/useToast";
-import {
-  uploadStandardDocument,
-  deleteStandardDocument,
-  updateStandardDocumentDescription,
-} from "@/services/standardDocumentService";
 import {
   CloudUploadIcon,
-  TrashIcon,
   DocumentDownloadIcon,
   PencilIcon,
+  TrashIcon,
 } from "@/components/icons";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  deleteStandardDocument,
+  updateStandardDocumentDescription,
+  uploadStandardDocument,
+} from "@/services/standardDocumentService";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import { StandardDocument } from "@/types";
+import React, { useRef, useState } from "react";
 
 interface StandardDocumentManagerProps {
   standardId: string;
@@ -84,7 +85,15 @@ const StandardDocumentManager: React.FC<StandardDocumentManagerProps> = ({
   };
 
   const handleDelete = async (documentId: string) => {
-    if (!window.confirm(t("areYouSure") || "Are you sure?")) {
+    if (
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSure") || "Are you sure?",
+          t("deleteDocument") || "Delete Document",
+          t("delete") || "Delete",
+        ))
+    ) {
       return;
     }
 

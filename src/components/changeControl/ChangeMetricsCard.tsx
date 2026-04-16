@@ -99,7 +99,7 @@ export default function ChangeMetricsCard({ metrics }: ChangeMetricsCardProps) {
       label: t("successRate") || "Success Rate",
       value: `${Math.round(successRatePercentage)}%`,
       icon: CheckCircle,
-      color: "bg-teal-50 text-teal-600",
+      color: "bg-brand-primary/5 text-brand-primary",
     },
     {
       label: t("criticalRiskCount") || "Critical Risks",
@@ -117,7 +117,7 @@ export default function ChangeMetricsCard({ metrics }: ChangeMetricsCardProps) {
       label: t("avgImplementationTime") || "Avg Implementation (days)",
       value: (safeMetrics.averageImplementationTime || 0).toFixed(1),
       icon: Clock,
-      color: "bg-purple-50 text-purple-600",
+      color: "bg-brand-primary/5 text-brand-primary",
     },
   ];
 
@@ -218,11 +218,11 @@ export default function ChangeMetricsCard({ metrics }: ChangeMetricsCardProps) {
               {safeMetrics.approvedCount || 0}
             </span>
           </div>
-          <div className="flex justify-between p-3 bg-teal-50 rounded">
+          <div className="flex justify-between p-3 bg-brand-primary/5 rounded">
             <span className="text-brand-text-secondary">
               {t("status.implemented")}
             </span>
-            <span className="font-semibold text-teal-600">
+            <span className="font-semibold text-brand-primary">
               {safeMetrics.implementedCount || 0}
             </span>
           </div>
@@ -279,7 +279,7 @@ export default function ChangeMetricsCard({ metrics }: ChangeMetricsCardProps) {
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full">
                   <div
-                    className="h-full bg-purple-500 rounded-full"
+                    className="h-full bg-brand-primary/70 rounded-full"
                     style={{
                       width: `${Math.min(((safeMetrics.averageImplementationTime || 0) / 20) * 100, 100)}%`,
                     }}
@@ -321,7 +321,7 @@ export default function ChangeMetricsCard({ metrics }: ChangeMetricsCardProps) {
                 </div>
                 <div className="h-2 bg-gray-200 rounded-full">
                   <div
-                    className="h-full bg-teal-500 rounded-full"
+                    className="h-full bg-brand-primary/70 rounded-full"
                     style={{ width: `${Math.min(successRatePercentage, 100)}%` }}
                   />
                 </div>

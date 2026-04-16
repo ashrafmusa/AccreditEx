@@ -17,13 +17,38 @@ export interface Organization {
   maxUsers?: number;
   createdAt: string;
   updatedAt?: string;
+  /** ISO date string — when free trial ends */
+  trialEndsAt?: string;
+  /** ISO date string — when current paid subscription expires */
+  subscriptionExpiresAt?: string;
+  /** Whether the org is currently in trial mode */
+  trialActive?: boolean;
   /** Module configuration for tailored delivery */
   moduleConfig?: import('./modules').OrganizationModuleConfig;
 }
 
-export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'changeControl' | 'supplierHub';
+// ── Branch (Sub-location of an Organization) ─────────────
 
-export type NavigationView = 'dashboard' | 'analyticsHub' | 'analytics' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'accreditation' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'supplierHub' | 'changeControlHub' | 'myTasks' | 'qualityInsights' | 'users' | 'competencies';
+export interface Branch {
+  id: string;
+  organizationId: string;
+  name: string;
+  nameAr?: string;
+  location?: string;
+  city?: string;
+  country?: string;
+  phone?: string;
+  email?: string;
+  /** User ID of branch head/manager */
+  headUserId?: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'changeControl' | 'supplierHub' | 'orgPlan' | 'branches' | 'platformAdmin';
+
+export type NavigationView = 'dashboard' | 'analyticsHub' | 'analytics' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'accreditation' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'supplierHub' | 'changeControlHub' | 'myTasks' | 'qualityInsights' | 'users' | 'competencies' | 'templateLibrary' | 'pricing';
 
 // ── Knowledge Base Types ──────────────────────────────────
 
@@ -70,6 +95,7 @@ export interface NavigationState {
   certificateId?: string;
   programId?: string;
   documentId?: string;
+  templateId?: string;
   filter?: string;
 }
 
@@ -323,6 +349,8 @@ export interface User {
   avatarUrl?: string;
   departmentId?: string;
   department?: string;
+  /** Branch/sub-location this user belongs to (optional) */
+  branchId?: string;
   jobTitle?: string;
   hireDate?: string;
   permissions?: string[];

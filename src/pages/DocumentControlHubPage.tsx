@@ -1,3 +1,10 @@
+import { Button } from "@/components/ui";
+import {
+  Action,
+  permissionService,
+  Resource,
+} from "@/services/permissionService";
+import { useProjectStore } from "@/stores/useProjectStore";
 import React, {
   lazy,
   Suspense,
@@ -7,57 +14,50 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useTranslation } from "../hooks/useTranslation";
-import { useToast } from "../hooks/useToast";
 import { ContextualHelp } from "../components/common/ContextualHelp";
-import { getHelpContent } from "../data/helpContent";
-import {
-  AppDocument,
-  User,
-  UserRole,
-  Standard,
-  Department,
-  NavigationState,
-} from "../types";
-import { useProjectStore } from "@/stores/useProjectStore";
-import {
-  permissionService,
-  Action,
-  Resource,
-} from "@/services/permissionService";
+import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
+import SignatureModal from "../components/common/SignatureModal";
 import StatCard from "../components/common/StatCard";
-import DocumentSidebar from "../components/documents/DocumentSidebar";
+import ControlledDocumentsTable from "../components/documents/ControlledDocumentsTable";
 import DocumentSearch, {
   DocumentFilters,
 } from "../components/documents/DocumentSearch";
-import SignatureModal from "../components/common/SignatureModal";
-import ControlledDocumentsTable from "../components/documents/ControlledDocumentsTable";
-import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
-import { Button } from "@/components/ui";
+import DocumentSidebar from "../components/documents/DocumentSidebar";
 import {
-  DocumentTextIcon,
-  PlusIcon,
-  ChevronDownIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  PencilIcon,
-  ExclamationTriangleIcon,
-  Squares2X2Icon,
-  ListBulletIcon,
+  ArrowDownTrayIcon,
   ArrowPathIcon,
   ArrowTrendingUpIcon,
   CalendarIcon,
-  DocumentPlusIcon,
-  TrashIcon,
-  ArrowDownTrayIcon,
-  EyeIcon,
-  ShieldCheckIcon,
-  ClipboardDocumentListIcon,
-  PaperClipIcon,
   ChartBarIcon,
+  CheckCircleIcon,
+  ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ClipboardDocumentListIcon,
+  ClockIcon,
+  DocumentPlusIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  EyeIcon,
+  ListBulletIcon,
+  PaperClipIcon,
+  PencilIcon,
+  PlusIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
+  TrashIcon,
 } from "../components/icons";
+import { getHelpContent } from "../data/helpContent";
+import { useToast } from "../hooks/useToast";
+import { useTranslation } from "../hooks/useTranslation";
+import {
+  AppDocument,
+  Department,
+  NavigationState,
+  Standard,
+  User,
+  UserRole,
+} from "../types";
 
 const DocumentEditorModal = lazy(
   () => import("../components/documents/DocumentEditorModal"),
@@ -76,6 +76,12 @@ const PDFViewerModal = lazy(
 );
 const AIDocumentGenerator = lazy(
   () => import("../components/ai/AIDocumentGenerator"),
+);
+const ComplianceDashboard = lazy(
+  () => import("../components/documents/ComplianceDashboard"),
+);
+const BatchAuditModal = lazy(
+  () => import("../components/documents/BatchAuditModal"),
 );
 
 // --- Quick Filter Types ---
@@ -148,9 +154,9 @@ const TypeBadge: React.FC<{ type: string; t: (key: string) => string }> = ({
   const colors: Record<string, string> = {
     Policy: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
     Procedure:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300",
+      "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/40 dark:text-brand-primary",
     "Process Map":
-      "bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300",
+      "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/40 dark:text-brand-primary",
     Evidence:
       "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
     Report: "bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-300",
@@ -182,8 +188,8 @@ const DOC_TYPE_ICON_MAP: Record<
   },
   "Process Map": {
     icon: ArrowPathIcon,
-    bgColor: "bg-teal-50 dark:bg-teal-900/20",
-    iconColor: "text-teal-500 dark:text-teal-400",
+    bgColor: "bg-brand-primary/5 dark:bg-brand-primary/90/20",
+    iconColor: "text-brand-primary dark:text-brand-primary",
   },
   Evidence: {
     icon: PaperClipIcon,
@@ -192,8 +198,8 @@ const DOC_TYPE_ICON_MAP: Record<
   },
   Report: {
     icon: ChartBarIcon,
-    bgColor: "bg-purple-50 dark:bg-purple-900/20",
-    iconColor: "text-purple-500 dark:text-purple-400",
+    bgColor: "bg-brand-primary/5 dark:bg-brand-primary/90/20",
+    iconColor: "text-brand-primary dark:text-brand-primary",
   },
 };
 
@@ -262,6 +268,26 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     Resource.Document,
   );
   const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [activeTab, setActiveTab] = useState<"documents" | "dashboard">(
+    "documents",
+  );
+  const [dashboardProjectId, setDashboardProjectId] = useState<string>("");
+  const [dashboardData, setDashboardData] =
+    useState<ComplianceDashboardData | null>(null);
+  const [isDashboardLoading, setIsDashboardLoading] = useState(false);
+  const [isBatchAuditOpen, setIsBatchAuditOpen] = useState(false);
+
+  // Load compliance dashboard when tab or project changes
+  useEffect(() => {
+    if (activeTab !== "dashboard") return;
+    const pid = dashboardProjectId || projects[0]?.id;
+    if (!pid) return;
+    setIsDashboardLoading(true);
+    getComplianceDashboard(pid)
+      .then((data) => setDashboardData(data))
+      .catch(() => setDashboardData(null))
+      .finally(() => setIsDashboardLoading(false));
+  }, [activeTab, dashboardProjectId, projects]);
 
   // --- New state additions ---
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
@@ -965,10 +991,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                         setIsMetaModalOpen(true);
                         setIsAddMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-purple-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-brand-primary/5 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
-                      <div className="shrink-0 w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
-                        <ClipboardDocumentListIcon className="w-5 h-5 text-purple-500" />
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-primary/5 dark:bg-brand-primary/90/30 flex items-center justify-center">
+                        <ClipboardDocumentListIcon className="w-5 h-5 text-brand-primary" />
                       </div>
                       <div className="text-start">
                         <div className="font-medium">
@@ -986,10 +1012,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                         setIsProcessMapModalOpen(true);
                         setIsAddMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-teal-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-brand-primary/5 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
-                      <div className="shrink-0 w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-900/30 flex items-center justify-center">
-                        <ArrowPathIcon className="w-5 h-5 text-teal-500" />
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-primary/5 dark:bg-brand-primary/90/30 flex items-center justify-center">
+                        <ArrowPathIcon className="w-5 h-5 text-brand-primary" />
                       </div>
                       <div className="text-start">
                         <div className="font-medium">{t("processMap")}</div>
@@ -1027,10 +1053,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                         setShowAIGenerator(true);
                         setIsAddMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-purple-50 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
+                      className="w-full flex items-center gap-3 px-3 py-2.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-brand-primary/5 dark:hover:bg-gray-700/60 rounded-lg transition-colors"
                     >
-                      <div className="shrink-0 w-9 h-9 rounded-lg bg-purple-50 dark:bg-purple-900/30 flex items-center justify-center">
-                        <ArrowTrendingUpIcon className="w-5 h-5 text-purple-500" />
+                      <div className="shrink-0 w-9 h-9 rounded-lg bg-brand-primary/5 dark:bg-brand-primary/90/30 flex items-center justify-center">
+                        <ArrowTrendingUpIcon className="w-5 h-5 text-brand-primary" />
                       </div>
                       <div className="text-start">
                         <div className="font-medium">
@@ -1066,405 +1092,498 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         />
 
         <div className="flex-1 space-y-6 min-w-0">
-          {/* ===== Stat Cards with Trends ===== */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <StatCard
-              title={t("totalDocuments") || "Total Documents"}
-              value={stats.total}
-              icon={DocumentTextIcon}
-              color="from-blue-500 to-blue-700 bg-linear-to-br"
-              trend={
-                stats.recentTotal > 0
-                  ? {
-                      direction: "up",
-                      value: stats.recentTotal,
-                      label: t("thisMonth") || "this month",
-                    }
-                  : undefined
-              }
-            />
-            <StatCard
-              title={t("approved") || "Approved"}
-              value={stats.approved}
-              icon={CheckCircleIcon}
-              color="from-green-500 to-green-700 bg-linear-to-br"
-              trend={
-                stats.recentApproved > 0
-                  ? {
-                      direction: "up",
-                      value: stats.recentApproved,
-                      label: t("thisMonth") || "this month",
-                    }
-                  : undefined
-              }
-            />
-            <StatCard
-              title={t("pendingReview") || "Pending Review"}
-              value={stats.pending}
-              icon={ClockIcon}
-              color="from-yellow-500 to-yellow-700 bg-linear-to-br"
-              trend={
-                stats.recentPending > 0
-                  ? {
-                      direction:
-                        stats.pending > stats.recentPending ? "up" : "down",
-                      value: stats.recentPending,
-                      label: t("thisMonth") || "this month",
-                    }
-                  : undefined
-              }
-            />
-            <StatCard
-              title={t("drafts") || "Drafts"}
-              value={stats.drafts}
-              icon={PencilIcon}
-              color="from-gray-500 to-gray-700 bg-linear-to-br"
-            />
-            <StatCard
-              title={t("overdueReviews") || "Overdue Reviews"}
-              value={stats.overdue}
-              icon={ExclamationTriangleIcon}
-              color="from-red-500 to-red-700 bg-linear-to-br"
-              trend={
-                stats.overdue > 0
-                  ? {
-                      direction: "up",
-                      value: stats.overdue,
-                      label: t("needsAttention") || "needs attention",
-                    }
-                  : undefined
-              }
-            />
+          {/* ===== Tab Bar ===== */}
+          <div className="flex gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl w-fit">
+            <button
+              onClick={() => setActiveTab("documents")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === "documents"
+                  ? "bg-white dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary shadow-sm"
+                  : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:text-brand-text-primary"
+              }`}
+            >
+              <DocumentTextIcon className="w-4 h-4" />
+              {t("documents") || "Documents"}
+            </button>
+            <button
+              onClick={() => setActiveTab("dashboard")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                activeTab === "dashboard"
+                  ? "bg-white dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary shadow-sm"
+                  : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:text-brand-text-primary"
+              }`}
+            >
+              <ChartBarIcon className="w-4 h-4" />
+              {t("documents.complianceDashboard") || "Compliance Dashboard"}
+            </button>
           </div>
 
-          {/* ===== Quick Filters Toolbar ===== */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
-            {quickFilters.map((filter) => {
-              const isActive = activeQuickFilter === filter.key;
-              const FilterIcon = filter.icon;
-              return (
-                <button
-                  key={filter.key}
-                  onClick={() => {
-                    setActiveQuickFilter(filter.key);
-                    setSelectedDocIds(new Set());
-                  }}
-                  className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border shrink-0
+          {/* ===== Compliance Dashboard Tab ===== */}
+          {activeTab === "dashboard" && (
+            <div className="space-y-4">
+              {projects.length > 0 && (
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {t("project") || "Project"}:
+                  </label>
+                  <select
+                    value={dashboardProjectId || projects[0]?.id}
+                    onChange={(e) => setDashboardProjectId(e.target.value)}
+                    className="text-sm border border-gray-200 dark:border-dark-brand-border bg-white dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                  >
+                    {projects.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              <Suspense
+                fallback={
+                  <div className="h-64 flex items-center justify-center text-brand-text-secondary">
+                    Loading...
+                  </div>
+                }
+              >
+                {isDashboardLoading ? (
+                  <div className="h-64 flex items-center justify-center text-brand-text-secondary dark:text-dark-brand-text-secondary text-sm">
+                    {t("loading") || "Loading dashboard..."}
+                  </div>
+                ) : dashboardData ? (
+                  <ComplianceDashboard
+                    metrics={dashboardData.metrics}
+                    trends={dashboardData.trends}
+                    onRefresh={() => {
+                      setDashboardData(null);
+                      const pid = dashboardProjectId || projects[0]?.id;
+                      if (!pid) return;
+                      setIsDashboardLoading(true);
+                      getComplianceDashboard(pid)
+                        .then((data) => setDashboardData(data))
+                        .catch(() => setDashboardData(null))
+                        .finally(() => setIsDashboardLoading(false));
+                    }}
+                    isLoading={isDashboardLoading}
+                  />
+                ) : (
+                  <div className="h-64 flex flex-col items-center justify-center gap-3 text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    <ChartBarIcon className="w-10 h-10 opacity-30" />
+                    <p className="text-sm">
+                      {t("noProjectsFound") ||
+                        "No project selected or no audit data available."}
+                    </p>
+                  </div>
+                )}
+              </Suspense>
+            </div>
+          )}
+
+          {activeTab === "documents" && (
+            <>
+              {/* ===== Stat Cards with Trends ===== */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <StatCard
+                  title={t("totalDocuments") || "Total Documents"}
+                  value={stats.total}
+                  icon={DocumentTextIcon}
+                  color="from-blue-500 to-brand-primary/80 bg-linear-to-br"
+                  trend={
+                    stats.recentTotal > 0
+                      ? {
+                          direction: "up",
+                          value: stats.recentTotal,
+                          label: t("thisMonth") || "this month",
+                        }
+                      : undefined
+                  }
+                />
+                <StatCard
+                  title={t("approved") || "Approved"}
+                  value={stats.approved}
+                  icon={CheckCircleIcon}
+                  color="from-green-500 to-green-700 bg-linear-to-br"
+                  trend={
+                    stats.recentApproved > 0
+                      ? {
+                          direction: "up",
+                          value: stats.recentApproved,
+                          label: t("thisMonth") || "this month",
+                        }
+                      : undefined
+                  }
+                />
+                <StatCard
+                  title={t("pendingReview") || "Pending Review"}
+                  value={stats.pending}
+                  icon={ClockIcon}
+                  color="from-yellow-500 to-yellow-700 bg-linear-to-br"
+                  trend={
+                    stats.recentPending > 0
+                      ? {
+                          direction:
+                            stats.pending > stats.recentPending ? "up" : "down",
+                          value: stats.recentPending,
+                          label: t("thisMonth") || "this month",
+                        }
+                      : undefined
+                  }
+                />
+                <StatCard
+                  title={t("drafts") || "Drafts"}
+                  value={stats.drafts}
+                  icon={PencilIcon}
+                  color="from-gray-500 to-gray-700 bg-linear-to-br"
+                />
+                <StatCard
+                  title={t("overdueReviews") || "Overdue Reviews"}
+                  value={stats.overdue}
+                  icon={ExclamationTriangleIcon}
+                  color="from-red-500 to-red-700 bg-linear-to-br"
+                  trend={
+                    stats.overdue > 0
+                      ? {
+                          direction: "up",
+                          value: stats.overdue,
+                          label: t("needsAttention") || "needs attention",
+                        }
+                      : undefined
+                  }
+                />
+              </div>
+
+              {/* ===== Quick Filters Toolbar ===== */}
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+                {quickFilters.map((filter) => {
+                  const isActive = activeQuickFilter === filter.key;
+                  const FilterIcon = filter.icon;
+                  return (
+                    <button
+                      key={filter.key}
+                      onClick={() => {
+                        setActiveQuickFilter(filter.key);
+                        setSelectedDocIds(new Set());
+                      }}
+                      className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border shrink-0
                     ${
                       isActive
                         ? "bg-brand-primary text-white border-brand-primary shadow-md shadow-brand-primary/25 scale-[1.02]"
                         : "bg-white dark:bg-dark-brand-surface text-brand-text-secondary dark:text-dark-brand-text-secondary border-gray-200 dark:border-dark-brand-border hover:border-brand-primary/50 hover:text-brand-primary dark:hover:text-brand-primary"
                     }`}
-                >
-                  <FilterIcon className="w-4 h-4" />
-                  {filter.label}
-                  <span
-                    className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-bold
+                    >
+                      <FilterIcon className="w-4 h-4" />
+                      {filter.label}
+                      <span
+                        className={`inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full text-xs font-bold
                       ${
                         isActive
                           ? "bg-white/25 text-white"
                           : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300"
                       }`}
-                  >
-                    {filter.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ===== Search Bar + View Toggle ===== */}
-          <div className="flex items-center gap-3 flex-wrap">
-            {/* Mobile Sidebar Toggle */}
-            <button
-              onClick={() => setIsMobileSidebarOpen(true)}
-              className="md:hidden p-2.5 bg-white dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-lg text-gray-500 dark:text-gray-400 hover:text-brand-primary transition-colors"
-              aria-label={t("openFilters") || "Open Filters"}
-            >
-              <ListBulletIcon className="w-5 h-5" />
-            </button>
-            <div className="flex-1 min-w-[200px]">
-              <DocumentSearch
-                onSearch={setSearchQuery}
-                onFilter={setActiveFilters}
-                resultCount={controlledDocuments.length}
-                availableTags={allTags}
-              />
-            </div>
-            <div className="flex items-center bg-white dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-lg overflow-hidden">
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-2.5 transition-colors ${
-                  viewMode === "list"
-                    ? "bg-brand-primary text-white"
-                    : "text-gray-500 dark:text-gray-400 hover:text-brand-primary"
-                }`}
-                title={t("listView") || "List View"}
-                aria-label={t("listView") || "List View"}
-              >
-                <ListBulletIcon className="w-5 h-5" />
-              </button>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-2.5 transition-colors ${
-                  viewMode === "grid"
-                    ? "bg-brand-primary text-white"
-                    : "text-gray-500 dark:text-gray-400 hover:text-brand-primary"
-                }`}
-                title={t("gridView") || "Grid View"}
-                aria-label={t("gridView") || "Grid View"}
-              >
-                <Squares2X2Icon className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          {/* ===== Document Content ===== */}
-          {controlledDocuments.length === 0 ? (
-            /* ===== Enhanced Empty State ===== */
-            <div className="flex flex-col items-center justify-center py-16 px-4 bg-white dark:bg-dark-brand-surface rounded-xl border border-dashed border-gray-300 dark:border-dark-brand-border">
-              <div className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-6">
-                <DocumentTextIcon className="w-10 h-10 text-blue-400 dark:text-blue-300" />
+                      >
+                        {filter.count}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-              <h3 className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-                {t("noDocumentsFound") || "No documents found"}
-              </h3>
-              <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary text-center max-w-md mb-6">
-                {activeQuickFilter !== "all" || searchQuery
-                  ? t("noDocumentsMatchFilter") ||
-                    "No documents match your current filters. Try adjusting your search or filter criteria."
-                  : t("getStartedCreatingDocuments") ||
-                    "Get started by creating your first controlled document."}
-              </p>
-              {canModify && (
-                <Button onClick={() => setIsMetaModalOpen(true)}>
-                  <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-                  {t("createFirstDocument") || "Create First Document"}
-                </Button>
-              )}
-              {(activeQuickFilter !== "all" || searchQuery) && (
+
+              {/* ===== Search Bar + View Toggle ===== */}
+              <div className="flex items-center gap-3 flex-wrap">
+                {/* Mobile Sidebar Toggle */}
                 <button
-                  onClick={() => {
-                    setActiveQuickFilter("all");
-                    setSearchQuery("");
-                  }}
-                  className="mt-3 text-sm text-brand-primary hover:underline"
+                  onClick={() => setIsMobileSidebarOpen(true)}
+                  className="md:hidden p-2.5 bg-white dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-lg text-gray-500 dark:text-gray-400 hover:text-brand-primary transition-colors"
+                  aria-label={t("openFilters") || "Open Filters"}
                 >
-                  {t("clearFilters") || "Clear all filters"}
+                  <ListBulletIcon className="w-5 h-5" />
                 </button>
-              )}
-            </div>
-          ) : viewMode === "list" ? (
-            /* ===== List/Table View — using ControlledDocumentsTable ===== */
-            <ControlledDocumentsTable
-              documents={paginatedDocuments}
-              canModify={canModify}
-              onApprove={(doc) => setSigningDoc(doc)}
-              onDelete={(docId) => handleDeleteDocument(docId)}
-              onView={handleViewDoc}
-              selectedDocIds={canModify ? selectedDocIds : undefined}
-              onToggleSelect={canModify ? toggleDocSelection : undefined}
-              onSelectAll={canModify ? toggleSelectAll : undefined}
-              totalCount={controlledDocuments.length}
-            />
-          ) : (
-            /* ===== Grid/Card View ===== */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginatedDocuments.map((doc) => {
-                const isOverdue =
-                  doc.reviewDate && new Date(doc.reviewDate) < new Date();
-                const typeIcon = DOC_TYPE_ICON_MAP[doc.type] || {
-                  icon: DocumentTextIcon,
-                  bgColor: "bg-blue-50 dark:bg-blue-900/20",
-                  iconColor: "text-blue-500 dark:text-blue-400",
-                };
-                const TypeIcon = typeIcon.icon;
-                return (
-                  <div
-                    key={doc.id}
-                    onClick={() => handleViewDoc(doc)}
-                    className={`relative bg-white dark:bg-dark-brand-surface rounded-xl border border-gray-200 dark:border-dark-brand-border p-5 cursor-pointer
+                <div className="flex-1 min-w-[200px]">
+                  <DocumentSearch
+                    onSearch={setSearchQuery}
+                    onFilter={setActiveFilters}
+                    resultCount={controlledDocuments.length}
+                    availableTags={allTags}
+                  />
+                </div>
+                <div className="flex items-center bg-white dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-lg overflow-hidden">
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`p-2.5 transition-colors ${
+                      viewMode === "list"
+                        ? "bg-brand-primary text-white"
+                        : "text-gray-500 dark:text-gray-400 hover:text-brand-primary"
+                    }`}
+                    title={t("listView") || "List View"}
+                    aria-label={t("listView") || "List View"}
+                  >
+                    <ListBulletIcon className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-2.5 transition-colors ${
+                      viewMode === "grid"
+                        ? "bg-brand-primary text-white"
+                        : "text-gray-500 dark:text-gray-400 hover:text-brand-primary"
+                    }`}
+                    title={t("gridView") || "Grid View"}
+                    aria-label={t("gridView") || "Grid View"}
+                  >
+                    <Squares2X2Icon className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* ===== Document Content ===== */}
+              {controlledDocuments.length === 0 ? (
+                /* ===== Enhanced Empty State ===== */
+                <div className="flex flex-col items-center justify-center py-16 px-4 bg-white dark:bg-dark-brand-surface rounded-xl border border-dashed border-gray-300 dark:border-dark-brand-border">
+                  <div className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-6">
+                    <DocumentTextIcon className="w-10 h-10 text-blue-400 dark:text-blue-300" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
+                    {t("noDocumentsFound") || "No documents found"}
+                  </h3>
+                  <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary text-center max-w-md mb-6">
+                    {activeQuickFilter !== "all" || searchQuery
+                      ? t("noDocumentsMatchFilter") ||
+                        "No documents match your current filters. Try adjusting your search or filter criteria."
+                      : t("getStartedCreatingDocuments") ||
+                        "Get started by creating your first controlled document."}
+                  </p>
+                  {canModify && (
+                    <Button onClick={() => setIsMetaModalOpen(true)}>
+                      <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
+                      {t("createFirstDocument") || "Create First Document"}
+                    </Button>
+                  )}
+                  {(activeQuickFilter !== "all" || searchQuery) && (
+                    <button
+                      onClick={() => {
+                        setActiveQuickFilter("all");
+                        setSearchQuery("");
+                      }}
+                      className="mt-3 text-sm text-brand-primary hover:underline"
+                    >
+                      {t("clearFilters") || "Clear all filters"}
+                    </button>
+                  )}
+                </div>
+              ) : viewMode === "list" ? (
+                /* ===== List/Table View — using ControlledDocumentsTable ===== */
+                <ControlledDocumentsTable
+                  documents={paginatedDocuments}
+                  canModify={canModify}
+                  onApprove={(doc) => setSigningDoc(doc)}
+                  onDelete={(docId) => handleDeleteDocument(docId)}
+                  onView={handleViewDoc}
+                  selectedDocIds={canModify ? selectedDocIds : undefined}
+                  onToggleSelect={canModify ? toggleDocSelection : undefined}
+                  onSelectAll={canModify ? toggleSelectAll : undefined}
+                  totalCount={controlledDocuments.length}
+                />
+              ) : (
+                /* ===== Grid/Card View ===== */
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedDocuments.map((doc) => {
+                    const isOverdue =
+                      doc.reviewDate && new Date(doc.reviewDate) < new Date();
+                    const typeIcon = DOC_TYPE_ICON_MAP[doc.type] || {
+                      icon: DocumentTextIcon,
+                      bgColor: "bg-blue-50 dark:bg-blue-900/20",
+                      iconColor: "text-blue-500 dark:text-blue-400",
+                    };
+                    const TypeIcon = typeIcon.icon;
+                    return (
+                      <div
+                        key={doc.id}
+                        onClick={() => handleViewDoc(doc)}
+                        className={`relative bg-white dark:bg-dark-brand-surface rounded-xl border border-gray-200 dark:border-dark-brand-border p-5 cursor-pointer
                       hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 group
                       ${
                         selectedDocIds.has(doc.id)
                           ? "ring-2 ring-brand-primary border-brand-primary"
                           : ""
                       }`}
-                  >
-                    {/* Selection Checkbox */}
-                    {canModify && (
-                      <div
-                        className="absolute top-3 ltr:right-3 rtl:left-3 z-10"
-                        onClick={(e) => e.stopPropagation()}
                       >
-                        <input
-                          type="checkbox"
-                          checked={selectedDocIds.has(doc.id)}
-                          onChange={() => toggleDocSelection(doc.id)}
-                          aria-label={`Select document ${doc.name?.en || doc.id}`}
-                          className="rounded border-gray-300 dark:border-gray-600 text-brand-primary focus:ring-brand-primary"
-                        />
-                      </div>
-                    )}
+                        {/* Selection Checkbox */}
+                        {canModify && (
+                          <div
+                            className="absolute top-3 ltr:right-3 rtl:left-3 z-10"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={selectedDocIds.has(doc.id)}
+                              onChange={() => toggleDocSelection(doc.id)}
+                              aria-label={`Select document ${doc.name?.en || doc.id}`}
+                              className="rounded border-gray-300 dark:border-gray-600 text-brand-primary focus:ring-brand-primary"
+                            />
+                          </div>
+                        )}
 
-                    {/* Card Content */}
-                    <div className="flex items-start gap-3 mb-3">
-                      <div
-                        className={`p-2 rounded-lg ${typeIcon.bgColor} shrink-0`}
-                      >
-                        <TypeIcon className={`w-5 h-5 ${typeIcon.iconColor}`} />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary truncate">
-                          {doc.documentNumber && (
-                            <span className="mr-1.5 px-1.5 py-0.5 text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                              {doc.documentNumber}
-                            </span>
+                        {/* Card Content */}
+                        <div className="flex items-start gap-3 mb-3">
+                          <div
+                            className={`p-2 rounded-lg ${typeIcon.bgColor} shrink-0`}
+                          >
+                            <TypeIcon
+                              className={`w-5 h-5 ${typeIcon.iconColor}`}
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary truncate">
+                              {doc.documentNumber && (
+                                <span className="mr-1.5 px-1.5 py-0.5 text-xs font-mono font-semibold bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                                  {doc.documentNumber}
+                                </span>
+                              )}
+                              {doc.name[lang]}
+                            </h4>
+                            {doc.category && (
+                              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5 truncate">
+                                {doc.category}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Badges Row */}
+                        <div className="flex items-center gap-2 flex-wrap mb-3">
+                          <TypeBadge type={doc.type} t={t} />
+                          <StatusBadge status={doc.status} t={t} />
+                        </div>
+
+                        {/* Meta Info */}
+                        <div className="flex items-center justify-between text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                          <span>v{doc.currentVersion}</span>
+                          <span
+                            className={
+                              isOverdue
+                                ? "text-red-600 dark:text-red-400 font-medium flex items-center gap-1"
+                                : "flex items-center gap-1"
+                            }
+                          >
+                            <CalendarIcon className="w-3.5 h-3.5" />
+                            {doc.reviewDate
+                              ? new Date(doc.reviewDate).toLocaleDateString()
+                              : "—"}
+                            {isOverdue && (
+                              <ExclamationTriangleIcon className="w-3.5 h-3.5 text-red-500" />
+                            )}
+                          </span>
+                        </div>
+
+                        {/* Card Actions */}
+                        <div
+                          className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <button
+                            onClick={() => handleViewDoc(doc)}
+                            className="flex items-center gap-1 text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
+                            aria-label={t("view") || "View"}
+                          >
+                            <EyeIcon className="w-4 h-4" />
+                            {t("view") || "View"}
+                          </button>
+                          {doc.fileUrl && (
+                            <a
+                              href={doc.fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
+                              aria-label={t("download") || "Download"}
+                            >
+                              <ArrowDownTrayIcon className="w-4 h-4" />
+                              {t("download") || "Download"}
+                            </a>
                           )}
-                          {doc.name[lang]}
-                        </h4>
-                        {doc.category && (
-                          <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5 truncate">
-                            {doc.category}
-                          </p>
-                        )}
+                          {canModify && doc.status === "Pending Review" && (
+                            <button
+                              onClick={() => setSigningDoc(doc)}
+                              className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium"
+                            >
+                              <CheckCircleIcon className="w-4 h-4" />
+                              {t("approve")}
+                            </button>
+                          )}
+                          {canModify && (
+                            <button
+                              onClick={() => handleDeleteDocument(doc.id)}
+                              className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ltr:ml-auto rtl:mr-auto"
+                            >
+                              <TrashIcon className="w-4 h-4" />
+                              {t("delete")}
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    );
+                  })}
+                </div>
+              )}
 
-                    {/* Badges Row */}
-                    <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <TypeBadge type={doc.type} t={t} />
-                      <StatusBadge status={doc.status} t={t} />
-                    </div>
-
-                    {/* Meta Info */}
-                    <div className="flex items-center justify-between text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      <span>v{doc.currentVersion}</span>
-                      <span
-                        className={
-                          isOverdue
-                            ? "text-red-600 dark:text-red-400 font-medium flex items-center gap-1"
-                            : "flex items-center gap-1"
-                        }
-                      >
-                        <CalendarIcon className="w-3.5 h-3.5" />
-                        {doc.reviewDate
-                          ? new Date(doc.reviewDate).toLocaleDateString()
-                          : "—"}
-                        {isOverdue && (
-                          <ExclamationTriangleIcon className="w-3.5 h-3.5 text-red-500" />
-                        )}
-                      </span>
-                    </div>
-
-                    {/* Card Actions */}
-                    <div
-                      className="flex items-center gap-2 pt-3 mt-3 border-t border-gray-100 dark:border-gray-700"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => handleViewDoc(doc)}
-                        className="flex items-center gap-1 text-xs text-brand-primary hover:text-brand-primary/80 font-medium"
-                        aria-label={t("view") || "View"}
-                      >
-                        <EyeIcon className="w-4 h-4" />
-                        {t("view") || "View"}
-                      </button>
-                      {doc.fileUrl && (
-                        <a
-                          href={doc.fileUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
-                          aria-label={t("download") || "Download"}
-                        >
-                          <ArrowDownTrayIcon className="w-4 h-4" />
-                          {t("download") || "Download"}
-                        </a>
-                      )}
-                      {canModify && doc.status === "Pending Review" && (
-                        <button
-                          onClick={() => setSigningDoc(doc)}
-                          className="flex items-center gap-1 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 font-medium"
-                        >
-                          <CheckCircleIcon className="w-4 h-4" />
-                          {t("approve")}
-                        </button>
-                      )}
-                      {canModify && (
-                        <button
-                          onClick={() => handleDeleteDocument(doc.id)}
-                          className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ltr:ml-auto rtl:mr-auto"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                          {t("delete")}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* ===== Pagination ===== */}
-          {controlledDocuments.length > ITEMS_PER_PAGE && (
-            <div className="flex items-center justify-between pt-2">
-              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                {t("showingPage") || "Page"} {currentPage} {t("of") || "of"}{" "}
-                {totalPages}
-                <span className="hidden sm:inline">
-                  {" "}
-                  &middot; {controlledDocuments.length}{" "}
-                  {t("documents") || "documents"}
-                </span>
-              </p>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label={t("previousPage") || "Previous page"}
-                >
-                  <ChevronLeftIcon className="w-4 h-4" />
-                </button>
-                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                  let page: number;
-                  if (totalPages <= 5) {
-                    page = i + 1;
-                  } else if (currentPage <= 3) {
-                    page = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    page = totalPages - 4 + i;
-                  } else {
-                    page = currentPage - 2 + i;
-                  }
-                  return (
+              {/* ===== Pagination ===== */}
+              {controlledDocuments.length > ITEMS_PER_PAGE && (
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {t("showingPage") || "Page"} {currentPage} {t("of") || "of"}{" "}
+                    {totalPages}
+                    <span className="hidden sm:inline">
+                      {" "}
+                      &middot; {controlledDocuments.length}{" "}
+                      {t("documents") || "documents"}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-1">
                     <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`min-w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === page
-                          ? "bg-brand-primary text-white shadow-sm"
-                          : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-dark-brand-border"
-                      }`}
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg border border-gray-200 dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label={t("previousPage") || "Previous page"}
                     >
-                      {page}
+                      <ChevronLeftIcon className="w-4 h-4" />
                     </button>
-                  );
-                })}
-                <button
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg border border-gray-200 dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                  aria-label={t("nextPage") || "Next page"}
-                >
-                  <ChevronRightIcon className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      let page: number;
+                      if (totalPages <= 5) {
+                        page = i + 1;
+                      } else if (currentPage <= 3) {
+                        page = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        page = totalPages - 4 + i;
+                      } else {
+                        page = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`min-w-9 h-9 rounded-lg text-sm font-medium transition-colors ${
+                            currentPage === page
+                              ? "bg-brand-primary text-white shadow-sm"
+                              : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-gray-200 dark:border-dark-brand-border"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    })}
+                    <button
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg border border-gray-200 dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-gray-700/50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      aria-label={t("nextPage") || "Next page"}
+                    >
+                      <ChevronRightIcon className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>
@@ -1500,6 +1619,13 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
           >
             <TrashIcon className="w-4 h-4" />
             {t("deleteSelected") || "Delete"}
+          </button>
+          <button
+            onClick={() => setIsBatchAuditOpen(true)}
+            className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-white bg-brand-primary hover:bg-brand-primary/90 rounded-lg transition-colors"
+          >
+            <ChartBarIcon className="w-4 h-4" />
+            {t("batchAudit") || "Batch Audit"}
           </button>
           <button
             onClick={() => setSelectedDocIds(new Set())}
@@ -1643,6 +1769,20 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
           </div>
         </div>
       )}
+
+      {/* Batch Audit Modal */}
+      <Suspense fallback={null}>
+        <BatchAuditModal
+          isOpen={isBatchAuditOpen}
+          onClose={() => setIsBatchAuditOpen(false)}
+          projectId={dashboardProjectId || projects[0]?.id || ""}
+          documentIds={Array.from(selectedDocIds)}
+          onAuditComplete={() => {
+            setIsBatchAuditOpen(false);
+            setSelectedDocIds(new Set());
+          }}
+        />
+      </Suspense>
     </div>
   );
 };

@@ -791,7 +791,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
             <button
               onClick={handleAIAssignDepartments}
               disabled={isAssigningDepts || project.checklist.length === 0}
-              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-brand-primary to-brand-primary/80 text-white rounded-lg hover:from-brand-primary hover:to-brand-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {isAssigningDepts ? (
                 <>
@@ -971,8 +971,8 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                         onClick={() => setDepartmentFilter(e.deptId)}
                         className={`text-left p-3 rounded-lg border transition-colors ${
                           departmentFilter === e.deptId
-                            ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20"
-                            : "border-gray-200 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-700"
+                            ? "border-brand-primary/40 bg-brand-primary/5 dark:bg-brand-primary/90/20"
+                            : "border-gray-200 dark:border-gray-700 hover:border-brand-primary/40 dark:hover:border-brand-primary/40"
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1">
@@ -1075,14 +1075,14 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
             </span>
             <div className="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
               {/* Header */}
-              <div className="bg-linear-to-r from-indigo-600 to-purple-600 px-6 py-4 flex items-center justify-between">
+              <div className="bg-linear-to-r from-brand-primary to-brand-primary/80 px-6 py-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">🏢</span>
                   <div>
                     <h3 className="text-lg font-semibold text-white">
                       AI Department Assignment Review
                     </h3>
-                    <p className="text-indigo-200 text-xs mt-0.5">
+                    <p className="text-brand-primary/60 text-xs mt-0.5">
                       Review & modify assignments, then click "Apply All" to
                       save
                     </p>
@@ -1097,8 +1097,8 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
               </div>
 
               {/* Stats bar */}
-              <div className="px-6 py-3 bg-indigo-50 dark:bg-indigo-900/20 border-b dark:border-gray-700 flex flex-wrap gap-4 text-sm">
-                <span className="text-indigo-700 dark:text-indigo-300 font-medium">
+              <div className="px-6 py-3 bg-brand-primary/5 dark:bg-brand-primary/90/20 border-b dark:border-gray-700 flex flex-wrap gap-4 text-sm">
+                <span className="text-brand-primary dark:text-brand-primary font-medium">
                   {deptProposals.length} standard groups
                 </span>
                 <span className="text-green-700 dark:text-green-300">
@@ -1118,7 +1118,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
               {/* AI Raw Response Reference (collapsible) */}
               {aiModalContent && (
                 <details className="px-6 py-2 border-b dark:border-gray-700 bg-gray-50 dark:bg-gray-900/30">
-                  <summary className="cursor-pointer text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 select-none">
+                  <summary className="cursor-pointer text-xs font-medium text-brand-primary dark:text-brand-primary hover:text-brand-primary dark:hover:text-brand-primary select-none">
                     📄 Show AI Response (reference for manual assignment)
                   </summary>
                   <div className="mt-2 p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 max-h-48 overflow-y-auto">
@@ -1151,7 +1151,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                           className="border-b dark:border-gray-700 last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                         >
                           <td className="py-2.5 pr-3">
-                            <span className="font-mono text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                            <span className="font-mono text-xs font-medium text-brand-primary dark:text-brand-primary">
                               {proposal.standardId}
                             </span>
                           </td>
@@ -1216,7 +1216,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                       isApplyingDepts ||
                       deptProposals.every((p) => !p.departmentId)
                     }
-                    className="px-6 py-2 text-sm bg-linear-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-6 py-2 text-sm bg-linear-to-r from-brand-primary to-brand-primary/80 text-white rounded-lg hover:from-brand-primary hover:to-brand-primary/80 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isApplyingDepts ? (
                       <>

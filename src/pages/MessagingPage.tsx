@@ -126,7 +126,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
       {view === "statistics" && stats && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {/* Total Messages */}
-          <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <div className="bg-linear-to-br from-blue-50 to-brand-primary/80 dark:from-blue-900/30 dark:to-brand-primary/80/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">
@@ -186,7 +186,7 @@ const MessagingPage: React.FC<MessagingPageProps> = ({ setNavigation }) => {
           </div>
 
           {/* Conversations */}
-          <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <div className="bg-linear-to-br from-blue-50 to-brand-primary/80 dark:from-blue-900/30 dark:to-brand-primary/80/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">

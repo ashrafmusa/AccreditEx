@@ -1,68 +1,68 @@
-import React, { useMemo, useState, useEffect } from "react";
+import ChartSkeleton from "@/components/common/ChartSkeleton";
+import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
+import StatCard from "@/components/common/StatCard";
+import StatCardSkeleton from "@/components/common/StatCardSkeleton";
+import { useTheme } from "@/components/common/ThemeProvider";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts";
-import {
-  CHART_COLORS,
-  getChartTheme,
-  ChartTooltip,
-  BarGradientDef,
-  CHART_ANIMATION,
-} from "@/utils/chartTheme";
-import {
-  NavigationState,
-  ProjectStatus,
-  CAPAReport,
-  ComplianceStatus,
-  Risk,
-} from "@/types";
-import {
+  CalendarDaysIcon,
   CheckCircleIcon,
+  ClipboardDocumentCheckIcon,
   ExclamationTriangleIcon,
   FolderIcon,
   PlayCircleIcon,
-  CalendarDaysIcon,
-  ClipboardDocumentCheckIcon,
   XMarkIcon,
 } from "@/components/icons";
-import { useTranslation } from "@/hooks/useTranslation";
 import { useToast } from "@/hooks/useToast";
-import { useTheme } from "@/components/common/ThemeProvider";
-import StatCard from "@/components/common/StatCard";
-import StatCardSkeleton from "@/components/common/StatCardSkeleton";
-import ChartSkeleton from "@/components/common/ChartSkeleton";
-import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
-import { exportDashboardMetricsToCSV } from "@/utils/exportUtils";
-import { statusToTranslationKey } from "@/utils/complianceUtils";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   calculateAssessorPackExportMetrics,
   getAssessorPackExportAudit,
 } from "@/services/assessorReportPackService";
-import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
 import {
   calculateGuideReadinessCorrelation,
   getRecentMonthlyQualityOutcomeSnapshots,
   recordMonthlyQualityOutcomeSnapshot,
 } from "@/services/qualityOutcomeIntelligenceService";
+import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import {
+  CAPAReport,
+  ComplianceStatus,
+  NavigationState,
+  ProjectStatus,
+  Risk,
+} from "@/types";
+import {
+  BarGradientDef,
+  CHART_ANIMATION,
+  CHART_COLORS,
+  ChartTooltip,
+  getChartTheme,
+} from "@/utils/chartTheme";
+import { statusToTranslationKey } from "@/utils/complianceUtils";
+import { exportDashboardMetricsToCSV } from "@/utils/exportUtils";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import DashboardHeader from "./DashboardHeader";
 // FIX: Corrected import path for CapaListItem
-import CapaListItem from "./CapaListItem";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
-import { FeatureDiscoveryWidget } from "./widgets/FeatureDiscoveryWidget";
+import CapaListItem from "./CapaListItem";
 import PendingApprovalsWidget from "./PendingApprovalsWidget";
+import { FeatureDiscoveryWidget } from "./widgets/FeatureDiscoveryWidget";
 
 interface DashboardPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -501,11 +501,67 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
           title={t("welcomeBack")}
           greeting={t("dashboardGreeting")}
           onExport={handleExportMetrics}
+          roleShortcuts={[
+            {
+              label: t("scheduleAudit") || "Schedule Audit",
+              navigation: { view: "auditHub" },
+            },
+            {
+              label: t("reportBuilder") || "Report Builder",
+              navigation: { view: "reportBuilder" },
+            },
+            {
+              label: t("documentsReviewOverdue") || "Overdue Document Reviews",
+              navigation: { view: "documentControl", filter: "overdue" },
+            },
+          ]}
         />
 
         {/* Feature Discovery Widget - Added to top for visibility */}
         <div>
           <FeatureDiscoveryWidget setNavigation={setNavigation} />
+        </div>
+
+        {/* Quick Actions - Click-depth reduction for high-frequency admin journeys */}
+        <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-xl border border-brand-border dark:border-dark-brand-border shadow-sm">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {t("quickActions") || "Quick Actions"}
+            </h2>
+            <span className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+              {t("priorityActions") || "Priority Actions"}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <button
+              onClick={() => setNavigation({ view: "auditHub" })}
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("scheduleAudit") || "Schedule Audit"}
+            </button>
+            <button
+              onClick={() => setNavigation({ view: "reportBuilder" })}
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("reportBuilder") || "Report Builder"}
+            </button>
+            <button
+              onClick={() =>
+                setNavigation({ view: "documentControl", filter: "overdue" })
+              }
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("documentsReviewOverdue") || "Overdue Document Reviews"}
+            </button>
+            <button
+              onClick={() =>
+                setNavigation({ view: "projects", filter: "openCapa" })
+              }
+              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
+            >
+              {t("openCapaReports") || "Open CAPA Reports"}
+            </button>
+          </div>
         </div>
 
         {/* Loading State for Stats Cards */}
@@ -532,7 +588,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("totalProjects")}
                 value={dashboardData.totalProjects}
                 icon={FolderIcon}
-                color="from-blue-500 to-blue-700 bg-linear-to-br"
+                color="from-blue-500 to-brand-primary/80 bg-linear-to-br"
                 onClick={() => setNavigation({ view: "projects" })}
               />
               <StatCard
@@ -608,7 +664,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
                 title={t("mitigatedRisks")}
                 value={dashboardData.mitigatedRisks}
                 icon={CheckCircleIcon}
-                color="from-teal-500 to-teal-700 bg-linear-to-br"
+                color="from-brand-primary to-brand-primary/80 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "riskHub", filter: "mitigated" })
                 }

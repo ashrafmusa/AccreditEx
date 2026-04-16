@@ -1,29 +1,23 @@
-import React, { useState, useMemo } from "react";
-import {
-  Department,
-  User,
-  Project,
-  NavigationState,
-  ComplianceStatus,
-} from "../types";
-import { useTranslation } from "../hooks/useTranslation";
-import { useToast } from "../hooks/useToast";
-import DepartmentCard from "../components/departments/DepartmentCard";
-import DepartmentModal from "../components/departments/DepartmentModal";
-import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
-import {
-  BuildingOffice2Icon,
-  PlusIcon,
-  UsersIcon,
-  FolderIcon,
-} from "../components/icons";
-import StatCard from "../components/common/StatCard";
 import { Button } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
-import { useAppStore } from "@/stores/useAppStore";
-import { useUserStore } from "@/stores/useUserStore";
-import { useProjectStore } from "@/stores/useProjectStore";
 import { usePermission } from "@/hooks/usePermission";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import React, { useMemo, useState } from "react";
+import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
+import StatCard from "../components/common/StatCard";
+import DepartmentCard from "../components/departments/DepartmentCard";
+import DepartmentModal from "../components/departments/DepartmentModal";
+import {
+  BuildingOffice2Icon,
+  FolderIcon,
+  PlusIcon,
+  UsersIcon,
+} from "../components/icons";
+import { useToast } from "../hooks/useToast";
+import { useTranslation } from "../hooks/useTranslation";
+import { ComplianceStatus, Department, NavigationState } from "../types";
 
 interface DepartmentsPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -117,7 +111,15 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = ({ setNavigation }) => {
       "Are you sure you want to delete this department?"
     } "${deptName}" (${usersInDept} ${t("staffMembers")})?`;
 
-    if (!window.confirm(confirmMsg)) {
+    if (
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          confirmMsg,
+          t("deleteDepartment") || "Delete Department",
+          t("delete") || "Delete",
+        ))
+    ) {
       return;
     }
 

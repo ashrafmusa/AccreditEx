@@ -2,8 +2,10 @@
   "servers": {
     "agentica": {
       "type": "stdio",
-      "command": "node",
-      "args": ["D:/_Projects/Agentica/mcp/server.js"],
+      "command": "C:\\nvm4w\\nodejs\\node.exe",
+      "args": [
+        "D:/_Projects/Agentica/mcp/server.js"
+      ],
       "env": {
         "AGENTICA_ROOT": "D:/_Projects/Agentica",
         "PROJECT_NAME": "accreditex",

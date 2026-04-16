@@ -1030,8 +1030,8 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                   type="button"
                   onClick={handleFreePrompt}
                   disabled={activeAiOp !== null || !freePrompt.trim()}
-                  className="px-3 py-2 text-xs font-medium rounded-md bg-linear-to-r from-violet-500 to-blue-500 text-white
-                             hover:from-violet-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  className="px-3 py-2 text-xs font-medium rounded-md bg-linear-to-r from-brand-primary to-brand-primary/80 text-white
+                             hover:from-brand-primary hover:to-brand-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                 >
                   {activeAiOp === "generate" ? (
                     <SparklesIcon className="w-3.5 h-3.5 animate-spin" />

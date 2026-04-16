@@ -26,7 +26,7 @@ const RESULT_COLORS = {
 const STATUS_COLORS: Record<CAPAssessmentStatus, string> = {
   scheduled: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
   in_progress:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
   completed:
     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   overdue: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -232,8 +232,8 @@ const CAPAssessmentTab: React.FC = () => {
                 {t("overdue")}
               </div>
             </div>
-            <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 text-center">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="bg-brand-primary/5 dark:bg-brand-primary/90/20 rounded-lg p-3 text-center">
+              <div className="text-2xl font-bold text-brand-primary dark:text-brand-primary">
                 {stats.methodCoverage}/6
               </div>
               <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">

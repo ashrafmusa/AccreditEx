@@ -1,25 +1,24 @@
-import React, { useState, useEffect, useMemo, FC } from "react";
+import React, { FC, useEffect, useMemo, useState } from "react";
 // Force HMR update
 import {
-  Project,
-  User,
-  AppDocument,
-  Standard,
-  AccreditationProgram,
-  NavigationState,
-  CAPAReport,
-} from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import {
-  MagnifyingGlassIcon,
-  FolderIcon,
-  DocumentTextIcon,
-  UsersIcon,
   CheckCircleIcon,
-  ExclamationTriangleIcon,
   ClockIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
+  MagnifyingGlassIcon,
+  UsersIcon,
   XMarkIcon,
 } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  AccreditationProgram,
+  AppDocument,
+  NavigationState,
+  Project,
+  Standard,
+  User,
+} from "@/types";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -288,7 +287,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
               {recentSearches.length > 0 ? (
                 <ul>
                   {recentSearches.map((term, index) => (
-                    <li key={index}>
+                    <li key={term}>
                       <button
                         onClick={() => setSearchTerm(term)}
                         className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 group"
@@ -323,7 +322,7 @@ const CommandPalette: FC<CommandPaletteProps> = ({
                   {searchResults.map((item, index) => {
                     const Icon = item.icon;
                     return (
-                      <li key={index}>
+                      <li key={`${item.type}-${item.name}`}>
                         <button
                           onClick={() => handleItemClick(item.link)}
                           className="w-full flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left group"

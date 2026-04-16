@@ -26,9 +26,12 @@
  *   permissionService.canModify(user)
  */
 
-import { UserRole, User } from '@/types';
-import { doc, getDoc } from 'firebase/firestore';
 import { db, getAuthInstance } from '@/firebase/firebaseConfig';
+import { migrateUserDocToAuthUid } from '@/services/secureUserService';
+import { useUserStore } from '@/stores/useUserStore';
+import { User, UserRole } from '@/types';
+import { normalizeUserRole } from '@/utils/roleAccess';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 
 // ── Actions ────────────────────────────────────────────────
 
@@ -125,7 +128,10 @@ class PermissionService {
         if (!user || !user.role) return false;
         if (user.isActive === false) return false;
 
-        const rolePermissions = PERMISSION_MATRIX[user.role];
+        const normalizedRole = normalizeUserRole(user.role);
+        if (!normalizedRole) return false;
+
+        const rolePermissions = PERMISSION_MATRIX[normalizedRole];
         if (!rolePermissions) return false;
 
         // Check resource-specific permissions first, then fallback to _default
@@ -137,14 +143,14 @@ class PermissionService {
      * Check if user has Admin role
      */
     isAdmin(user: UserLike | null | undefined): boolean {
-        return user?.role === UserRole.Admin;
+        return normalizeUserRole(user?.role) === UserRole.Admin;
     }
 
     /**
      * Check if user has Viewer role (read-only)
      */
     isViewer(user: UserLike | null | undefined): boolean {
-        return user?.role === UserRole.Viewer;
+        return normalizeUserRole(user?.role) === UserRole.Viewer;
     }
 
     /**
@@ -153,7 +159,8 @@ class PermissionService {
     canModify(user: UserLike | null | undefined): boolean {
         if (!user || !user.role) return false;
         if (user.isActive === false) return false;
-        return user.role !== UserRole.Viewer;
+        const normalizedRole = normalizeUserRole(user.role);
+        return !!normalizedRole && normalizedRole !== UserRole.Viewer;
     }
 
     /**
@@ -184,7 +191,10 @@ class PermissionService {
         if (!user || !user.role) return [];
         if (user.isActive === false) return [];
 
-        const rolePermissions = PERMISSION_MATRIX[user.role];
+        const normalizedRole = normalizeUserRole(user.role);
+        if (!normalizedRole) return [];
+
+        const rolePermissions = PERMISSION_MATRIX[normalizedRole];
         if (!rolePermissions) return [];
 
         return rolePermissions[resource] ?? rolePermissions._default ?? [];
@@ -225,11 +235,19 @@ class PermissionService {
         if (user.isActive === false) {
             throw new PermissionError('Your account is deactivated.', 'ACCOUNT_INACTIVE');
         }
+        const normalizedRole = normalizeUserRole(user.role);
+        if (!normalizedRole) {
+            throw new PermissionError(
+                `Invalid or unsupported role value: ${user.role}.`,
+                'INVALID_ROLE',
+                { role: user.role }
+            );
+        }
         if (!this.can(user, action, resource)) {
             throw new PermissionError(
-                `Your role (${user.role}) does not have ${action} permission on ${resource}.`,
+                `Your role (${normalizedRole}) does not have ${action} permission on ${resource}.`,
                 'INSUFFICIENT_ROLE',
-                { role: user.role, action, resource }
+                { role: normalizedRole, action, resource }
             );
         }
     }
@@ -256,8 +274,6 @@ class PermissionService {
             );
         }
 
-        // 2. Dynamically import to avoid circular dependencies
-        const { useUserStore } = await import('@/stores/useUserStore');
         const appUser = useUserStore.getState().currentUser;
         if (!appUser) {
             throw new PermissionError(
@@ -294,7 +310,6 @@ class PermissionService {
         // 4a. If store user has a different ID, try migrating the legacy doc
         if (appUser.id !== authUid) {
             console.info('[RBAC Guard] Migrating legacy doc', appUser.id, '→', authUid);
-            const { migrateUserDocToAuthUid } = await import('@/services/secureUserService');
             try {
                 await migrateUserDocToAuthUid(appUser.id, authUid);
                 // Verify migration succeeded
@@ -312,7 +327,6 @@ class PermissionService {
 
         // 4b. Last resort — create user doc from app state (self-heal)
         try {
-            const { setDoc } = await import('firebase/firestore');
             const newDocData = {
                 ...appUser,
                 id: authUid,
@@ -352,8 +366,6 @@ class PermissionService {
      * @throws PermissionError with clear, user-facing message
      */
     async guard(action: Action, resource: Resource): Promise<User> {
-        // Dynamic import to avoid circular dependency
-        const { useUserStore } = await import('@/stores/useUserStore');
         const appUser = useUserStore.getState().currentUser;
 
         // Client-side permission check (fast fail)
@@ -386,3 +398,4 @@ export const permissionService = new PermissionService();
 
 // Export class for testing
 export { PermissionService };
+

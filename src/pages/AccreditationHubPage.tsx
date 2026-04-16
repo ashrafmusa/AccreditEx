@@ -1,19 +1,19 @@
+import { Button } from "@/components/ui";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import React, { useState } from "react";
-import { AccreditationProgram, UserRole, NavigationState } from "../types";
-import { useTranslation } from "../hooks/useTranslation";
+import ProgramCard from "../components/accreditation/ProgramCard";
+import ProgramImportExport from "../components/accreditation/ProgramImportExport";
+import ProgramImportWizardModal from "../components/accreditation/ProgramImportWizardModal";
+import ProgramModal from "../components/accreditation/ProgramModal";
+import EmptyState from "../components/common/EmptyState";
+import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
+import { PlusIcon, ShieldCheckIcon } from "../components/icons";
 import { useToast } from "../hooks/useToast";
+import { useTranslation } from "../hooks/useTranslation";
 import { useAppStore } from "../stores/useAppStore";
 import { useProjectStore } from "../stores/useProjectStore";
 import { useUserStore } from "../stores/useUserStore";
-import ProgramCard from "../components/accreditation/ProgramCard";
-import ProgramModal from "../components/accreditation/ProgramModal";
-import ProgramImportExport from "../components/accreditation/ProgramImportExport";
-import ProgramImportWizardModal from "../components/accreditation/ProgramImportWizardModal";
-import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
-import { PlusIcon } from "../components/icons";
-import EmptyState from "../components/common/EmptyState";
-import { ShieldCheckIcon } from "../components/icons";
-import { Button } from "@/components/ui";
+import { AccreditationProgram, NavigationState, UserRole } from "../types";
 
 interface AccreditationHubPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -54,7 +54,15 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
   };
 
   const handleDelete = async (programId: string) => {
-    if (window.confirm(t("areYouSureDeleteProgram"))) {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteProgram"),
+          t("deleteProgram") || "Delete Program",
+          t("delete") || "Delete",
+        )
+    ) {
       try {
         await deleteProgram(programId);
         toast.success(

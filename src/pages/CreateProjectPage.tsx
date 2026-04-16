@@ -1,24 +1,25 @@
-import React, { useState, useEffect } from "react";
+import { ContextualHelp } from "@/components/common/ContextualHelp";
+import { ArrowLeftIcon, FolderIcon } from "@/components/icons";
+import TemplateSelector from "@/components/projects/TemplateSelector";
+import { Button } from "@/components/ui";
+import { inputClasses, labelClasses } from "@/components/ui/constants";
+import DatePicker from "@/components/ui/DatePicker";
+import { getHelpContent } from "@/data/helpContent";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { aiAgentService } from "@/services/aiAgentService";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
 import {
+  ComplianceStatus,
   NavigationState,
   Project,
-  ComplianceStatus,
   ProjectStatus,
 } from "@/types";
 import { ProjectTemplate } from "@/types/templates";
-import { useTranslation } from "@/hooks/useTranslation";
-import { ContextualHelp } from "@/components/common/ContextualHelp";
-import { getHelpContent } from "@/data/helpContent";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
-import { useToast } from "@/hooks/useToast";
-import { FolderIcon, ArrowLeftIcon } from "@/components/icons";
-import { inputClasses, labelClasses } from "@/components/ui/constants";
-import DatePicker from "@/components/ui/DatePicker";
-import TemplateSelector from "@/components/projects/TemplateSelector";
-import { Button, ErrorMessage } from "@/components/ui";
-import { aiAgentService } from "@/services/aiAgentService";
+import { isEligibleProjectLead } from "@/utils/roleAccess";
+import React, { useEffect, useState } from "react";
 
 interface CreateProjectPageProps {
   navigation:
@@ -41,6 +42,8 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
     standards,
   } = useAppStore();
   const toast = useToast();
+
+  const eligibleProjectLeads = users.filter(isEligibleProjectLead);
 
   const isEditMode = navigation.view === "editProject";
   const existingProject = isEditMode
@@ -680,7 +683,7 @@ Process all items shown. Be specific to healthcare accreditation standards.`;
                 required
               >
                 <option value="">{t("selectLead")}</option>
-                {users.map((u) => (
+                {eligibleProjectLeads.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name}
                   </option>
@@ -745,7 +748,7 @@ Process all items shown. Be specific to healthcare accreditation standards.`;
                             : [...prev, d.id],
                         );
                       }}
-                      className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                      className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
                     />
                     <span className="text-sm text-gray-900 dark:text-white">
                       {d.name.en || d.name.ar}
@@ -754,7 +757,7 @@ Process all items shown. Be specific to healthcare accreditation standards.`;
                 ))}
             </div>
             {departmentIds.length > 0 && (
-              <p className="text-xs text-indigo-600 dark:text-indigo-400 mt-1">
+              <p className="text-xs text-brand-primary dark:text-brand-primary mt-1">
                 {departmentIds.length} department
                 {departmentIds.length > 1 ? "s" : ""} selected
               </p>

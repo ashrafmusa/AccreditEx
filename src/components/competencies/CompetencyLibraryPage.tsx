@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { Competency } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
-import { PlusIcon, IdentificationIcon, PencilIcon, TrashIcon } from "../icons";
 import { TableContainer } from "@/components/ui";
-import CompetencyModal from "./CompetencyModal";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import React, { useState } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
 import { useAppStore } from "../../stores/useAppStore";
-import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import { Competency } from "../../types";
+import { IdentificationIcon, PencilIcon, PlusIcon, TrashIcon } from "../icons";
+import CompetencyModal from "./CompetencyModal";
 
 const CompetencyLibraryPage: React.FC = () => {
   const { t, lang } = useTranslation();
@@ -49,8 +50,16 @@ const CompetencyLibraryPage: React.FC = () => {
     handleCloseModal();
   };
 
-  const handleDelete = (compId: string) => {
-    if (window.confirm(t("areYouSureDeleteCompetency"))) {
+  const handleDelete = async (compId: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteCompetency"),
+          t("deleteCompetency") || "Delete Competency",
+          t("delete") || "Delete",
+        )
+    ) {
       onDelete(compId);
     }
   };

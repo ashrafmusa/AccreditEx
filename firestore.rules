@@ -26,6 +26,14 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
     
+    // Super-admin check: platform-level operator only.
+    // Grant access by creating a document in /platformAdmins/{uid} via Firebase Console.
+    // No Cloud Functions or custom claims required.
+    function isSuperAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/platformAdmins/$(request.auth.uid));
+    }
+
     // Unified admin check: custom claim OR Firestore doc
     function isAdmin() {
       return hasAdminClaim() || hasAdminDoc();
@@ -268,10 +276,25 @@ service cloud.firestore {
     
     // ── Additional Collections (Multi-Tenancy) ─────────────
     
-    // Organizations collection (super-admin only)
+    // Organizations collection
+    // SECURITY (2026-04-16): Writes restricted to platform super-admins ONLY.
+    // Org-level Admins can read their own org doc but CANNOT modify plan, maxUsers,
+    // trialEndsAt, subscriptionExpiresAt, or moduleConfig — prevents self-upgrade attacks.
     match /organizations/{orgId} {
-      allow read: if isAuthenticated() && (isAdmin() || request.auth.token.organizationId == orgId);
-      allow write: if isAdmin();
+      // Any authenticated user can read org docs (org data is not sensitive).
+      // Writes are restricted to platform super-admins only.
+      allow read: if isAuthenticated();
+      allow create: if isSuperAdmin();
+      allow update: if isSuperAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // platformAdmins — stores UID-keyed docs for platform super-admins.
+    // Any authenticated user can read their OWN doc (so isSuperAdmin() can evaluate).
+    // NOBODY can write from the client — manage via Firebase Console only.
+    match /platformAdmins/{uid} {
+      allow read: if isAuthenticated() && request.auth.uid == uid;
+      allow write: if false;
     }
     
     // Audits collection
@@ -339,11 +362,20 @@ service cloud.firestore {
     }
     
     // Notifications collection
+    // Security fix (2026-04-17): Added belongsToUserOrg() to read/update/delete rules.
+    // Previously, read checked userId only — a user from another org could read any
+    // notification doc if they knew the document ID.
     match /notifications/{docId} {
-      allow read: if isAuthenticated() && (resource.data.userId == request.auth.uid);
+      allow read: if isAuthenticated()
+                  && belongsToUserOrg()
+                  && resource.data.userId == request.auth.uid;
       allow create: if isAuthenticated() && setsCorrectOrg();
-      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
-      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated()
+                    && belongsToUserOrg()
+                    && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated()
+                    && belongsToUserOrg()
+                    && resource.data.userId == request.auth.uid;
     }
     
     // Activity Logs collection
@@ -352,6 +384,15 @@ service cloud.firestore {
       allow create: if isAuthenticated() && setsCorrectOrg();
       allow update: if false;
       allow delete: if isAdmin();
+    }
+
+    // Lab Operations Data collection
+    // Stores aggregated Lab Ops domain state (equipment, IQC, quality records, etc.)
+    match /labOpsData/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Custom Calendar Events collection
@@ -368,6 +409,99 @@ service cloud.firestore {
       allow create: if isAdmin() && setsCorrectOrg();
       allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
       allow delete: if isAdmin() && belongsToUserOrg();
+    }
+    
+    // Comments collection (Document Collaboration)
+    // Security fix (2026-03-05): Comment collaboration system
+    // - Read: Any authenticated user in the same org
+    // - Create: Authenticated users with correct author.id
+    // - Update/Delete: Only comment author or admin
+    match /comments/{commentId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAuthenticated() 
+                    && request.resource.data.author.id == request.auth.uid 
+                    && setsCorrectOrg();
+      allow update, delete: if isAuthenticated() 
+                            && (resource.data.author.id == request.auth.uid || isAdmin()) 
+                            && belongsToUserOrg();
+    }
+
+    // Demo Requests collection (public landing form)
+    // Public create is allowed with strict input validation.
+    // Read is restricted to admins; update/delete are disabled.
+    match /demoRequests/{requestId} {
+      allow create: if request.resource.data.keys().hasOnly([
+                      'name', 'email', 'organization', 'message', 'createdAt', 'status'
+                    ])
+                    && request.resource.data.name is string
+                    && request.resource.data.name.size() >= 2
+                    && request.resource.data.name.size() <= 120
+                    && request.resource.data.email is string
+                    && request.resource.data.email.matches('^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$')
+                    && request.resource.data.email.size() <= 160
+                    && request.resource.data.organization is string
+                    && request.resource.data.organization.size() <= 160
+                    && request.resource.data.message is string
+                    && request.resource.data.message.size() <= 2000
+                    && request.resource.data.createdAt is timestamp
+                    && request.resource.data.status == 'new';
+
+      allow read: if isAdmin();
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // ── Branches collection ────────────────────────────────
+    // Branches represent physical sub-locations of an organization
+    // (e.g. main campus, north branch, satellite clinic).
+    // They share the same organizationId as all other org data.
+    match /branches/{branchId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create, update: if isAdmin() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
+    }
+
+    // ── Plan enforcement for premium write operations ──────
+    // Reads org document to check plan before allowing writes to
+    // premium-tier collections (analyticsHub, workflowDefinitions, etc.).
+    // Helper function — referenced by premium collection rules.
+    // Note: This performs a Firestore read, so it counts against quota.
+    function getOrgPlan() {
+      let orgId = getUserOrgId();
+      return orgId != null
+        ? get(/databases/$(database)/documents/organizations/$(orgId)).data.get('plan', 'free')
+        : 'free';
+    }
+
+    function isAtLeastStarter() {
+      let plan = getOrgPlan();
+      return plan in ['starter', 'professional', 'enterprise'];
+    }
+
+    function isAtLeastProfessional() {
+      let plan = getOrgPlan();
+      return plan in ['professional', 'enterprise'];
+    }
+
+    function isEnterprise() {
+      return getOrgPlan() == 'enterprise';
+    }
+
+    // Lab Ops Data — Professional+ plan required for writes
+    // (read is open to all org members for dashboard visibility)
+    match /labOpsDataPremium/{docId} {
+      allow read: if isAuthenticated() && belongsToUserOrg();
+      allow create: if isAtLeastTeamMember() && setsCorrectOrg() && isAtLeastProfessional();
+      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg() && isAtLeastProfessional();
+      allow delete: if isAdmin() && belongsToUserOrg() && isAtLeastProfessional();
+    }
+
+    // Feedback — any authenticated user can submit feedback.
+    // Only platform super-admins can read/manage submissions.
+    match /feedback/{docId} {
+      allow create: if isAuthenticated();
+      allow read: if isSuperAdmin();
+      allow update, delete: if false;
     }
   }
 }

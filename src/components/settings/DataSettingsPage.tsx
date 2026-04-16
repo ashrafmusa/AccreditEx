@@ -1,18 +1,15 @@
-import React, { useState } from "react";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
+import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   exportAllFirestoreData,
   importAllFirestoreData,
 } from "@/services/firestoreDataService";
-import { useToast } from "@/hooks/useToast";
-import { useAdminGuard } from "@/hooks/useAdminGuard";
-import { useSettingsAudit } from "@/hooks/useSettingsAudit";
-import SettingsCard from "./SettingsCard";
-import SettingsButton from "./SettingsButton";
-import SettingsAlert from "./SettingsAlert";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import React, { useState } from "react";
 import DataActionButton from "./DataActionButton";
-import { CheckIcon } from "@/components/icons";
-import { SettingsPanel } from "./index";
+import SettingsCard from "./SettingsCard";
 
 const DataSettingsPage: React.FC = () => {
   const { t } = useTranslation();
@@ -69,7 +66,15 @@ const DataSettingsPage: React.FC = () => {
       toast.error(t("typeResetToConfirm") || "Please type RESET to confirm");
       return;
     }
-    if (window.confirm(t("areYouSureReset"))) {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureReset"),
+          t("resetData") || "Reset Data",
+          t("reset") || "Reset",
+        )
+    ) {
       await auditLog("data", "reset", "all-data", null, "delete");
       // Reset would require clearing all collections
       toast.info(t("resetInProgress"));

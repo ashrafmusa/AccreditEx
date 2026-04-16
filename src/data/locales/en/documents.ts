@@ -14,7 +14,25 @@ export const en = {
     // Document Editor Modal
     editMode: 'Edit Mode',
     viewMode: 'View Mode',
-    selectStandard: 'Select a standard to start...',
+    commentsHelp: 'View or add comments',
+    help: 'Help',
+    documentAuditor: 'Document Auditor',
+    overallCompliance: 'Overall Compliance',
+    structure: 'Structure',
+    completeness: 'Completeness',
+    language: 'Language',
+    readability: 'Readability',
+    issues: 'Issues',
+    aiSuggestions: 'AI Improvement Suggestions',
+    generateSuggestions: 'Generate AI Suggestions',
+    generating: 'Generating...',
+    exportReport: 'Export Report',
+    reportExported: 'Compliance report exported',
+    reportExportFailed: 'Failed to export report',
+    complianceAnalysisFailed: 'Failed to analyze document compliance',
+    suggestionsGenerated: 'AI suggestions generated',
+    failedToGenerateSuggestions: 'Failed to generate suggestions',
+    analyzingDocument: 'Analyzing document...',
     generatePolicy: 'Generate from Standard',
     improveWriting: 'Improve Writing',
     translate: 'Translate to Other Language',
@@ -107,6 +125,9 @@ export const en = {
 
     // Document Operations Success
     documentCreatedSuccessfully: 'Document created successfully',
+    viewAllComments: 'View all comments',
+    viewOpenComments: 'View open comments',
+    viewResolvedComments: 'View resolved comments',
     documentSavedSuccessfully: 'Document saved successfully',
     documentDeletedSuccessfully: 'Document deleted successfully',
     documentApprovedSuccessfully: 'Document approved successfully',
@@ -190,7 +211,6 @@ export const en = {
     aiProcessing: 'AI is processing...',
     generateProcessMapDesc: 'Generate Process Map from Description',
     describeProcessPlaceholder: 'Describe your process in detail. For example: \'Create a document review process where documents are submitted, reviewed by a manager, approved or rejected, and then either published or sent back for revision.\'',
-    generating: 'Generating...',
     suggestedNextSteps: 'Suggested Next Steps',
     addThisStep: 'Add This Step',
     processOptimizations: 'Process Optimization Suggestions',
@@ -467,7 +487,6 @@ export const en = {
     storage: 'Storage',
 
     // Document Editor Sidebar
-    completeness: 'Completeness',
     hasContent: 'Has Content',
     hasTags: 'Has Tags',
     hasCategory: 'Has Category',
@@ -576,4 +595,14 @@ export const en = {
     cancel: 'Cancel',
     save: 'Save',
     home: 'Home',
+
+    // Batch Audit & Compliance Dashboard
+    batchAudit: 'Batch Compliance Audit',
+    batchAuditHint: 'Audit multiple documents at once',
+    changeControl: 'Change Control',
+    changeControlHint: 'View linked change requests from audits',
+    auditing: 'Auditing...',
+    auditInProgress: 'Running...',
+    complianceDashboard: 'Compliance Dashboard',
+    auditChangeControl: 'Audit & Change Control',
 };

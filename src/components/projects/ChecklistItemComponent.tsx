@@ -719,7 +719,7 @@ Action Plan: ${item.actionPlan || "None"}`;
                 return dept ? (
                   <>
                     <span className="mx-2">•</span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-medium">
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-brand-primary/10 dark:bg-brand-primary/90/30 text-brand-primary dark:text-brand-primary text-xs font-medium">
                       🏢 {resolveName(dept.name)}
                     </span>
                   </>
@@ -765,7 +765,7 @@ Action Plan: ${item.actionPlan || "None"}`;
             {item.comments.length > 0 && (
               <>
                 <span className="mx-1">•</span>
-                <span className="inline-flex items-center gap-1 text-xs text-purple-700 dark:text-purple-300">
+                <span className="inline-flex items-center gap-1 text-xs text-brand-primary dark:text-brand-primary">
                   💬 {item.comments.length}
                 </span>
               </>
@@ -848,7 +848,7 @@ Action Plan: ${item.actionPlan || "None"}`;
         <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4 bg-gray-50 dark:bg-gray-900/50">
           {/* ── AI Audit Assistant Toolbar ─────────────────────────────── */}
           {!isEditing && !isFinalized && (
-            <div className="rounded-xl border border-indigo-200 dark:border-indigo-800 bg-linear-to-r from-indigo-50 via-purple-50 to-cyan-50 dark:from-indigo-950/40 dark:via-purple-950/40 dark:to-cyan-950/40 overflow-hidden">
+            <div className="rounded-xl border border-brand-primary/40 dark:border-brand-primary/40 bg-linear-to-r from-brand-primary via-brand-primary/50 to-cyan-50 dark:from-brand-primary/40 dark:via-brand-primary/50/40 dark:to-cyan-950/40 overflow-hidden">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -856,11 +856,11 @@ Action Plan: ${item.actionPlan || "None"}`;
                   setAiToolbarOpen(opening);
                   if (opening) checkAiBackendStatus();
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 transition-colors"
+                className="w-full flex items-center justify-between px-4 py-3 hover:bg-brand-primary/10/50 dark:hover:bg-brand-primary/90/30 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🤖</span>
-                  <span className="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
+                  <span className="text-sm font-semibold text-brand-primary dark:text-brand-primary/60">
                     AI Audit Assistant
                   </span>
                   {aiBackendStatus === "ready" && (
@@ -882,7 +882,7 @@ Action Plan: ${item.actionPlan || "None"}`;
                     />
                   )}
                   {aiActiveAction && (
-                    <span className="flex items-center gap-1.5 text-xs text-indigo-600 dark:text-indigo-300">
+                    <span className="flex items-center gap-1.5 text-xs text-brand-primary dark:text-brand-primary">
                       <svg className="animate-spin h-3 w-3" viewBox="0 0 24 24">
                         <circle
                           className="opacity-25"
@@ -904,7 +904,7 @@ Action Plan: ${item.actionPlan || "None"}`;
                   )}
                 </div>
                 <ChevronDownIcon
-                  className={`w-4 h-4 text-indigo-500 transition-transform ${aiToolbarOpen ? "rotate-180" : ""}`}
+                  className={`w-4 h-4 text-brand-primary transition-transform ${aiToolbarOpen ? "rotate-180" : ""}`}
                 />
               </button>
 
@@ -918,10 +918,10 @@ Action Plan: ${item.actionPlan || "None"}`;
                         handleAIAutoAssess();
                       }}
                       disabled={!!aiActiveAction}
-                      className="flex flex-col items-center gap-1.5 px-3 py-3 text-xs font-medium rounded-lg border border-indigo-200 dark:border-indigo-700 bg-white dark:bg-gray-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex flex-col items-center gap-1.5 px-3 py-3 text-xs font-medium rounded-lg border border-brand-primary/40 dark:border-brand-primary/40 bg-white dark:bg-gray-800 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="text-xl">🎯</span>
-                      <span className="text-indigo-800 dark:text-indigo-200">
+                      <span className="text-brand-primary dark:text-brand-primary/60">
                         Auto-Assess
                       </span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400">
@@ -986,10 +986,10 @@ Action Plan: ${item.actionPlan || "None"}`;
                         handleAIAuditNotes();
                       }}
                       disabled={!!aiActiveAction}
-                      className="flex flex-col items-center gap-1.5 px-3 py-3 text-xs font-medium rounded-lg border border-purple-200 dark:border-purple-700 bg-white dark:bg-gray-800 hover:bg-purple-50 dark:hover:bg-purple-900/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex flex-col items-center gap-1.5 px-3 py-3 text-xs font-medium rounded-lg border border-brand-primary/40 dark:border-brand-primary/40 bg-white dark:bg-gray-800 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="text-xl">🔍</span>
-                      <span className="text-purple-800 dark:text-purple-200">
+                      <span className="text-brand-primary dark:text-brand-primary/60">
                         Audit Report
                       </span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400">
@@ -1002,10 +1002,10 @@ Action Plan: ${item.actionPlan || "None"}`;
                         handleAIInterviewQuestions();
                       }}
                       disabled={!!aiActiveAction}
-                      className="flex flex-col items-center gap-1.5 px-3 py-3 text-xs font-medium rounded-lg border border-teal-200 dark:border-teal-700 bg-white dark:bg-gray-800 hover:bg-teal-50 dark:hover:bg-teal-900/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex flex-col items-center gap-1.5 px-3 py-3 text-xs font-medium rounded-lg border border-brand-primary/40 dark:border-brand-primary/40 bg-white dark:bg-gray-800 hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/40 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <span className="text-xl">🎤</span>
-                      <span className="text-teal-800 dark:text-teal-200">
+                      <span className="text-brand-primary dark:text-brand-primary/60">
                         Interview Q&A
                       </span>
                       <span className="text-[10px] text-gray-500 dark:text-gray-400">
@@ -1018,7 +1018,7 @@ Action Plan: ${item.actionPlan || "None"}`;
                   {(item.status === ComplianceStatus.NonCompliant ||
                     item.status === ComplianceStatus.PartiallyCompliant ||
                     item.status === ComplianceStatus.NotStarted) && (
-                    <div className="border-t border-indigo-200 dark:border-indigo-800 pt-3">
+                    <div className="border-t border-brand-primary/40 dark:border-brand-primary/40 pt-3">
                       <p className="text-[10px] uppercase font-semibold text-gray-500 dark:text-gray-400 mb-2 tracking-wider">
                         Corrective Actions
                       </p>

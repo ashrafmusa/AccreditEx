@@ -1,18 +1,16 @@
-import React, { useState, useEffect } from "react";
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
+  ShieldCheckIcon,
+  UsersIcon,
+} from "@/components/icons";
+import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { securityService } from "@/services/securityService";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
-import { securityService } from "@/services/securityService";
-import { useToast } from "@/hooks/useToast";
-import {
-  ShieldCheckIcon,
-  LockClosedIcon,
-  UsersIcon,
-  ExclamationTriangleIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-} from "@/components/icons";
+import React, { useEffect, useState } from "react";
 
 const SecurityDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -180,7 +178,7 @@ const SecurityDashboard: React.FC = () => {
         <div className="space-y-4">
           {complianceResult.issues.map((issue: any, index: number) => (
             <div
-              key={index}
+              key={`${issue.severity}-${index}`}
               className={`p-4 rounded-lg border ${
                 issue.severity === "critical"
                   ? "bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800"

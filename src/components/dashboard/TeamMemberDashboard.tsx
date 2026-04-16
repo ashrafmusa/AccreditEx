@@ -241,7 +241,7 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
                 title={t("upcomingTasks")}
                 value={taskStats.upcomingTasks}
                 icon={SparklesIcon}
-                color="from-blue-500 to-blue-700 bg-linear-to-br"
+                color="from-blue-500 to-brand-primary/80 bg-linear-to-br"
                 onClick={() =>
                   setNavigation({ view: "myTasks", filter: "upcoming" })
                 }

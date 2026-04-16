@@ -97,7 +97,7 @@ const UserProjectInvolvement: React.FC<Props> = ({ user, projects }) => {
           <div className="space-y-1">
             <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
               <div
-                className="h-full bg-linear-to-r from-green-500 to-blue-500 transition-all duration-300"
+                className="h-full bg-linear-to-r from-green-500 to-brand-primary/80 transition-all duration-300"
                 style={{ width: `${completionStats.rate}%` }}
               />
             </div>

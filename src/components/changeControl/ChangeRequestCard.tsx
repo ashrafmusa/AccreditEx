@@ -44,9 +44,9 @@ export default function ChangeRequestCard({
         dot: "bg-green-500",
       },
       implemented: {
-        bg: "bg-teal-50",
-        text: "text-teal-700",
-        dot: "bg-teal-500",
+        bg: "bg-brand-primary/5",
+        text: "text-brand-primary",
+        dot: "bg-brand-primary/70",
       },
       rejected: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500" },
       cancelled: {

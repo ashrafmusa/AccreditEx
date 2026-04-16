@@ -212,7 +212,7 @@ Format your response in clear Markdown with headers and bullet points.`;
           <button
             onClick={handleAIAnalyze}
             disabled={aiLoading}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-medium transition-colors bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800/40 disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg font-medium transition-colors bg-brand-primary/10 dark:bg-brand-primary/90/30 text-brand-primary dark:text-brand-primary hover:bg-brand-primary/20 dark:hover:bg-brand-primary/90/40 disabled:opacity-50"
           >
             <SparklesIcon
               className={`w-4 h-4 ${aiLoading ? "animate-spin" : ""}`}

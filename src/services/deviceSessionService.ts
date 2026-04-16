@@ -1,18 +1,16 @@
-import {
-  collection,
-  doc,
-  setDoc,
-  getDocs,
-  deleteDoc,
-  query,
-  where,
-  updateDoc,
-  orderBy,
-  limit,
-  Timestamp
-} from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { freeTierMonitor } from '@/services/freeTierMonitor';
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  orderBy,
+  query,
+  setDoc,
+  updateDoc,
+  where
+} from 'firebase/firestore';
 
 export interface DeviceSession {
   id: string;
@@ -85,34 +83,12 @@ class DeviceSessionService {
   }
 
   /**
-   * Get approximate location from IP (with CORS-friendly fallback)
+   * Returns a location placeholder.
+   * Third-party IP geolocation removed (H4 security fix — GDPR/HIPAA compliance).
+   * User IP must not be sent to external services without explicit consent.
    */
   private async getLocation(): Promise<string> {
-    // For development/localhost, return default location
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-      return 'Development Environment';
-    }
-
-    try {
-      // Try with jsonp/cors proxy for production
-      const response = await fetch('https://api.ipdata.co/?api-key=test&fields=city,country_name', {
-        signal: AbortSignal.timeout(3000),
-        mode: 'cors'
-      });
-
-      if (!response.ok) {
-        throw new Error('Location service unavailable');
-      }
-
-      const data = await response.json();
-      return data.city && data.country_name
-        ? `${data.city}, ${data.country_name}`
-        : 'Unknown Location';
-    } catch (error) {
-      console.warn('🌍 Location detection failed, using fallback:', error);
-      // Graceful fallback - don't block login for location detection
-      return 'Location Unavailable';
-    }
+    return 'Location Unavailable';
   }
 
   /**

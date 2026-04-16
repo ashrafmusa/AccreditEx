@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import { AcademicCapIcon } from "@/components/icons";
+import { EmptyState } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
-import { User, Competency } from "@/types";
-import { EmptyState } from "@/components/ui";
-import { AcademicCapIcon } from "@/components/icons";
+import { User } from "@/types";
+import React, { useCallback, useMemo, useState } from "react";
+import MatrixCell from "./MatrixCell";
 
 type CellStatus = "active" | "expiring" | "expired" | "missing" | "gap";
 
@@ -126,6 +127,15 @@ const SkillMatrixTab: React.FC = () => {
     });
     return { active, expiring, expired, gaps, total };
   }, [activeUsers, visibleCompetencies, requiredCompetencyIds]);
+
+  // Memoize hover handlers to prevent cell re-renders
+  const handleCellHover = useCallback((userId: string, compId: string) => {
+    setHoveredCell({ userId, compId });
+  }, []);
+
+  const handleCellHoverLeave = useCallback(() => {
+    setHoveredCell(null);
+  }, []);
 
   if (competencies.length === 0 || users.length === 0) {
     return (
@@ -283,40 +293,23 @@ const SkillMatrixTab: React.FC = () => {
                     hoveredCell?.userId === user.id &&
                     hoveredCell?.compId === comp.id;
                   return (
-                    <td
+                    <MatrixCell
                       key={comp.id}
-                      className="px-0.5 py-1 text-center border-b border-brand-border/30 dark:border-dark-brand-border/30 relative"
-                      onMouseEnter={() =>
-                        setHoveredCell({ userId: user.id, compId: comp.id })
-                      }
-                      onMouseLeave={() => setHoveredCell(null)}
-                    >
-                      <div
-                        className={`mx-auto h-6 w-6 rounded-sm ${STATUS_COLORS[cell.status]} ${cell.hasEvidence ? "border-2 border-white dark:border-gray-900" : ""} cursor-default transition-transform ${isHovered ? "scale-125" : ""}`}
-                        title={`${user.name} — ${comp.name[lang]}\n${t("statusLabel")}: ${t(STATUS_LABELS[cell.status])}${cell.expiryDate ? `\n${t("expiryDate")}: ${cell.expiryDate}` : ""}${cell.hasEvidence ? `\n${t("evidenceAttached")}` : ""}`}
-                      />
-                      {/* Tooltip */}
-                      {isHovered && cell.status !== "missing" && (
-                        <div className="absolute z-30 bottom-full left-1/2 -translate-x-1/2 mb-1 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-[10px] rounded px-2 py-1 whitespace-nowrap pointer-events-none shadow-lg">
-                          <div className="font-medium">
-                            {t(STATUS_LABELS[cell.status])}
-                          </div>
-                          {cell.issueDate && (
-                            <div>
-                              {t("issued")}: {cell.issueDate}
-                            </div>
-                          )}
-                          {cell.expiryDate && (
-                            <div>
-                              {t("expires")}: {cell.expiryDate}
-                            </div>
-                          )}
-                          {cell.hasEvidence && (
-                            <div>{t("evidenceAttached")}</div>
-                          )}
-                        </div>
-                      )}
-                    </td>
+                      userId={user.id}
+                      userName={user.name}
+                      competencyId={comp.id}
+                      competencyName={comp.name[lang]}
+                      status={cell.status}
+                      issueDate={cell.issueDate}
+                      expiryDate={cell.expiryDate}
+                      hasEvidence={cell.hasEvidence}
+                      statusColors={STATUS_COLORS}
+                      statusLabels={STATUS_LABELS}
+                      onHover={handleCellHover}
+                      onHoverLeave={handleCellHoverLeave}
+                      isHovered={isHovered}
+                      t={t}
+                    />
                   );
                 })}
               </tr>

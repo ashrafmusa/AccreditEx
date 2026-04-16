@@ -160,7 +160,7 @@ const NotificationSettingsPage: React.FC = () => {
       {/* Notification Statistics Card */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-linear-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <div className="bg-linear-to-br from-blue-50 to-brand-primary/80 dark:from-blue-900/30 dark:to-brand-primary/80/30 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wide">

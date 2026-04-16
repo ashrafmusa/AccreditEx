@@ -1,27 +1,27 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { NavigationState, User, ProjectStatus } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
-import { useToast } from "@/hooks/useToast";
-import ProjectCard from "@/components/projects/ProjectCard";
-import BulkActionsToolbar from "@/components/projects/BulkActionsToolbar";
-import ProjectAnalytics from "@/components/projects/ProjectAnalytics";
+import EmptyState from "@/components/common/EmptyState";
 import {
+  ArchiveBoxIcon,
+  ChartBarSquareIcon,
+  CheckIcon,
   FolderIcon,
+  FunnelIcon,
   PlusIcon,
   SearchIcon,
-  FunnelIcon,
-  XMarkIcon,
-  ArchiveBoxIcon,
-  CheckIcon,
-  ChartBarSquareIcon,
 } from "@/components/icons";
-import EmptyState from "@/components/common/EmptyState";
-import { Button, Input, LoadingSpinner } from "@/components/ui";
+import BulkActionsToolbar from "@/components/projects/BulkActionsToolbar";
+import ProjectAnalytics from "@/components/projects/ProjectAnalytics";
+import ProjectCard from "@/components/projects/ProjectCard";
+import { Button, Input } from "@/components/ui";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
-import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAppStore } from "@/stores/useAppStore";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { NavigationState, ProjectStatus, User } from "@/types";
+import React, { useMemo, useState } from "react";
 
 interface ProjectListPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -164,11 +164,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const handleBulkArchive = async () => {
     if (
-      !window.confirm(
-        `${t("areYouSureArchive")} ${selectedProjects.length} ${t(
-          "project" + (selectedProjects.length > 1 ? "s" : ""),
-        )}?`,
-      )
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          `${t("areYouSureArchive")} ${selectedProjects.length} ${t(
+            "project" + (selectedProjects.length > 1 ? "s" : ""),
+          )}?`,
+          t("archiveProjects") || "Archive Projects",
+          t("archive") || "Archive",
+        ))
     ) {
       return;
     }
@@ -186,11 +190,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const handleBulkRestore = async () => {
     if (
-      !window.confirm(
-        `${t("areYouSureRestore")} ${selectedProjects.length} ${t(
-          "project" + (selectedProjects.length > 1 ? "s" : ""),
-        )}?`,
-      )
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          `${t("areYouSureRestore")} ${selectedProjects.length} ${t(
+            "project" + (selectedProjects.length > 1 ? "s" : ""),
+          )}?`,
+          t("restoreProjects") || "Restore Projects",
+          t("restore") || "Restore",
+        ))
     ) {
       return;
     }
@@ -208,11 +216,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const handleBulkDelete = async () => {
     if (
-      !window.confirm(
-        `${t("areYouSurePermanentlyDelete")} ${selectedProjects.length} ${t(
-          "project" + (selectedProjects.length > 1 ? "s" : ""),
-        )}? ${t("thisActionCannotBeUndone")}`,
-      )
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          `${t("areYouSurePermanentlyDelete")} ${selectedProjects.length} ${t(
+            "project" + (selectedProjects.length > 1 ? "s" : ""),
+          )}? ${t("thisActionCannotBeUndone")}`,
+          t("deleteProjects") || "Delete Projects",
+          t("delete") || "Delete",
+        ))
     ) {
       return;
     }
@@ -230,11 +242,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   const handleBulkUpdateStatus = async (status: ProjectStatus) => {
     if (
-      !window.confirm(
-        `${t("updateStatusTo")} ${
-          t(status.replace(/\s/g, "").toLowerCase() as any) || status
-        } ${t("forProjects")} ${selectedProjects.length}?`,
-      )
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          `${t("updateStatusTo")} ${
+            t(status.replace(/\s/g, "").toLowerCase() as any) || status
+          } ${t("forProjects")} ${selectedProjects.length}?`,
+          t("updateStatus") || "Update Status",
+          t("update") || "Update",
+        ))
     ) {
       return;
     }
@@ -250,8 +266,16 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     }
   };
 
-  const handleDelete = (projectId: string) => {
-    if (window.confirm(t("areYouSureDeleteProject"))) {
+  const handleDelete = async (projectId: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteProject"),
+          t("deleteProject") || "Delete Project",
+          t("delete") || "Delete",
+        )
+    ) {
       try {
         deleteProject(projectId);
         toast.success(t("projectDeletedSuccessfully"));

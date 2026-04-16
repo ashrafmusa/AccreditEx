@@ -4,14 +4,14 @@
  * Auto-adjusts direction for RTL languages
  */
 
-import React from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import { NavigationState } from "@/types";
 import {
-  HomeIcon,
-  ChevronRightIcon,
   ChevronLeftIcon,
+  ChevronRightIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
-import { useTranslation } from "@/hooks/useTranslation";
+import React from "react";
 
 export interface BreadcrumbItem {
   label: string;
@@ -70,7 +70,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
         const ItemIcon = item.icon;
 
         return (
-          <React.Fragment key={index}>
+          <React.Fragment key={item.label}>
             <button
               onClick={() => !isLast && setNavigation(item.nav)}
               disabled={isLast}

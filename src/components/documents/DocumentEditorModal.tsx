@@ -1,26 +1,36 @@
 import React, {
   lazy,
   Suspense,
-  useState,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
-  useCallback,
+  useState,
 } from "react";
-import { AppDocument, Standard } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
 import { useSanitizedHTML } from "../../hooks/useSanitizedHTML";
-import {
-  XMarkIcon,
-  PrinterIcon,
-  ArrowRightIcon,
-  ArrowLeftIcon,
-  InformationCircleIcon,
-  CheckIcon,
-} from "../icons";
-import DocumentEditorSidebar from "./DocumentEditorSidebar";
-import DocumentVersionComparisonModal from "./DocumentVersionComparisonModal";
+import { useTranslation } from "../../hooks/useTranslation";
 import { exportToDocx } from "../../services/docxExportService";
+import { AppDocument, Standard } from "../../types";
+import {
+  ArrowRightIcon,
+  ChatBubbleLeftEllipsisIcon,
+  CheckIcon,
+  ClipboardDocumentCheckIcon,
+  InformationCircleIcon,
+  PrinterIcon,
+  QuestionMarkCircleIcon,
+  SparklesIcon,
+  SpinnerIcon,
+  XMarkIcon,
+} from "../icons";
+import AuditChangeControlPanel from "./AuditChangeControlPanel";
+import BatchAuditModal from "./BatchAuditModal";
+import CommentsPanel from "./CommentsPanel";
+import ComplianceScoringPanel from "./ComplianceScoringPanel";
+import DocumentAuditPanel from "./DocumentAuditPanel";
+import DocumentEditorSidebar from "./DocumentEditorSidebar";
+import DocumentRelationshipsPanel from "./DocumentRelationshipsPanel";
+import DocumentVersionComparisonModal from "./DocumentVersionComparisonModal";
 
 const RichTextEditor = lazy(() => import("./RichTextEditor"));
 
@@ -40,14 +50,14 @@ const DOC_TYPE_COLORS: Record<string, string> = {
   Procedure:
     "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300",
   Report:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/40 dark:text-brand-primary",
   Evidence:
     "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300",
   "Process Map":
     "bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300",
 };
 
-const AUTOSAVE_INTERVAL_MS = 30_000;
+const AUTOSAVE_INTERVAL_MS = 10_000;
 
 type SaveStatus = "idle" | "saving" | "saved" | "unsaved";
 
@@ -94,9 +104,22 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [showNewVersionDialog, setShowNewVersionDialog] = useState(false);
+  const [pendingVersionDoc, setPendingVersionDoc] =
+    useState<AppDocument | null>(null);
   const [showShortcutsTooltip, setShowShortcutsTooltip] = useState(false);
+  const [showHelpTooltip, setShowHelpTooltip] = useState(false);
   const [showLinkPicker, setShowLinkPicker] = useState(false);
   const [linkSearchQuery, setLinkSearchQuery] = useState("");
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showAudit, setShowAudit] = useState(false);
+  const [showBatchAudit, setShowBatchAudit] = useState(false);
+  const [showChangeControl, setShowChangeControl] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [showComplianceScoringPanel, setShowComplianceScoringPanel] =
+    useState(false);
+  const [showRelationshipsPanel, setShowRelationshipsPanel] = useState(false);
 
   const autosaveTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const contentSnapshotRef = useRef<string>(
@@ -185,11 +208,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
       let docToSave = { ...document };
       if (document.status === "Approved" && isEditMode && !isAutoSave) {
-        if (!window.confirm(t("newVersionPrompt"))) {
-          setSaveStatus("unsaved");
-          return;
-        }
-        docToSave = {
+        const newVersionDoc = {
           ...document,
           status: "Draft",
           currentVersion: document.currentVersion + 1,
@@ -203,6 +222,11 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
             } as AppDocument["versionHistory"] extends (infer U)[] ? U : never,
           ],
         };
+        // Show dialog instead of window.confirm — store pending doc and abort this save
+        setSaveStatus("unsaved");
+        setPendingVersionDoc(newVersionDoc);
+        setShowNewVersionDialog(true);
+        return;
       }
 
       if (isAutoSave && onAutoSave) {
@@ -218,7 +242,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
       // Brief "saving" → "saved" animation
       setTimeout(() => setSaveStatus("saved"), 600);
     },
-    [document, documentData.content, isEditMode, onAutoSave, onSave, t],
+    [document, documentData.content, isEditMode, onAutoSave, onSave],
   );
 
   const handleSave = useCallback(() => performSave(false), [performSave]);
@@ -402,10 +426,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
       case "saving":
         return (
           <span className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500" />
-            </span>
+            <SpinnerIcon className="w-3.5 h-3.5 animate-spin" />
             {t("autosaving") || "Autosaving..."}
           </span>
         );
@@ -434,14 +455,19 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
   return (
     <>
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
-        onClick={attemptClose}
-      >
-        {/* Modal container */}
+      {/* Backdrop — click does NOT close the editor to prevent accidental data loss.
+           Use the ✕ button in the header or press Escape to close. */}
+      <div className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center backdrop-blur-sm modal-enter">
+        {/* Modal container - supports fullscreen mode */}
         <div
-          className="bg-white dark:bg-dark-brand-surface rounded-xl shadow-2xl w-full max-w-7xl h-[92vh] m-4 flex flex-col modal-content-enter ring-1 ring-black/5 dark:ring-white/10"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="document-editor-title"
+          className={`bg-white dark:bg-dark-brand-surface shadow-2xl flex flex-col modal-content-enter ring-1 ring-black/5 dark:ring-white/10 ${
+            isFullscreen
+              ? "w-full h-full rounded-none"
+              : "rounded-xl w-full max-w-7xl h-[92vh] m-4 lg:max-w-7xl md:max-w-5xl"
+          }`}
           onClick={(e) => e.stopPropagation()}
           dir={dir}
         >
@@ -451,7 +477,10 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
             <div className="flex items-center gap-3 min-w-0">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="text-lg font-semibold dark:text-dark-brand-text-primary truncate">
+                  <h3
+                    id="document-editor-title"
+                    className="text-lg font-semibold dark:text-dark-brand-text-primary truncate"
+                  >
                     {document.name[lang]}
                   </h3>
                   {/* Document type badge */}
@@ -477,11 +506,100 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
             {/* Right: header actions */}
             <div className="flex items-center gap-2">
+              {/* Comments button */}
+              <button
+                onClick={() => setShowComments((v) => !v)}
+                data-tour="comments-button"
+                className={`p-1.5 rounded-lg transition-colors ${
+                  showComments
+                    ? "bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                aria-label={t("comments") || "Comments"}
+              >
+                <ChatBubbleLeftEllipsisIcon className="w-5 h-5" />
+              </button>
+
+              {/* Audit button */}
+              <button
+                onClick={() => setShowAudit((v) => !v)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  showAudit
+                    ? "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                aria-label={t("documentAuditor") || "Document Auditor"}
+              >
+                <ClipboardDocumentCheckIcon className="w-5 h-5" />
+              </button>
+
+              {/* Batch Audit button */}
+              <button
+                onClick={() => setShowBatchAudit(true)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                aria-label={t("documents.batchAudit") || "Batch Audit"}
+                title={
+                  t("documents.batchAuditHint") ||
+                  "Audit multiple documents at once"
+                }
+              >
+                <CheckIcon className="w-5 h-5" />
+              </button>
+
+              {/* Change Control button */}
+              <button
+                onClick={() => setShowChangeControl(true)}
+                className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                aria-label={t("documents.changeControl") || "Change Control"}
+                title={
+                  t("documents.changeControlHint") ||
+                  "View linked change requests from audits"
+                }
+              >
+                <ArrowRightIcon className="w-5 h-5" />
+              </button>
+
+              {/* Compliance Scoring button */}
+              <button
+                onClick={() => setShowComplianceScoringPanel((v) => !v)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  showComplianceScoringPanel
+                    ? "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                aria-label={
+                  t("documents.complianceScoring") || "Compliance Scoring"
+                }
+                title={
+                  t("documents.complianceScoringHint") ||
+                  "View compliance scoring data"
+                }
+              >
+                <SparklesIcon className="w-5 h-5" />
+              </button>
+
+              {/* Relationships button */}
+              <button
+                onClick={() => setShowRelationshipsPanel((v) => !v)}
+                className={`p-1.5 rounded-lg transition-colors ${
+                  showRelationshipsPanel
+                    ? "bg-brand-primary/10 dark:bg-brand-primary/90/40 text-brand-primary dark:text-brand-primary"
+                    : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
+                aria-label={t("documents.relationships") || "Relationships"}
+                title={
+                  t("documents.relationshipsHint") ||
+                  "View document relationships"
+                }
+              >
+                <QuestionMarkCircleIcon className="w-5 h-5" />
+              </button>
+
               {/* Shortcuts tooltip */}
               <div className="relative">
                 <button
                   onClick={() => setShowShortcutsTooltip((v) => !v)}
-                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary"
                   aria-label={t("shortcuts") || "Keyboard shortcuts"}
                 >
                   <InformationCircleIcon className="w-5 h-5" />
@@ -509,10 +627,50 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                 )}
               </div>
 
+              {/* Help button */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowHelpTooltip((v) => !v);
+                    setShowShortcutsTooltip(false);
+                  }}
+                  className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                  aria-label={t("help") || "Help"}
+                  title={t("help") || "Help"}
+                >
+                  <QuestionMarkCircleIcon className="w-5 h-5" />
+                </button>
+                {showHelpTooltip && (
+                  <div className="absolute end-0 top-full mt-1 z-10 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border dark:border-gray-700 p-3 text-xs">
+                    <p className="font-semibold mb-2 text-gray-800 dark:text-gray-200">
+                      {t("quickHelp") || "Quick Help"}
+                    </p>
+                    <ul className="space-y-1 text-gray-600 dark:text-gray-400 list-disc ps-4">
+                      <li>{t("save") || "Save"}: Ctrl+S</li>
+                      <li>{t("close") || "Close"}: Esc</li>
+                      <li>{t("comments") || "Comments"}</li>
+                    </ul>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowHelpTooltip(false);
+                        setShowShortcutsTooltip(true);
+                      }}
+                      className="mt-3 text-brand-primary hover:underline focus:outline-none"
+                    >
+                      {t("keyboardShortcuts") || "Keyboard Shortcuts"}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               {/* Close button */}
               <button
                 onClick={attemptClose}
-                className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                className="p-1.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
                 aria-label={t("close") || "Close"}
               >
                 <XMarkIcon className="w-5 h-5" />
@@ -521,7 +679,155 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
           </header>
 
           {/* ========== MAIN ========== */}
-          <main className="grow flex overflow-hidden">
+          <main className="grow flex overflow-hidden relative">
+            {/* Comments Panel - Desktop: Sidebar, Mobile: Fullscreen Overlay */}
+            {showComments && (
+              <>
+                {/* Mobile: Fullscreen overlay */}
+                <div className="md:hidden absolute inset-0 z-10 bg-white dark:bg-dark-brand-surface">
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b dark:border-dark-brand-border">
+                      <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                        {t("comments") || "Comments"}
+                      </h3>
+                      <button
+                        onClick={() => setShowComments(false)}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                        <XMarkIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <CommentsPanel
+                        documentId={document.id}
+                        onClose={() => setShowComments(false)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop: Sidebar */}
+                <div className="hidden md:block w-80 border-s dark:border-dark-brand-border shrink-0 bg-gray-50/50 dark:bg-gray-900/20">
+                  <CommentsPanel
+                    documentId={document.id}
+                    onClose={() => setShowComments(false)}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Audit Panel - Desktop: Sidebar, Mobile: Fullscreen Overlay */}
+            {showAudit && (
+              <>
+                {/* Mobile: Fullscreen overlay */}
+                <div className="md:hidden absolute inset-0 z-10 bg-white dark:bg-dark-brand-surface">
+                  <DocumentAuditPanel
+                    content={
+                      currentContent?.[
+                        viewingVersion === "current" ? editorLang : "en"
+                      ] || ""
+                    }
+                    documentName={document.name[lang]}
+                    onClose={() => setShowAudit(false)}
+                  />
+                </div>
+
+                {/* Desktop: Sidebar */}
+                <div className="hidden md:block w-80 border-s dark:border-dark-brand-border shrink-0 bg-gray-50/50 dark:bg-gray-900/20">
+                  <DocumentAuditPanel
+                    content={
+                      currentContent?.[
+                        viewingVersion === "current" ? editorLang : "en"
+                      ] || ""
+                    }
+                    documentName={document.name[lang]}
+                    onClose={() => setShowAudit(false)}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Compliance Scoring Panel - Desktop: Sidebar, Mobile: Fullscreen Overlay */}
+            {showComplianceScoringPanel && (
+              <>
+                {/* Mobile: Fullscreen overlay */}
+                <div className="md:hidden absolute inset-0 z-10 bg-white dark:bg-dark-brand-surface">
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b dark:border-dark-brand-border">
+                      <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                        {t("documents.complianceScoring") ||
+                          "Compliance Scoring"}
+                      </h3>
+                      <button
+                        onClick={() => setShowComplianceScoringPanel(false)}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                        <XMarkIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
+                      <ComplianceScoringPanel
+                        htmlContent={
+                          currentContent?.[
+                            viewingVersion === "current" ? editorLang : "en"
+                          ] || ""
+                        }
+                        documentType={document.docType}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop: Sidebar */}
+                <div className="hidden md:block w-80 border-s dark:border-dark-brand-border shrink-0 bg-gray-50/50 dark:bg-gray-900/20">
+                  <ComplianceScoringPanel
+                    htmlContent={
+                      currentContent?.[
+                        viewingVersion === "current" ? editorLang : "en"
+                      ] || ""
+                    }
+                    documentType={document.docType}
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Relationships Panel - Desktop: Sidebar, Mobile: Fullscreen Overlay */}
+            {showRelationshipsPanel && (
+              <>
+                {/* Mobile: Fullscreen overlay */}
+                <div className="md:hidden absolute inset-0 z-10 bg-white dark:bg-dark-brand-surface">
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between p-4 border-b dark:border-dark-brand-border">
+                      <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                        {t("documents.relationships") || "Relationships"}
+                      </h3>
+                      <button
+                        onClick={() => setShowRelationshipsPanel(false)}
+                        className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+                      >
+                        <XMarkIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1 overflow-hidden p-4">
+                      <DocumentRelationshipsPanel
+                        document={document}
+                        allDocuments={allDocuments}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Desktop: Sidebar */}
+                <div className="hidden md:block w-80 border-s dark:border-dark-brand-border shrink-0 bg-gray-50/50 dark:bg-gray-900/20 p-4">
+                  <DocumentRelationshipsPanel
+                    document={document}
+                    allDocuments={allDocuments}
+                  />
+                </div>
+              </>
+            )}
+
             <div className="grow flex flex-col overflow-hidden">
               {/* Language tabs */}
               {isEditMode && viewingVersion === "current" && (
@@ -571,7 +877,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
               {/* Editor area */}
               <div
-                className="grow p-6 overflow-y-auto"
+                className={`grow overflow-y-auto ${isEditMode && viewingVersion === "current" ? "" : "p-6"}`}
                 dir={editorLang === "ar" ? "rtl" : "ltr"}
               >
                 {viewingVersion !== "current" && (
@@ -787,6 +1093,53 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
         </div>
       )}
 
+      {/* ========== NEW VERSION DIALOG ========== */}
+      {showNewVersionDialog && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4 ring-1 ring-black/5 dark:ring-white/10"
+            dir={dir}
+          >
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {t("newVersionPromptTitle") || "Create New Version?"}
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
+              {t("newVersionPrompt") ||
+                "This document is already approved. Saving will create a new draft version. Continue?"}
+            </p>
+            <div className="flex items-center gap-3 justify-end">
+              <button
+                onClick={() => {
+                  setShowNewVersionDialog(false);
+                  setPendingVersionDoc(null);
+                  setSaveStatus("unsaved");
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                {t("cancel") || "Cancel"}
+              </button>
+              <button
+                onClick={() => {
+                  if (!pendingVersionDoc) return;
+                  onSave(pendingVersionDoc);
+                  contentSnapshotRef.current = JSON.stringify(
+                    pendingVersionDoc.content,
+                  );
+                  setHasUnsavedChanges(false);
+                  setLastSavedAt(new Date());
+                  setTimeout(() => setSaveStatus("saved"), 600);
+                  setShowNewVersionDialog(false);
+                  setPendingVersionDoc(null);
+                }}
+                className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-sky-700 rounded-lg shadow-sm transition-all"
+              >
+                {t("createNewVersion") || "Create New Version"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Version Comparison Modal */}
       <DocumentVersionComparisonModal
         isOpen={comparisonModal.isOpen}
@@ -797,6 +1150,42 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
         version1={comparisonModal.version1}
         version2={comparisonModal.version2}
       />
+
+      {/* Batch Audit Modal */}
+      <BatchAuditModal
+        isOpen={showBatchAudit}
+        onClose={() => setShowBatchAudit(false)}
+        projectId={document.projectId || ""}
+        documentIds={[document.id]}
+        onAuditComplete={() => {
+          // Refresh audit panel or document
+          setShowAudit(true);
+        }}
+      />
+
+      {/* Audit Change Control Panel - shown in modal if needed */}
+      {showChangeControl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-brand-text-primary">
+                {t("documents.auditChangeControl") || "Audit & Change Control"}
+              </h2>
+              <button
+                onClick={() => setShowChangeControl(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              >
+                <XMarkIcon className="w-5 h-5" />
+              </button>
+            </div>
+            <AuditChangeControlPanel
+              documentId={document.id}
+              projectId={document.projectId || ""}
+              documentName={document.name[lang]}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 };
@@ -806,7 +1195,7 @@ const SanitizedDocContent: React.FC<{ content: string }> = ({ content }) => {
   const sanitizedContent = useSanitizedHTML(content);
   return (
     <div
-      className="prose dark:prose-invert max-w-none"
+      className="prose dark:prose-invert max-w-none document-content-view"
       dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );

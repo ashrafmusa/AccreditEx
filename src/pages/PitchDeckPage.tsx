@@ -44,15 +44,15 @@ const PitchDeckPage: React.FC = () => {
               className="h-20 w-20 rounded-2xl shadow-2xl mx-auto"
             />
             <h1 className="text-5xl md:text-7xl font-black tracking-tight">
-              Accredit<span className="text-teal-400">Ex</span>
+              Accredit<span className="text-brand-primary">Ex</span>
             </h1>
             <p className="text-lg md:text-xl text-white/70 max-w-xl mx-auto leading-relaxed">
               AI-Native Healthcare Accreditation Platform
             </p>
-            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-teal-500/15 border border-teal-500/30 text-teal-300 text-sm font-semibold">
+            <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-brand-primary/70/15 border border-brand-primary/40/30 text-brand-primary text-sm font-semibold">
               <span className="relative flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-300 opacity-75" />
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-teal-300" />
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary/70 opacity-75" />
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-primary/70" />
               </span>
               From Audit Panic to Continuous Excellence
             </div>
@@ -228,8 +228,8 @@ const PitchDeckPage: React.FC = () => {
                 label: "SAM",
                 value: "$4.37B",
                 desc: "Compliance & Quality (2026)",
-                border: "border-teal-500",
-                bg: "bg-teal-50 dark:bg-teal-950/20",
+                border: "border-brand-primary/40",
+                bg: "bg-brand-primary/5 dark:bg-brand-primary/95/20",
               },
               {
                 label: "SOM",
@@ -255,8 +255,8 @@ const PitchDeckPage: React.FC = () => {
               </div>
             ))}
           </div>
-          <div className="bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800/50 rounded-xl p-5 max-w-2xl mx-auto">
-            <p className="text-sm text-teal-700 dark:text-teal-300 font-semibold text-center">
+          <div className="bg-brand-primary/5 dark:bg-brand-primary/95/20 border border-brand-primary/40 dark:border-brand-primary/40/50 rounded-xl p-5 max-w-2xl mx-auto">
+            <p className="text-sm text-brand-primary dark:text-brand-primary font-semibold text-center">
               💡 The Abu Dhabi DoH 2027 mandate for AI-native government creates
               a "buy or fail" window for healthcare facilities.
             </p>
@@ -292,7 +292,7 @@ const PitchDeckPage: React.FC = () => {
                 key={s.label}
                 className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 text-center"
               >
-                <div className="text-3xl font-black text-teal-600">
+                <div className="text-3xl font-black text-brand-primary">
                   {s.stat}
                 </div>
                 <div className="text-xs text-slate-400 mt-1">{s.label}</div>
@@ -356,10 +356,10 @@ const PitchDeckPage: React.FC = () => {
             ].map((tier) => (
               <div
                 key={tier.name}
-                className={`p-8 rounded-2xl border text-center ${tier.highlight ? "border-teal-500 bg-teal-50 dark:bg-teal-950/20 shadow-xl relative" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"}`}
+                className={`p-8 rounded-2xl border text-center ${tier.highlight ? "border-brand-primary/40 bg-brand-primary/5 dark:bg-brand-primary/95/20 shadow-xl relative" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"}`}
               >
                 {tier.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-teal-500 text-white text-[10px] font-bold tracking-wider">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-0.5 rounded-full bg-brand-primary/70 text-white text-[10px] font-bold tracking-wider">
                     MOST POPULAR
                   </div>
                 )}
@@ -370,7 +370,7 @@ const PitchDeckPage: React.FC = () => {
                 <div className="text-3xl font-black text-brand-text-primary dark:text-white my-4">
                   {tier.price}
                 </div>
-                <p className="text-xs text-teal-600 font-semibold mb-4">
+                <p className="text-xs text-brand-primary font-semibold mb-4">
                   {tier.users}
                 </p>
                 <ul className="space-y-2 text-left">
@@ -379,7 +379,7 @@ const PitchDeckPage: React.FC = () => {
                       key={f}
                       className="text-sm text-slate-600 dark:text-slate-300 flex items-center gap-2"
                     >
-                      <span className="text-teal-500 font-bold">✓</span> {f}
+                      <span className="text-brand-primary font-bold">✓</span> {f}
                     </li>
                   ))}
                 </ul>
@@ -407,7 +407,7 @@ const PitchDeckPage: React.FC = () => {
                   <th className="text-left py-3 px-4 font-bold text-brand-text-primary dark:text-white">
                     Capability
                   </th>
-                  <th className="text-center py-3 px-4 font-bold text-teal-600">
+                  <th className="text-center py-3 px-4 font-bold text-brand-primary">
                     AccreditEx
                   </th>
                   <th className="text-center py-3 px-4 font-medium text-slate-400">
@@ -480,7 +480,7 @@ const PitchDeckPage: React.FC = () => {
                     <td className="py-2.5 px-4 font-semibold text-brand-text-primary dark:text-white">
                       {r.cap}
                     </td>
-                    <td className="py-2.5 px-4 text-center text-teal-600 font-bold">
+                    <td className="py-2.5 px-4 text-center text-brand-primary font-bold">
                       {r.us}
                     </td>
                     <td className="py-2.5 px-4 text-center text-slate-400">
@@ -515,14 +515,14 @@ const PitchDeckPage: React.FC = () => {
             <img
               src="/CEO.jpg"
               alt="Ashraf Abu baker Musa Ishag — Founder & CEO"
-              className="w-32 h-32 rounded-full object-cover border-4 border-teal-400 shadow-lg shrink-0"
+              className="w-32 h-32 rounded-full object-cover border-4 border-brand-primary/40 shadow-lg shrink-0"
               loading="lazy"
             />
             <div className="text-left">
               <h3 className="text-2xl font-extrabold text-brand-text-primary dark:text-white">
                 Ashraf Abu baker Musa Ishag
               </h3>
-              <p className="text-teal-600 font-semibold mt-1 mb-4">
+              <p className="text-brand-primary font-semibold mt-1 mb-4">
                 Founder & CEO
               </p>
               <ul className="space-y-2">
@@ -594,11 +594,11 @@ const PitchDeckPage: React.FC = () => {
             ].map((r, i) => (
               <div
                 key={i}
-                className="flex gap-6 pl-8 relative border-l-[3px] border-teal-500"
+                className="flex gap-6 pl-8 relative border-l-[3px] border-brand-primary/40"
               >
-                <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-teal-500" />
+                <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-brand-primary/70" />
                 <div className="min-w-20">
-                  <span className="text-teal-600 font-bold">{r.year}</span>
+                  <span className="text-brand-primary font-bold">{r.year}</span>
                 </div>
                 <div>
                   <h4 className="font-bold text-brand-text-primary dark:text-white">
@@ -633,7 +633,7 @@ const PitchDeckPage: React.FC = () => {
             <h2 className="text-4xl md:text-5xl font-extrabold">
               Let's Build the Future of
               <br />
-              <span className="text-teal-400">Healthcare Quality</span>
+              <span className="text-brand-primary">Healthcare Quality</span>
             </h2>
             <p className="text-lg text-white/60 max-w-lg mx-auto leading-relaxed">
               We're seeking strategic investors and partners who share our
@@ -661,7 +661,7 @@ const PitchDeckPage: React.FC = () => {
             <div className="flex flex-wrap justify-center gap-4 pt-4">
               <a
                 href="mailto:ashraf.a.m.ishag@gmail.com"
-                className="px-8 py-3.5 rounded-xl bg-linear-to-r from-teal-500 to-blue-500 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
+                className="px-8 py-3.5 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold shadow-xl hover:shadow-2xl hover:scale-[1.02] transition-all"
               >
                 Contact Founder
               </a>
@@ -762,7 +762,7 @@ const PitchDeckPage: React.FC = () => {
       <div className="absolute top-0 inset-x-0 z-50 flex items-center justify-between px-4 py-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-b border-slate-200 dark:border-slate-700">
         <a
           href="/"
-          className="flex items-center gap-2 text-sm font-bold text-brand-text-primary dark:text-white hover:text-teal-600 transition-colors"
+          className="flex items-center gap-2 text-sm font-bold text-brand-text-primary dark:text-white hover:text-brand-primary transition-colors"
         >
           ← Back to Site
         </a>
@@ -773,8 +773,8 @@ const PitchDeckPage: React.FC = () => {
               onClick={() => goTo(i)}
               className={`w-2.5 h-2.5 rounded-full transition-all ${
                 i === currentSlide
-                  ? "bg-teal-500 scale-125"
-                  : "bg-slate-300 dark:bg-slate-600 hover:bg-teal-400"
+                  ? "bg-brand-primary/70 scale-125"
+                  : "bg-slate-300 dark:bg-slate-600 hover:bg-brand-primary/70"
               }`}
               title={s.title}
             />
@@ -786,7 +786,7 @@ const PitchDeckPage: React.FC = () => {
           </span>
           <button
             onClick={toggleFullscreen}
-            className="hover:text-teal-500 transition-colors"
+            className="hover:text-brand-primary transition-colors"
             title="Toggle fullscreen"
           >
             {isFullscreen ? "⊙" : "⛶"}
@@ -801,7 +801,7 @@ const PitchDeckPage: React.FC = () => {
       {currentSlide > 0 && (
         <button
           onClick={prev}
-          className="absolute left-3 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-white hover:bg-teal-500 hover:text-white hover:border-teal-500 transition-all"
+          className="absolute left-3 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-white hover:bg-brand-primary/70 hover:text-white hover:border-brand-primary/40 transition-all"
           aria-label="Previous slide"
         >
           ←
@@ -810,7 +810,7 @@ const PitchDeckPage: React.FC = () => {
       {currentSlide < slides.length - 1 && (
         <button
           onClick={next}
-          className="absolute right-3 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-white hover:bg-teal-500 hover:text-white hover:border-teal-500 transition-all"
+          className="absolute right-3 top-1/2 -translate-y-1/2 z-40 w-10 h-10 rounded-full bg-white/80 dark:bg-slate-800/80 shadow-lg border border-slate-200 dark:border-slate-600 flex items-center justify-center text-slate-600 dark:text-white hover:bg-brand-primary/70 hover:text-white hover:border-brand-primary/40 transition-all"
           aria-label="Next slide"
         >
           →
@@ -834,8 +834,8 @@ const SectionBadge: React.FC<{
   <span
     className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold mb-4 w-fit ${
       dark
-        ? "bg-teal-500/15 text-teal-300 border border-teal-500/30"
-        : "bg-teal-500/10 text-teal-600 dark:text-teal-400"
+        ? "bg-brand-primary/70/15 text-brand-primary border border-brand-primary/40/30"
+        : "bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary"
     }`}
   >
     {icon} {label}

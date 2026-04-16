@@ -2,20 +2,17 @@
  * Reagent Tracking Tab
  * Inventory management with expiry alerts, low-stock tracking, usage logging
  */
-import React, { useState, useMemo } from "react";
+import {
+  ExclamationTriangleIcon,
+  PlusIcon,
+  SearchIcon,
+} from "@/components/icons";
+import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type { Reagent, ReagentStatus, ReagentUsageLog } from "@/types/labOps";
 import { REAGENT_STATUS_LABELS } from "@/types/labOps";
-import { Button, Card } from "@/components/ui";
-import { useTranslation } from "@/hooks/useTranslation";
-import {
-  PlusIcon,
-  ExclamationTriangleIcon,
-  SearchIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ClockIcon,
-} from "@/components/icons";
+import React, { useMemo, useState } from "react";
 
 const statusColor: Record<ReagentStatus, string> = {
   in_stock:
@@ -25,7 +22,7 @@ const statusColor: Record<ReagentStatus, string> = {
   expired: "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400",
   depleted: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
   quarantine:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
 };
 
 const ReagentTab: React.FC = () => {
@@ -103,6 +100,8 @@ const ReagentTab: React.FC = () => {
       id: `rg-${Date.now()}`,
       name: form.name || "",
       manufacturer: form.manufacturer || "",
+      supplierId: form.supplierId || undefined,
+      supplierName: form.supplierName || undefined,
       catalogNumber: form.catalogNumber || "",
       lotNumber: form.lotNumber || "",
       expirationDate: form.expirationDate || "",
@@ -113,6 +112,7 @@ const ReagentTab: React.FC = () => {
       storageConditions: form.storageConditions || "Room Temperature",
       labSection: form.labSection || "",
       status: form.status || "in_stock",
+      qualityFlag: form.qualityFlag || "normal",
       createdAt: now,
       updatedAt: now,
     };
@@ -189,6 +189,11 @@ const ReagentTab: React.FC = () => {
             <p className="font-medium dark:text-dark-brand-text-primary">
               {selected.lotNumber}
             </p>
+            {selected.supplierName && (
+              <p className="text-xs text-gray-500 mt-1">
+                {t("reagentSupplier") || "Supplier"}: {selected.supplierName}
+              </p>
+            )}
           </Card>
           <Card
             className={`p-3 ${selected.quantity <= selected.reorderLevel ? "border-yellow-300 bg-yellow-50 dark:bg-yellow-900/20" : ""}`}
@@ -248,6 +253,12 @@ const ReagentTab: React.FC = () => {
             <p className="text-sm dark:text-dark-brand-text-primary">
               {selected.labSection}
             </p>
+            {selected.qualityFlag && (
+              <p className="text-xs text-gray-500 mt-1">
+                {t("reagentQualityFlag") || "Quality flag"}:{" "}
+                {selected.qualityFlag}
+              </p>
+            )}
           </Card>
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
@@ -503,6 +514,18 @@ const ReagentTab: React.FC = () => {
                 value={form.catalogNumber || ""}
                 onChange={(e) =>
                   setForm({ ...form, catalogNumber: e.target.value })
+                }
+                className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
+                {t("reagentSupplier") || "Supplier"}
+              </label>
+              <input
+                value={form.supplierName || ""}
+                onChange={(e) =>
+                  setForm({ ...form, supplierName: e.target.value })
                 }
                 className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />

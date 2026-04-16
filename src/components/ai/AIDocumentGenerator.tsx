@@ -8,29 +8,31 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useRef } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ArrowPathIcon,
+  BuildingOffice2Icon,
+  CheckIcon,
+  Cog6ToothIcon,
+  DocumentDuplicateIcon,
+  DocumentIcon,
+  DownloadIcon,
+  FolderIcon,
+  LightBulbIcon,
+  MagnifyingGlassIcon,
+  SparklesIcon,
+  XMarkIcon,
+} from "@/components/icons";
+import { LibraryTemplate, templateLibrary } from "@/data/templateLibrary";
 import { useToast } from "@/hooks/useToast";
-import { documentTemplates, DocumentTemplate } from "@/data/documentTemplates";
-import { useAIDocumentGenerator } from "@/hooks/useAIDocumentGenerator";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   aiDocumentGeneratorService,
   DocumentGenerationRequest,
   DocumentGenerationResponse,
 } from "@/services/aiDocumentGeneratorService";
-import {
-  LightBulbIcon,
-  SparklesIcon,
-  DocumentIcon,
-  DownloadIcon,
-  CogIcon,
-  Cog6ToothIcon,
-  TrashIcon,
-  CheckIcon,
-  XMarkIcon,
-  ArrowPathIcon,
-  DocumentDuplicateIcon,
-} from "@/components/icons";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import React, { useEffect, useRef, useState } from "react";
 
 interface AIDocumentGeneratorProps {
   templateId?: string;
@@ -55,7 +57,8 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   const toast = useToast();
 
   const [selectedTemplate, setSelectedTemplate] =
-    useState<DocumentTemplate | null>(null);
+    useState<LibraryTemplate | null>(null);
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedContent, setGeneratedContent] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -65,6 +68,14 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   const [generationTime, setGenerationTime] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
+  const [showProjectSelector, setShowProjectSelector] = useState(false);
+  const [showDepartmentSelector, setShowDepartmentSelector] = useState(false);
+  const [projectSearch, setProjectSearch] = useState("");
+  const [departmentSearch, setDepartmentSearch] = useState("");
+
+  // Get projects and departments from stores
+  const projects = useProjectStore((s) => s.projects);
+  const departments = useAppStore((s) => s.departments);
 
   const [context, setContext] = useState({
     projectId: propsContext?.projectId || "",
@@ -74,11 +85,36 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
     existingContent: propsContext?.existingContent || "",
   });
 
+  // Get selected project and department names
+  const selectedProject = projects.find((p) => p.id === context.projectId);
+  const selectedDepartment = departments.find(
+    (d) => d.id === context.departmentId,
+  );
+
+  // Helper function to get string name from LocalizedString or string
+  const getName = (name: any): string => {
+    if (typeof name === "string") {
+      return name;
+    }
+    if (name && typeof name === "object") {
+      return (name.en || name.ar || "").toString();
+    }
+    return "";
+  };
+
+  // Filter projects and departments based on search
+  const filteredProjects = projects.filter((p) =>
+    getName(p.name).toLowerCase().includes(projectSearch.toLowerCase()),
+  );
+  const filteredDepartments = departments.filter((d) =>
+    getName(d.name).toLowerCase().includes(departmentSearch.toLowerCase()),
+  );
+
   const [preferences, setPreferences] = useState(
     propsPreferences || {
       tone: "professional" as const,
       length: "comprehensive" as const,
-      format: "markdown" as const,
+      format: "html" as const,
     },
   );
 
@@ -86,7 +122,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
 
   useEffect(() => {
     if (templateId) {
-      const template = documentTemplates.find((t) => t.id === templateId);
+      const template = templateLibrary.find((t) => t.id === templateId);
       if (template) {
         setSelectedTemplate(template);
       }
@@ -263,32 +299,101 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
         <div className="lg:col-span-1 space-y-6">
           {/* Template Selection */}
           <div className="space-y-4">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
-              <DocumentIcon className="w-5 h-5" aria-hidden="true" />
-              <span>Template Selection</span>
-            </h3>
-            <select
-              value={selectedTemplate?.id || ""}
-              onChange={(e) => {
-                const template = documentTemplates.find(
-                  (t) => t.id === e.target.value,
-                );
-                setSelectedTemplate(template || null);
-              }}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-              aria-label="Select a document template"
-            >
-              <option value="">Select a template...</option>
-              {documentTemplates.map((template) => (
-                <option key={template.id} value={template.id}>
-                  {template.name}
-                </option>
-              ))}
-            </select>
-            {selectedTemplate && (
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedTemplate.description}
-              </p>
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
+                <DocumentIcon className="w-5 h-5" aria-hidden="true" />
+                <span>Template Selection</span>
+              </h3>
+              <button
+                onClick={() => setShowTemplatePicker(!showTemplatePicker)}
+                className="text-sm text-rose-600 hover:text-rose-700 font-medium"
+              >
+                {showTemplatePicker ? "Hide" : "Browse All"}
+              </button>
+            </div>
+
+            {selectedTemplate ? (
+              <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-start justify-between mb-2">
+                  <h4 className="font-medium text-gray-900 dark:text-white">
+                    {selectedTemplate.name}
+                  </h4>
+                  <button
+                    onClick={() => setSelectedTemplate(null)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                  {selectedTemplate.description}
+                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="px-2 py-0.5 bg-white dark:bg-gray-700 rounded">
+                    {selectedTemplate.category}
+                  </span>
+                  <span className="px-2 py-0.5 bg-white dark:bg-gray-700 rounded">
+                    {selectedTemplate.program}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowTemplatePicker(true)}
+                className="w-full px-4 py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-rose-500 dark:hover:border-rose-500 transition-colors text-gray-500 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400"
+              >
+                <DocumentIcon className="w-8 h-8 mx-auto mb-2" />
+                <div className="text-sm font-medium">
+                  Select a template to begin
+                </div>
+                <div className="text-xs mt-1">
+                  {templateLibrary.length} templates available
+                </div>
+              </button>
+            )}
+
+            {/* Template Picker Modal */}
+            {showTemplatePicker && (
+              <div className="absolute inset-0 z-10 bg-white dark:bg-gray-900 rounded-lg overflow-y-auto p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h4 className="font-semibold text-gray-900 dark:text-white">
+                    Select Template ({templateLibrary.length})
+                  </h4>
+                  <button
+                    onClick={() => setShowTemplatePicker(false)}
+                    className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="space-y-2 max-h-96 overflow-y-auto">
+                  {templateLibrary.map((template) => (
+                    <button
+                      key={template.id}
+                      onClick={() => {
+                        setSelectedTemplate(template);
+                        setShowTemplatePicker(false);
+                      }}
+                      className="w-full text-left p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-rose-500 hover:bg-rose-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="font-medium text-sm text-gray-900 dark:text-white">
+                        {template.name}
+                      </div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {template.description}
+                      </div>
+                      <div className="flex gap-1 mt-2">
+                        <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                          {template.category}
+                        </span>
+                        <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">
+                          {template.program}
+                        </span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
 
@@ -299,66 +404,255 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
               <span>Context</span>
             </h3>
 
+            {/* Project Selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="projectId">
-                Project ID
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="flex items-center gap-2">
+                  <FolderIcon className="w-4 h-4" />
+                  Select Project
+                </div>
               </label>
-              <input
-                type="text"
-                id="projectId"
-                value={context.projectId}
-                onChange={(e) =>
-                  setContext((prev) => ({ ...prev, projectId: e.target.value }))
-                }
-                placeholder="Enter project ID"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                aria-label="Project ID"
-              />
+              {selectedProject ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-green-50 dark:bg-green-900/20">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {selectedProject.name}
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      Program: {selectedProject.program} • ID:{" "}
+                      {selectedProject.id}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setContext((prev) => ({ ...prev, projectId: "" }));
+                      setProjectSearch("");
+                    }}
+                    className="px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    title="Clear selection"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowProjectSelector(true)}
+                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-rose-500 dark:hover:border-rose-500 transition-colors text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center gap-2"
+                >
+                  <FolderIcon className="w-5 h-5" />
+                  <div className="text-start">
+                    <div className="text-sm font-medium">Choose Project</div>
+                    <div className="text-xs">{projects.length} available</div>
+                  </div>
+                </button>
+              )}
             </div>
 
+            {/* Project Selector Modal */}
+            {showProjectSelector && (
+              <div className="absolute inset-0 z-40 bg-black/40 rounded-lg flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Select Project
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setShowProjectSelector(false);
+                        setProjectSearch("");
+                      }}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                    <div className="relative">
+                      <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search projects..."
+                        value={projectSearch}
+                        onChange={(e) => setProjectSearch(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-rose-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  <div className="overflow-y-auto flex-1">
+                    {filteredProjects.length > 0 ? (
+                      <div className="space-y-1 p-2">
+                        {filteredProjects.map((project) => (
+                          <button
+                            key={project.id}
+                            onClick={() => {
+                              setContext((prev) => ({
+                                ...prev,
+                                projectId: project.id,
+                              }));
+                              setShowProjectSelector(false);
+                              setProjectSearch("");
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {project.name}
+                            </div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              {project.program} • {project.status}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        No projects found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Department Selector */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="departmentId">
-                Department ID
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                <div className="flex items-center gap-2">
+                  <BuildingOffice2Icon className="w-4 h-4" />
+                  Select Department
+                </div>
               </label>
-              <input
-                type="text"
-                id="departmentId"
-                value={context.departmentId}
-                onChange={(e) =>
-                  setContext((prev) => ({
-                    ...prev,
-                    departmentId: e.target.value,
-                  }))
-                }
-                placeholder="Enter department ID"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-rose-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                aria-label="Department ID"
-              />
+              {selectedDepartment ? (
+                <div className="flex items-center gap-2">
+                  <div className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">
+                      {getName(selectedDepartment.name)}
+                    </div>
+                    <div className="text-xs text-gray-600 dark:text-gray-400">
+                      {selectedDepartment.head &&
+                        `Head: ${selectedDepartment.head}`}{" "}
+                      • ID: {selectedDepartment.id}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setContext((prev) => ({ ...prev, departmentId: "" }));
+                      setDepartmentSearch("");
+                    }}
+                    className="px-3 py-2 text-gray-600 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    title="Clear selection"
+                  >
+                    <XMarkIcon className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowDepartmentSelector(true)}
+                  className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-rose-500 dark:hover:border-rose-500 transition-colors text-gray-600 dark:text-gray-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center justify-center gap-2"
+                >
+                  <BuildingOffice2Icon className="w-5 h-5" />
+                  <div className="text-start">
+                    <div className="text-sm font-medium">Choose Department</div>
+                    <div className="text-xs">
+                      {departments.length} available
+                    </div>
+                  </div>
+                </button>
+              )}
             </div>
+
+            {/* Department Selector Modal */}
+            {showDepartmentSelector && (
+              <div className="absolute inset-0 z-40 bg-black/40 rounded-lg flex items-center justify-center p-4">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col">
+                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                      Select Department
+                    </h3>
+                    <button
+                      onClick={() => {
+                        setShowDepartmentSelector(false);
+                        setDepartmentSearch("");
+                      }}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    >
+                      <XMarkIcon className="w-5 h-5" />
+                    </button>
+                  </div>
+                  <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+                    <div className="relative">
+                      <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-2.5 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Search departments..."
+                        value={departmentSearch}
+                        onChange={(e) => setDepartmentSearch(e.target.value)}
+                        className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-rose-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+                  <div className="overflow-y-auto flex-1">
+                    {filteredDepartments.length > 0 ? (
+                      <div className="space-y-1 p-2">
+                        {filteredDepartments.map((dept) => (
+                          <button
+                            key={dept.id}
+                            onClick={() => {
+                              setContext((prev) => ({
+                                ...prev,
+                                departmentId: dept.id,
+                              }));
+                              setShowDepartmentSelector(false);
+                              setDepartmentSearch("");
+                            }}
+                            className="w-full text-left px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          >
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {getName(dept.name)}
+                            </div>
+                            <div className="text-xs text-gray-600 dark:text-gray-400">
+                              {dept.head && `Head: ${dept.head}`} •{" "}
+                              {dept.staffCount || 0} staff
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                        No departments found
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Specific Requirements
               </label>
               <div className="space-y-2">
-                {context.specificRequirements.map((req: string, index: number) => (
-                  <div
-                    key={index}
-                    className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg"
-                  >
-                    <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">
-                      {req}
-                    </span>
-                    <button
-                      onClick={() => handleRemoveRequirement(index)}
-                      className="text-gray-400 hover:text-red-500 transition-colors"
-                      aria-label="Remove requirement"
-                      title="Remove requirement"
+                {context.specificRequirements.map(
+                  (req: string, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center space-x-2 bg-gray-50 dark:bg-gray-700 px-3 py-2 rounded-lg"
                     >
-                      <XMarkIcon className="w-4 h-4" aria-hidden="true" />
-                    </button>
-                  </div>
-                ))}
+                      <span className="flex-1 text-sm text-gray-700 dark:text-gray-300">
+                        {req}
+                      </span>
+                      <button
+                        onClick={() => handleRemoveRequirement(index)}
+                        className="text-gray-400 hover:text-red-500 transition-colors"
+                        aria-label="Remove requirement"
+                        title="Remove requirement"
+                      >
+                        <XMarkIcon className="w-4 h-4" aria-hidden="true" />
+                      </button>
+                    </div>
+                  ),
+                )}
                 <button
                   onClick={handleAddRequirement}
                   className="w-full px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -371,7 +665,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="existingContent">
+              <label
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                htmlFor="existingContent"
+              >
                 Existing Content (Optional)
               </label>
               <textarea
@@ -399,7 +696,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             </h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="tone">
+              <label
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                htmlFor="tone"
+              >
                 Tone
               </label>
               <select
@@ -422,7 +722,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="length">
+              <label
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                htmlFor="length"
+              >
                 Length
               </label>
               <select
@@ -444,7 +747,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2" htmlFor="format">
+              <label
+                className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+                htmlFor="format"
+              >
                 Format
               </label>
               <select
@@ -472,12 +778,19 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
               onClick={handleGenerateDocument}
               disabled={!selectedTemplate || isGenerating}
               className="w-full px-4 py-3 bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
-              aria-label={isGenerating ? "Generating document..." : "Generate document"}
-              title={isGenerating ? "Generating document..." : "Generate document"}
+              aria-label={
+                isGenerating ? "Generating document..." : "Generate document"
+              }
+              title={
+                isGenerating ? "Generating document..." : "Generate document"
+              }
             >
               {isGenerating ? (
                 <>
-                  <ArrowPathIcon className="w-5 h-5 animate-spin" aria-hidden="true" />
+                  <ArrowPathIcon
+                    className="w-5 h-5 animate-spin"
+                    aria-hidden="true"
+                  />
                   <span>Generating...</span>
                 </>
               ) : (
@@ -494,8 +807,12 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                   onClick={handleAnalyzeDocument}
                   disabled={isAnalyzing}
                   className="w-full px-4 py-2 border border-rose-600 text-rose-600 rounded-lg font-semibold hover:bg-rose-50 dark:hover:bg-pink-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  aria-label={isAnalyzing ? "Analyzing document..." : "Analyze document"}
-                  title={isAnalyzing ? "Analyzing document..." : "Analyze document"}
+                  aria-label={
+                    isAnalyzing ? "Analyzing document..." : "Analyze document"
+                  }
+                  title={
+                    isAnalyzing ? "Analyzing document..." : "Analyze document"
+                  }
                 >
                   {isAnalyzing ? "Analyzing..." : "Analyze Document"}
                 </button>
@@ -504,8 +821,12 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                   onClick={handleImproveContent}
                   disabled={isGenerating}
                   className="w-full px-4 py-2 border border-green-600 text-green-600 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                  aria-label={isGenerating ? "Improving content..." : "Improve content"}
-                  title={isGenerating ? "Improving content..." : "Improve content"}
+                  aria-label={
+                    isGenerating ? "Improving content..." : "Improve content"
+                  }
+                  title={
+                    isGenerating ? "Improving content..." : "Improve content"
+                  }
                 >
                   {isGenerating ? "Improving..." : "Improve Content"}
                 </button>
@@ -519,7 +840,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
           {/* Generated Content */}
           {generatedContent && (
             <div className="space-y-4">
-               <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
                   <DocumentIcon className="w-5 h-5" aria-hidden="true" />
                   <span>Generated Content</span>
@@ -531,7 +852,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                     title="Copy to clipboard"
                     aria-label="Copy content to clipboard"
                   >
-                    <DocumentDuplicateIcon className="w-5 h-5" aria-hidden="true" />
+                    <DocumentDuplicateIcon
+                      className="w-5 h-5"
+                      aria-hidden="true"
+                    />
                   </button>
                   <button
                     onClick={handleDownloadContent}
@@ -584,7 +908,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                     key={index}
                     className="text-sm text-gray-700 dark:text-gray-300 flex items-start space-x-2"
                   >
-                    <CheckIcon className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" aria-hidden="true" />
+                    <CheckIcon
+                      className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>{suggestion}</span>
                   </div>
                 ))}
@@ -605,7 +932,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                     key={index}
                     className="text-sm text-gray-700 dark:text-gray-300 flex items-start space-x-2"
                   >
-                    <XMarkIcon className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" aria-hidden="true" />
+                    <XMarkIcon
+                      className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0"
+                      aria-hidden="true"
+                    />
                     <span>{issue}</span>
                   </div>
                 ))}

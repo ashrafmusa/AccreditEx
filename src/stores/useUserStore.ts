@@ -1,17 +1,22 @@
-import { create } from 'zustand';
+import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import { User } from '@/types';
-import { getAuthInstance, db } from '@/firebase/firebaseConfig';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, query, where, getDocs, setDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { create } from 'zustand';
 // MIGRATION: Replaced BackendService with Firebase services
-import { getUsers } from '@/services/userService';
-import { deviceSessionService } from '@/services/deviceSessionService';
-import { handleError, AppError, AuthenticationError } from '@/services/errorHandling';
-import { logger } from '@/services/logger';
 import { analytics } from '@/services/analyticsTrackingService';
+import { deviceSessionService } from '@/services/deviceSessionService';
+import { AppError, handleError } from '@/services/errorHandling';
+import { logger } from '@/services/logger';
+import { getUsers } from '@/services/userService';
 // Security fix (2026-02-18): Secure user creation with Auth UID alignment
+import { Action, permissionService, Resource } from '@/services/permissionService';
 import { createUserSecurely } from '@/services/secureUserService';
-import { permissionService, Action, Resource } from '@/services/permissionService';
+// Security fix (C5): import stores for logout data cleanup
+import { useAppStore } from '@/stores/useAppStore';
+import { useProjectStore } from '@/stores/useProjectStore';
+import { useReportBuilderStore } from '@/stores/useReportBuilderStore';
+import { useTenantStore } from '@/stores/useTenantStore';
 
 interface UserState {
   currentUser: User | null;
@@ -80,7 +85,14 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     const auth = getAuthInstance();
     await signOut(auth);
-    set({ currentUser: null });
+
+    // Security fix (C5): clear all sensitive store data before next user can
+    // access the same browser session
+    useAppStore.getState().clearAllData();
+    useProjectStore.setState({ projects: [], loading: false, error: null });
+    useReportBuilderStore.setState({ reports: [], loading: false, error: null });
+    useTenantStore.getState().clearTenant();
+    set({ currentUser: null, users: [] });
   },
   // Security fix (2026-02-18): addUser now creates a Firebase Auth account
   // AND stores the Firestore document keyed by Auth UID (fixes C-1 + C-2).

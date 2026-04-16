@@ -1,29 +1,30 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { useTranslation } from "../hooks/useTranslation";
-import { useUserStore } from "../stores/useUserStore";
-import { useAppStore } from "../stores/useAppStore";
+import { Button, TableContainer } from "@/components/ui";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  PerformanceEvaluation,
-  EvaluationStatus,
-  EvaluationPeriod,
-  CompetencyRating,
-  PerformanceGoal,
-} from "../types";
-import {
-  getPerformanceEvaluations,
-  addPerformanceEvaluation,
-  updatePerformanceEvaluation,
-  deletePerformanceEvaluation,
-} from "../services/performanceEvaluationService";
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
   ChartBarSquareIcon,
   EyeIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
 } from "../components/icons";
-import { Button, TableContainer } from "@/components/ui";
-import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import { useTranslation } from "../hooks/useTranslation";
+import {
+  addPerformanceEvaluation,
+  deletePerformanceEvaluation,
+  getPerformanceEvaluations,
+  updatePerformanceEvaluation,
+} from "../services/performanceEvaluationService";
+import { useAppStore } from "../stores/useAppStore";
+import { useUserStore } from "../stores/useUserStore";
+import {
+  CompetencyRating,
+  EvaluationPeriod,
+  EvaluationStatus,
+  PerformanceEvaluation,
+  PerformanceGoal,
+} from "../types";
 
 type ViewMode = "list" | "create" | "edit" | "view";
 
@@ -171,7 +172,15 @@ const PerformanceEvaluationPage: React.FC<{
   };
 
   const handleDelete = async (id: string) => {
-    if (window.confirm(t("areYouSureDeleteEvaluation"))) {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteEvaluation"),
+          t("deleteEvaluation") || "Delete Evaluation",
+          t("delete") || "Delete",
+        )
+    ) {
       try {
         await deletePerformanceEvaluation(id);
         setEvaluations((prev) => prev.filter((e) => e.id !== id));

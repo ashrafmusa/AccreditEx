@@ -1,18 +1,19 @@
-import React, { useState, useRef } from "react";
-import { ProgramDocument } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useToast } from "@/hooks/useToast";
-import {
-  uploadProgramDocument,
-  deleteProgramDocument,
-  updateProgramDocumentDescription,
-} from "@/services/programDocumentService";
 import {
   CloudUploadIcon,
-  TrashIcon,
   DocumentDownloadIcon,
   PencilIcon,
+  TrashIcon,
 } from "@/components/icons";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  deleteProgramDocument,
+  updateProgramDocumentDescription,
+  uploadProgramDocument,
+} from "@/services/programDocumentService";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import { ProgramDocument } from "@/types";
+import React, { useRef, useState } from "react";
 
 interface ProgramDocumentManagerProps {
   programId: string;
@@ -86,7 +87,15 @@ const ProgramDocumentManager: React.FC<ProgramDocumentManagerProps> = ({
   };
 
   const handleDelete = async (documentId: string) => {
-    if (!window.confirm(t("areYouSure") || "Are you sure?")) {
+    if (
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSure") || "Are you sure?",
+          t("deleteDocument") || "Delete Document",
+          t("delete") || "Delete",
+        ))
+    ) {
       return;
     }
 

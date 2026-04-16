@@ -661,7 +661,7 @@ const TracerWorksheetTab: React.FC = () => {
                         tmpl.tracerType === "patient"
                           ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
                           : tmpl.tracerType === "system"
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                            ? "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary"
                             : "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
                       }`}
                     >

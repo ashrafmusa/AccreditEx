@@ -1,33 +1,42 @@
-import { create } from 'zustand';
+import { AppError, handleError } from '@/services/errorHandling';
+import { logger } from '@/services/logger';
 import {
-  AppDocument, Standard, AccreditationProgram, Department,
-  TrainingProgram, CertificateData, UserTrainingStatus, Competency, Risk,
-  IncidentReport, AuditPlan, Audit, CustomCalendarEvent, AppSettings, UserRole
+  AccreditationProgram,
+  AppDocument,
+  AppSettings,
+  Audit,
+  AuditPlan,
+  CertificateData,
+  Competency,
+  CustomCalendarEvent,
+  Department,
+  IncidentReport,
+  Risk,
+  Standard,
+  TrainingProgram,
+  UserTrainingStatus
 } from '@/types';
 import { ProjectTemplate } from '@/types/templates';
-import { logger } from '@/services/logger';
-import { handleError, AppError } from '@/services/errorHandling';
+import { create } from 'zustand';
 // MIGRATION: Replaced BackendService with Firebase services
-import { getAppSettings, updateAppSettings as updateAppSettingsInFirebase } from '@/services/appSettingsService';
-import { getStandards, addStandard as addStandardToFirebase, updateStandard as updateStandardInFirebase, deleteStandard as deleteStandardFromFirebase } from '@/services/standardService';
-import { getCompetencies, addCompetency as addCompetencyToFirebase, updateCompetency as updateCompetencyInFirebase, deleteCompetency as deleteCompetencyFromFirebase } from '@/services/competencyService';
-import { getDepartments, addDepartment as addDepartmentToFirebase, updateDepartment as updateDepartmentInFirebase, deleteDepartment as deleteDepartmentFromFirebase } from '@/services/departmentService';
-import { getAccreditationPrograms, addAccreditationProgram, updateAccreditationProgram, deleteAccreditationProgram } from '@/services/accreditationProgramService';
-import { getTrainingPrograms, addTrainingProgram as addTrainingProgramToFirebase, updateTrainingProgram as updateTrainingProgramInFirebase, deleteTrainingProgram as deleteTrainingProgramFromFirebase } from '@/services/trainingProgramService';
-import { getRisks, addRisk as addRiskToFirebase, updateRisk as updateRiskInFirebase, deleteRisk as deleteRiskFromFirebase } from '@/services/riskService';
-import { getDocuments, addDocument as addDocumentToFirebase, updateDocument as updateDocumentInFirebase, deleteDocument as deleteDocumentFromFirebase } from '@/services/documentService';
-import { getIncidentReports, addIncidentReport as addIncidentReportToFirebase, updateIncidentReport as updateIncidentReportInFirebase, deleteIncidentReport as deleteIncidentReportFromFirebase } from '@/services/incidentReportService';
-import { getAuditPlans, addAuditPlan as addAuditPlanToFirebase, updateAuditPlan as updateAuditPlanInFirebase, deleteAuditPlan as deleteAuditPlanFromFirebase } from '@/services/auditPlanService';
-import { getAudits, addAudit as addAuditToFirebase, updateAudit as updateAuditInFirebase, deleteAudit as deleteAuditFromFirebase } from '@/services/auditService';
-import { getCustomEvents, addCustomEvent as addCustomEventToFirebase, updateCustomEvent as updateCustomEventInFirebase, deleteCustomEvent as deleteCustomEventFromFirebase } from '@/services/customCalendarEventService';
 import { generateProjectTemplates } from '@/data/projectTemplates';
-import { useUserStore } from './useUserStore';
+import { addAccreditationProgram, deleteAccreditationProgram, getAccreditationPrograms, updateAccreditationProgram } from '@/services/accreditationProgramService';
 import { ActivityLogger } from '@/services/activityLogService';
+import { getAppSettings, updateAppSettings as updateAppSettingsInFirebase } from '@/services/appSettingsService';
+import { addAuditPlan as addAuditPlanToFirebase, deleteAuditPlan as deleteAuditPlanFromFirebase, updateAuditPlan as updateAuditPlanInFirebase } from '@/services/auditPlanService';
+import { addCompetency as addCompetencyToFirebase, deleteCompetency as deleteCompetencyFromFirebase, getCompetencies, updateCompetency as updateCompetencyInFirebase } from '@/services/competencyService';
+import { addCustomEvent as addCustomEventToFirebase, deleteCustomEvent as deleteCustomEventFromFirebase, updateCustomEvent as updateCustomEventInFirebase } from '@/services/customCalendarEventService';
+import { addDepartment as addDepartmentToFirebase, deleteDepartment as deleteDepartmentFromFirebase, getDepartments, updateDepartment as updateDepartmentInFirebase } from '@/services/departmentService';
+import { addDocument as addDocumentToFirebase, deleteDocument as deleteDocumentFromFirebase, getDocuments, updateDocument as updateDocumentInFirebase } from '@/services/documentService';
 import { escalationService } from '@/services/escalationService';
+import { addIncidentReport as addIncidentReportToFirebase, deleteIncidentReport as deleteIncidentReportFromFirebase, updateIncidentReport as updateIncidentReportInFirebase } from '@/services/incidentReportService';
+import { addRisk as addRiskToFirebase, deleteRisk as deleteRiskFromFirebase, getRisks, updateRisk as updateRiskInFirebase } from '@/services/riskService';
+import { addStandard as addStandardToFirebase, deleteStandard as deleteStandardFromFirebase, getStandards, updateStandard as updateStandardInFirebase } from '@/services/standardService';
+import { addTrainingProgram as addTrainingProgramToFirebase, deleteTrainingProgram as deleteTrainingProgramFromFirebase, getTrainingPrograms, updateTrainingProgram as updateTrainingProgramInFirebase } from '@/services/trainingProgramService';
 import { workflowEngine } from '@/services/workflowEngine';
-import { ensureUserMigrated } from '@/services/secureUserService';
+import { useUserStore } from './useUserStore';
 // RBAC: All permission checks go through permissionService.guard()
-import { permissionService, Action, Resource } from '@/services/permissionService';
+import { Action, permissionService, Resource } from '@/services/permissionService';
 
 // Document numbering prefix map
 const DOC_TYPE_PREFIX: Record<AppDocument['type'], string> = {
@@ -142,6 +151,8 @@ interface AppState {
   addCustomEvent: (eventData: Omit<CustomCalendarEvent, 'id' | 'type'>) => Promise<void>;
   updateCustomEvent: (event: CustomCalendarEvent) => Promise<void>;
   deleteCustomEvent: (eventId: string) => Promise<void>;
+  /** Clears all in-memory data on logout (security: prevents data leaking to next user) */
+  clearAllData: () => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -161,6 +172,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   auditPlans: [],
   audits: [],
   customEvents: [],
+
+  clearAllData: () => set({
+    documents: [],
+    accreditationPrograms: [],
+    standards: [],
+    projectTemplates: [],
+    appSettings: null,
+    initializationError: null,
+    departments: [],
+    trainingPrograms: [],
+    certificates: [],
+    userTrainingStatuses: {},
+    competencies: [],
+    risks: [],
+    incidentReports: [],
+    auditPlans: [],
+    audits: [],
+    customEvents: [],
+  }),
 
   fetchAllData: async () => {
     try {
@@ -378,7 +408,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       const docToDelete = get().documents.find(d => d.id === docId);
 
       // ── RBAC Guard: client permission check + Firestore doc verification ──
-      const { permissionService, Action, Resource, PermissionError } = await import('@/services/permissionService');
       const verifiedUser = await permissionService.guard(Action.Delete, Resource.Document);
 
       console.info('[DeleteDocument] RBAC passed:', {

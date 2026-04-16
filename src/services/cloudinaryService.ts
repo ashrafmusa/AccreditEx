@@ -71,7 +71,7 @@ interface OfflineUploadTask {
 }
 
 // Export public interfaces
-export type { UploadProgress, BatchUploadResult };
+export type { BatchUploadResult, UploadProgress };
 
 class CloudinaryService {
   private cloudName: string;
@@ -109,6 +109,18 @@ class CloudinaryService {
   constructor() {
     this.cloudName = cloudName;
     this.uploadPreset = uploadPreset;
+
+    // Fail fast: if credentials are still on demo/fallback values the upload
+    // will silently timeout instead of giving a clear error. Surface it early.
+    if (this.cloudName === 'demo' || this.uploadPreset === 'ml_default') {
+      console.error(
+        '[Cloudinary] ❌ Credentials are not configured.\n' +
+        'Copy .env.example → .env and fill in VITE_CLOUDINARY_CLOUD_NAME and ' +
+        'VITE_CLOUDINARY_UPLOAD_PRESET from https://console.cloudinary.com/\n' +
+        'Then restart the dev server (npm run dev).'
+      );
+    }
+
     this.initializeOfflineSupport();
     this.loadUploadHistory();
   }
@@ -220,12 +232,46 @@ class CloudinaryService {
   }
 
   /**
-   * Validate file type
+   * Resolve MIME type from a File — uses file.type first, then falls back to the
+   * extension map. Some browsers (particularly on Windows) report generic types
+   * like "application/octet-stream" for PDFs and Office files, which would
+   * otherwise cause a spurious type-validation failure before the upload starts.
+   */
+  private resolveMimeType(file: File): string {
+    if (file.type && file.type !== 'application/octet-stream' && file.type !== '') {
+      return file.type;
+    }
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const extMap: Record<string, string> = {
+      pdf: 'application/pdf',
+      doc: 'application/msword',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      xls: 'application/vnd.ms-excel',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      ppt: 'application/vnd.ms-powerpoint',
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      txt: 'text/plain',
+      csv: 'text/csv',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      gif: 'image/gif',
+      webp: 'image/webp',
+      svg: 'image/svg+xml',
+    };
+    return extMap[ext] ?? file.type;
+  }
+
+  /**
+   * Validate file type — resolves MIME via extension fallback so Windows
+   * browsers reporting "application/octet-stream" still pass validation.
    */
   private validateFileType(file: File, allowedTypes: string[]): void {
-    if (!allowedTypes.includes(file.type)) {
+    const resolvedType = this.resolveMimeType(file);
+    if (!allowedTypes.includes(resolvedType)) {
       throw new Error(
-        `File type "${file.type}" is not allowed. Allowed types: ${allowedTypes.join(', ')}`
+        `File type "${resolvedType || file.type}" is not allowed. ` +
+        `Supported formats: PDF, Word, Excel, PowerPoint, TXT, CSV, and common image types.`
       );
     }
   }
@@ -363,6 +409,9 @@ class CloudinaryService {
     // Use auto upload endpoint - Cloudinary will categorize PDFs as images which work for untrusted accounts
     const uploadUrl = `https://api.cloudinary.com/v1_1/${this.cloudName}/upload`;
 
+    // 60-second timeout — prevents the request from hanging indefinitely on
+    // slow connections or misconfigured credentials (e.g. missing .env file).
+    const UPLOAD_TIMEOUT_MS = 60_000;
 
     return new Promise<string>((resolve, reject) => {
       xhr.upload.addEventListener('progress', (e) => {
@@ -397,14 +446,19 @@ class CloudinaryService {
       });
 
       xhr.addEventListener('error', () => {
-        reject(new Error('Upload failed due to network error'));
+        reject(new Error('Upload failed due to network error. Check your internet connection and Cloudinary credentials in .env'));
       });
 
       xhr.addEventListener('abort', () => {
         reject(new Error('Upload was aborted'));
       });
 
+      xhr.addEventListener('timeout', () => {
+        reject(new Error('Upload timed out after 60 seconds. Check your internet connection and Cloudinary credentials.'));
+      });
+
       xhr.open('POST', uploadUrl);
+      xhr.timeout = UPLOAD_TIMEOUT_MS;
       xhr.send(formData);
     });
   }
@@ -424,6 +478,14 @@ class CloudinaryService {
     options?: { skipDuplicateCheck?: boolean; forceUpload?: boolean }
   ): Promise<string> {
     try {
+      // Guard: reject immediately if Cloudinary credentials are not configured
+      if (this.cloudName === 'demo' || this.uploadPreset === 'ml_default') {
+        throw new Error(
+          'Cloudinary is not configured. Ask your administrator to set up the ' +
+          'VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in the .env file.'
+        );
+      }
+
       // 1. Validate file size
       this.validateFileSize(file, this.MAX_DOCUMENT_SIZE);
 
@@ -496,6 +558,14 @@ class CloudinaryService {
     options?: { skipDuplicateCheck?: boolean; forceUpload?: boolean }
   ): Promise<string> {
     try {
+      // Guard: reject immediately if Cloudinary credentials are not configured
+      if (this.cloudName === 'demo' || this.uploadPreset === 'ml_default') {
+        throw new Error(
+          'Cloudinary is not configured. Ask your administrator to set up the ' +
+          'VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in the .env file.'
+        );
+      }
+
       // 1. Validate file size
       this.validateFileSize(file, this.MAX_IMAGE_SIZE);
 
@@ -568,10 +638,17 @@ class CloudinaryService {
     onProgress?: (progress: UploadProgress) => void,
     options?: { skipDuplicateCheck?: boolean; forceUpload?: boolean }
   ): Promise<string> {
-    if (this.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+    if (this.cloudName === 'demo' || this.uploadPreset === 'ml_default') {
+      throw new Error(
+        'Cloudinary is not configured. Ask your administrator to set up the ' +
+        'VITE_CLOUDINARY_CLOUD_NAME and VITE_CLOUDINARY_UPLOAD_PRESET in the .env file.'
+      );
+    }
+    const resolvedType = this.resolveMimeType(file);
+    if (this.ALLOWED_IMAGE_TYPES.includes(resolvedType)) {
       return this.uploadImage(file, folder, onProgress, options);
     }
-    if (this.ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+    if (this.ALLOWED_DOCUMENT_TYPES.includes(resolvedType)) {
       return this.uploadDocument(file, folder, onProgress, options);
     }
     // Fallback to raw upload for any other file type

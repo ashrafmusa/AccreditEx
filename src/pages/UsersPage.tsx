@@ -5,6 +5,7 @@ import ConfirmationModal from "../components/common/ConfirmationModal";
 import { ContextualHelp } from "../components/common/ContextualHelp";
 import EmptyState from "../components/common/EmptyState";
 import { MagnifyingGlassIcon, PlusIcon, UsersIcon } from "../components/icons";
+import AdminUserSessionsModal from "../components/users/AdminUserSessionsModal";
 import UserModal from "../components/users/UserModal";
 import UserRow from "../components/users/UserRow";
 import { getHelpContent } from "../data/helpContent";
@@ -28,6 +29,9 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
   const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRole, setFilterRole] = useState<UserRole | "All">("All");
+  const [managingSessionsUser, setManagingSessionsUser] = useState<User | null>(
+    null,
+  );
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -211,6 +215,9 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
                       setIsModalOpen(true);
                     }}
                     onDelete={() => setDeletingUserId(user.id)}
+                    onManageSessions={() =>
+                      setManagingSessionsUser(user as User)
+                    }
                   />
                 ))}
               </tbody>
@@ -260,6 +267,13 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
           title={t("deleteUser")}
           message={t("areYouSureDeleteUser")}
           confirmationText="DELETE"
+        />
+      )}
+
+      {managingSessionsUser && (
+        <AdminUserSessionsModal
+          user={managingSessionsUser}
+          onClose={() => setManagingSessionsUser(null)}
         />
       )}
     </div>

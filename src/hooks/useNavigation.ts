@@ -11,10 +11,10 @@
  * - Works with existing setNavigation calls
  */
 
-import { useEffect, useCallback, useRef } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
-import { NavigationState } from '@/types';
 import { navigationStateToPath, pathToNavigationState } from '@/router/routes';
+import { NavigationState } from '@/types';
+import { useCallback, useEffect, useRef } from 'react';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 interface UseNavigationReturn {
     navigation: NavigationState;
@@ -30,10 +30,19 @@ export const useNavigation = (
     const navigationRef = useRef<NavigationState>(initialNavigation);
     const isNavigatingRef = useRef(false);
 
+    // Parse query parameters from URL
+    const queryParams = new URLSearchParams(location.search);
+
     // Update navigation based on current URL
     const getNavigationFromUrl = useCallback((): NavigationState => {
-        return pathToNavigationState(location.pathname, params);
-    }, [location.pathname, params]);
+        const navState = pathToNavigationState(location.pathname, params);
+        // Add templateId from query params if present
+        const templateId = new URLSearchParams(location.search).get('templateId');
+        if (templateId) {
+            return { ...navState, templateId };
+        }
+        return navState;
+    }, [location.pathname, params, location.search]);
 
     // Initialize navigation from URL on mount
     useEffect(() => {

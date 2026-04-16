@@ -1,29 +1,29 @@
+import { EmptyState } from "@/components/ui";
 import React, { useState } from "react";
+import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "../../hooks/useTranslation";
+import { cloudinaryService } from "../../services/cloudinaryService";
+import { useAppStore } from "../../stores/useAppStore";
 import {
-  User,
-  Competency,
   AppDocument,
+  Competency,
+  User,
   UserCompetency,
   UserRole,
 } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  ArrowPathIcon,
-  UploadIcon,
-} from "../icons";
-import { EmptyState } from "@/components/ui";
+import { getDocumentViewAction } from "../../utils/documentViewingHelper";
 import UserCompetencyModal from "../competencies/UserCompetencyModal";
-import { useToast } from "../../hooks/useToast";
+import DocumentEditorModal from "../documents/DocumentEditorModal";
 import DocumentListItem from "../documents/DocumentListItem";
 import FileUploader from "../documents/FileUploader";
 import PDFViewerModal from "../documents/PDFViewerModal";
-import DocumentEditorModal from "../documents/DocumentEditorModal";
-import { useAppStore } from "../../stores/useAppStore";
-import { cloudinaryService } from "../../services/cloudinaryService";
-import { getDocumentViewAction } from "../../utils/documentViewingHelper";
+import {
+  ArrowPathIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+  UploadIcon,
+} from "../icons";
 
 interface Props {
   user: User;
@@ -84,8 +84,16 @@ const UserCompetencies: React.FC<Props> = ({
     setEditingCompetency(null);
   };
 
-  const handleDelete = (competencyId: string) => {
-    if (window.confirm(t("areYouSureDeleteCompetency"))) {
+  const handleDelete = async (competencyId: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteCompetency"),
+          t("deleteCompetency") || "Delete Competency",
+          t("delete") || "Delete",
+        )
+    ) {
       onUpdateUser({
         ...user,
         competencies:

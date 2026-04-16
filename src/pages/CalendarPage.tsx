@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { NavigationState } from "../types";
-import { useTranslation } from "../hooks/useTranslation";
-import { CalendarDaysIcon } from "../components/icons";
-import CalendarHeader from "../components/calendar/CalendarHeader";
-import CalendarGrid from "../components/calendar/CalendarGrid";
 import AgendaView from "../components/calendar/AgendaView";
-import YearView from "../components/calendar/YearView";
-import EventModal from "../components/calendar/EventModal";
+import CalendarGrid from "../components/calendar/CalendarGrid";
+import CalendarHeader from "../components/calendar/CalendarHeader";
 import DayDetailModal from "../components/calendar/DayDetailModal";
+import EventModal from "../components/calendar/EventModal";
+import YearView from "../components/calendar/YearView";
+import { CalendarDaysIcon } from "../components/icons";
+import { useTranslation } from "../hooks/useTranslation";
 import { useUnifiedEvents } from "../hooks/useUnifiedEvents";
 import { useAppStore } from "../stores/useAppStore";
+import { NavigationState } from "../types";
 
 // Types exported for use in child components
 export type CalendarView = "month" | "agenda" | "year";
@@ -80,8 +80,16 @@ const CalendarPage: React.FC<CalendarPageProps> = ({ setNavigation }) => {
     setIsEventModalOpen(false);
   };
 
-  const handleDeleteEvent = (id: string) => {
-    if (window.confirm(t("areYouSureDeleteEvent"))) {
+  const handleDeleteEvent = async (id: string) => {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteEvent"),
+          t("deleteEvent") || "Delete Event",
+          t("delete") || "Delete",
+        )
+    ) {
       deleteCustomEvent(id);
       setIsEventModalOpen(false);
     }

@@ -153,7 +153,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
         <div className="flex flex-wrap items-center gap-2 text-sm">
           {projectDepartment &&
             !projectDepartments.some((d) => d?.id === projectDepartment.id) && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 dark:bg-brand-primary/90/30 text-brand-primary dark:text-brand-primary font-medium">
                 🏢 {projectDepartment.name.en || projectDepartment.name.ar}
               </span>
             )}
@@ -162,7 +162,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
               d && (
                 <span
                   key={d.id}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 font-medium"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 dark:bg-brand-primary/90/30 text-brand-primary dark:text-brand-primary font-medium"
                 >
                   🏢 {d.name.en || d.name.ar}
                 </span>

@@ -34,7 +34,7 @@ const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({
       titleKey: "createNewProject",
       descriptionKey: "quickActionCreateProject",
       icon: FolderIcon,
-      color: "from-blue-500 to-blue-600",
+      color: "from-blue-500 to-brand-primary/80",
       action: () => setNavigation({ view: "createProject" }),
     },
     {

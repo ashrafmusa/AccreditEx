@@ -35,7 +35,15 @@ export default function SupplierDetail({
   };
 
   const handleDelete = async () => {
-    if (window.confirm(t("confirmDelete"))) {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("confirmDelete"),
+          t("deleteSupplier") || "Delete Supplier",
+          t("delete") || "Delete",
+        )
+    ) {
       await deleteSupplier(supplier.id);
       onClose();
       await onUpdate();

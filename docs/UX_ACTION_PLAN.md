@@ -58,10 +58,8 @@
 ## 🚨 Critical Issues (Fix This Week) — MOSTLY COMPLETE
 
 ### 1. Tab Overload — TrainingHubPage
-**Current:** 10 tabs (exceeds cognitive limit)  
-**Issue:** Users can't find features, scrolling required  
-**Fix:** Consolidate to 4 mega-tabs:
-- Overview & Programs (merge Training Mgmt + Programs + Schedule)
+**Current:** ✅ FIXED — 4 mega-tabs implemented (March 3, 2026)
+**Fix:** Consolidated to 4 mega-tabs:
 - Competency & Assessments (merge Competency + Assessments + CAP)
 - Learning & CE (merge Learning Paths + CE Credits)
 - Personnel & Licensure (merge Personnel Files + Licensure + Skills)
@@ -146,8 +144,8 @@
 ### Week 2: Forms & Interaction (40 hours)
 - ✅ Monday: Inline editing for common fields (8h)
 - ✅ Tuesday: Smart form defaults (reduce fields by 30%) (10h)
-- ✅ Wednesday-Thursday: Bulk actions (select multiple, bulk assign) (14h)
-- ✅ Friday: Autosave drafts for long forms (8h)
+- ✅ Wednesday-Thursday: Bulk actions (select multiple, bulk assign) (14h) — `BulkActionsToolbar.tsx` in ProjectListPage
+- ✅ Friday: Autosave drafts for long forms (8h) — 30s autosave in `DocumentEditorModal.tsx` + 1s localStorage autosave in wizard
 
 **Outcome:** Task completion time -25%
 

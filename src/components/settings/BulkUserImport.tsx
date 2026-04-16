@@ -1,23 +1,23 @@
-import React, { useState } from "react";
-import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ArrowDownTrayIcon,
+  ArrowUpTrayIcon,
+  CheckCircleIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  XCircleIcon,
+} from "@/components/icons";
 import { useSettingsAudit } from "@/hooks/useSettingsAudit";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
+  createBulkOperation,
+  exportUsersToExcel,
+  getUserImportTemplate,
+  importUsersFromExcel,
+} from "@/services/bulkUserService";
 import { useUserStore } from "@/stores/useUserStore";
 import { User } from "@/types";
-import {
-  exportUsersToExcel,
-  importUsersFromExcel,
-  getUserImportTemplate,
-  createBulkOperation,
-} from "@/services/bulkUserService";
-import {
-  ArrowUpTrayIcon,
-  ArrowDownTrayIcon,
-  DocumentTextIcon,
-  CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
-} from "@/components/icons";
-import { useToast } from "@/hooks/useToast";
+import React, { useState } from "react";
 
 const BulkUserImport: React.FC = () => {
   const { t } = useTranslation();
@@ -302,7 +302,7 @@ const BulkUserImport: React.FC = () => {
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {importResults.errors.map((error, index) => (
                   <div
-                    key={index}
+                    key={error.row}
                     className="bg-red-50 dark:bg-red-900/20 rounded-lg p-3 border border-red-200 dark:border-red-800"
                   >
                     <p className="text-sm text-red-900 dark:text-red-300">

@@ -1,29 +1,31 @@
-import React, { useRef } from "react";
-import { NavigationState, UserRole } from "@/types";
 import {
-  ChartPieIcon,
-  FolderIcon,
-  LogoIcon,
-  Cog6ToothIcon,
   AcademicCapIcon,
-  ChartBarSquareIcon,
-  CalendarDaysIcon,
-  ExclamationTriangleIcon,
-  ShieldCheckIcon,
-  DocumentTextIcon,
-  CircleStackIcon,
-  ClipboardDocumentSearchIcon,
-  ChatBubbleLeftEllipsisIcon,
-  BookOpenIcon,
   BeakerIcon,
   BoltIcon,
+  BookOpenIcon,
+  CalendarDaysIcon,
+  ChartBarSquareIcon,
+  ChartPieIcon,
+  ChatBubbleLeftEllipsisIcon,
+  CircleStackIcon,
+  ClipboardDocumentSearchIcon,
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
+  LogoIcon,
+  ShieldCheckIcon,
+  Squares2X2Icon,
 } from "@/components/icons";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
 import { useArrowNavigation } from "@/hooks/useArrowNavigation";
+import { useTranslation } from "@/hooks/useTranslation";
 import { prefetchRoute } from "@/services/routePrefetchService";
+import { useAppStore } from "@/stores/useAppStore";
 import { useModuleStore } from "@/stores/useModuleStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { NavigationState } from "@/types";
+import { isAdminUser } from "@/utils/roleAccess";
+import React, { useRef } from "react";
 
 interface NavigationRailProps {
   setNavigation: (state: NavigationState) => void;
@@ -92,6 +94,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
   const navRef = useRef<HTMLElement>(null);
   useArrowNavigation(navRef);
   const isNavKeyEnabled = useModuleStore((s) => s.isNavKeyEnabled);
+  const isAdmin = isAdminUser({ role: currentUser?.role });
 
   const allNavItems: NavItemData[] = [
     {
@@ -182,6 +185,12 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: BoltIcon,
       adminOnly: true,
     },
+    {
+      nav: { view: "templateLibrary" },
+      key: "templateLibrary",
+      label: t("templateLibrary") || "Template Library",
+      icon: Squares2X2Icon,
+    },
   ];
 
   const bottomNavItems: NavItemData[] = [
@@ -194,14 +203,10 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
   ];
 
   const visibleNavItems = allNavItems.filter(
-    (item) =>
-      (!item.adminOnly || currentUser?.role?.toLowerCase() === "admin") &&
-      isNavKeyEnabled(item.key),
+    (item) => (!item.adminOnly || isAdmin) && isNavKeyEnabled(item.key),
   );
   const visibleBottomNavItems = bottomNavItems.filter(
-    (item) =>
-      (!item.adminOnly || currentUser?.role?.toLowerCase() === "admin") &&
-      isNavKeyEnabled(item.key),
+    (item) => (!item.adminOnly || isAdmin) && isNavKeyEnabled(item.key),
   );
 
   const isActive = (key: string) => {

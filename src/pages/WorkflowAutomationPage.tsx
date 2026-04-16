@@ -9,47 +9,45 @@
  *  - Execution log viewer with per-action status
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Button, Modal, Input, TextArea, EmptyState } from "@/components/ui";
-import { useTranslation } from "@/hooks/useTranslation";
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
 import {
+  ArrowPathIcon,
   BoltIcon,
-  PlusIcon,
-  PlayIcon,
-  PauseCircleIcon,
-  TrashIcon,
-  PencilIcon,
-  ClockIcon,
   CheckCircleIcon,
-  XCircleIcon,
-  ExclamationTriangleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  ClockIcon,
+  PauseCircleIcon,
+  PencilIcon,
+  PlayIcon,
+  PlusIcon,
   SparklesIcon,
-  EyeIcon,
-  ArrowPathIcon,
+  TrashIcon,
+  XCircleIcon,
 } from "@/components/icons";
+import { Button, EmptyState, Input, Modal, TextArea } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
-import AISuggestionModal from "@/components/ai/AISuggestionModal";
-import { useWorkflowStore } from "@/stores/useWorkflowStore";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useUserStore } from "@/stores/useUserStore";
 import {
-  WorkflowDefinition,
-  WorkflowExecutionLog,
-  WorkflowAction,
-  WorkflowCondition,
-  WorkflowConditionGroup,
-  TriggerEntity,
-  TriggerEvent,
+  ACTION_TYPE_LABELS,
   ActionType,
+  CONDITION_OPERATOR_LABELS,
   ConditionOperator,
-  WorkflowCategory,
   TRIGGER_ENTITY_LABELS,
   TRIGGER_EVENT_LABELS,
-  ACTION_TYPE_LABELS,
-  CONDITION_OPERATOR_LABELS,
+  TriggerEntity,
+  TriggerEvent,
   WORKFLOW_TEMPLATES,
+  WorkflowAction,
+  WorkflowCategory,
+  WorkflowCondition,
+  WorkflowConditionGroup,
+  WorkflowDefinition,
+  WorkflowExecutionLog,
 } from "@/types/workflow";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 type WorkflowTab = "workflows" | "templates" | "logs";
 
@@ -67,7 +65,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   compliance:
     "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   quality:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
   safety: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
   training:
     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
@@ -386,7 +384,15 @@ const WorkflowAutomationPage: React.FC = () => {
 
   const handleDeleteWorkflow = useCallback(
     async (id: string) => {
-      if (window.confirm(t("deleteWorkflowConfirm"))) {
+      if (
+        await useConfirmStore
+          .getState()
+          .confirm(
+            t("deleteWorkflowConfirm"),
+            t("deleteWorkflow") || "Delete Workflow",
+            t("delete") || "Delete",
+          )
+      ) {
         await deleteWorkflow(id);
       }
     },
@@ -539,7 +545,7 @@ Format in clear Markdown.`;
             size="sm"
             onClick={handleAISuggestWorkflow}
             disabled={aiLoading}
-            className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+            className="flex items-center gap-1.5 text-brand-primary dark:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/20"
           >
             {aiLoading ? (
               <ArrowPathIcon className="h-4 w-4 animate-spin" />
@@ -581,9 +587,9 @@ Format in clear Markdown.`;
           label={t("executions")}
           value={stats.executions}
           icon={
-            <ClockIcon className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+            <ClockIcon className="h-6 w-6 text-brand-primary dark:text-brand-primary" />
           }
-          color="border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20"
+          color="border-brand-primary/40 dark:border-brand-primary/40 bg-brand-primary/5/50 dark:bg-brand-primary/95/20"
         />
       </div>
 
@@ -640,7 +646,7 @@ Format in clear Markdown.`;
                 size="sm"
                 onClick={handleAIAnalyzeLogs}
                 disabled={aiLoading}
-                className="flex items-center gap-1.5 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                className="flex items-center gap-1.5 text-brand-primary dark:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/20"
               >
                 {aiLoading ? (
                   <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
@@ -1486,8 +1492,8 @@ const ActionConfigFields: React.FC<{
             <option value="json">{t("json")}</option>
           </select>
           <div className="flex items-center gap-2 mt-1">
-            <SparklesIcon className="h-3.5 w-3.5 text-purple-500" />
-            <span className="text-xs text-purple-600 dark:text-purple-400">
+            <SparklesIcon className="h-3.5 w-3.5 text-brand-primary" />
+            <span className="text-xs text-brand-primary dark:text-brand-primary">
               {t("aiGenerateInfo")}
             </span>
           </div>

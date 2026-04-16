@@ -9,87 +9,88 @@
  *  - Firestore persistence
  */
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { Button, Modal, Input, TextArea, EmptyState } from "@/components/ui";
-import { useTranslation } from "@/hooks/useTranslation";
+import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import { useTheme } from "@/components/common/ThemeProvider";
 import {
-  PlusIcon,
-  TrashIcon,
-  PencilIcon,
-  CheckCircleIcon,
-  DocumentDuplicateIcon,
   ArrowDownTrayIcon,
-  EyeIcon,
+  ArrowPathIcon,
+  ChartBarIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
-  Squares2X2Icon,
-  DocumentTextIcon,
-  ChartBarIcon,
-  TableIcon,
   ClockIcon,
-  ArrowPathIcon,
-  XMarkIcon,
+  DocumentDuplicateIcon,
+  DocumentTextIcon,
+  EyeIcon,
+  PencilIcon,
+  PlusIcon,
   SparklesIcon,
+  Squares2X2Icon,
+  TableIcon,
+  TrashIcon,
+  XMarkIcon,
 } from "@/components/icons";
+import { Button, EmptyState, Input, Modal, TextArea } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
-import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import {
+  downloadPDFBlob,
+  exportReportToCSV,
+  exportReportToPDF,
+  formatMetricValue,
+  resolveChart,
+  resolveMetric,
+  resolveTable,
+} from "@/services/reportDataEngine";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useReportBuilderStore } from "@/stores/useReportBuilderStore";
 import { useUserStore } from "@/stores/useUserStore";
 import {
-  ReportDefinition,
-  ReportSection,
+  AGGREGATION_LABELS,
+  AggregationType,
+  BLOCK_TYPE_LABELS,
+  CHART_TYPE_LABELS,
+  ChartBlockConfig,
+  DATA_SOURCE_FIELDS,
+  DATA_SOURCE_LABELS,
+  DividerBlockConfig,
+  HeaderBlockConfig,
+  MetricBlockConfig,
+  REPORT_CATEGORY_LABELS,
+  REPORT_TEMPLATES,
   ReportBlock,
   ReportBlockType,
-  ReportDataSource,
-  AggregationType,
   ReportChartType,
-  REPORT_TEMPLATES,
-  DATA_SOURCE_LABELS,
-  DATA_SOURCE_FIELDS,
-  AGGREGATION_LABELS,
-  CHART_TYPE_LABELS,
-  BLOCK_TYPE_LABELS,
-  REPORT_CATEGORY_LABELS,
-  MetricBlockConfig,
-  ChartBlockConfig,
+  ReportDataSource,
+  ReportDefinition,
+  ReportSection,
   TableBlockConfig,
   TextBlockConfig,
-  HeaderBlockConfig,
-  DividerBlockConfig,
 } from "@/types/reportBuilder";
 import {
-  resolveMetric,
-  resolveChart,
-  resolveTable,
-  formatMetricValue,
-  exportReportToPDF,
-  downloadPDFBlob,
-  exportReportToCSV,
-} from "@/services/reportDataEngine";
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { useTheme } from "@/components/common/ThemeProvider";
-import {
-  CHART_COLORS as THEME_COLORS,
+  CHART_ANIMATION,
   getChartTheme,
   ChartTooltip as SharedChartTooltip,
-  CHART_ANIMATION,
+  CHART_COLORS as THEME_COLORS,
 } from "@/utils/chartTheme";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  Area,
+  AreaChart,
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 // ── Tab type ─────────────────────────────────────────────────
 type ReportTab = "reports" | "templates" | "builder";
@@ -109,7 +110,7 @@ const CATEGORY_COLORS = {
   compliance:
     "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   quality:
-    "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
+    "bg-brand-primary/10 text-brand-primary dark:bg-brand-primary/90/30 dark:text-brand-primary",
   safety: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
   training:
     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300",
@@ -464,11 +465,11 @@ const LiveTable: React.FC<{ config: TableBlockConfig }> = ({ config }) => {
     <div className="overflow-x-auto">
       <table className="w-full text-xs">
         <thead>
-          <tr className="bg-indigo-50 dark:bg-indigo-900/20">
+          <tr className="bg-brand-primary/5 dark:bg-brand-primary/90/20">
             {headers.map((h) => (
               <th
                 key={h}
-                className="px-3 py-2 text-left font-semibold text-indigo-700 dark:text-indigo-300 capitalize"
+                className="px-3 py-2 text-left font-semibold text-brand-primary dark:text-brand-primary capitalize"
               >
                 {h.replace(/([A-Z])/g, " $1").replace(/_/g, " ")}
               </th>
@@ -603,7 +604,7 @@ const BlockPreview: React.FC<{
             <button
               type="button"
               onClick={onEdit}
-              className="p-1 text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400"
+              className="p-1 text-gray-400 hover:text-brand-primary dark:hover:text-brand-primary"
             >
               <PencilIcon className="h-3.5 w-3.5" />
             </button>
@@ -716,7 +717,7 @@ Output ONLY the paragraph text, no markdown headers or formatting.`;
               type="button"
               onClick={handleAIGenerateText}
               disabled={generating}
-              className="flex items-center gap-1.5 text-xs font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 disabled:opacity-50"
+              className="flex items-center gap-1.5 text-xs font-medium text-brand-primary dark:text-brand-primary hover:text-brand-primary dark:hover:text-brand-primary disabled:opacity-50"
             >
               {generating ? (
                 <ArrowPathIcon className="h-3.5 w-3.5 animate-spin" />
@@ -1090,7 +1091,7 @@ const SectionBuilder: React.FC<{
             type="text"
             value={section.title}
             onChange={(e) => onUpdate({ ...section, title: e.target.value })}
-            className="bg-transparent font-semibold text-sm text-gray-900 dark:text-white outline-none border-b border-transparent focus:border-indigo-500"
+            className="bg-transparent font-semibold text-sm text-gray-900 dark:text-white outline-none border-b border-transparent focus:border-brand-primary/40"
             placeholder={t("rbSectionTitle")}
           />
           <span className="text-xs text-gray-400">
@@ -1143,8 +1144,8 @@ const SectionBuilder: React.FC<{
                 onClick={() => addBlock(type)}
                 className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-md border
                            border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300
-                           hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-700
-                           dark:hover:bg-indigo-900/20 dark:hover:text-indigo-300 transition-colors"
+                           hover:bg-brand-primary/5 hover:border-brand-primary/40 hover:text-brand-primary
+                           dark:hover:bg-brand-primary/90/20 dark:hover:text-brand-primary transition-colors"
               >
                 {blockIcon(type)}
                 {BLOCK_TYPE_LABELS[type]}
@@ -1645,10 +1646,10 @@ Format in clear Markdown.`;
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* ── Page Header ─────────────────────────────────────── */}
-      <div className="shrink-0 px-6 pt-6 pb-4 border-b dark:border-gray-800 bg-linear-to-r from-indigo-50 via-purple-50 to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
+      <div className="shrink-0 px-6 pt-6 pb-4 border-b dark:border-gray-800 bg-linear-to-r from-brand-primary via-brand-primary/50 to-brand-primary/80 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-linear-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30">
+            <div className="p-2.5 rounded-xl bg-linear-to-br from-brand-primary to-brand-primary/80 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30">
               <Squares2X2Icon className="h-6 w-6" />
             </div>
             <div>
@@ -1662,7 +1663,7 @@ Format in clear Markdown.`;
           </div>
           <Button
             onClick={() => setShowNewModal(true)}
-            className="bg-linear-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30"
+            className="bg-linear-to-r from-brand-primary to-brand-primary/80 text-white shadow-lg shadow-indigo-200 dark:shadow-indigo-900/30"
           >
             <PlusIcon className="h-4 w-4 mr-1.5" />
             {t("rbNewReport")}
@@ -1671,7 +1672,7 @@ Format in clear Markdown.`;
             onClick={handleAISuggestTemplate}
             variant="outline"
             disabled={aiLoading}
-            className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+            className="border-brand-primary/40 dark:border-brand-primary/40 text-brand-primary dark:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/20"
           >
             {aiLoading ? (
               <ArrowPathIcon className="h-4 w-4 mr-1.5 animate-spin" />
@@ -1687,8 +1688,8 @@ Format in clear Markdown.`;
           <StatCard
             label={t("rbTotalReports")}
             value={stats.total}
-            icon={<Squares2X2Icon className="h-5 w-5 text-indigo-600" />}
-            color="bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-800"
+            icon={<Squares2X2Icon className="h-5 w-5 text-brand-primary" />}
+            color="bg-brand-primary/5 dark:bg-brand-primary/90/20 border-brand-primary/40 dark:border-brand-primary/40"
           />
           <StatCard
             label={t("rbPublished")}
@@ -1719,7 +1720,7 @@ Format in clear Markdown.`;
               onClick={() => setTab(tabItem.key)}
               className={`px-4 py-1.5 text-sm font-medium rounded-md transition-colors ${
                 tab === tabItem.key
-                  ? "bg-white dark:bg-gray-700 text-indigo-700 dark:text-indigo-300 shadow-sm"
+                  ? "bg-white dark:bg-gray-700 text-brand-primary dark:text-brand-primary shadow-sm"
                   : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -1733,13 +1734,13 @@ Format in clear Markdown.`;
       <div className="flex-1 overflow-y-auto p-6">
         {loading ? (
           <div className="flex items-center justify-center h-40">
-            <ArrowPathIcon className="h-6 w-6 text-indigo-500 animate-spin" />
+            <ArrowPathIcon className="h-6 w-6 text-brand-primary animate-spin" />
           </div>
         ) : tab === "reports" ? (
           /* ── Reports List ──────────────────────────────────── */
           reports.length === 0 ? (
             <EmptyState
-              icon={<Squares2X2Icon className="h-12 w-12 text-indigo-300" />}
+              icon={<Squares2X2Icon className="h-12 w-12 text-brand-primary" />}
               title={t("rbNoReportsYet")}
               description={t("rbNoReportsDesc")}
               action={{
@@ -1812,8 +1813,16 @@ Format in clear Markdown.`;
                       variant="ghost"
                       size="sm"
                       className="text-red-500 hover:text-red-700"
-                      onClick={() => {
-                        if (window.confirm(t("rbDeleteConfirm")))
+                      onClick={async () => {
+                        if (
+                          await useConfirmStore
+                            .getState()
+                            .confirm(
+                              t("rbDeleteConfirm"),
+                              t("deleteReport") || "Delete Report",
+                              t("delete") || "Delete",
+                            )
+                        )
                           deleteReport(report.id);
                       }}
                     >
@@ -1833,8 +1842,8 @@ Format in clear Markdown.`;
                 className="border rounded-xl dark:border-gray-700 bg-white dark:bg-gray-900 p-4 hover:shadow-md transition-shadow"
               >
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                    <Squares2X2Icon className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                  <div className="p-1.5 rounded-lg bg-brand-primary/10 dark:bg-brand-primary/90/30">
+                    <Squares2X2Icon className="h-4 w-4 text-brand-primary dark:text-brand-primary" />
                   </div>
                   <h3 className="font-semibold text-gray-900 dark:text-white">
                     {tpl.name}
@@ -1859,7 +1868,7 @@ Format in clear Markdown.`;
                 </div>
                 <Button
                   onClick={() => handleUseTemplate(tpl.name)}
-                  className="w-full bg-linear-to-r from-indigo-600 to-purple-600 text-white"
+                  className="w-full bg-linear-to-r from-brand-primary to-brand-primary/80 text-white"
                   size="sm"
                 >
                   <PlusIcon className="h-3.5 w-3.5 mr-1" />
@@ -1880,7 +1889,7 @@ Format in clear Markdown.`;
                     setActiveReport(null);
                     setTab("reports");
                   }}
-                  className="text-sm text-gray-500 hover:text-indigo-600"
+                  className="text-sm text-gray-500 hover:text-brand-primary"
                 >
                   {t("rbBack")}
                 </button>
@@ -1891,7 +1900,7 @@ Format in clear Markdown.`;
                   onChange={(e) =>
                     setActiveReport({ ...activeReport, name: e.target.value })
                   }
-                  className="bg-transparent font-bold text-lg text-gray-900 dark:text-white outline-none border-b-2 border-transparent focus:border-indigo-500 flex-1 min-w-0"
+                  className="bg-transparent font-bold text-lg text-gray-900 dark:text-white outline-none border-b-2 border-transparent focus:border-brand-primary/40 flex-1 min-w-0"
                 />
               </div>
               <div className="flex items-center gap-2 shrink-0">
@@ -1899,7 +1908,7 @@ Format in clear Markdown.`;
                   variant={showPreview ? "primary" : "outline"}
                   size="sm"
                   onClick={() => setShowPreview(!showPreview)}
-                  className={showPreview ? "bg-indigo-600 text-white" : ""}
+                  className={showPreview ? "bg-brand-primary text-white" : ""}
                 >
                   <EyeIcon className="h-3.5 w-3.5 mr-1" />
                   {showPreview ? t("rbEditMode") : t("rbPreview")}
@@ -1917,7 +1926,7 @@ Format in clear Markdown.`;
                   size="sm"
                   onClick={handleAIAnalyzeReport}
                   disabled={aiLoading}
-                  className="border-purple-300 dark:border-purple-700 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20"
+                  className="border-brand-primary/40 dark:border-brand-primary/40 text-brand-primary dark:text-brand-primary hover:bg-brand-primary/5 dark:hover:bg-brand-primary/90/20"
                 >
                   {aiLoading ? (
                     <ArrowPathIcon className="h-3.5 w-3.5 mr-1 animate-spin" />
@@ -1934,7 +1943,7 @@ Format in clear Markdown.`;
                   size="sm"
                   onClick={handleExportPDF}
                   disabled={exporting}
-                  className="bg-linear-to-r from-indigo-600 to-purple-600 text-white"
+                  className="bg-linear-to-r from-brand-primary to-brand-primary/80 text-white"
                 >
                   {exporting ? (
                     <ArrowPathIcon className="h-3.5 w-3.5 mr-1 animate-spin" />
@@ -1955,7 +1964,7 @@ Format in clear Markdown.`;
               <div className="bg-white dark:bg-gray-900 border dark:border-gray-700 rounded-xl shadow-lg max-w-4xl mx-auto overflow-hidden">
                 {/* Report Header */}
                 {activeReport.includeHeader && (
-                  <div className="bg-linear-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex items-center justify-between">
+                  <div className="bg-linear-to-r from-brand-primary to-brand-primary/80 text-white px-6 py-4 flex items-center justify-between">
                     <h2 className="text-lg font-bold">
                       {activeReport.headerTitle || activeReport.name}
                     </h2>
@@ -1971,7 +1980,7 @@ Format in clear Markdown.`;
                     .map((section) => (
                       <div key={section.id}>
                         {section.title && (
-                          <h3 className="text-base font-bold text-indigo-600 dark:text-indigo-400 mb-3 border-b dark:border-gray-700 pb-1">
+                          <h3 className="text-base font-bold text-brand-primary dark:text-brand-primary mb-3 border-b dark:border-gray-700 pb-1">
                             {section.title}
                           </h3>
                         )}
@@ -2081,8 +2090,8 @@ Format in clear Markdown.`;
                   type="button"
                   onClick={addSection}
                   className="w-full py-4 border-2 border-dashed rounded-xl border-gray-300 dark:border-gray-700
-                             text-gray-500 dark:text-gray-400 hover:border-indigo-400 hover:text-indigo-600
-                             dark:hover:border-indigo-600 dark:hover:text-indigo-400 transition-colors
+                             text-gray-500 dark:text-gray-400 hover:border-brand-primary/40 hover:text-brand-primary
+                             dark:hover:border-brand-primary/40 dark:hover:text-brand-primary transition-colors
                              flex items-center justify-center gap-2 text-sm font-medium"
                 >
                   <PlusIcon className="h-4 w-4" />

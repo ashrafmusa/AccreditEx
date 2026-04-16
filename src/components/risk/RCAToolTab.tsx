@@ -24,9 +24,9 @@ const CATEGORY_COLORS: Record<
     text: "text-blue-700 dark:text-blue-400",
   },
   machine: {
-    bg: "bg-purple-50 dark:bg-purple-900/20",
-    border: "border-purple-300 dark:border-purple-700",
-    text: "text-purple-700 dark:text-purple-400",
+    bg: "bg-brand-primary/5 dark:bg-brand-primary/90/20",
+    border: "border-brand-primary/40 dark:border-brand-primary/40",
+    text: "text-brand-primary dark:text-brand-primary",
   },
   method: {
     bg: "bg-green-50 dark:bg-green-900/20",
@@ -39,9 +39,9 @@ const CATEGORY_COLORS: Record<
     text: "text-orange-700 dark:text-orange-400",
   },
   measurement: {
-    bg: "bg-teal-50 dark:bg-teal-900/20",
-    border: "border-teal-300 dark:border-teal-700",
-    text: "text-teal-700 dark:text-teal-400",
+    bg: "bg-brand-primary/5 dark:bg-brand-primary/90/20",
+    border: "border-brand-primary/40 dark:border-brand-primary/40",
+    text: "text-brand-primary dark:text-brand-primary",
   },
   environment: {
     bg: "bg-amber-50 dark:bg-amber-900/20",

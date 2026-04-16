@@ -554,11 +554,11 @@ const MyComponent = () => {
 
 ### Current Limitations
 
-1. ⚠️ Edit mode not fully implemented (wizard created for new projects)
-   - **Fix in Phase 2:** Support editing existing projects
+1. ✅ Edit mode implemented — `CreateProjectWizard.tsx` supports both creation AND editing
+   (`isEditMode` + `editProjectId` props, comment on line 6: "Multi-step wizard for project creation AND editing")
    
-2. ⚠️ Bulk project operations not integrated
-   - **Fix in Phase 3:** Extend wizard for projects bulk creation
+2. ⚠️ Bulk project operations not integrated into wizard
+   - **Fix in Phase 3:** Extend wizard for bulk project creation
    
 3. ⚠️ Team member role assignment minimal
    - **Fix in Phase 2:** Add role + permission selection per team member
@@ -566,7 +566,7 @@ const MyComponent = () => {
 ### Roadmap (Phase 2+)
 
 **Week 2 (Phase 2):**
-- [ ] Edit mode for existing projects
+- [x] Edit mode for existing projects ✅ (implemented in CreateProjectWizard.tsx)
 - [ ] Advanced template customization
 - [ ] Conditional fields based on program
 - [ ] Drag-drop task reordering

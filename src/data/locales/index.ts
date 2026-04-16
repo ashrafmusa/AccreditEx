@@ -1,47 +1,49 @@
-import { en as commonEn } from './en/common';
-import { ar as commonAr } from './ar/common';
-import { en as dashboardEn } from './en/dashboard';
-import { ar as dashboardAr } from './ar/dashboard';
-import { en as analyticsEn } from './en/analytics';
 import { ar as analyticsAr } from './ar/analytics';
-import { en as qualityInsightsEn } from './en/qualityInsights';
-import { ar as qualityInsightsAr } from './ar/qualityInsights';
-import { en as calendarEn } from './en/calendar';
-import { ar as calendarAr } from './ar/calendar';
-import { en as projectsEn } from './en/projects';
-import { ar as projectsAr } from './ar/projects';
-import { en as documentsEn } from './en/documents';
-import { ar as documentsAr } from './ar/documents';
-import { en as tasksEn } from './en/tasks';
-import { ar as tasksAr } from './ar/tasks';
-import { en as riskEn } from './en/risk';
-import { ar as riskAr } from './ar/risk';
-import { en as departmentsEn } from './en/departments';
-import { ar as departmentsAr } from './ar/departments';
-import { en as trainingEn } from './en/training';
-import { ar as trainingAr } from './ar/training';
-import { en as settingsEn } from './en/settings';
-import { ar as settingsAr } from './ar/settings';
-import { en as onboardingEn } from './en/onboarding';
-import { ar as onboardingAr } from './ar/onboarding';
-import { en as componentsEn } from './en/components';
-import { ar as componentsAr } from './ar/components';
-import { en as messagingEn } from './en/messaging';
-import { ar as messagingAr } from './ar/messaging';
-import { en as hisIntegrationEn } from './en/his-integration';
-import { ar as hisIntegrationAr } from './ar/his-integration';
-import { en as auditEn } from './en/audit';
 import { ar as auditAr } from './ar/audit';
-import { en as performanceEn } from './en/performance';
-import { ar as performanceAr } from './ar/performance';
-import { roundingEn } from './en/rounding';
-import { roundingAr } from './ar/rounding';
-import { en as knowledgeBaseEn } from './en/knowledgeBase';
+import { ar as calendarAr } from './ar/calendar';
+import { ar as commonAr } from './ar/common';
+import { ar as componentsAr } from './ar/components';
+import { ar as dashboardAr } from './ar/dashboard';
+import { ar as departmentsAr } from './ar/departments';
+import { ar as documentsAr } from './ar/documents';
+import { ar as hisIntegrationAr } from './ar/his-integration';
 import { ar as knowledgeBaseAr } from './ar/knowledgeBase';
-import { en as labOperationsEn } from './en/labOperations';
 import { ar as labOperationsAr } from './ar/labOperations';
-import { en as workflowAutomationEn } from './en/workflowAutomation';
+import { ar as messagingAr } from './ar/messaging';
+import { ar as onboardingAr } from './ar/onboarding';
+import { ar as performanceAr } from './ar/performance';
+import { ar as projectsAr } from './ar/projects';
+import { ar as qualityInsightsAr } from './ar/qualityInsights';
+import { ar as riskAr } from './ar/risk';
+import { roundingAr } from './ar/rounding';
+import { ar as settingsAr } from './ar/settings';
+import { ar as tasksAr } from './ar/tasks';
+import { ar as templatesAr } from './ar/templates';
+import { ar as trainingAr } from './ar/training';
 import { ar as workflowAutomationAr } from './ar/workflowAutomation';
+import { en as analyticsEn } from './en/analytics';
+import { en as auditEn } from './en/audit';
+import { en as calendarEn } from './en/calendar';
+import { en as commonEn } from './en/common';
+import { en as componentsEn } from './en/components';
+import { en as dashboardEn } from './en/dashboard';
+import { en as departmentsEn } from './en/departments';
+import { en as documentsEn } from './en/documents';
+import { en as hisIntegrationEn } from './en/his-integration';
+import { en as knowledgeBaseEn } from './en/knowledgeBase';
+import { en as labOperationsEn } from './en/labOperations';
+import { en as messagingEn } from './en/messaging';
+import { en as onboardingEn } from './en/onboarding';
+import { en as performanceEn } from './en/performance';
+import { en as projectsEn } from './en/projects';
+import { en as qualityInsightsEn } from './en/qualityInsights';
+import { en as riskEn } from './en/risk';
+import { roundingEn } from './en/rounding';
+import { en as settingsEn } from './en/settings';
+import { en as tasksEn } from './en/tasks';
+import { en as templatesEn } from './en/templates';
+import { en as trainingEn } from './en/training';
+import { en as workflowAutomationEn } from './en/workflowAutomation';
 
 export const locales = {
   en: {
@@ -67,6 +69,7 @@ export const locales = {
     ...knowledgeBaseEn,
     ...labOperationsEn,
     ...workflowAutomationEn,
+    ...templatesEn,
   },
   ar: {
     ...commonAr,
@@ -91,5 +94,6 @@ export const locales = {
     ...knowledgeBaseAr,
     ...labOperationsAr,
     ...workflowAutomationAr,
+    ...templatesAr,
   }
 };

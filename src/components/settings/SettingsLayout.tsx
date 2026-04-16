@@ -23,9 +23,10 @@ import {
   XMarkIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { checkIsSuperAdmin } from "@/services/organizationService";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState, SettingsSection } from "@/types";
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
 
 const ProfileSettingsPage = lazy(() => import("./ProfileSettingsPage"));
 const SecuritySettingsPage = lazy(() => import("./SecuritySettingsPage"));
@@ -58,6 +59,9 @@ const DepartmentsPage = lazy(() => import("@/pages/DepartmentsPage"));
 const LIMSIntegrationSettingsPage = lazy(
   () => import("./LIMSIntegrationSettingsPage"),
 );
+const OrgPlanSettingsPage = lazy(() => import("./OrgPlanSettingsPage"));
+const BranchManagementPage = lazy(() => import("@/pages/BranchManagementPage"));
+const PlatformAdminPage = lazy(() => import("./PlatformAdminPage"));
 
 interface SettingsLayoutProps {
   section: SettingsSection | undefined;
@@ -76,142 +80,120 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
   // Firebase Setup is admin-only
   const isAdmin = currentUser?.role?.toLowerCase() === "admin";
 
+  // Platform-level super-admin (platformAdmins Firestore collection)
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  useEffect(() => {
+    checkIsSuperAdmin()
+      .then(setIsSuperAdmin)
+      .catch(() => {});
+  }, [currentUser]);
+
   // Default section: admins see Visual first, non-admins see Profile
   const section = sectionProp ?? (isAdmin ? "visual" : "profile");
 
   const allNavItems = [
-    {
-      id: "visual",
-      label: t("visualSettings"),
-      icon: PaintBrushIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
+    // ── PERSONAL ──────────────────────────────────────────────
     {
       id: "profile",
       label: t("profile"),
       icon: UserCircleIcon,
       adminOnly: false,
-      category: t("personal"),
-    },
-    {
-      id: "security",
-      label: t("security"),
-      icon: ShieldCheckIcon,
-      adminOnly: true,
-      category: t("admin"),
+      category: t("settingsCategoryPersonal"),
     },
     {
       id: "notifications",
       label: t("notifications"),
       icon: BellIcon,
       adminOnly: false,
-      category: t("personal"),
+      category: t("settingsCategoryPersonal"),
     },
     {
       id: "accessibility",
       label: t("accessibility"),
       icon: EyeIcon,
       adminOnly: false,
-      category: t("personal"),
+      category: t("settingsCategoryPersonal"),
+    },
+    // ── ORGANIZATION ──────────────────────────────────────────
+    {
+      id: "orgPlan",
+      label: t("planAndSubscription") || "Plan & Subscription",
+      icon: SparklesIcon,
+      adminOnly: true,
+      category: t("settingsCategoryOrganization"),
     },
     {
-      id: "settingsPresets",
-      label: t("settingsPresets"),
-      icon: StarIcon,
+      id: "branches",
+      label: t("branches") || "Branches",
+      icon: BuildingOffice2Icon,
       adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "versionHistory",
-      label: t("versionHistory"),
-      icon: DocumentDuplicateIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "usageTracking",
-      label: t("usageTracking") || "Usage Tracking Settings",
-      icon: Cog6ToothIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "firebaseUsage",
-      label: t("firebaseUsageDashboard") || "Firebase Usage Dashboard",
-      icon: ChartBarIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "users",
-      label: t("userManagement"),
-      icon: UsersIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "accreditationHub",
-      label: t("accreditationHub"),
-      icon: GlobeAltIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "competencies",
-      label: t("competencies"),
-      icon: IdentificationIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "data",
-      label: t("data"),
-      icon: CircleStackIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "auditLog",
-      label: t("auditLog"),
-      icon: ClockIcon,
-      adminOnly: true,
-      category: t("admin"),
-    },
-    {
-      id: "bulkUserImport",
-      label: t("bulkUserImport"),
-      icon: ArrowUpTrayIcon,
-      adminOnly: true,
-      category: t("admin"),
+      category: t("settingsCategoryOrganization"),
     },
     {
       id: "departments",
       label: t("departments"),
       icon: BuildingOffice2Icon,
       adminOnly: true,
-      category: t("admin"),
+      category: t("settingsCategoryOrganization"),
     },
     {
-      id: "limsIntegration",
-      label: "LIMS Integration",
-      icon: BeakerIcon,
+      id: "visual",
+      label: t("visualSettings"),
+      icon: PaintBrushIcon,
       adminOnly: true,
-      category: t("admin"),
+      category: t("settingsCategoryOrganization"),
+    },
+    // ── PEOPLE ────────────────────────────────────────────────
+    {
+      id: "users",
+      label: t("userManagement"),
+      icon: UsersIcon,
+      adminOnly: true,
+      category: t("settingsCategoryPeople"),
+    },
+    {
+      id: "bulkUserImport",
+      label: t("bulkUserImport"),
+      icon: ArrowUpTrayIcon,
+      adminOnly: true,
+      category: t("settingsCategoryPeople"),
+    },
+    {
+      id: "competencies",
+      label: t("competencies"),
+      icon: IdentificationIcon,
+      adminOnly: true,
+      category: t("settingsCategoryPeople"),
+    },
+    // ── QUALITY & COMPLIANCE ──────────────────────────────────
+    {
+      id: "accreditationHub",
+      label: t("accreditationHub"),
+      icon: GlobeAltIcon,
+      adminOnly: true,
+      category: t("settingsCategoryQuality"),
     },
     {
       id: "changeControl",
       label: t("changeControlManagement"),
       icon: DocumentDuplicateIcon,
       adminOnly: true,
-      category: t("admin"),
+      category: t("settingsCategoryQuality"),
     },
     {
       id: "supplierHub",
       label: t("supplierQualityManagement"),
       icon: BuildingOffice2Icon,
       adminOnly: true,
-      category: t("admin"),
+      category: t("settingsCategoryQuality"),
+    },
+    // ── INTEGRATIONS ──────────────────────────────────────────
+    {
+      id: "limsIntegration",
+      label: "LIMS Integration",
+      icon: BeakerIcon,
+      adminOnly: true,
+      category: t("settingsCategoryIntegrations"),
     },
     ...(isAdmin
       ? [
@@ -220,20 +202,85 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
             label: t("firebaseSetup"),
             icon: SparklesIcon,
             adminOnly: true,
-            category: t("admin"),
+            category: t("settingsCategoryIntegrations"),
           },
         ]
       : []),
+    // ── ADMINISTRATION ────────────────────────────────────────
+    {
+      id: "security",
+      label: t("security"),
+      icon: ShieldCheckIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    {
+      id: "auditLog",
+      label: t("auditLog"),
+      icon: ClockIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    {
+      id: "data",
+      label: t("data"),
+      icon: CircleStackIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    {
+      id: "usageTracking",
+      label: t("usageTracking") || "Usage Tracking Settings",
+      icon: Cog6ToothIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    {
+      id: "firebaseUsage",
+      label: t("firebaseUsageDashboard") || "Firebase Usage Dashboard",
+      icon: ChartBarIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    {
+      id: "settingsPresets",
+      label: t("settingsPresets"),
+      icon: StarIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    {
+      id: "versionHistory",
+      label: t("versionHistory"),
+      icon: DocumentDuplicateIcon,
+      adminOnly: true,
+      category: t("settingsCategoryAdministration"),
+    },
+    // ── PLATFORM (super-admin only) ───────────────────────────
+    ...(isSuperAdmin
+      ? [
+          {
+            id: "platformAdmin",
+            label: t("platformAdmin") || "Platform Administration",
+            icon: ShieldCheckIcon,
+            adminOnly: true,
+            category: t("settingsCategoryPlatform"),
+          },
+        ]
+      : []),
+    // ── SYSTEM ────────────────────────────────────────────────
     {
       id: "about",
       label: t("about"),
       icon: InformationCircleIcon,
       adminOnly: false,
-      category: t("system"),
+      category: t("settingsCategorySystem"),
     },
   ];
 
-  const navItems = allNavItems.filter((item) => !item.adminOnly || isAdmin);
+  const navItems = allNavItems.filter(
+    (item) => !item.adminOnly || isAdmin || isSuperAdmin,
+  );
 
   const filteredNavItems = searchQuery
     ? navItems.filter((item) =>
@@ -303,6 +350,16 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         return isAdmin ? <ChangeControlHubPage /> : <ProfileSettingsPage />;
       case "supplierHub":
         return isAdmin ? <SupplierHubPage /> : <ProfileSettingsPage />;
+      case "orgPlan":
+        return isAdmin ? <OrgPlanSettingsPage /> : <ProfileSettingsPage />;
+      case "platformAdmin":
+        return <PlatformAdminPage />;
+      case "branches":
+        return isAdmin ? (
+          <BranchManagementPage setNavigation={setNavigation} />
+        ) : (
+          <ProfileSettingsPage />
+        );
       case "firebaseSetup":
         return isAdmin ? <FirebaseSetupPage /> : <ProfileSettingsPage />;
       case "about":

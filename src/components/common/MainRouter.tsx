@@ -10,6 +10,7 @@ import { useModuleStore } from "@/stores/useModuleStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
+import { isAdminUser } from "@/utils/roleAccess";
 import React, { Suspense, lazy, useEffect, useState } from "react";
 
 // Performance Optimization: Lazy load all page components
@@ -89,6 +90,12 @@ const SupplierHubPage = lazy(() => import("@/pages/SupplierHubPage"));
 // Change Control Management
 const ChangeControlHubPage = lazy(() => import("@/pages/ChangeControlHubPage"));
 
+// Pricing / Subscription Plans
+const PricingPage = lazy(() => import("@/pages/PricingPage"));
+
+// Template Library
+const TemplateLibraryPage = lazy(() => import("@/pages/TemplateLibraryPage"));
+
 // Loading component for lazy-loaded routes
 const RouteLoadingFallback: React.FC = () => <LoadingScreen />;
 
@@ -134,8 +141,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
 
   // Role-based Access Control (audit fix: enforce route-level guards)
   useEffect(() => {
-    // Robust check: Handle Case-Insensitivity (Admin vs admin)
-    const isAdmin = currentUser?.role?.toLowerCase() === "admin";
+    const isAdmin = isAdminUser({ role: currentUser?.role });
 
     if (currentUser && !isAdmin) {
       // Build admin-only list from route config + hardcoded extras
@@ -491,6 +497,10 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <SupplierHubPage />;
       case "changeControlHub":
         return <ChangeControlHubPage />;
+      case "templateLibrary":
+        return <TemplateLibraryPage setNavigation={setNavigation} />;
+      case "pricing":
+        return <PricingPage />;
       default:
         return <DashboardPage setNavigation={setNavigation} />;
     }

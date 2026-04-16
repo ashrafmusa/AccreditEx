@@ -1,8 +1,8 @@
-import React from "react";
-import { User, UserRole, Department } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
-import { PencilIcon, TrashIcon } from "../icons";
+import { Department, User, UserRole } from "@/types";
+import React from "react";
 import UserAvatar from "../common/UserAvatar";
+import { PencilIcon, ShieldCheckIcon, TrashIcon } from "../icons";
 
 interface UserRowProps {
   user: User & { department?: Department };
@@ -10,6 +10,7 @@ interface UserRowProps {
   onSelect: (userId: string) => void;
   onEdit: () => void;
   onDelete: (userId: string) => void;
+  onManageSessions: () => void;
 }
 
 const UserRow: React.FC<UserRowProps> = ({
@@ -18,6 +19,7 @@ const UserRow: React.FC<UserRowProps> = ({
   onSelect,
   onEdit,
   onDelete,
+  onManageSessions,
 }) => {
   const { t, lang } = useTranslation();
 
@@ -107,6 +109,17 @@ const UserRow: React.FC<UserRowProps> = ({
       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-right rtl:text-left">
         {currentUser.role === UserRole.Admin && (
           <div className="flex items-center justify-end space-x-2 rtl:space-x-reverse">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onManageSessions();
+              }}
+              className="text-gray-500 hover:text-brand-primary p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              title={t("manageSessions") || "Manage sessions"}
+              aria-label={t("manageSessions") || "Manage sessions"}
+            >
+              <ShieldCheckIcon className="h-5 w-5" />
+            </button>
             <button
               onClick={(e) => {
                 e.stopPropagation();

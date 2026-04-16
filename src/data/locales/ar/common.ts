@@ -16,8 +16,14 @@ export const ar = {
     password: 'كلمة المرور',
     loginButton: 'تسجيل الدخول',
     invalidCredentials: 'البريد الإلكتروني أو كلمة المرور غير صالحة.',
+    invalidCredentialsEnterprise: 'بيانات الدخول غير صحيحة أو أن حسابك غير مُهيأ بعد لهذه المؤسسة.',
     rememberMe: 'تذكرني',
     forgotPassword: 'هل نسيت كلمة المرور؟',
+    enterEmailForReset: 'أدخل بريد العمل أولاً ثم اضغط على "هل نسيت كلمة المرور؟".',
+    sendingReset: 'جاري الإرسال...',
+    passwordResetSent: 'تم إرسال رابط إعادة تعيين كلمة المرور. يرجى التحقق من بريدك الإلكتروني.',
+    passwordResetFailed: 'تعذر إرسال رابط إعادة التعيين. يرجى التواصل مع مسؤول المستشفى إذا استمرت المشكلة.',
+    enterpriseAccessNotice: 'هل تحتاج صلاحية دخول؟ تواصل مع مسؤول المستشفى. يتم تهيئة الحسابات من قبل مؤسستك.',
     // Sidebar & Header Titles
     dashboard: 'لوحة القيادة',
     analytics: 'التحليلات',
@@ -722,4 +728,18 @@ export const ar = {
     previousField: 'الانتقال إلى الحقل السابق',
     showKeyboardShortcuts: 'إظهار اختصارات لوحة المفاتيح',
     pressAnyKeyToClose: 'اضغط أي مفتاح أو انقر خارج للإغلاق',
+
+    // Guided Tours & Help System (New)
+    guidedTours: 'الجولات الإرشادية',
+    quickHelp: 'مساعدة سريعة',
+    resetTours: 'إعادة تعيين جميع الجولات',
+    completed: 'مكتمل',
+    getHelp: 'الحصول على المساعدة',
+    creatingDocuments: 'إنشاء المستندات',
+    creatingDocumentsHelp: 'انقر على "إنشاء مستند" واختر: إنشاء بالذكاء الاصطناعي (موصى به)، فارغ، أو تحميل.',
+    bulkApproval: 'الموافقة الجماعية',
+    bulkApprovalHelp: 'حدد المستندات باستخدام مربعات الاختيار، ثم استخدم شريط الأدوات العائم للموافقة على الكل دفعة واحدة.',
+    collaboration: 'التعاون',
+    collaborationHelp: 'افتح أي مستند وانقر على أيقونة التعليقات لإضافة ملاحظات والإشارة إلى الزملاء باستخدام @.',
+    newDocument: 'مستند جديد',
 };

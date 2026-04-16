@@ -61,9 +61,9 @@ const typeIconMap: Record<
 > = {
   Policy: { icon: ShieldCheckIcon, color: "text-blue-500" },
   Procedure: { icon: ClipboardDocumentListIcon, color: "text-green-500" },
-  "Process Map": { icon: ArrowPathIcon, color: "text-teal-500" },
+  "Process Map": { icon: ArrowPathIcon, color: "text-brand-primary" },
   Evidence: { icon: PaperClipIcon, color: "text-amber-500" },
-  Report: { icon: ChartBarIcon, color: "text-purple-500" },
+  Report: { icon: ChartBarIcon, color: "text-brand-primary" },
 };
 
 /* ------------------------------------------------------------------ */
@@ -182,8 +182,8 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
       id: "Process Map",
       label: t("processMaps") || "Process Maps",
       icon: ArrowPathIcon,
-      iconColor: "text-teal-500",
-      activeIconColor: "text-teal-600",
+      iconColor: "text-brand-primary",
+      activeIconColor: "text-brand-primary",
     },
     {
       id: "Evidence",
@@ -196,8 +196,8 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
       id: "Report",
       label: t("reports") || "Reports",
       icon: ChartBarIcon,
-      iconColor: "text-purple-500",
-      activeIconColor: "text-purple-600",
+      iconColor: "text-brand-primary",
+      activeIconColor: "text-brand-primary",
     },
   ];
 

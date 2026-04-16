@@ -1,14 +1,19 @@
-import React, { useState, useMemo } from "react";
-import { IncidentReport } from "../../types";
+import { TableContainer } from "@/components/ui";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { useConfirmStore } from "@/stores/useConfirmStore";
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAppStore } from "../../stores/useAppStore";
 import { useUserStore } from "../../stores/useUserStore";
-import { PlusIcon, PencilIcon, TrashIcon } from "../icons";
-import IncidentModal from "./IncidentModal";
+import { IncidentReport } from "../../types";
 import EmptyState from "../common/EmptyState";
-import { ExclamationTriangleIcon } from "../icons";
-import { TableContainer } from "@/components/ui";
-import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import {
+  ExclamationTriangleIcon,
+  PencilIcon,
+  PlusIcon,
+  TrashIcon,
+} from "../icons";
+import IncidentModal from "./IncidentModal";
 
 const IncidentReportingTab: React.FC = () => {
   const { t } = useTranslation();
@@ -47,7 +52,15 @@ const IncidentReportingTab: React.FC = () => {
   };
 
   const handleDelete = async (reportId: string) => {
-    if (window.confirm(t("areYouSureDeleteIncident"))) {
+    if (
+      await useConfirmStore
+        .getState()
+        .confirm(
+          t("areYouSureDeleteIncident"),
+          t("deleteIncident") || "Delete Incident",
+          t("delete") || "Delete",
+        )
+    ) {
       try {
         await deleteIncidentReport(reportId);
       } catch (error) {

@@ -1,14 +1,14 @@
-import React, { useState, useRef, useEffect, useMemo } from "react";
-import { AppDocument } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
-import DocumentRow from "./DocumentRow";
 import { EmptyState, TableContainer } from "@/components/ui";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "../../hooks/useTranslation";
+import { AppDocument } from "../../types";
 import {
-  DocumentIcon,
-  ChevronUpIcon,
   ChevronDownIcon,
+  ChevronUpIcon,
   Cog6ToothIcon,
+  DocumentIcon,
 } from "../icons";
+import DocumentRow from "./DocumentRow";
 
 type SortField = "name" | "status" | "version" | "reviewDate";
 type SortDirection = "asc" | "desc";
@@ -25,7 +25,9 @@ const ALL_COLUMNS: ColumnKey[] = [
 
 interface ControlledDocumentsTableProps {
   documents: AppDocument[];
-  canModify: boolean;
+  canUpdate: boolean;
+  canDelete: boolean;
+  canApprove: boolean;
   onApprove: (doc: AppDocument) => void;
   onDelete: (docId: string) => void;
   onView: (doc: AppDocument) => void;
@@ -38,7 +40,9 @@ interface ControlledDocumentsTableProps {
 
 const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
   documents,
-  canModify,
+  canUpdate,
+  canDelete,
+  canApprove,
   onApprove,
   onDelete,
   onView,
@@ -288,7 +292,9 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
               <DocumentRow
                 key={doc.id}
                 doc={doc}
-                canModify={canModify}
+                canUpdate={canUpdate}
+                canDelete={canDelete}
+                canApprove={canApprove}
                 onApprove={onApprove}
                 onDelete={onDelete}
                 onView={onView}
