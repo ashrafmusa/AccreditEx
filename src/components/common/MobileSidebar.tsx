@@ -1,32 +1,32 @@
-import React, { useEffect, useRef } from "react";
-import { NavigationState, SettingsSection, UserRole } from "@/types";
 import {
-  ChartPieIcon,
-  FolderIcon,
-  LogoIcon,
-  BuildingOffice2Icon,
-  Cog6ToothIcon,
   AcademicCapIcon,
-  ClipboardDocumentCheckIcon,
-  XMarkIcon,
-  ChartBarSquareIcon,
-  CalendarDaysIcon,
-  ExclamationTriangleIcon,
-  UsersIcon,
-  ShieldCheckIcon,
-  DocumentTextIcon,
-  LightBulbIcon,
-  CircleStackIcon,
-  ClipboardDocumentSearchIcon,
-  ChatBubbleLeftEllipsisIcon,
   BoltIcon,
+  BuildingOffice2Icon,
+  CalendarDaysIcon,
+  ChartBarSquareIcon,
+  ChartPieIcon,
+  ChatBubbleLeftEllipsisIcon,
+  CircleStackIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentSearchIcon,
+  Cog6ToothIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
+  LightBulbIcon,
+  LogoIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  XMarkIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
-import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
 import { prefetchRoute } from "@/services/routePrefetchService";
-import UserAvatar from "./UserAvatar";
+import { useAppStore } from "@/stores/useAppStore";
 import { useModuleStore } from "@/stores/useModuleStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { NavigationState } from "@/types";
+import React, { useEffect, useRef } from "react";
+import UserAvatar from "./UserAvatar";
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -192,6 +192,12 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       key: "accreditationHub",
       label: t("accreditationHub"),
       icon: ShieldCheckIcon,
+    },
+    {
+      nav: { view: "qualityTools" },
+      key: "qualityTools",
+      label: t("qualityTools") || "Quality Tools",
+      icon: SparklesIcon,
     },
     {
       nav: { view: "knowledgeBase" },

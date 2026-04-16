@@ -17,6 +17,7 @@ import {
   FolderIcon,
   LogoIcon,
   ShieldCheckIcon,
+  SparklesIcon,
   Squares2X2Icon,
 } from "@/components/icons";
 import { useArrowNavigation } from "@/hooks/useArrowNavigation";
@@ -166,6 +167,12 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "accreditationHub",
       label: t("accreditationHub"),
       icon: ShieldCheckIcon,
+    },
+    {
+      nav: { view: "qualityTools" },
+      key: "qualityTools",
+      label: t("qualityTools") || "Quality Tools",
+      icon: SparklesIcon,
     },
     {
       nav: { view: "knowledgeBase" },

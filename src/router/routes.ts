@@ -103,6 +103,7 @@ export const routes: RouteConfig[] = [
 
     // Quality Rounding
     { path: "/quality-rounding", view: "qualityRounding", requiresAuth: true, requiresAdmin: true },
+    { path: "/quality-tools", view: "qualityTools", requiresAuth: true },
 
     // Redirect legacy standalone routes to parent hubs
     { path: "/performance", view: "trainingHub", requiresAuth: true },
@@ -177,6 +178,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/multi-facility";
         case "qualityRounding":
             return "/quality-rounding";
+        case "qualityTools":
+            return "/quality-tools";
         case "workflowAutomation":
             return "/workflow-automation";
         case "qualityInsights":
@@ -238,6 +241,7 @@ export const pathToNavigationState = (
     if (path === "/performance") return { view: "trainingHub" };
     if (path === "/pricing") return { view: "pricing" };
     if (path === "/quality-rounding") return { view: "qualityRounding" };
+    if (path === "/quality-tools") return { view: "qualityTools" };
     if (path === "/projects") return { view: "projects" };
     if (path === "/projects/create") return { view: "createProject" };
 

@@ -83,6 +83,7 @@ const MultiFacilityDashboardPage = lazy(
 
 // Quality Rounding
 const QualityRoundingPage = lazy(() => import("@/pages/QualityRoundingPage"));
+const QualityToolsPage = lazy(() => import("@/pages/QualityToolsPage"));
 
 // Workflow Automation
 const WorkflowAutomationPage = lazy(
@@ -501,6 +502,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <MultiFacilityDashboardPage />;
       case "qualityRounding":
         return <QualityRoundingPage />;
+      case "qualityTools":
+        return <QualityToolsPage setNavigation={setNavigation} />;
       case "workflowAutomation":
         return <WorkflowAutomationPage />;
       case "reportBuilder":
