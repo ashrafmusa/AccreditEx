@@ -251,7 +251,6 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
           existingProgramCount={accreditationPrograms.length}
         />
       )}
-
     </div>
   );
 };

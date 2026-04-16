@@ -30,6 +30,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useWorkflowStore } from "@/stores/useWorkflowStore";
 import {
   ACTION_TYPE_LABELS,
   ActionType,
