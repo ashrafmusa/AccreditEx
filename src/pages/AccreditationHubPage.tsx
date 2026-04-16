@@ -10,6 +10,10 @@ import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIn
 import { PlusIcon, ShieldCheckIcon } from "../components/icons";
 import { useToast } from "../hooks/useToast";
 import { useTranslation } from "../hooks/useTranslation";
+import {
+  hasOhasSmcsProjects,
+  seedOhasSmcsProjects,
+} from "../services/ohasService";
 import { useAppStore } from "../stores/useAppStore";
 import { useProjectStore } from "../stores/useProjectStore";
 import { useUserStore } from "../stores/useUserStore";
@@ -38,9 +42,45 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
   const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
   const [editingProgram, setEditingProgram] =
     useState<AccreditationProgram | null>(null);
+  const [isSeeding, setIsSeeding] = useState(false);
 
   // Centralized permission check — Viewer role gets read-only automatically
   const canModify = currentUser?.role === UserRole.Admin;
+
+  const alreadySeeded = hasOhasSmcsProjects(projects);
+
+  const handleSeedOhas = async () => {
+    if (
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          "This will create 14 pre-built OHAS/SMCS accreditation projects covering all Oman Specialized Medical Care Services departments. Continue?",
+          "Seed OHAS/SMCS Projects",
+          "Seed 14 Projects",
+        ))
+    )
+      return;
+    setIsSeeding(true);
+    try {
+      const result = await seedOhasSmcsProjects();
+      if (result.errors.length === 0) {
+        toast.success(
+          `✓ ${result.created} SMCS projects created: ${result.departments.slice(0, 3).join(", ")}${result.created > 3 ? ` +${result.created - 3} more` : ""}.`,
+        );
+      } else {
+        toast.warning(
+          `Created ${result.created} projects. ${result.errors.length} failed: ${result.errors[0]}`,
+        );
+      }
+      // Refresh projects list
+      await useProjectStore.getState().fetchAllProjects();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Seed failed: ${msg}`);
+    } finally {
+      setIsSeeding(false);
+    }
+  };
 
   const handleSave = (
     programData: AccreditationProgram | Omit<AccreditationProgram, "id">,
@@ -123,7 +163,7 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
     <div className="space-y-6">
       {canModify && (
         <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
-          <div className="flex flex-col sm:flex-row gap-3 flex-1">
+          <div className="flex flex-col sm:flex-row gap-3 flex-1 flex-wrap">
             <Button
               onClick={() => {
                 setEditingProgram(null);
@@ -132,6 +172,23 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
             >
               <PlusIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
               {t("createNewProgram")}
+            </Button>
+            {/* Oman SMCS one-click seeder */}
+            <Button
+              variant="secondary"
+              onClick={handleSeedOhas}
+              disabled={isSeeding || alreadySeeded}
+              title={
+                alreadySeeded
+                  ? "OHAS/SMCS projects already seeded"
+                  : "Create 14 pre-built SMCS department projects"
+              }
+            >
+              {isSeeding
+                ? "Seeding…"
+                : alreadySeeded
+                  ? "✓ OHAS/SMCS Seeded"
+                  : "🏥 Seed OHAS/SMCS (14 Projects)"}
             </Button>
           </div>
           <ProgramImportExport
