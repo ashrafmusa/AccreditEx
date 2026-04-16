@@ -8,15 +8,15 @@
  * ALL modules are enabled to maintain backward compatibility.
  */
 
-import type { Organization, NavigationView } from '@/types';
+import { MODULE_REGISTRY, VIEW_TO_MODULE_MAP } from '@/data/moduleRegistry';
+import type { NavigationView, Organization } from '@/types';
 import type {
-    ModuleId,
     ModuleDefinition,
+    ModuleId,
     OrganizationModuleConfig,
     PlanTier,
 } from '@/types/modules';
 import { CORE_MODULES, PLAN_MODULE_MAP } from '@/types/modules';
-import { MODULE_REGISTRY, VIEW_TO_MODULE_MAP } from '@/data/moduleRegistry';
 
 /** Plan tier hierarchy for comparison */
 const PLAN_HIERARCHY: Record<PlanTier, number> = {
@@ -193,6 +193,7 @@ export const NAV_KEY_TO_MODULE: Record<string, ModuleId> = {
     workflowAutomation: 'workflowAutomation',
     departments: 'departments',
     settings: 'settings',
+    qualityRounding: 'qualityRounding',
     // myTasks is always available (maps to projects)
     myTasks: 'projects',
 };

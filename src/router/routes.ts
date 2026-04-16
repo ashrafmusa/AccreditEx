@@ -101,9 +101,11 @@ export const routes: RouteConfig[] = [
     // Pricing
     { path: "/pricing", view: "pricing", requiresAuth: false },
 
+    // Quality Rounding
+    { path: "/quality-rounding", view: "qualityRounding", requiresAuth: true, requiresAdmin: true },
+
     // Redirect legacy standalone routes to parent hubs
     { path: "/performance", view: "trainingHub", requiresAuth: true },
-    { path: "/quality-rounding", view: "auditHub", requiresAuth: true },
     { path: "/quality-insights", view: "analyticsHub", requiresAuth: true },
     { path: "/reports", view: "analyticsHub", requiresAuth: true },
     { path: "/competencies", view: "trainingHub", requiresAuth: true },
@@ -173,6 +175,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/lab-operations";
         case "multiFacility":
             return "/multi-facility";
+        case "qualityRounding":
+            return "/quality-rounding";
         case "workflowAutomation":
             return "/workflow-automation";
         case "qualityInsights":
@@ -233,7 +237,7 @@ export const pathToNavigationState = (
     if (path === "/ai-document-generator") return { view: "documentControl" };
     if (path === "/performance") return { view: "trainingHub" };
     if (path === "/pricing") return { view: "pricing" };
-    if (path === "/quality-rounding") return { view: "auditHub" };
+    if (path === "/quality-rounding") return { view: "qualityRounding" };
     if (path === "/projects") return { view: "projects" };
     if (path === "/projects/create") return { view: "createProject" };
 

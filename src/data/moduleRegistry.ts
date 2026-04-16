@@ -6,8 +6,8 @@
  * Used by moduleService to resolve which modules are enabled.
  */
 
-import type { ModuleId, ModuleDefinition } from '@/types/modules';
 import type { NavigationView } from '@/types';
+import type { ModuleDefinition, ModuleId } from '@/types/modules';
 
 /** Complete registry of every module in AccreditEx */
 export const MODULE_REGISTRY: Record<ModuleId, ModuleDefinition> = {
@@ -139,7 +139,7 @@ export const MODULE_REGISTRY: Record<ModuleId, ModuleDefinition> = {
         id: 'qualityRounding',
         nameKey: 'moduleQualityRounding',
         descriptionKey: 'moduleQualityRoundingDesc',
-        views: [],
+        views: ['qualityRounding'],
         tier: 'domain',
         requiredPlan: 'enterprise',
         applicableTypes: ['hospital'],

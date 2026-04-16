@@ -9,6 +9,7 @@ import {
   ChartPieIcon,
   ChatBubbleLeftEllipsisIcon,
   CircleStackIcon,
+  ClipboardDocumentListIcon,
   ClipboardDocumentSearchIcon,
   Cog6ToothIcon,
   DocumentTextIcon,
@@ -177,6 +178,13 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "labOperations",
       label: t("labOperations") || "Lab Operations",
       icon: BeakerIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "qualityRounding" },
+      key: "qualityRounding",
+      label: t("qualityRounding") || "Quality Rounding",
+      icon: ClipboardDocumentListIcon,
       adminOnly: true,
     },
     {
