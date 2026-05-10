@@ -618,6 +618,11 @@ export const ar = {
     'atLeastOneSpecialChar': 'حرف خاص واحد على الأقل',
     'passwordMinLength': 'يجب أن تكون كلمة المرور ٨ أحرف على الأقل',
     'passwordsDoNotMatch': 'كلمات المرور غير متطابقة',
+    'dashboardPreferences': 'تفضيلات لوحة التحكم',
+    'dashboardPreferencesDescription': 'تحكم في العناصر التي تظهر في لوحة التحكم الشخصية.',
+    'showAIDailyBriefingWidget': 'إظهار أداة الإحاطة اليومية بالذكاء الاصطناعي',
+    'showAIDailyBriefingWidgetDescription': 'عرض بطاقة الإحاطة اليومية بالذكاء الاصطناعي قرب أعلى لوحة التحكم.',
+    'dashboardPreferencesSaved': 'تم حفظ تفضيل لوحة التحكم.',
 
     // Notification Settings Page
     'unsavedNotificationChanges': 'لديك تغييرات غير محفوظة في الإشعارات',
@@ -683,7 +688,6 @@ export const ar = {
     noOrganizationLoaded: 'لم يتم تحميل أي مؤسسة.',
     changesSaved: 'تم حفظ التغييرات بنجاح.',
     saveChanges: 'حفظ التغييرات',
-    saving: 'جاري الحفظ...',
     dismiss: 'إغلاق',
     email: 'البريد الإلكتروني',
     location: 'الموقع',
@@ -734,11 +738,15 @@ export const ar = {
     loadingOrgs: 'جاري تحميل المؤسسات...',
     // Settings sidebar category labels
     settingsCategoryPersonal: 'شخصي',
-    settingsCategoryOrganization: 'المؤسسة',
-    settingsCategoryPeople: 'الأفراد',
+    settingsCategoryOrganization: 'مساحة العمل',
+    settingsCategoryPeople: 'الأفراد والفرق',
     settingsCategoryQuality: 'الجودة والامتثال',
     settingsCategoryIntegrations: 'التكاملات',
-    settingsCategoryAdministration: 'الإدارة',
+    settingsCategoryAdministration: 'الأمان والبيانات',
+    settingsCategoryMonitoring: 'المراقبة',
     settingsCategoryPlatform: 'المنصة',
     settingsCategorySystem: 'النظام',
+    hisIntegration: 'تكامل نظام المعلومات الصحية',
+    brandingAndAppearance: 'العلامة التجارية والمظهر',
+    usageAndMonitoring: 'الاستخدام والمراقبة',
 };

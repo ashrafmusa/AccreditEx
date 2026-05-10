@@ -180,8 +180,6 @@ export const en = {
     thSDIndex: "SD Index",
     thScore: "Score",
     noProficiencyTests: "No proficiency tests found",
-    thSection: "Section",
-    allStatuses: "All Statuses",
     allSections: "All Sections",
     selectProvider: "Select provider…",
     ptAnalyte: "Analyte",

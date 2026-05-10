@@ -8,6 +8,7 @@ type RoleLike = {
 const ROLE_VALUES = new Set(Object.values(UserRole));
 const NORMALIZED_ROLE_MAP = new Map<string, UserRole>([
     ["admin", UserRole.Admin],
+    ["superadmin", UserRole.Admin],
     ["projectlead", UserRole.ProjectLead],
     ["teammember", UserRole.TeamMember],
     ["auditor", UserRole.Auditor],

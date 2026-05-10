@@ -264,7 +264,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden">
+    <div className="w-full max-w-5xl mx-auto bg-brand-surface dark:bg-dark-brand-surface rounded-xl shadow-xl overflow-hidden">
       {/* Header */}
       <div className="bg-linear-to-r from-rose-600 to-cyan-600 p-6 text-white">
         <div className="flex items-center justify-between">
@@ -451,9 +451,9 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             {/* Project Selector Modal */}
             {showProjectSelector && (
               <div className="absolute inset-0 z-40 bg-black/40 rounded-lg flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col">
-                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col">
+                  <div className="flex items-center justify-between p-4 border-b border-brand-border dark:border-dark-brand-border">
+                    <h3 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                       Select Project
                     </h3>
                     <button
@@ -564,9 +564,9 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             {/* Department Selector Modal */}
             {showDepartmentSelector && (
               <div className="absolute inset-0 z-40 bg-black/40 rounded-lg flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col">
-                  <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
+                <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-xl max-w-md w-full max-h-96 flex flex-col">
+                  <div className="flex items-center justify-between p-4 border-b border-brand-border dark:border-dark-brand-border">
+                    <h3 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
                       Select Department
                     </h3>
                     <button

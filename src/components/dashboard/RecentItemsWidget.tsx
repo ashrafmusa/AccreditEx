@@ -1,14 +1,9 @@
-import React, { useMemo } from 'react';
-import { NavigationState } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useProjectStore } from '@/stores/useProjectStore';
-import { useAppStore } from '@/stores/useAppStore';
-import { 
-  FolderIcon, 
-  DocumentTextIcon, 
-  ExclamationTriangleIcon,
-  ClockIcon
-} from '@/components/icons';
+import { ClockIcon, DocumentTextIcon, FolderIcon } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { NavigationState } from "@/types";
+import React, { useMemo } from "react";
 
 interface RecentItemsWidgetProps {
   setNavigation: (state: NavigationState) => void;
@@ -18,16 +13,18 @@ interface RecentItem {
   id: string;
   title: string;
   subtitle: string;
-  type: 'project' | 'document' | 'capa';
+  type: "project" | "document" | "capa";
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   action: () => void;
   timestamp?: string;
 }
 
-const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({ setNavigation }) => {
+const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({
+  setNavigation,
+}) => {
   const { t, lang } = useTranslation();
-  const projects = useProjectStore(state => state.projects);
+  const projects = useProjectStore((state) => state.projects);
   const { documents } = useAppStore();
 
   const recentItems = useMemo(() => {
@@ -35,32 +32,39 @@ const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({ setNavigation }) 
 
     // Get 3 most recent projects
     const recentProjects = [...projects]
-      .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime(),
+      )
       .slice(0, 3)
-      .map(project => ({
+      .map((project) => ({
         id: project.id,
         title: project.name,
-        subtitle: `${project.progress.toFixed(0)}% ${t('complete')}`,
-        type: 'project' as const,
+        subtitle: `${project.progress.toFixed(0)}% ${t("complete")}`,
+        type: "project" as const,
         icon: FolderIcon,
-        color: 'text-blue-500',
-        action: () => setNavigation({ view: 'projectDetail', projectId: project.id }),
-        timestamp: project.startDate
+        color: "text-blue-500",
+        action: () =>
+          setNavigation({ view: "projectDetail", projectId: project.id }),
+        timestamp: project.startDate,
       }));
 
     // Get 2 most recent documents
     const recentDocs = [...documents]
-      .sort((a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime())
+      .sort(
+        (a, b) =>
+          new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime(),
+      )
       .slice(0, 2)
-      .map(doc => ({
+      .map((doc) => ({
         id: doc.id,
-        title: doc.name[lang] || doc.name.en,
-        subtitle: `${t(doc.type.toLowerCase())} • ${doc.status}`,
-        type: 'document' as const,
+        title: doc.name?.[lang] || doc.name?.en || doc.id,
+        subtitle: `${t(doc.type?.toLowerCase?.() ?? "")} • ${doc.status ?? ""}`,
+        type: "document" as const,
         icon: DocumentTextIcon,
-        color: 'text-emerald-500',
-        action: () => setNavigation({ view: 'documentControl' }),
-        timestamp: doc.uploadedAt
+        color: "text-emerald-500",
+        action: () => setNavigation({ view: "documentControl" }),
+        timestamp: doc.uploadedAt,
       }));
 
     // Combine and sort by timestamp
@@ -79,18 +83,24 @@ const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({ setNavigation }) 
     const then = new Date(timestamp);
     const diffInSeconds = Math.floor((now.getTime() - then.getTime()) / 1000);
 
-    if (diffInSeconds < 60) return t('justNow');
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} ${t('minutesAgo')}`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} ${t('hoursAgo')}`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} ${t('daysAgo')}`;
-    return then.toLocaleDateString(lang === 'ar' ? 'ar-SA' : 'en-US', { month: 'short', day: 'numeric' });
+    if (diffInSeconds < 60) return t("justNow");
+    if (diffInSeconds < 3600)
+      return `${Math.floor(diffInSeconds / 60)} ${t("minutesAgo")}`;
+    if (diffInSeconds < 86400)
+      return `${Math.floor(diffInSeconds / 3600)} ${t("hoursAgo")}`;
+    if (diffInSeconds < 604800)
+      return `${Math.floor(diffInSeconds / 86400)} ${t("daysAgo")}`;
+    return then.toLocaleDateString(lang === "ar" ? "ar-SA" : "en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-          {t('recentItems')}
+          {t("recentItems")}
         </h3>
         <ClockIcon className="w-5 h-5 text-brand-text-secondary dark:text-dark-brand-text-secondary" />
       </div>
@@ -105,7 +115,9 @@ const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({ setNavigation }) 
                 onClick={item.action}
                 className="w-full group flex items-center gap-3 p-3 rounded-lg hover:bg-brand-background dark:hover:bg-dark-brand-background transition-colors text-left"
               >
-                <div className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 ${item.color}`}>
+                <div
+                  className={`p-2 rounded-lg bg-gray-100 dark:bg-gray-800 ${item.color}`}
+                >
                   <Icon className="w-4 h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -126,17 +138,17 @@ const RecentItemsWidget: React.FC<RecentItemsWidgetProps> = ({ setNavigation }) 
           })
         ) : (
           <p className="text-center text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary py-8">
-            {t('noRecentItems')}
+            {t("noRecentItems")}
           </p>
         )}
       </div>
 
       {recentItems.length > 0 && (
         <button
-          onClick={() => setNavigation({ view: 'projects' })}
+          onClick={() => setNavigation({ view: "projects" })}
           className="mt-4 w-full text-center text-sm text-brand-primary dark:text-brand-primary-400 hover:underline"
         >
-          {t('viewAll')} →
+          {t("viewAll")} →
         </button>
       )}
     </div>

@@ -19,8 +19,12 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 
-// Lazy-load GuidedTour — only loaded when tour is active (zero bundle cost otherwise)
-const GuidedTour = lazy(() => import("@/components/onboarding/GuidedTour"));
+// Lazy-load TourController — manages all tours via centralized registry
+const TourController = lazy(() =>
+  import("@/components/onboarding/TourController").then((m) => ({
+    default: m.TourController,
+  })),
+);
 
 interface LayoutProps {
   navigation: NavigationState;
@@ -39,8 +43,6 @@ const Layout: React.FC<LayoutProps> = ({
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNavExpanded, setIsNavExpanded] = useState(false);
-  const [showGuidedTour, setShowGuidedTour] = useState(false);
-  const [tourSteps, setTourSteps] = useState<any[]>([]);
 
   const currentUser = useUserStore((state) => state.currentUser)!;
   const projects = useProjectStore((state) => state.projects);
@@ -153,25 +155,6 @@ const Layout: React.FC<LayoutProps> = ({
   ].includes(navigation.view);
   const isSettingsActive = navigation.view === "settings";
 
-  // Start guided tour for new users (after initial onboarding wizard)
-  useEffect(() => {
-    const hasCompletedOnboarding =
-      localStorage.getItem("hasCompletedOnboarding") === "true";
-    const hasCompletedTour =
-      localStorage.getItem("accreditex_tour_completed_new-user") === "true";
-
-    if (hasCompletedOnboarding && !hasCompletedTour) {
-      // Delay tour start to let the dashboard render fully
-      const timer = setTimeout(() => {
-        import("@/data/tourSteps").then(({ newUserTourSteps }) => {
-          setTourSteps(newUserTourSteps);
-          setShowGuidedTour(true);
-        });
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, []);
-
   return (
     <>
       {/* Skip to main content link for keyboard/screen reader users */}
@@ -243,17 +226,10 @@ const Layout: React.FC<LayoutProps> = ({
           </main>
         </div>
       </div>
-      {/* Guided Tour Overlay — lazy-loaded, only renders when active */}
-      {showGuidedTour && tourSteps.length > 0 && (
-        <Suspense fallback={null}>
-          <GuidedTour
-            tourId="new-user"
-            steps={tourSteps}
-            isActive={showGuidedTour}
-            onComplete={() => setShowGuidedTour(false)}
-          />
-        </Suspense>
-      )}
+      {/* Tour Controller — centralized registry, zero duplication, lazy-loaded */}
+      <Suspense fallback={null}>
+        <TourController />
+      </Suspense>
       {/* Keyboard Shortcuts Modal */}
       <KeyboardShortcutsModal
         isOpen={isKeyboardShortcutsOpen}

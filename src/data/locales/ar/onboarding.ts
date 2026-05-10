@@ -39,4 +39,95 @@ export const ar = {
     tourDataHubDesc: 'الوصول إلى إدارة البيانات المركزية مع الاستيراد/التصدير الجماعي والتحقق من البيانات وأدوات إعداد التقارير.',
     tourKnowledgeBaseTitle: 'قاعدة المعرفة',
     tourKnowledgeBaseDesc: 'الوصول إلى إرشادات الاعتماد وأفضل الممارسات والمواد المرجعية لفريقك.',
+
+    // Program Selector Wizard
+    programSelectorTitle: 'اختيار برنامج الاعتماد',
+    programSelectorSubtitle: 'اختر مسار اعتمادك للبدء',
+
+    step1Welcome: 'مرحباً بك في أكريديتكس',
+    step1Subtitle: 'منصة إدارة الاعتماد الخاصة بك',
+    step1Description: 'دعنا ننشئ برنامج الاعتماد الخاص بمؤسستك للبدء.',
+    step1CTA: 'ابدأ الآن',
+
+    step2Title: 'اختر برنامج الاعتماد الخاص بك',
+    step2Subtitle: 'ما هو معيار الاعتماد الذي ينطبق على مؤسستك؟',
+    cbahiName: 'CBAHI',
+    cbahiLabel: 'CBAHI (المملكة العربية السعودية)',
+    cbahiDescription: 'الهيئة المركزية لاعتماد مؤسسات الرعاية الصحية',
+    ashkName: 'ASHK',
+    ashkLabel: 'ASHK (الإمارات العربية المتحدة)',
+    ashkDescription: 'الجمعية العربية لإدارة الصحة',
+    jciName: 'JCI',
+    jciLabel: 'JCI',
+    jciDescription: 'اللجنة المشتركة الدولية',
+    otherProgramName: 'برنامج آخر',
+    otherProgramLabel: 'برنامج آخر',
+    otherProgramDescription: 'معيار اعتماد مخصص أو بديل',
+
+    step3Title: 'تفاصيل المؤسسة',
+    step3Subtitle: 'أخبرنا المزيد عن منشأتك الصحية',
+    organizationName: 'اسم المؤسسة',
+    organizationNamePlaceholder: 'أدخل اسم المؤسسة',
+    organizationType: 'نوع المؤسسة',
+    hospitalType: 'مستشفى',
+    clinicType: 'عيادة',
+    labType: 'مختبر',
+    pharmacyType: 'صيدلية',
+    otherType: 'أخرى',
+    countryLabel: 'الدولة',
+    cityLabel: 'المدينة',
+    regionLabel: 'المنطقة/الإمارة',
+
+    step4Title: 'تحقق وأكمل',
+    step4Subtitle: 'يرجى التحقق من معلوماتك قبل المتابعة',
+    programLabel: 'برنامج الاعتماد',
+    organizationLabel: 'المؤسسة',
+    detailsLabel: 'التفاصيل',
+    editStep2: 'تعديل اختيار البرنامج',
+    editStep3: 'تعديل التفاصيل',
+
+    wizardNext: 'التالي',
+    wizardBack: 'السابق',
+    wizardConfirm: 'تأكيد وإنهاء',
+    wizardSkip: 'تخطي',
+
+    selectProgramError: 'يرجى اختيار برنامج اعتماد للمتابعة',
+    enterOrgNameError: 'يرجى إدخال اسم المؤسسة',
+    selectOrgTypeError: 'يرجى اختيار نوع المؤسسة',
+    userNotAuthenticatedError: 'المستخدم غير مصادق عليه',
+    saveProgramSelectionError: 'فشل حفظ اختيار برنامج الاعتماد',
+
+    setupComplete: 'تم إكمال الإعداد!',
+    setupCompleteSubtitle: 'مؤسستك جاهزة الآن للبدء مع أكريديتكس',
+    setupRedirect: 'جاري التحويل إلى لوحة التحكم...',
+    wizardStep: 'الخطوة',
+    of: 'من',
+
+    // Tour System
+    availableTours: 'الجولات المتاحة',
+    tourMenuDescription: 'جولات موجهة لمساعدتك في إتقان أكريديتكس',
+    toursCompleted: 'الجولات المكتملة',
+    tourButton: 'الجولات',
+
+    // Tour Names
+    tourNameNewUserMain: 'جولة الملاحة الرئيسية',
+    tourNameQualityManager: 'ميزات مدير الجودة',
+    tourNameCbaHiIntro: 'دليل اعتماد CBAHI',
+    tourNameAshkIntro: 'دليل اعتماد ASHK',
+    tourNameJciIntro: 'دليل اعتماد JCI',
+    tourNameAiBriefing: 'الملخص اليومي للذكاء الاصطناعي',
+    tourNameDocumentEditor: 'ميزات محرر المستندات',
+
+    // Tour Descriptions
+    tourDescNewUserMain: 'تعلم التنقل حول أكريديتكس',
+    tourDescQualityManager: 'استكشف أدوات التدقيق والمخاطر والامتثال',
+    tourDescCbaHiIntro: 'تعرف على معايير ومتطلبات CBAHI المحددة',
+    tourDescAshkIntro: 'تعرف على معايير ومتطلبات ASHK المحددة',
+    tourDescJciIntro: 'تعرف على معايير ومتطلبات JCI',
+    tourDescAiBriefing: 'احصل على أقصى استفادة من مساعدك الذكاء الاصطناعي',
+    tourDescDocumentEditor: 'أتقن إنشاء وتحرير المستندات',
+
+    // AI Daily Briefing Tour
+    tourAIDailyBriefingTitle: 'الملخص اليومي للذكاء الاصطناعي',
+    tourAIDailyBriefingDesc: 'احصل على رؤى مدعومة بالذكاء الاصطناعي حول فجوات الامتثال والمواعيد النهائية القادمة والإجراءات الموصى بها كل صباح.',
 };

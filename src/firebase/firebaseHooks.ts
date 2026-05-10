@@ -2,9 +2,9 @@ import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import { migrateUserDocToAuthUid } from '@/services/secureUserService';
 import { useTenantStore } from '@/stores/useTenantStore';
 import { useUserStore } from '@/stores/useUserStore';
-import { User } from '@/types';
+import { User, UserRole } from '@/types';
 import { onAuthStateChanged } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, limit, query, setDoc, where } from 'firebase/firestore';
 import { useEffect } from 'react';
 
 export function useFirebaseAuth() {
@@ -78,18 +78,91 @@ export function useFirebaseAuth() {
             setCurrentUser(userData);
             useTenantStore.getState().loadOrganizationForUser(userData.organizationId);
           } else {
-            // User exists in Firebase Auth but not in Firestore — critical inconsistency
+            // Self-heal path: user exists in Firebase Auth but profile doc is missing.
+            // Bootstrap from an organization created by this user (trial flow) if found.
+            const orgQuery = query(
+              collection(db, 'organizations'),
+              where('createdBy', '==', firebaseUser.uid),
+              limit(1)
+            );
+            const orgSnap = await getDocs(orgQuery);
+
+            if (!orgSnap.empty) {
+              const orgDoc = orgSnap.docs[0];
+              const now = new Date().toISOString();
+              const fallbackName =
+                firebaseUser.displayName ||
+                firebaseUser.email.split('@')[0] ||
+                'Trial User';
+
+              await setDoc(doc(db, 'users', firebaseUser.uid), {
+                name: fallbackName,
+                email: firebaseUser.email,
+                role: UserRole.Admin,
+                organizationId: orgDoc.id,
+                isActive: true,
+                createdAt: now,
+                updatedAt: now,
+              }, { merge: true });
+
+              const bootstrappedUser = {
+                id: firebaseUser.uid,
+                name: fallbackName,
+                email: firebaseUser.email,
+                role: UserRole.Admin,
+                organizationId: orgDoc.id,
+                isActive: true,
+                createdAt: now,
+                updatedAt: now,
+              } as User;
+
+              setCurrentUser(bootstrappedUser);
+              useTenantStore.getState().loadOrganizationForUser(orgDoc.id);
+              console.info(`[Auth] Bootstrapped missing user profile for ${firebaseUser.email}`);
+              return;
+            }
+
+            // No legacy profile and no owned organization to bootstrap from.
+            // Check if this is a freshly created account — Firestore docs may still
+            // be in-flight from registrationService (race condition: onAuthStateChanged
+            // fires synchronously after createUserWithEmailAndPassword, before setDoc calls complete).
+            const creationTime = firebaseUser.metadata.creationTime;
+            const accountAgeMs = creationTime
+              ? Date.now() - new Date(creationTime).getTime()
+              : Infinity;
+
+            if (accountAgeMs < 90_000) {
+              // New account (< 90 s old) — provisioning may still be writing docs.
+              // Do NOT logout. RegistrationPage will manually hydrate the store.
+              console.info(
+                '[Auth] New account detected — skipping logout, registration is still provisioning.',
+                firebaseUser.email
+              );
+              return;
+            }
+
             console.error(
-              "[Auth] User document not found in Firestore for email:",
+              "[Auth] User document not found and no organization available for bootstrap:",
               firebaseUser.email,
               "Auth UID:",
               firebaseUser.uid
             );
             logout();
           }
-        } catch (error) {
-          console.error("[Auth] Error during auth state change:", error);
-          logout();
+        } catch (error: unknown) {
+          const errCode = (error as { code?: string })?.code;
+          // Only force-logout for genuine auth token failures.
+          // Firestore permission errors, network errors, or missing docs must NOT
+          // sign the user out — they are transient and/or expected during provisioning.
+          if (errCode === 'auth/user-token-expired' || errCode === 'auth/user-disabled') {
+            console.warn('[Auth] Auth token invalid, logging out:', errCode);
+            logout();
+          } else {
+            console.error(
+              '[Auth] Non-fatal error during auth hydration (not logging out):',
+              error
+            );
+          }
         }
       } else {
         // User is signed out

@@ -1,7 +1,7 @@
+import { ClipboardDocumentListIcon, XMarkIcon } from "@/components/icons";
+import { useToast } from "@/hooks/useToast";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import { XMarkIcon, ClipboardDocumentListIcon } from "@/components/icons";
-import { useToast } from "@/hooks/useToast";
 
 interface AISuggestionModalProps {
   isOpen: boolean;
@@ -55,7 +55,11 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto"
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
         <div
@@ -72,7 +76,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
         </span>
 
         {/* Modal panel */}
-        <div className="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full">
+        <div className="relative inline-block align-bottom bg-brand-surface dark:bg-dark-brand-surface rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full max-h-[90vh] flex flex-col">
           {/* Header */}
           <div className="bg-linear-to-r from-rose-600 to-cyan-600 px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">

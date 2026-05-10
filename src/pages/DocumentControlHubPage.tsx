@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui";
+import { getComplianceDashboard } from "@/services/complianceDashboardService";
 import {
   Action,
   permissionService,
@@ -18,7 +19,8 @@ import { ContextualHelp } from "../components/common/ContextualHelp";
 import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";
 import SignatureModal from "../components/common/SignatureModal";
 import StatCard from "../components/common/StatCard";
-import ControlledDocumentsTable from "../components/documents/ControlledDocumentsTable";
+import DocumentGapFiller from "../components/documents/DocumentGapFiller";
+
 import DocumentSearch, {
   DocumentFilters,
 } from "../components/documents/DocumentSearch";
@@ -268,6 +270,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     Resource.Document,
   );
   const [showAIGenerator, setShowAIGenerator] = useState(false);
+  const [showGapFiller, setShowGapFiller] = useState(false);
   const [activeTab, setActiveTab] = useState<"documents" | "dashboard">(
     "documents",
   );
@@ -708,6 +711,19 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       : t("allDocumentsUpToDate") || "All documents are up to date";
   }, [stats, t]);
 
+  // --- SLA Tracking: documents stuck in Pending Review for >7 days ---
+  const slaViolations = useMemo(() => {
+    const slaThreshold = new Date();
+    slaThreshold.setDate(slaThreshold.getDate() - 7);
+    return documents.filter(
+      (d) =>
+        d.isControlled &&
+        d.status === "Pending Review" &&
+        d.uploadedAt &&
+        new Date(d.uploadedAt) < slaThreshold,
+    );
+  }, [documents]);
+
   // --- Selection helpers ---
   const toggleDocSelection = useCallback((docId: string) => {
     setSelectedDocIds((prev) => {
@@ -924,9 +940,30 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             <p className="text-sm text-brand-primary dark:text-blue-400 mt-1 font-medium">
               {summaryLine}
             </p>
+            {/* SLA Alert Banner */}
+            {slaViolations.length > 0 && (
+              <button
+                className="mt-2 flex items-center gap-2 text-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/20 border border-amber-300 dark:border-amber-700 rounded-lg px-3 py-2 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors"
+                onClick={() => setActiveQuickFilter("needsReview")}
+              >
+                <ExclamationTriangleIcon className="h-4 w-4 shrink-0" />
+                <span>
+                  <strong>{slaViolations.length}</strong>{" "}
+                  {t("slaViolationWarning") ||
+                    "document(s) have been pending review for over 7 days — click to filter"}
+                </span>
+              </button>
+            )}
           </div>
         </div>
         <div className="flex gap-3 flex-wrap">
+          <Button
+            onClick={() => setShowGapFiller(true)}
+            variant="secondary"
+            className="w-full sm:w-auto gap-2"
+          >
+            ✦ Gap Filler
+          </Button>
           {currentUser.role === UserRole.Admin && (
             <Button
               onClick={() => setShowOnlyMyDocs(!showOnlyMyDocs)}
@@ -1705,6 +1742,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
           />
         </Suspense>
       )}
+
+      <DocumentGapFiller
+        open={showGapFiller}
+        onClose={() => setShowGapFiller(false)}
+      />
 
       {showAIGenerator && (
         <div

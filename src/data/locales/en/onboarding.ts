@@ -39,4 +39,95 @@ export const en = {
     tourDataHubDesc: 'Access centralized data management with bulk import/export, data validation, and reporting tools.',
     tourKnowledgeBaseTitle: 'Knowledge Base',
     tourKnowledgeBaseDesc: 'Access accreditation guidelines, best practices, and reference materials for your team.',
+
+    // Program Selector Wizard
+    programSelectorTitle: 'Accreditation Program Selection',
+    programSelectorSubtitle: 'Choose your accreditation pathway to get started',
+
+    step1Welcome: 'Welcome to AccrediTex',
+    step1Subtitle: 'Your accreditation management platform',
+    step1Description: 'Let\'s set up your organization\'s accreditation program to get started.',
+    step1CTA: 'Get Started',
+
+    step2Title: 'Select Your Accreditation Program',
+    step2Subtitle: 'Which accreditation standard applies to your organization?',
+    cbahiName: 'CBAHI',
+    cbahiLabel: 'CBAHI (Saudi Arabia)',
+    cbahiDescription: 'Central Board for Accreditation of Healthcare Institutions',
+    ashkName: 'ASHK',
+    ashkLabel: 'ASHK (UAE)',
+    ashkDescription: 'Arab Society for Health Administration',
+    jciName: 'JCI',
+    jciLabel: 'JCI',
+    jciDescription: 'Joint Commission International',
+    otherProgramName: 'Other',
+    otherProgramLabel: 'Other Program',
+    otherProgramDescription: 'Custom or alternative accreditation standard',
+
+    step3Title: 'Organization Details',
+    step3Subtitle: 'Tell us more about your healthcare facility',
+    organizationName: 'Organization Name',
+    organizationNamePlaceholder: 'Enter your organization name',
+    organizationType: 'Organization Type',
+    hospitalType: 'Hospital',
+    clinicType: 'Clinic',
+    labType: 'Laboratory',
+    pharmacyType: 'Pharmacy',
+    otherType: 'Other',
+    countryLabel: 'Country',
+    cityLabel: 'City',
+    regionLabel: 'Region/Emirate',
+
+    step4Title: 'Review & Confirm',
+    step4Subtitle: 'Please review your information before proceeding',
+    programLabel: 'Accreditation Program',
+    organizationLabel: 'Organization',
+    detailsLabel: 'Details',
+    editStep2: 'Edit Program Selection',
+    editStep3: 'Edit Details',
+
+    wizardNext: 'Next',
+    wizardBack: 'Back',
+    wizardConfirm: 'Confirm & Complete',
+    wizardSkip: 'Skip',
+
+    selectProgramError: 'Please select an accreditation program to continue',
+    enterOrgNameError: 'Please enter your organization name',
+    selectOrgTypeError: 'Please select an organization type',
+    userNotAuthenticatedError: 'User not authenticated',
+    saveProgramSelectionError: 'Failed to save program selection',
+
+    setupComplete: 'Setup Complete!',
+    setupCompleteSubtitle: 'Your organization is ready to get started with AccrediTex',
+    setupRedirect: 'Redirecting to dashboard...',
+    wizardStep: 'Step',
+    of: 'of',
+
+    // Tour System
+    availableTours: 'Available Tours',
+    tourMenuDescription: 'Guided tours to help you master AccrediTex',
+    toursCompleted: 'Tours Completed',
+    tourButton: 'Tours',
+
+    // Tour Names
+    tourNameNewUserMain: 'Main Navigation Tour',
+    tourNameQualityManager: 'Quality Manager Features',
+    tourNameCbaHiIntro: 'CBAHI Accreditation Guide',
+    tourNameAshkIntro: 'ASHK Accreditation Guide',
+    tourNameJciIntro: 'JCI Accreditation Guide',
+    tourNameAiBriefing: 'AI Daily Briefing',
+    tourNameDocumentEditor: 'Document Editor Features',
+
+    // Tour Descriptions
+    tourDescNewUserMain: 'Learn your way around AccrediTex',
+    tourDescQualityManager: 'Explore audit, risk, and compliance tools',
+    tourDescCbaHiIntro: 'Learn CBAHI-specific standards and requirements',
+    tourDescAshkIntro: 'Learn ASHK-specific standards and requirements',
+    tourDescJciIntro: 'Learn JCI standards and requirements',
+    tourDescAiBriefing: 'Get the most from your AI assistant',
+    tourDescDocumentEditor: 'Master document creation and editing',
+
+    // AI Daily Briefing Tour
+    tourAIDailyBriefingTitle: 'AI Daily Briefing',
+    tourAIDailyBriefingDesc: 'Get AI-powered insights about compliance gaps, upcoming deadlines, and recommended actions every morning.',
 };

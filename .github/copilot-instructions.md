@@ -25,18 +25,44 @@
 
 ## Which Agent To Use (Auto-selected based on request)
 
-| Task                                  | Agent                    |
-| ------------------------------------- | ------------------------ |
-| React components, UI, TailwindCSS     | `@frontend-specialist`   |
-| Firebase queries, services, Firestore | `@backend-specialist`    |
-| Capacitor iOS/Android features        | `@mobile-developer`      |
-| Firestore schema, indexes, rules      | `@database-architect`    |
-| Any bug, error, TypeScript error      | `@debugger`              |
-| Auth, Firestore rules, JWT, security  | `@security-auditor`      |
-| GitHub Actions, Firebase deploy       | `@devops-engineer`       |
-| Jest unit tests, Playwright E2E       | `@test-engineer`         |
-| Performance, Lighthouse, bundle size  | `@performance-optimizer` |
-| Multi-feature planning                | `@orchestrator`          |
+| Task                                  | Agent                    | Loads Skill                                       |
+| ------------------------------------- | ------------------------ | ------------------------------------------------- |
+| React components, UI, TailwindCSS     | `@frontend-specialist`   | `accreditex-architecture` + `accreditex-ui`       |
+| Firebase queries, services, Firestore | `@backend-specialist`    | `accreditex-architecture` + `accreditex-firebase` |
+| Capacitor iOS/Android features        | `@mobile-developer`      | `accreditex-architecture`                         |
+| Firestore schema, indexes, rules      | `@database-architect`    | `accreditex-architecture` + `accreditex-firebase` |
+| Any bug, error, TypeScript error      | `@debugger`              | `accreditex-architecture`                         |
+| Auth, Firestore rules, JWT, security  | `@security-auditor`      | `accreditex-architecture` + `accreditex-firebase` |
+| GitHub Actions, Firebase deploy       | `@devops-engineer`       | `accreditex-architecture`                         |
+| Jest unit tests, Playwright E2E       | `@test-engineer`         | `accreditex-architecture`                         |
+| Performance, Lighthouse, bundle size  | `@performance-optimizer` | `accreditex-architecture` + `accreditex-ui`       |
+| Multi-feature planning                | `@orchestrator`          | `accreditex-architecture` + `accreditex-roadmap`  |
+
+---
+
+## AccrediTex Agent Skills (Loaded Automatically)
+
+All agents load project-specific skills from `.agent/skills/`:
+
+| Skill                     | File                                             | Purpose                                                                   |
+| ------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------- |
+| `accreditex-architecture` | `.agent/skills/accreditex-architecture/SKILL.md` | Full codebase map, architecture rules, store list, naming conventions     |
+| `accreditex-firebase`     | `.agent/skills/accreditex-firebase/SKILL.md`     | Firestore collection map, service patterns, auth, storage, security rules |
+| `accreditex-ui`           | `.agent/skills/accreditex-ui/SKILL.md`           | Brand tokens, TailwindCSS v4, i18n, component templates, dark mode        |
+| `accreditex-roadmap`      | `.agent/skills/accreditex-roadmap/SKILL.md`      | Feature status, build phases, quality gates, agent assignment             |
+
+---
+
+## AccrediTex Workflows
+
+| Workflow       | Use When                                                    |
+| -------------- | ----------------------------------------------------------- |
+| `/feature`     | Building any new feature (component, service, page, widget) |
+| `/orchestrate` | Complex multi-agent tasks                                   |
+| `/debug`       | Bug investigation                                           |
+| `/deploy`      | Firebase Hosting deploy                                     |
+| `/test`        | Run tests                                                   |
+| `/plan`        | Feature planning                                            |
 
 ---
 
@@ -74,8 +100,12 @@ export async function getProject(id: string): Promise<Project | null> {
 // Real i18n system: src/data/locales/ (22 EN + 22 AR module files)
 // ✅ Provider location: src/components/common/LanguageProvider
 import { useLanguage } from '@/components/common/LanguageProvider';
-const { t } = useLanguage();
+const { t, lang } = useLanguage();
 return <h1>{t('dashboard.title')}</h1>;
+
+// ⚠️ Document names in Firestore are { en: string; ar: string }
+// ALWAYS use optional chaining — older docs may have undefined name:
+const name = doc.name?.[lang] || doc.name?.en || doc.id;
 ```
 
 ### Type Safety — No `any`
@@ -91,11 +121,29 @@ return <h1>{t('dashboard.title')}</h1>;
 ```tsx
 // ✅ Use brand tokens — they support whitelabeling and dark mode
 className = "bg-brand-background dark:bg-dark-brand-background";
-className = "text-brand-text-primary dark:dark-brand-text-primary";
+className = "text-brand-text-primary dark:text-dark-brand-text-primary";
 className = "bg-brand-primary hover:bg-brand-primary/90";
 
 // ❌ NEVER use purple/violet/indigo as primary colors in AccrediTex
 // ❌ NEVER use hardcoded hex colors in className
+```
+
+### Icons — Check icons.tsx First
+
+```typescript
+// Icons are in src/components/icons.tsx (custom set)
+// ⚠️ NOT all HeroIcon names exist here
+// ❌ ShieldExclamationIcon does NOT exist → use ShieldCheckIcon
+// ✅ Always verify against src/components/icons.tsx before using
+```
+
+### Navigation Pattern
+
+```typescript
+// Navigation is driven by setNavigation() from useAppStore
+const setNavigation = useAppStore((state) => state.setNavigation);
+setNavigation({ view: "documentControl" });
+setNavigation({ view: "capa", filter: "open" });
 ```
 
 ### Testing Rules
@@ -129,6 +177,32 @@ if (Capacitor.isNativePlatform()) {
 
 ---
 
+## Known Patterns & Pitfalls
+
+| Pattern            | Rule                                                                                                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| Dashboard title    | Use `t("welcomeBack")!` — already contains `{name}` placeholder replaced by `DashboardHeader`         |
+| Document names     | Always `doc.name?.[lang] \|\| doc.name?.en \|\| doc.id` — never `doc.name[lang]`                      |
+| Globe canvas style | `transition: "opacity 1s ease"` — Prettier may corrupt this to `transition,` → always explicit string |
+| New widgets        | Add to `src/components/dashboard/` and wire into the relevant role dashboard                          |
+| Store selection    | Extend existing stores — don't create new ones unless truly a new domain                              |
+
+---
+
+## Quick Commands
+
+```bash
+npm run dev              # Start dev server
+npm run test             # Run Jest unit tests
+npm run test:coverage    # Tests with coverage report
+npm run test:e2e         # Run Playwright E2E
+npm run build            # Production build
+firebase deploy --only hosting   # Deploy to accreditex.web.app
+npx cap sync             # Sync web → mobile
+```
+
+---
+
 ## Auto-Recording — Session Start Protocol (MANDATORY)
 
 **BEFORE DOING ANYTHING ELSE at the start of every session:**
@@ -146,9 +220,6 @@ if (Capacitor.isNativePlatform()) {
 3. After recording ALL entries, **clear the file** (write empty string to it)
 4. Call `reasoningbank_distill` once after processing ≥ 3 entries
 5. Only then proceed to the user's request
-
-This processes commits captured by the git post-commit hook (`scripts/hooks/post-commit`).
-New fix records can also be queued manually: `.\scripts\record-fix.ps1 -Task "..." -Decision "..." -Tags "..."`
 
 ---
 
@@ -169,35 +240,20 @@ New fix records can also be queued manually: `.\scripts\record-fix.ps1 -Task "..
    - Tags must include: component names, error type, pattern name, "accreditex"
 5. `reasoningbank_distill` — call after every 3–5 recorded decisions to extract reusable patterns
 
-### Record format — always include these fields:
-
-```
-task:     "Fix X in Y" — specific and searchable
-decision: Root cause + exact fix applied (file, line, approach)
-outcome:  What changed, what was verified (build pass, no errors, etc.)
-success:  true / false
-tags:     ["component-name", "error-type", "pattern", "accreditex"]
-```
-
-### What MUST be recorded (not optional):
-
-- Every bug fix (React errors, TypeScript errors, runtime crashes)
-- Every architectural decision (hook split, service refactor, store change)
-- Every pattern that caused confusion or non-obvious fix
-- Every service worker, Firebase, Capacitor, or auth-related change
-
 ---
 
 ## Folder Structure
 
 ```
 src/
-├── components/      # 295 feature components across 33 domains
+├── components/      # 295+ feature components across 33 domains
 │   ├── ai/         # AI assistant components
-│   └── common/     # Layout, Nav, Theme, Toast (includes LanguageProvider)
+│   ├── common/     # Layout, Nav, Theme, Toast (includes LanguageProvider)
+│   ├── dashboard/  # Role dashboards + shared widgets
+│   └── [domain]/   # One folder per feature domain
 ├── pages/          # 39 page components (route-level)
 ├── stores/         # 13 Zustand state stores
-├── services/       # 107 Firebase/API service functions
+├── services/       # 107+ Firebase/API service functions
 │   ├── hisIntegration/  # 18 HIS connector files
 │   └── limsIntegration/ # 10 LIMS connector files
 ├── firebase/       # Firebase config + hooks
@@ -209,10 +265,19 @@ src/
 ├── test/           # Jest test setup
 └── i18n/           # ⚠️ Legacy (ar.js only) — do not use for new code
 
+.agent/
+├── agents/         # 20 specialist agent definitions (all include accreditex-* skills)
+├── skills/         # Generic skills + 4 AccrediTex-specific skills
+│   ├── accreditex-architecture/   # Codebase map + rules
+│   ├── accreditex-firebase/       # Firebase patterns
+│   ├── accreditex-ui/             # Brand tokens + UI patterns
+│   └── accreditex-roadmap/        # Feature status + build process
+└── workflows/      # /feature, /orchestrate, /debug, /deploy, /test
+
 e2e/                # Playwright E2E tests
 android/            # Capacitor Android
 ios/                # Capacitor iOS
-scripts/            # Deployment & utility scripts (deploy-render.ps1, test-ai-agent.ps1, etc.)
+scripts/            # Deployment & utility scripts
 ```
 
 ---

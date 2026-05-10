@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useMemo, useState } from "react";
 import createGlobe from "cobe";
 import { useSpring } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
 
 interface GlobeProps {
   width: number;
@@ -19,11 +19,11 @@ type CustomMarker = {
   location: [number, number];
   size: number;
   isUser?: boolean;
-  offset: number; // For asynchronous blinking
+  offset: number;
 };
 
 const hexToRgb = (hex: string): [number, number, number] => {
-  if (!hex) return [0, 0, 0]; // Fallback to black if hex is undefined
+  if (!hex) return [0, 0, 0];
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
@@ -43,9 +43,34 @@ const Globe: React.FC<GlobeProps> = ({
   userLocation,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [canvasOpacity, setCanvasOpacity] = useState(0);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
   );
+
+  // Live-update ref — onRender reads from here, so NO globe recreate on visual prop changes
+  const liveProps = useRef({
+    baseColor: hexToRgb(baseColor),
+    markerColor: hexToRgb(markerColor),
+    glowColor: hexToRgb(glowColor),
+    scale,
+    darkness,
+    lightIntensity,
+    rotationSpeed,
+    prefersReducedMotion,
+  });
+
+  // Keep liveProps in sync on every render (no effect needed)
+  liveProps.current = {
+    baseColor: hexToRgb(baseColor),
+    markerColor: hexToRgb(markerColor),
+    glowColor: hexToRgb(glowColor),
+    scale,
+    darkness,
+    lightIntensity,
+    rotationSpeed,
+    prefersReducedMotion,
+  };
 
   useEffect(() => {
     const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -67,17 +92,16 @@ const Globe: React.FC<GlobeProps> = ({
     damping: 40,
   });
 
-  const rgbBaseColor = useMemo(() => hexToRgb(baseColor), [baseColor]);
-  const rgbMarkerColor = useMemo(() => hexToRgb(markerColor), [markerColor]);
-  const rgbGlowColor = useMemo(() => hexToRgb(glowColor), [glowColor]);
-
+  // Globe is created ONCE (or when userLocation changes) — visual props update live via liveProps ref
   useEffect(() => {
     let phi = 0;
     let canvasWidth = 0;
     const onResize = () =>
-      canvasRef.current && (canvasWidth = canvasRef.current.offsetWidth);
+      canvasRef.current &&
+      (canvasWidth = canvasRef.current.offsetWidth || width);
     window.addEventListener("resize", onResize);
     onResize();
+    if (canvasWidth === 0) canvasWidth = width;
 
     if (!canvasRef.current) return;
 
@@ -113,28 +137,38 @@ const Globe: React.FC<GlobeProps> = ({
       });
     }
 
+    const props = liveProps.current;
+
     const globe = createGlobe(canvasRef.current, {
       devicePixelRatio: 2,
       width: canvasWidth * 2,
       height: canvasWidth * 2,
       phi: initialPhi,
       theta: initialTheta,
-      dark: darkness,
-      diffuse: lightIntensity,
+      dark: props.darkness,
+      diffuse: props.lightIntensity,
       mapSamples: 16000,
       mapBrightness: 3,
-      baseColor: rgbBaseColor,
-      markerColor: rgbMarkerColor,
-      glowColor: rgbGlowColor,
-      markers: markers,
-      scale: scale,
+      baseColor: props.baseColor,
+      markerColor: props.markerColor,
+      glowColor: props.glowColor,
+      markers,
+      scale: props.scale,
       onRender: (state) => {
+        // Read all visual props from liveProps ref — updates without recreating globe
+        const live = liveProps.current;
         state.phi = phi + r.get();
-        phi += prefersReducedMotion ? 0 : rotationSpeed;
+        phi += live.prefersReducedMotion ? 0 : live.rotationSpeed;
         state.width = canvasWidth * 2;
         state.height = canvasWidth * 2;
+        state.dark = live.darkness;
+        state.diffuse = live.lightIntensity;
+        state.baseColor = live.baseColor;
+        state.markerColor = live.markerColor;
+        state.glowColor = live.glowColor;
+        state.scale = live.scale;
 
-        if (!prefersReducedMotion) {
+        if (!live.prefersReducedMotion) {
           const t = Date.now() / 1500;
           markers.forEach((marker: CustomMarker) => {
             if (marker.isUser) {
@@ -147,26 +181,15 @@ const Globe: React.FC<GlobeProps> = ({
       },
     });
 
-    setTimeout(
-      () => canvasRef.current && (canvasRef.current.style.opacity = "1"),
-    );
+    setTimeout(() => setCanvasOpacity(1));
 
     return () => {
       globe.destroy();
       window.removeEventListener("resize", onResize);
     };
-  }, [
-    rgbBaseColor,
-    rgbMarkerColor,
-    rgbGlowColor,
-    scale,
-    darkness,
-    lightIntensity,
-    rotationSpeed,
-    prefersReducedMotion,
-    r,
-    userLocation,
-  ]);
+    // Only recreate when userLocation changes — all visual props update via liveProps ref
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userLocation]);
 
   return (
     <div
@@ -212,7 +235,7 @@ const Globe: React.FC<GlobeProps> = ({
           height: "100%",
           cursor: "grab",
           contain: "layout paint size",
-          opacity: 0,
+          opacity: canvasOpacity,
           transition: "opacity 1s ease",
         }}
       />

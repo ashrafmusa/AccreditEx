@@ -3,6 +3,7 @@ import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import StatCard from "@/components/common/StatCard";
 import StatCardSkeleton from "@/components/common/StatCardSkeleton";
+import AuditReadinessCard from "@/components/dashboard/AuditReadinessCard";
 import {
   CheckBadgeIcon,
   CheckCircleIcon,
@@ -22,7 +23,7 @@ import {
   ProjectStatus,
   User,
 } from "@/types";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import DashboardHeader from "./DashboardHeader";
 
 interface DashboardPageProps {
@@ -48,14 +49,6 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
   const { currentUser, users } = useUserStore();
   const { projects, deleteProject } = useProjectStore();
   const { accreditationPrograms } = useAppStore();
-
-  // Loading state
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const myProjects = useMemo(() => {
     if (!currentUser) return [];
@@ -182,7 +175,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
       <div className="space-y-8">
         <DashboardHeader
           setNavigation={setNavigation}
-          title={t("projectLeadDashboardTitle")}
+          title={`${t("welcomeBack")}!`}
           greeting={t("dashboardGreeting")}
           roleShortcuts={[
             {
@@ -242,7 +235,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
           </div>
         </div>
 
-        {isLoading ? (
+        {myProjects.length === 0 && !currentUser ? (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCardSkeleton count={7} />
@@ -295,7 +288,7 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 value={leadStats.teamMembersCount}
                 icon={UsersIcon}
                 color="from-cyan-500 to-cyan-700 bg-linear-to-br"
-                onClick={() => setNavigation({ view: "departments" })}
+                onClick={() => setNavigation({ view: "projects" })}
               />
               <StatCard
                 title={t("overdueTasks")}
@@ -314,6 +307,9 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                 onClick={() => setNavigation({ view: "myTasks" })}
               />
             </div>
+
+            {/* Audit Readiness Predictor */}
+            <AuditReadinessCard setNavigation={setNavigation} />
 
             <div>
               <h2 className="text-xl font-semibold mb-4">{t("myProjects")}</h2>

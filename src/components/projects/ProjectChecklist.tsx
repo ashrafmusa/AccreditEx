@@ -4,10 +4,11 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
 import { ChecklistItem, ComplianceStatus, Project } from "@/types";
 import { statusToTranslationKey } from "@/utils/complianceUtils";
 import React, { useCallback, useMemo, useState } from "react";
-import { SearchIcon, XMarkIcon } from "../icons";
+import { CheckCircleIcon, SearchIcon, UsersIcon, XMarkIcon } from "../icons";
 import ChecklistItemComponent from "./ChecklistItemComponent";
 
 /** Safely resolves a department name that may be LocalizedString or plain string */
@@ -55,6 +56,57 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({
   const [departmentFilter, setDepartmentFilter] = useState<string>("all");
   const PAGE_SIZE = 30;
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  const { users } = useUserStore();
+
+  // Bulk assign state
+  const [bulkSelectMode, setBulkSelectMode] = useState(false);
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [bulkAssignModalOpen, setBulkAssignModalOpen] = useState(false);
+  const [bulkAssignUserId, setBulkAssignUserId] = useState("");
+  const [isBulkAssigning, setIsBulkAssigning] = useState(false);
+
+  const toggleBulkSelectMode = () => {
+    setBulkSelectMode((v) => !v);
+    setSelectedItemIds(new Set());
+  };
+
+  const toggleItemSelection = (id: string) => {
+    setSelectedItemIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const selectAll = () => {
+    setSelectedItemIds(new Set(visibleChecklist.map((i) => i.id)));
+  };
+
+  const clearSelection = () => setSelectedItemIds(new Set());
+
+  const handleBulkAssign = async () => {
+    if (!bulkAssignUserId || selectedItemIds.size === 0) return;
+    setIsBulkAssigning(true);
+    try {
+      for (const id of selectedItemIds) {
+        await updateChecklistItem(project.id, id, {
+          assignedTo: bulkAssignUserId,
+        });
+      }
+      toast.success(`Assigned ${selectedItemIds.size} items successfully.`);
+      setBulkAssignModalOpen(false);
+      setBulkSelectMode(false);
+      setSelectedItemIds(new Set());
+      setBulkAssignUserId("");
+    } catch (e) {
+      toast.error("Bulk assign failed");
+    } finally {
+      setIsBulkAssigning(false);
+    }
+  };
 
   const departments = useAppStore((s) => s.departments) || [];
 
@@ -818,10 +870,54 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
               )}
             </button>
           )}
+          {/* Bulk Assign button */}
+          <button
+            onClick={toggleBulkSelectMode}
+            className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors whitespace-nowrap ${
+              bulkSelectMode
+                ? "bg-brand-primary text-white border-brand-primary"
+                : "border-brand-border dark:border-dark-brand-border text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-brand-primary/10"
+            }`}
+          >
+            <UsersIcon className="h-4 w-4" />
+            {bulkSelectMode ? "Exit Bulk Mode" : "Bulk Assign"}
+          </button>
         </div>
       </div>
 
-      {/* Progress Summary Bar */}
+      {/* Bulk select toolbar */}
+      {bulkSelectMode && (
+        <div className="bg-sky-50 dark:bg-sky-900/20 border border-sky-300 dark:border-sky-700 rounded-lg px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-sky-800 dark:text-sky-200">
+              {selectedItemIds.size} item(s) selected
+            </span>
+            <button
+              className="text-xs text-sky-600 dark:text-sky-400 hover:underline"
+              onClick={selectAll}
+            >
+              Select all visible
+            </button>
+            {selectedItemIds.size > 0 && (
+              <button
+                className="text-xs text-sky-600 dark:text-sky-400 hover:underline"
+                onClick={clearSelection}
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {selectedItemIds.size > 0 && (
+            <button
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 transition-colors"
+              onClick={() => setBulkAssignModalOpen(true)}
+            >
+              <UsersIcon className="h-4 w-4" />
+              Assign {selectedItemIds.size} item(s)
+            </button>
+          )}
+        </div>
+      )}
       {checklistStats && (
         <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-lg shadow-sm border border-brand-border dark:border-dark-brand-border">
           <div className="flex items-center justify-between mb-2">
@@ -1021,12 +1117,37 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
 
       <div className="space-y-2">
         {visibleChecklist.map((item) => (
-          <ChecklistItemComponent
+          <div
             key={item.id}
-            item={item}
-            project={project}
-            onUpdate={(updates) => handleChecklistItemUpdate(item.id, updates)}
-          />
+            className={`flex items-start gap-2 ${bulkSelectMode ? "" : ""}`}
+          >
+            {bulkSelectMode && (
+              <button
+                onClick={() => toggleItemSelection(item.id)}
+                className={`mt-3 shrink-0 w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                  selectedItemIds.has(item.id)
+                    ? "bg-brand-primary border-brand-primary"
+                    : "border-slate-400 dark:border-slate-500 bg-white dark:bg-slate-800"
+                }`}
+                aria-label={
+                  selectedItemIds.has(item.id) ? "Deselect item" : "Select item"
+                }
+              >
+                {selectedItemIds.has(item.id) && (
+                  <CheckCircleIcon className="h-3.5 w-3.5 text-white" />
+                )}
+              </button>
+            )}
+            <div className="flex-1 min-w-0">
+              <ChecklistItemComponent
+                item={item}
+                project={project}
+                onUpdate={(updates) =>
+                  handleChecklistItemUpdate(item.id, updates)
+                }
+              />
+            </div>
+          </div>
         ))}
         {filteredChecklist.length === 0 && (
           <div className="text-center py-10">
@@ -1058,6 +1179,72 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
         content={aiModalContent}
         type="compliance-check"
       />
+
+      {/* Bulk Assign Modal */}
+      {bulkAssignModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="fixed inset-0 bg-gray-900/60"
+            onClick={() => setBulkAssignModalOpen(false)}
+          />
+          <div className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <UsersIcon className="h-6 w-6 text-brand-primary" />
+              <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                Bulk Assign {selectedItemIds.size} Item(s)
+              </h3>
+            </div>
+            <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mb-4">
+              Select a team member to assign all selected checklist items to.
+            </p>
+            <select
+              value={bulkAssignUserId}
+              onChange={(e) => setBulkAssignUserId(e.target.value)}
+              className="w-full p-2 border border-brand-border dark:border-dark-brand-border rounded-lg bg-white dark:bg-gray-700 text-brand-text-primary dark:text-dark-brand-text-primary mb-4"
+            >
+              <option value="">— Select a team member —</option>
+              {users.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.name} ({u.role})
+                </option>
+              ))}
+            </select>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setBulkAssignModalOpen(false)}
+                className="px-4 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkAssign}
+                disabled={!bulkAssignUserId || isBulkAssigning}
+                className="px-4 py-2 text-sm rounded-lg bg-brand-primary text-white hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {isBulkAssigning && (
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                )}
+                Assign Items
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Department Assignment Review Modal */}
       {deptReviewOpen && (

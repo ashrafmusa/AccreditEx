@@ -26,6 +26,7 @@ import {
   XCircleIcon,
 } from "@/components/icons";
 import { Button, EmptyState, Input, Modal, TextArea } from "@/components/ui";
+import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useConfirmStore } from "@/stores/useConfirmStore";
@@ -212,6 +213,7 @@ const WorkflowAutomationPage: React.FC = () => {
   } = useWorkflowStore();
 
   const currentUser = useUserStore((s) => s.currentUser);
+  const toast = useToast();
 
   const [activeTab, setActiveTab] = useState<WorkflowTab>("workflows");
   const [showBuilder, setShowBuilder] = useState(false);
@@ -622,7 +624,20 @@ Format in clear Markdown.`;
           onSearchChange={setSearchQuery}
           onEdit={handleEditWorkflow}
           onDelete={handleDeleteWorkflow}
-          onToggle={toggleWorkflowStatus}
+          executionLogs={executionLogs}
+          onToggle={(id) => {
+            const wf = workflows.find((w) => w.id === id);
+            toggleWorkflowStatus(id);
+            if (wf) {
+              if (wf.status === "paused" || wf.status === "inactive") {
+                toast.success(
+                  `"${wf.name}" activated — will trigger automatically.`,
+                );
+              } else {
+                toast.info(`"${wf.name}" paused.`);
+              }
+            }
+          }}
           loading={loading}
         />
       )}
@@ -714,6 +729,7 @@ Format in clear Markdown.`;
 
 const WorkflowList: React.FC<{
   workflows: WorkflowDefinition[];
+  executionLogs: WorkflowExecutionLog[];
   searchQuery: string;
   onSearchChange: (q: string) => void;
   onEdit: (wf: WorkflowDefinition) => void;
@@ -722,6 +738,7 @@ const WorkflowList: React.FC<{
   loading: boolean;
 }> = ({
   workflows,
+  executionLogs,
   searchQuery,
   onSearchChange,
   onEdit,
@@ -756,15 +773,26 @@ const WorkflowList: React.FC<{
         />
       ) : (
         <div className="space-y-3">
-          {workflows.map((wf) => (
-            <WorkflowCard
-              key={wf.id}
-              workflow={wf}
-              onEdit={() => onEdit(wf)}
-              onDelete={() => onDelete(wf.id)}
-              onToggle={() => onToggle(wf.id)}
-            />
-          ))}
+          {workflows.map((wf) => {
+            const lastLog = executionLogs
+              .filter((l) => l.workflowId === wf.id)
+              .sort(
+                (a, b) =>
+                  new Date(b.startedAt).getTime() -
+                  new Date(a.startedAt).getTime(),
+              )[0];
+            return (
+              <WorkflowCard
+                key={wf.id}
+                workflow={wf}
+                lastRunStatus={lastLog?.status}
+                lastRunAt={lastLog?.startedAt}
+                onEdit={() => onEdit(wf)}
+                onDelete={() => onDelete(wf.id)}
+                onToggle={() => onToggle(wf.id)}
+              />
+            );
+          })}
         </div>
       )}
     </div>
@@ -775,11 +803,40 @@ const WorkflowList: React.FC<{
 
 const WorkflowCard: React.FC<{
   workflow: WorkflowDefinition;
+  lastRunStatus?: string;
+  lastRunAt?: string;
   onEdit: () => void;
   onDelete: () => void;
   onToggle: () => void;
-}> = ({ workflow: wf, onEdit, onDelete, onToggle }) => {
+}> = ({
+  workflow: wf,
+  lastRunStatus,
+  lastRunAt,
+  onEdit,
+  onDelete,
+  onToggle,
+}) => {
   const { t } = useTranslation();
+  const lastRunBadge =
+    lastRunStatus === "completed"
+      ? {
+          label: "Last run: OK",
+          className:
+            "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+        }
+      : lastRunStatus === "failed"
+        ? {
+            label: "Last run: Failed",
+            className:
+              "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+          }
+        : lastRunStatus === "running"
+          ? {
+              label: "Running",
+              className:
+                "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+            }
+          : null;
   return (
     <div className="border rounded-xl p-4 dark:border-gray-700 bg-white dark:bg-gray-900 hover:shadow-md transition-shadow">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
@@ -798,6 +855,18 @@ const WorkflowCard: React.FC<{
             >
               {wf.category}
             </span>
+            {lastRunBadge && (
+              <span
+                className={`px-2 py-0.5 rounded-full text-xs font-medium ${lastRunBadge.className}`}
+                title={
+                  lastRunAt
+                    ? `Last executed: ${new Date(lastRunAt).toLocaleString()}`
+                    : undefined
+                }
+              >
+                {lastRunBadge.label}
+              </span>
+            )}
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 line-clamp-2">
             {wf.description}

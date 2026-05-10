@@ -1,34 +1,35 @@
-import React, { useMemo } from "react";
-import {
-  Project,
-  Risk,
-  User,
-  Department,
-  Competency,
-  UserTrainingStatus,
-} from "@/types";
-import { useTranslation } from "../hooks/useTranslation";
-import {
-  LightBulbIcon,
-  CheckCircleIcon,
-  ClipboardDocumentCheckIcon,
-  CheckBadgeIcon,
-  ExclamationTriangleIcon,
-} from "../components/icons";
-import StatCard from "../components/common/StatCard";
-import RootCauseAnalysis from "../components/quality-insights/RootCauseAnalysis";
-import CompetencyGapReport from "../components/quality-insights/CompetencyGapReport";
-import TrainingEffectivenessChart from "../components/quality-insights/TrainingEffectivenessChart";
-import AIQualityBriefing from "../components/quality-insights/AIQualityBriefing";
-import PDCACycleTracker from "../components/quality-insights/PDCACycleTracker";
-import QualityTrendChart from "../components/quality-insights/QualityTrendChart";
-import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
-import { useAppStore } from "@/stores/useAppStore";
+import SurveyRiskPredictor from "@/components/quality-insights/SurveyRiskPredictor";
 import {
   calculateAssessorPackExportMetrics,
   getAssessorPackExportAudit,
 } from "@/services/assessorReportPackService";
 import { calculatePredictiveAuditRisk } from "@/services/qualityOutcomeIntelligenceService";
+import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
+import { useAppStore } from "@/stores/useAppStore";
+import {
+  Competency,
+  Department,
+  Project,
+  Risk,
+  User,
+  UserTrainingStatus,
+} from "@/types";
+import React, { useMemo } from "react";
+import StatCard from "../components/common/StatCard";
+import {
+  CheckBadgeIcon,
+  CheckCircleIcon,
+  ClipboardDocumentCheckIcon,
+  ExclamationTriangleIcon,
+  LightBulbIcon,
+} from "../components/icons";
+import AIQualityBriefing from "../components/quality-insights/AIQualityBriefing";
+import CompetencyGapReport from "../components/quality-insights/CompetencyGapReport";
+import PDCACycleTracker from "../components/quality-insights/PDCACycleTracker";
+import QualityTrendChart from "../components/quality-insights/QualityTrendChart";
+import RootCauseAnalysis from "../components/quality-insights/RootCauseAnalysis";
+import TrainingEffectivenessChart from "../components/quality-insights/TrainingEffectivenessChart";
+import { useTranslation } from "../hooks/useTranslation";
 
 interface QualityInsightsPageProps {
   projects: Project[];
@@ -230,35 +231,16 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
           </div>
         </div>
 
-        <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-            <div>
-              <h3 className="text-base font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                Predictive Audit-Risk Indicator
-              </h3>
-              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                Forward-looking signal based on readiness, evidence quality,
-                open findings, CAPA load, and reviewer sign-off discipline.
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                Predicted Risk Level
-              </p>
-              <p className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                {predictiveAuditRisk.level} ({predictiveAuditRisk.score}/100)
-              </p>
-            </div>
-          </div>
-
-          {predictiveAuditRisk.reasons.length > 0 && (
-            <ul className="mt-3 list-disc list-inside text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary space-y-1">
-              {predictiveAuditRisk.reasons.map((reason) => (
-                <li key={reason}>{reason}</li>
-              ))}
-            </ul>
-          )}
-        </div>
+        <SurveyRiskPredictor
+          readinessScore={readiness.readinessScore}
+          evidenceIntegrityIndex={readiness.evidenceIntegrityIndex}
+          criticalOpenFindings={readiness.criticalOpenFindings}
+          openCapas={openCapas}
+          reviewerSignOffRatePercent={
+            assessorExportMetrics.reviewerSignOffRatePercent
+          }
+          initial={predictiveAuditRisk}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <QualityTrendChart projects={props.projects} risks={props.risks} />

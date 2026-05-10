@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { Standard } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
-import { ChevronDownIcon, PencilIcon, TrashIcon, DocumentIcon } from "../icons";
+import { Standard } from "../../types";
+import { ChevronDownIcon, DocumentIcon, PencilIcon, TrashIcon } from "../icons";
 
 interface StandardAccordionProps {
   standard: Standard;
@@ -28,7 +28,7 @@ const StandardAccordion: React.FC<StandardAccordionProps> = ({
     <div
       className={`bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border dark:border-dark-brand-border`}
     >
-      <div className="w-full text-left p-5 focus:outline-none flex justify-between items-start gap-4">
+      <div className="w-full text-left p-5 flex justify-between items-start gap-4">
         <div className="grow">
           <p className="font-bold text-brand-primary dark:text-sky-400">
             {standard.standardId}

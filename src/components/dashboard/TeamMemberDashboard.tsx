@@ -1,20 +1,20 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { NavigationState, ComplianceStatus, ChecklistItem } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
+import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import StatCard from "@/components/common/StatCard";
 import StatCardSkeleton from "@/components/common/StatCardSkeleton";
-import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
-import { useProjectStore } from "@/stores/useProjectStore";
-import { useUserStore } from "@/stores/useUserStore";
-import DashboardHeader from "./DashboardHeader";
 import {
+  ChartBarIcon,
   CheckCircleIcon,
   ClockIcon,
   ExclamationTriangleIcon,
   SparklesIcon,
-  ChartBarIcon,
 } from "@/components/icons";
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { ChecklistItem, ComplianceStatus, NavigationState } from "@/types";
+import React, { useMemo } from "react";
+import DashboardHeader from "./DashboardHeader";
 
 interface DashboardPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -98,14 +98,6 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
   const { projects } = useProjectStore();
-
-  // Loading state
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   const myTasks = useMemo(() => {
     try {
@@ -209,11 +201,11 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
       <div className="space-y-8">
         <DashboardHeader
           setNavigation={setNavigation}
-          title={t("welcomeBack")}
+          title={`${t("welcomeBack")}!`}
           greeting={t("teamMemberDashboardTitle")}
         />
 
-        {isLoading ? (
+        {!currentUser ? (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <StatCardSkeleton count={6} />
@@ -273,26 +265,53 @@ const TeamMemberDashboard: React.FC<DashboardPageProps> = ({
             </div>
 
             <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
-              <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
-                {t("myOpenTasks")}
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                  {t("myOpenTasks")}
+                </h3>
+                <button
+                  onClick={() => setNavigation({ view: "myTasks" })}
+                  className="text-sm text-brand-primary hover:underline font-medium"
+                >
+                  {t("viewAll") || "View All"}
+                </button>
+              </div>
               {myTasks.filter((t) => t.status !== ComplianceStatus.Compliant)
                 .length > 0 ? (
-                <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {myTasks
-                    .filter((t) => t.status !== ComplianceStatus.Compliant)
-                    .map((task) => (
-                      <TaskItemCard
-                        key={task.id}
-                        task={task}
-                        onSelect={() =>
-                          setNavigation({
-                            view: "projectDetail",
-                            projectId: task.projectId,
-                          })
-                        }
-                      />
-                    ))}
+                <div className="space-y-5 max-h-96 overflow-y-auto">
+                  {Object.entries(
+                    myTasks
+                      .filter((t) => t.status !== ComplianceStatus.Compliant)
+                      .reduce(
+                        (acc, task) => {
+                          if (!acc[task.projectName])
+                            acc[task.projectName] = [];
+                          acc[task.projectName].push(task);
+                          return acc;
+                        },
+                        {} as Record<string, typeof myTasks>,
+                      ),
+                  ).map(([projectName, tasks]) => (
+                    <div key={projectName}>
+                      <p className="text-xs font-semibold uppercase tracking-wide text-brand-text-secondary dark:text-dark-brand-text-secondary mb-2 px-1">
+                        {projectName}
+                      </p>
+                      <div className="space-y-2">
+                        {tasks.map((task) => (
+                          <TaskItemCard
+                            key={task.id}
+                            task={task}
+                            onSelect={() =>
+                              setNavigation({
+                                view: "projectDetail",
+                                projectId: task.projectId,
+                              })
+                            }
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <EmptyStatePlaceholder

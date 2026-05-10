@@ -3,6 +3,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import { submitDemoRequest } from "@/services/demoRequestService";
 import { useAppStore } from "@/stores/useAppStore";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 /* ─── TYPES ──────────────────────────────────────────────────────────────── */
 interface LandingPageProps {
@@ -35,8 +36,16 @@ const DemoRequestModal: React.FC<{
     try {
       await submitDemoRequest(form);
       setSubmitted(true);
-    } catch {
-      setError("Something went wrong. Please try again or email us directly.");
+    } catch (err: unknown) {
+      if (err instanceof Error && err.message === "duplicate") {
+        setError(
+          "We already have a request from this email address. Our team will be in touch soon!",
+        );
+      } else {
+        setError(
+          "Something went wrong. Please try again or email us directly.",
+        );
+      }
     } finally {
       setSubmitting(false);
     }
@@ -177,6 +186,7 @@ const Navbar: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
 }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
@@ -185,6 +195,7 @@ const Navbar: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
   }, []);
 
   const links = [
+    { label: "How It Works", href: "#how-it-works" },
     { label: "Features", href: "#features" },
     { label: "AI Engine", href: "#ai-engine" },
     { label: "Market", href: "#market" },
@@ -244,10 +255,10 @@ const Navbar: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
             Login
           </button>
           <button
-            onClick={onRequestDemo}
+            onClick={() => navigate("/register")}
             className="px-5 py-2 text-sm font-semibold rounded-lg bg-linear-to-r from-brand-primary to-brand-primary/80 text-white shadow-lg hover:shadow-xl transition-all"
           >
-            Request Demo
+            Start Free Trial
           </button>
         </div>
 
@@ -315,6 +326,7 @@ const Hero: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
 }) => {
   const appSettings = useAppStore((s) => s.appSettings);
   const globeSettings = appSettings?.globeSettings;
+  const navigate = useNavigate();
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden bg-linear-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -360,16 +372,16 @@ const Hero: React.FC<{ onLogin: () => void; onRequestDemo: () => void }> = ({
 
           <div className="flex flex-wrap gap-4">
             <button
-              onClick={onRequestDemo}
+              onClick={() => navigate("/register")}
               className="px-8 py-3.5 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold shadow-xl shadow-teal-600/30 hover:shadow-teal-600/50 hover:scale-[1.02] transition-all"
             >
-              Request a Demo →
+              Start Free Trial →
             </button>
             <button
               onClick={onRequestDemo}
               className="px-8 py-3.5 rounded-xl bg-white/10 border border-white/20 text-white font-semibold hover:bg-white/15 transition-all"
             >
-              Talk to Sales
+              Request a Demo
             </button>
           </div>
 
@@ -1206,15 +1218,114 @@ const RoadmapSection: React.FC = () => (
   </section>
 );
 
+/* ─── HOW IT WORKS ───────────────────────────────────────────────────────── */
+const HowItWorks: React.FC = () => (
+  <section id="how-it-works" className="py-24 bg-white dark:bg-slate-900">
+    <div className="max-w-7xl mx-auto px-6">
+      <div className="text-center mb-16">
+        <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/70/10 text-brand-primary dark:text-brand-primary text-sm font-semibold mb-4">
+          ⚡ How It Works
+        </span>
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-brand-text-primary dark:text-white">
+          From Day 1 to Accreditation-Ready
+        </h2>
+        <p className="mt-4 text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
+          AccreditEx guides your team through every step — from initial setup to
+          continuous compliance and beyond.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+        {[
+          {
+            step: "01",
+            icon: "🏗️",
+            title: "Configure",
+            desc: "Set up your accreditation project, load your standards framework, and invite your departments in under 10 minutes.",
+            color:
+              "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/30",
+            numColor: "text-blue-500",
+          },
+          {
+            step: "02",
+            icon: "📋",
+            title: "Assign & Track",
+            desc: "AI automatically assigns standards to responsible departments. Teams upload evidence and track compliance in real time.",
+            color:
+              "bg-brand-primary/5 dark:bg-brand-primary/10 border-brand-primary/20 dark:border-brand-primary/30",
+            numColor: "text-brand-primary",
+          },
+          {
+            step: "03",
+            icon: "🔍",
+            title: "Audit & Improve",
+            desc: "Run internal audits, manage CAPAs, identify risks, and close compliance gaps well before your survey day.",
+            color:
+              "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/30",
+            numColor: "text-orange-500",
+          },
+          {
+            step: "04",
+            icon: "🏆",
+            title: "Achieve & Maintain",
+            desc: "Pass accreditation surveys with confidence. Maintain continuous compliance year-round — not just at survey time.",
+            color:
+              "bg-green-50 dark:bg-green-950/20 border-green-200 dark:border-green-900/30",
+            numColor: "text-green-600",
+          },
+        ].map((s, i) => (
+          <div key={s.step} className="relative flex flex-col">
+            {i < 3 && (
+              <div className="hidden lg:block absolute top-8 left-[calc(100%-0.5rem)] w-8 text-slate-300 dark:text-slate-600 text-2xl font-light z-10 text-center">
+                →
+              </div>
+            )}
+            <div
+              className={`p-7 rounded-2xl border ${s.color} flex-1 hover:shadow-lg transition-all`}
+            >
+              <div
+                className={`text-5xl font-black ${s.numColor} mb-3 leading-none opacity-30`}
+              >
+                {s.step}
+              </div>
+              <div className="text-3xl mb-3">{s.icon}</div>
+              <h3 className="text-lg font-bold text-brand-text-primary dark:text-white mb-2">
+                {s.title}
+              </h3>
+              <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+                {s.desc}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom trust strip */}
+      <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
+        {[
+          "✓ No training required for clinical staff",
+          "✓ Onboarding in under 10 minutes",
+          "✓ Bilingual EN/AR from day one",
+          "✓ AI does the heavy lifting",
+        ].map((t) => (
+          <span key={t} className="flex items-center gap-1.5">
+            {t}
+          </span>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 /* ─── FAQ SECTION ────────────────────────────────────────────────────────── */
 const faqs = [
   {
     q: "What accreditation standards does AccreditEx support?",
-    a: "AccreditEx comes pre-loaded with 240+ standards and 1,043 sub-standards covering CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory). New standards can be imported in bulk. Cross-standard mapping helps reuse evidence across multiple accreditation bodies.",
+    a: "AccreditEx comes pre-loaded with 256 OHAS standards and 1,100+ sub-standards. CBAHI (Saudi Arabia), JCI (International), DOH Abu Dhabi, and ISO 15189 (Laboratory) standards are actively coming next — ctandard mapping helps reuse evidence across multiple accreditation bodies.",
   },
   {
     q: "How does the AI engine work?",
-    a: "AccreditEx integrates 15+ AI-powered tools directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment.",
+    a: "AccreditEx integrates 18+ AI-powered tools directly into every workflow. This includes an AI assistant chatbot, automated gap analysis, document generation, root cause analysis (5 Whys & Fishbone), PDCA improvement suggestions, risk assessment, compliance scoring, EN↔AR translation, and AI-powered department auto-assignment.",
   },
   {
     q: "Is AccreditEx suitable for small clinics or only large hospitals?",
@@ -1226,7 +1337,7 @@ const faqs = [
   },
   {
     q: "What makes AccreditEx different from MEG, RLDatix, or Vastian?",
-    a: "AccreditEx is the only platform that is: (1) practitioner-built by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) GCC-first with pre-loaded regional templates for DOH, DHA, MOH, and CBAHI, (3) AI-native with 15+ integrated tools (not bolt-on chatbots), and (4) affordable starting at $500/mo with PWA offline support.",
+    a: "AccreditEx is the only platform that is: (1) practitioner-built by a clinical quality professional with Six Sigma Black Belt and ISQUA credentials, (2) GCC-first with pre-loaded OHAS standards and active roadmap for DOH, DHA, MOH, and CBAHI, (3) AI-native with 18-native with 18+ integrated tools (not bolt-on chatbots), and (4) affordable starting at $500/mo with PWA offline support.",
   },
   {
     q: "Can investors request a demo or pitch deck?",
@@ -1569,6 +1680,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLogin }) => {
       <Navbar onLogin={onLogin} onRequestDemo={openDemoModal} />
       <Hero onLogin={onLogin} onRequestDemo={openDemoModal} />
       <TrustBar />
+      <HowItWorks />
       <ProblemSection />
       <Features />
       <AIEngine />

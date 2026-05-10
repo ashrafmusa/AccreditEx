@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Letter of Intent - Investment Phase</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Noto+Sans+Arabic:wght@400;600;800&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Arabic', sans-serif;
+            background-color: #f8fafc;
+            -webkit-print-color-adjust: exact;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: 10mm auto;
+            background: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .clause-title {
+            @apply text-slate-900 font-extrabold uppercase tracking-tight border-b-2 border-teal-600 pb-1 mb-4 w-fit;
+        }
+
+        @media print {
+            body { background: none; margin: 0; }
+            .a4-page { margin: 0; box-shadow: none; border: none; width: 100%; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print flex justify-center py-6">
+        <button onclick="window.print()" class="bg-slate-900 text-white px-10 py-3 rounded-full font-bold shadow-xl hover:bg-slate-800 transition transform hover:scale-105">
+            Download PDF / تحميل الوثيقة
+        </button>
+    </div>
+
+    <div class="a4-page">
+        <div class="flex justify-between items-start mb-12">
+            <div class="flex items-center gap-4">
+                <img src="./logo.png" alt="Company Logo" class="h-14 w-14 rounded-lg shadow-sm" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-xl font-black text-slate-900 uppercase">Letter of Intent</h1>
+                    <p class="text-[10px] font-bold text-teal-600 uppercase tracking-widest">Confidential Investment Agreement</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <p class="text-sm font-bold text-slate-800">Date: [Date]</p>
+                <p class="text-xs text-slate-400">Ref: LOI-[Year]-[Number]</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-12 mb-8">
+            <section>
+                <h2 class="clause-title text-xs">1. The Parties</h2>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    This Letter of Intent ("LOI") outlines the terms for a strategic investment in <strong>[Company Name]</strong>, a [Jurisdiction]-registered entity, between <strong>[Founder Name]</strong> ("Founder") and <strong>[Investor Name]</strong> ("Investor").
+                </p>
+            </section>
+            <section dir="rtl" class="text-right">
+                <h2 class="clause-title text-xs ml-auto mr-0 text-right border-l-0 border-r-2 pr-2">١. الأطراف</h2>
+                <p class="text-[11px] text-slate-600 leading-relaxed">
+                    تحدد رسالة النوايا هذه شروط الاستثمار الاستراتيجي في شركة <strong>[اسم الشركة]</strong>، وهي شركة مسجلة في [جهة التسجيل]، بين <strong>[اسم المؤسس]</strong> ("المؤسس") و <strong>[اسم المستثمر]</strong> ("المستثمر").
+                </p>
+            </section>
+        </div>
+
+        <div class="grid grid-cols-2 gap-12 mb-8">
+            <section>
+                <h2 class="clause-title text-xs">2. Investment Terms</h2>
+                <div class="bg-slate-50 p-4 rounded-xl space-y-3">
+                    <div class="flex justify-between border-b border-slate-200 pb-1">
+                        <span class="text-[10px] text-slate-500">Amount:</span>
+                        <span class="text-xs font-bold text-slate-900">[Amount]</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-[10px] text-slate-500">Equity Stake:</span>
+                        <span class="text-xs font-bold text-teal-700">[Percentage]%</span>
+                    </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-2 italic">
+                    Terms reflect the "Vetted Asset" status including [Ecosystem Endorsement] and [Regulatory Approval].
+                </p>
+            </section>
+            <section dir="rtl" class="text-right">
+                <h2 class="clause-title text-xs ml-auto mr-0 text-right border-l-0 border-r-2 pr-2 font-bold">٢. شروط الاستثمار</h2>
+                <div class="bg-slate-50 p-4 rounded-xl space-y-3">
+                    <div class="flex justify-between border-b border-slate-200 pb-1">
+                        <span class="text-[10px] text-slate-500">قيمة الاستثمار:</span>
+                        <span class="text-xs font-bold text-slate-900 font-bold">[القيمة]</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-[10px] text-slate-500">حصة الملكية:</span>
+                        <span class="text-xs font-bold text-teal-700 font-bold">[النسبة]٪</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <div class="grid grid-cols-2 gap-12 mb-10">
+            <section>
+                <h2 class="clause-title text-xs">3. Use of Funds</h2>
+                <ul class="text-[10px] space-y-2 text-slate-600">
+                    <li class="flex justify-between"><span>• Incorporation & Licensing</span> <span class="font-bold">40%</span></li>
+                    <li class="flex justify-between"><span>• Registered Office Setup</span> <span class="font-bold">30%</span></li>
+                    <li class="flex justify-between"><span>• Regulatory Pilot Phase</span> <span class="font-bold">30%</span></li>
+                </ul>
+            </section>
+            <section dir="rtl" class="text-right font-medium">
+                <h2 class="clause-title text-xs ml-auto mr-0 text-right border-l-0 border-r-2 pr-2 font-bold">٣. توزيع رأس المال</h2>
+                <ul class="text-[10px] space-y-2 text-slate-600">
+                    <li class="flex justify-between"><span>• التراخيص القانونية والتأسيس</span> <span class="font-bold font-bold">٤٠٪</span></li>
+                    <li class="flex justify-between"><span>• تأمين المقر الرسمي</span> <span class="font-bold font-bold">٣٠٪</span></li>
+                    <li class="flex justify-between"><span>• إعداد وتفعيل برامج الاختبار</span> <span class="font-bold font-bold">٣٠٪</span></li>
+                </ul>
+            </section>
+        </div>
+
+        <div class="bg-slate-900 text-white p-6 rounded-2xl mb-12 grid grid-cols-2 gap-8">
+            <div class="border-r border-white/10 pr-6">
+                <h3 class="text-[9px] font-bold text-teal-400 uppercase mb-2">Revenue Share Option</h3>
+                <p class="text-[10px] leading-relaxed opacity-80">
+                    The Investor may choose to receive a [Percentage]% monthly revenue share until a [X]x Return on Investment is achieved, in lieu of equity dilution.
+                </p>
+            </div>
+            <div dir="rtl" class="text-right pl-6">
+                <h3 class="text-[9px] font-bold text-teal-400 uppercase mb-2">خيار المشاركة في الإيرادات</h3>
+                <p class="text-[10px] leading-relaxed opacity-80">
+                    يمكن للمستثمر اختيار الحصول على نسبة [النسبة]٪ من الإيرادات الشهرية حتى تحقيق عائد استثماري يبلغ [الضعف] أضعاف، بدلاً من تخفيف حصة الملكية.
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-20">
+            <div class="grid grid-cols-2 gap-20">
+                <div class="text-center">
+                    <div class="border-t border-slate-300 pt-3">
+                        <p class="text-xs font-bold text-slate-900">[Founder Name]</p>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">Founder & CEO</p>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="border-t border-slate-300 pt-3">
+                        <p class="text-xs font-bold text-slate-900">[Investor Name]</p>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">Strategic Investor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="absolute bottom-10 left-20 right-20 border-t border-slate-100 pt-4 flex justify-between items-center text-[9px] text-slate-400 font-bold uppercase tracking-widest">
+            <div>[Company Name] • Confidential LOI</div>
+            <div>[Contact Email] • [Contact Phone]</div>
+        </footer>
+    </div>
+
+</body>
+</html>

@@ -4,7 +4,7 @@
 ![Tests](https://img.shields.io/badge/tests-28%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 ![Pages](https://img.shields.io/badge/pages-39-blue)
-![AI Tools](https://img.shields.io/badge/AI%20tools-21%2B-purple)
+![AI Tools](https://img.shields.io/badge/AI%20tools-21%2B-blue)
 ![Deploy](https://img.shields.io/badge/live-accreditex.web.app-green)
 
 AccreditEx is a modern, AI-powered healthcare accreditation management platform designed to support hospitals and clinical laboratories throughout their accreditation journey. Built with a **live Firebase + Firestore backend** and deployed at **https://accreditex.web.app**, it streamlines the management of accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001), ensures traceability of all actions, and maintains compliance across the entire organization — in **English and Arabic** with full RTL support.
@@ -40,7 +40,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **QAPI Templates**: Pre-built Quality Assessment & Performance Improvement project templates.
 -   **Incident Reporting**: 5 lab-specific incident types with structured reporting workflows.
 
-### Laboratory Operations Module (NEW)
+### Laboratory Operations Module
 -   **Lab Operations Page**: 5-tab hub for laboratory compliance management.
 -   **CAP Assessment**: 11 CAP discipline assessments with 6-element evaluation framework (726 lines of functionality).
 -   **QC Data Import**: Import QC data from external systems with validation and trending (584-line UI + 378-line service).
@@ -63,14 +63,14 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **AI Execution Log Analysis**: Analyzes workflow execution patterns, failures, and health score.
 -   **AI Generate Action**: Configurable AI content generation as a workflow automation action.
 
-### Workflow Automation (NEW)
+### Workflow Automation
 -   **Trigger-Condition-Action Engine**: 10 entity types × 10 event types, 8 condition operators, 11 action types.
 -   **Visual Workflow Builder**: 4-step modal for creating workflows with real-time config.
 -   **Execution Logging**: Per-action status tracking with expandable log detail.
 -   **Template Gallery**: Pre-built workflow templates for common accreditation scenarios.
 -   **AI Integration**: AI-powered workflow suggestions, log analysis, and AI Generate action type.
 
-### Custom Report Builder (NEW)
+### Custom Report Builder
 -   **Section-Based Designer**: Visual builder with 6 block types (header, text, metric, chart, table, divider).
 -   **13 Data Sources**: Projects, documents, risks, audits, trainings, incidents, and more.
 -   **Live Preview**: Real-time chart/metric rendering with data from Zustand stores.
@@ -89,7 +89,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **Interactive Guided Tour**: Lightweight tooltip-based onboarding tour with 2 tour tracks (New User, Quality Manager), keyboard navigation, dark mode, and RTL support.
 -   **SEO Optimized**: Open Graph, Twitter Cards, JSON-LD structured data, dynamic meta descriptions for 17+ views, preconnect/DNS-prefetch hints.
 
-### Native Mobile (Capacitor 8.x) (NEW)
+### Native Mobile (Capacitor 8.x)
 -   **Cross-Platform Native Wrapper**: Single codebase deploys to Android (APK/AAB), iOS (IPA), and Web (PWA).
 -   **Native Camera Evidence Capture**: Take photos or pick from gallery directly within checklists via `@capacitor/camera`.
 -   **Push Notifications (FCM)**: 4 notification channels (task deadlines, audit reminders, document approvals, system alerts) with topic-based subscriptions.
@@ -111,7 +111,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **Charting**: Recharts
 -   **AI Integration**: Custom AI Agent Backend (Python FastAPI on Render — https://accreditex.onrender.com)
 -   **Routing**: React Router DOM 7.13.0 (34 routes including legacy redirects)
--   **Testing**: Jest + Playwright + React Testing Library (95% coverage)
+-   **Testing**: Jest + Playwright + React Testing Library (~50% coverage)
 
 ## Architectural Approach
 

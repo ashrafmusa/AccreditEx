@@ -124,16 +124,45 @@ const IncidentReportingTab: React.FC = () => {
                   report.type === "Near-Miss"
                     ? "text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full text-xs font-semibold inline-block"
                     : "";
+                const severityBadge =
+                  report.severity === "Sentinel Event"
+                    ? "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300"
+                    : report.severity === "Severe"
+                      ? "bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300"
+                      : report.severity === "Moderate"
+                        ? "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300"
+                        : "bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300";
+                const statusBadge =
+                  report.status === "Closed"
+                    ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300"
+                    : report.status === "Under Investigation"
+                      ? "bg-brand-primary/10 text-brand-primary dark:text-brand-primary"
+                      : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300";
                 return (
-                  <tr key={report.id}>
-                    <td className="px-6 py-4">
+                  <tr
+                    key={report.id}
+                    className="hover:bg-brand-background dark:hover:bg-dark-brand-background transition-colors"
+                  >
+                    <td className="px-6 py-4 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
                       {new Date(report.incidentDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 font-medium">
                       <span className={typeColorClass}>{report.type}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm">{report.severity}</td>
-                    <td className="px-6 py-4 text-sm">{report.status}</td>
+                    <td className="px-6 py-4 text-sm">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${severityBadge}`}
+                      >
+                        {report.severity}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-semibold ${statusBadge}`}
+                      >
+                        {report.status}
+                      </span>
+                    </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end items-center gap-2">
                         {canUpdate && (

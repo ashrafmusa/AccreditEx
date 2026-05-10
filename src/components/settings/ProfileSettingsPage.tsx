@@ -1,37 +1,37 @@
-import React, { useState, FormEvent } from "react";
-import { User, Department } from "../../types";
-import { useTranslation } from "../../hooks/useTranslation";
-import { useSettingsAudit } from "@/hooks/useSettingsAudit";
-import { useAppStore } from "../../stores/useAppStore";
-import SettingsCard from "./SettingsCard";
-import SettingsButton from "./SettingsButton";
-import SettingsAlert from "./SettingsAlert";
-import SettingsSection from "./SettingsSection";
-import ImageUpload from "./ImageUpload";
-import ActiveSessions from "./ActiveSessions";
-import { useToast } from "../../hooks/useToast";
-import { useUserStore } from "../../stores/useUserStore";
-import { cloudinaryService } from "../../services/cloudinaryService";
 import {
+  CalendarDaysIcon,
+  CheckCircleIcon,
   CheckIcon,
-  UserCircleIcon,
-  IdentificationIcon,
-  ShieldCheckIcon,
+  ClockIcon,
+  ExclamationTriangleIcon,
   EyeIcon,
   EyeSlashIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  ClockIcon,
+  IdentificationIcon,
   PhotoIcon,
-  CalendarDaysIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  UserCircleIcon,
 } from "@/components/icons";
-import {
-  SettingsPanel,
-  FormGroup,
-  AdvancedToggle,
-  EnhancedInput,
-} from "./index";
 import { useBeforeUnload } from "@/hooks/useBeforeUnload";
+import { useSettingsAudit } from "@/hooks/useSettingsAudit";
+import {
+  getAIDailyBriefingVisibility,
+  setAIDailyBriefingVisibility,
+} from "@/utils/dashboardPreferences";
+import React, { FormEvent, useState } from "react";
+import { useToast } from "../../hooks/useToast";
+import { useTranslation } from "../../hooks/useTranslation";
+import { cloudinaryService } from "../../services/cloudinaryService";
+import { useAppStore } from "../../stores/useAppStore";
+import { useUserStore } from "../../stores/useUserStore";
+import { User } from "../../types";
+import ActiveSessions from "./ActiveSessions";
+import ImageUpload from "./ImageUpload";
+import SettingsAlert from "./SettingsAlert";
+import SettingsButton from "./SettingsButton";
+import SettingsCard from "./SettingsCard";
+import SettingsSection from "./SettingsSection";
+import ToggleSwitch from "./ToggleSwitch";
 
 // Password strength calculator
 const calculatePasswordStrength = (
@@ -72,6 +72,9 @@ const ProfileSettingsPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(currentUser!.avatarUrl || "");
   const [avatarFile, setAvatarFile] = useState<File | undefined>(undefined);
+  const [showAIDailyBriefing, setShowAIDailyBriefing] = useState(
+    getAIDailyBriefingVisibility(currentUser!.id),
+  );
   const [loading, setLoading] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   useBeforeUnload(hasChanges);
@@ -247,6 +250,7 @@ const ProfileSettingsPage: React.FC = () => {
     setConfirmPassword("");
     setAvatarUrl(currentUser!.avatarUrl || "");
     setAvatarFile(undefined);
+    setShowAIDailyBriefing(getAIDailyBriefingVisibility(currentUser!.id));
     setHasChanges(false);
     setShowPassword(false);
     setShowConfirmPassword(false);
@@ -606,6 +610,35 @@ const ProfileSettingsPage: React.FC = () => {
                 />
               )}
             </div>
+          </SettingsSection>
+
+          <SettingsSection
+            title={t("dashboardPreferences") || "Dashboard Preferences"}
+            description={
+              t("dashboardPreferencesDescription") ||
+              "Personalize which dashboard widgets you see."
+            }
+            icon={SparklesIcon}
+          >
+            <ToggleSwitch
+              label={
+                t("showAIDailyBriefingWidget") ||
+                "Show AI Daily Briefing widget"
+              }
+              description={
+                t("showAIDailyBriefingWidgetDescription") ||
+                "Display the AI Daily Briefing card near the top of your dashboard."
+              }
+              enabled={showAIDailyBriefing}
+              setEnabled={(enabled) => {
+                setShowAIDailyBriefing(enabled);
+                setAIDailyBriefingVisibility(currentUser!.id, enabled);
+                toast.success(
+                  t("dashboardPreferencesSaved") ||
+                    "Dashboard preference saved.",
+                );
+              }}
+            />
           </SettingsSection>
 
           {/* Additional Info */}

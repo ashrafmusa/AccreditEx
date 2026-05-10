@@ -1,10 +1,13 @@
 import {
   AcademicCapIcon,
+  ArrowPathIcon,
   BeakerIcon,
   BoltIcon,
   BookOpenIcon,
+  BriefcaseIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
+  ChartBarIcon,
   ChartBarSquareIcon,
   ChartPieIcon,
   ChatBubbleLeftEllipsisIcon,
@@ -15,6 +18,7 @@ import {
   DocumentTextIcon,
   ExclamationTriangleIcon,
   FolderIcon,
+  ListBulletIcon,
   LogoIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -43,6 +47,7 @@ interface NavItemData {
   label: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   adminOnly?: boolean;
+  auditorAllowed?: boolean;
 }
 
 const NavItem: React.FC<{
@@ -107,16 +112,16 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: ChartPieIcon,
     },
     {
+      nav: { view: "accreditationHub" },
+      key: "accreditationHub",
+      label: t("accreditationHub"),
+      icon: ShieldCheckIcon,
+    },
+    {
       nav: { view: "analyticsHub" },
       key: "analyticsHub",
       label: t("analyticsHub") || "Analytics",
       icon: ChartBarSquareIcon,
-    },
-    {
-      nav: { view: "calendar" },
-      key: "calendar",
-      label: t("calendar"),
-      icon: CalendarDaysIcon,
     },
     {
       nav: { view: "projects" },
@@ -131,12 +136,6 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: DocumentTextIcon,
     },
     {
-      nav: { view: "messaging" },
-      key: "messaging",
-      label: t("messages"),
-      icon: ChatBubbleLeftEllipsisIcon,
-    },
-    {
       nav: { view: "riskHub" },
       key: "riskHub",
       label: t("riskHub"),
@@ -148,13 +147,7 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       label: t("auditHub"),
       icon: ClipboardDocumentSearchIcon,
       adminOnly: true,
-    },
-    {
-      nav: { view: "dataHub" },
-      key: "dataHub",
-      label: t("dataHub"),
-      icon: CircleStackIcon,
-      adminOnly: true,
+      auditorAllowed: true,
     },
     {
       nav: { view: "trainingHub" },
@@ -163,10 +156,10 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       icon: AcademicCapIcon,
     },
     {
-      nav: { view: "accreditationHub" },
-      key: "accreditationHub",
-      label: t("accreditationHub"),
-      icon: ShieldCheckIcon,
+      nav: { view: "myTasks" },
+      key: "myTasks",
+      label: t("myTasks") || "My Tasks",
+      icon: ListBulletIcon,
     },
     {
       nav: { view: "qualityTools" },
@@ -179,6 +172,31 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       key: "knowledgeBase",
       label: t("knowledgeBase") || "Knowledge Base",
       icon: BookOpenIcon,
+    },
+    {
+      nav: { view: "calendar" },
+      key: "calendar",
+      label: t("calendar"),
+      icon: CalendarDaysIcon,
+    },
+    {
+      nav: { view: "messaging" },
+      key: "messaging",
+      label: t("messages"),
+      icon: ChatBubbleLeftEllipsisIcon,
+    },
+    {
+      nav: { view: "templateLibrary" },
+      key: "templateLibrary",
+      label: t("templateLibrary") || "Template Library",
+      icon: Squares2X2Icon,
+    },
+    {
+      nav: { view: "dataHub" },
+      key: "dataHub",
+      label: t("dataHub"),
+      icon: CircleStackIcon,
+      adminOnly: true,
     },
     {
       nav: { view: "labOperations" },
@@ -209,10 +227,26 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
       adminOnly: true,
     },
     {
-      nav: { view: "templateLibrary" },
-      key: "templateLibrary",
-      label: t("templateLibrary") || "Template Library",
-      icon: Squares2X2Icon,
+      nav: { view: "reportBuilder" },
+      key: "reportBuilder",
+      label: t("reportBuilder") || "Report Builder",
+      icon: ChartBarIcon,
+      adminOnly: true,
+      auditorAllowed: true,
+    },
+    {
+      nav: { view: "supplierHub" },
+      key: "supplierHub",
+      label: t("supplierHub") || "Suppliers",
+      icon: BriefcaseIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "changeControlHub" },
+      key: "changeControlHub",
+      label: t("changeControl") || "Change Control",
+      icon: ArrowPathIcon,
+      adminOnly: true,
     },
   ];
 
@@ -225,11 +259,16 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
     },
   ];
 
+  const isAuditor = currentUser?.role?.toLowerCase() === "auditor";
   const visibleNavItems = allNavItems.filter(
-    (item) => (!item.adminOnly || isAdmin) && isNavKeyEnabled(item.key),
+    (item) =>
+      (!item.adminOnly || isAdmin || (item.auditorAllowed && isAuditor)) &&
+      isNavKeyEnabled(item.key),
   );
   const visibleBottomNavItems = bottomNavItems.filter(
-    (item) => (!item.adminOnly || isAdmin) && isNavKeyEnabled(item.key),
+    (item) =>
+      (!item.adminOnly || isAdmin || (item.auditorAllowed && isAuditor)) &&
+      isNavKeyEnabled(item.key),
   );
 
   const isActive = (key: string) => {

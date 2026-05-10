@@ -616,6 +616,11 @@ export const en = {
     atLeastOneSpecialChar: 'At least one special character',
     passwordMinLength: 'Password must be at least 8 characters long',
     passwordsDoNotMatch: 'Passwords do not match',
+    dashboardPreferences: 'Dashboard Preferences',
+    dashboardPreferencesDescription: 'Control which widgets appear on your personal dashboard.',
+    showAIDailyBriefingWidget: 'Show AI Daily Briefing widget',
+    showAIDailyBriefingWidgetDescription: 'Display the AI Daily Briefing card near the top of your dashboard.',
+    dashboardPreferencesSaved: 'Dashboard preference saved.',
 
     // Notification Settings Page
     unsavedNotificationChanges: 'You have unsaved notification changes',
@@ -681,7 +686,6 @@ export const en = {
     noOrganizationLoaded: 'No organization loaded.',
     changesSaved: 'Changes saved successfully.',
     saveChanges: 'Save Changes',
-    saving: 'Saving...',
     dismiss: 'Dismiss',
     email: 'Email',
     location: 'Location',
@@ -732,11 +736,15 @@ export const en = {
     loadingOrgs: 'Loading organizations...',
     // Settings sidebar category labels
     settingsCategoryPersonal: 'Personal',
-    settingsCategoryOrganization: 'Organization',
-    settingsCategoryPeople: 'People',
+    settingsCategoryOrganization: 'Workspace',
+    settingsCategoryPeople: 'People & Teams',
     settingsCategoryQuality: 'Quality & Compliance',
     settingsCategoryIntegrations: 'Integrations',
-    settingsCategoryAdministration: 'Administration',
+    settingsCategoryAdministration: 'Security & Data',
+    settingsCategoryMonitoring: 'Monitoring',
     settingsCategoryPlatform: 'Platform',
     settingsCategorySystem: 'System',
+    hisIntegration: 'HIS Integration',
+    brandingAndAppearance: 'Branding & Appearance',
+    usageAndMonitoring: 'Usage & Monitoring',
 };

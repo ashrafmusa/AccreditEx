@@ -1,25 +1,35 @@
-import React from "react";
-import { NavigationState } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
 import {
-  ChartPieIcon,
-  ChartBarSquareIcon,
-  LightBulbIcon,
-  CalendarDaysIcon,
-  FolderIcon,
-  DocumentTextIcon,
-  ClipboardDocumentCheckIcon,
-  ExclamationTriangleIcon,
-  ClipboardDocumentSearchIcon,
-  CircleStackIcon,
-  BuildingOffice2Icon,
   AcademicCapIcon,
-  ShieldCheckIcon,
+  ArrowPathIcon,
+  BeakerIcon,
+  BoltIcon,
+  BookOpenIcon,
+  BuildingOffice2Icon,
+  CalendarDaysIcon,
+  ChartBarIcon,
+  ChartBarSquareIcon,
+  ChartPieIcon,
+  ChatBubbleLeftEllipsisIcon,
+  CircleStackIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
+  ClipboardDocumentSearchIcon,
   Cog6ToothIcon,
-  UsersIcon,
+  CubeIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
   GlobeAltIcon,
   IdentificationIcon,
+  LightBulbIcon,
+  ShieldCheckIcon,
+  SparklesIcon,
+  Squares2X2Icon,
+  UsersIcon,
 } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import { NavigationState } from "@/types";
+import React from "react";
 
 interface HeaderTitleProps {
   navigation: NavigationState;
@@ -27,7 +37,7 @@ interface HeaderTitleProps {
 
 const viewToIconMap: Record<string, React.FC<any>> = {
   dashboard: ChartPieIcon,
-  analytics: ChartBarSquareIcon,
+  analyticsHub: ChartBarSquareIcon,
   qualityInsights: LightBulbIcon,
   calendar: CalendarDaysIcon,
   projects: FolderIcon,
@@ -36,7 +46,7 @@ const viewToIconMap: Record<string, React.FC<any>> = {
   editProject: FolderIcon,
   documentControl: DocumentTextIcon,
   myTasks: ClipboardDocumentCheckIcon,
-  risk: ExclamationTriangleIcon,
+  riskHub: ExclamationTriangleIcon,
   auditHub: ClipboardDocumentSearchIcon,
   dataHub: CircleStackIcon,
   departments: BuildingOffice2Icon,
@@ -45,10 +55,23 @@ const viewToIconMap: Record<string, React.FC<any>> = {
   trainingDetail: AcademicCapIcon,
   certificate: AcademicCapIcon,
   standards: ShieldCheckIcon,
+  accreditationHub: ShieldCheckIcon,
   mockSurvey: ClipboardDocumentSearchIcon,
   surveyReport: ClipboardDocumentSearchIcon,
   settings: Cog6ToothIcon,
   userProfile: UsersIcon,
+  messaging: ChatBubbleLeftEllipsisIcon,
+  knowledgeBase: BookOpenIcon,
+  labOperations: BeakerIcon,
+  workflowAutomation: BoltIcon,
+  reportBuilder: ChartBarIcon,
+  supplierHub: CubeIcon,
+  changeControlHub: ArrowPathIcon,
+  multiFacility: GlobeAltIcon,
+  qualityRounding: ClipboardDocumentListIcon,
+  qualityTools: SparklesIcon,
+  templateLibrary: Squares2X2Icon,
+  pricing: ShieldCheckIcon,
 };
 
 const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
@@ -135,13 +158,17 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
         titleText = t("surveyReport");
         break;
       case "analytics":
+      case "analyticsHub":
         titleText = t("analyticsHub");
+        viewKey = "analyticsHub";
         break;
       case "calendar":
         titleText = t("complianceCalendar");
         break;
       case "risk":
+      case "riskHub":
         titleText = t("riskHubTitle");
+        viewKey = "riskHub";
         break;
       case "auditHub":
         titleText = t("auditHub");
@@ -154,6 +181,48 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
         break;
       case "dataHub":
         titleText = t("dataHub");
+        break;
+      case "accreditationHub":
+        titleText = t("accreditationHubTitle");
+        break;
+      case "messaging":
+        titleText = t("messaging") || "Messaging";
+        break;
+      case "knowledgeBase":
+        titleText = t("knowledgeBase") || "Knowledge Base";
+        break;
+      case "labOperations":
+        titleText = t("labOperations") || "Lab Operations";
+        break;
+      case "workflowAutomation":
+        titleText = t("workflowAutomation") || "Workflow Automation";
+        break;
+      case "reportBuilder":
+        titleText = t("reportBuilder") || "Report Builder";
+        break;
+      case "supplierHub":
+        titleText = t("supplierHub") || "Supplier Hub";
+        break;
+      case "changeControlHub":
+        titleText = t("changeControlHub") || "Change Control";
+        break;
+      case "multiFacility":
+        titleText = t("multiFacility") || "Multi-Facility";
+        break;
+      case "qualityRounding":
+        titleText = t("qualityRounding") || "Quality Rounding";
+        break;
+      case "qualityTools":
+        titleText = t("qualityTools") || "Quality Tools";
+        break;
+      case "questionBank":
+        titleText = t("knowledgeBase") || "Knowledge Base";
+        break;
+      case "templateLibrary":
+        titleText = t("templateLibrary") || "Template Library";
+        break;
+      case "pricing":
+        titleText = t("pricing") || "Pricing";
         break;
       default:
         titleText = "AccreditEx";

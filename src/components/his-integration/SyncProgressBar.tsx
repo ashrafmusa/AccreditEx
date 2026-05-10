@@ -3,7 +3,7 @@
  * Shows real-time progress of HIS data synchronization
  */
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSync } from "../../hooks/useHISIntegration";
 
 interface SyncProgressBarProps {
@@ -93,18 +93,18 @@ export function SyncProgressBar({
   };
 
   return (
-    <div className="space-y-3 p-4 border rounded-lg bg-gray-50">
+    <div className="space-y-3 p-4 border dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
       {/* Progress Bar */}
       <div>
         <div className="flex justify-between items-center mb-2">
-          <span className="text-sm font-medium text-gray-700">
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
             Sync Progress
           </span>
-          <span className="text-xs font-semibold text-gray-600">
+          <span className="text-xs font-semibold text-gray-600 dark:text-gray-400">
             {syncProgress}%
           </span>
         </div>
-        <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
           <div
             className={`h-full ${getStatusColor()} transition-all duration-300`}
             style={{ width: getProgressWidth() }}

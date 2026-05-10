@@ -1,9 +1,15 @@
 import { Button } from "@/components/ui";
-import React, { useState } from "react";
+import { useUserStore } from "@/stores/useUserStore";
+import { UserRole } from "@/types";
+import React, { useMemo, useState } from "react";
 import {
+  ChartBarIcon,
   ChartPieIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ClipboardDocumentCheckIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
   FolderIcon,
   LogoIcon,
   ShieldCheckIcon,
@@ -16,42 +22,122 @@ interface OnboardingPageProps {
   onComplete: () => void;
 }
 
+// Role badge config
+const ROLE_BADGE: Record<
+  string,
+  { label: string; labelAr: string; color: string }
+> = {
+  [UserRole.Admin]: {
+    label: "Administrator",
+    labelAr: "مسؤول النظام",
+    color: "bg-brand-primary text-white",
+  },
+  [UserRole.ProjectLead]: {
+    label: "Project Lead",
+    labelAr: "قائد المشروع",
+    color: "bg-sky-600 text-white",
+  },
+  [UserRole.TeamMember]: {
+    label: "Team Member",
+    labelAr: "عضو الفريق",
+    color: "bg-emerald-600 text-white",
+  },
+  [UserRole.Auditor]: {
+    label: "Auditor",
+    labelAr: "مدقق",
+    color: "bg-orange-600 text-white",
+  },
+  [UserRole.Viewer]: {
+    label: "Viewer",
+    labelAr: "مشاهد",
+    color: "bg-slate-600 text-white",
+  },
+};
+
 const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) => {
   const { t, dir } = useTranslation();
+  const { currentUser } = useUserStore();
   const [step, setStep] = useState(0);
 
-  const steps = [
-    {
+  const role = currentUser?.role;
+  const badge = role ? ROLE_BADGE[role] : null;
+
+  // Role-specific steps — shared base + role-tailored extras
+  const steps = useMemo(() => {
+    const welcome = {
       icon: LogoIcon,
       titleKey: "welcomeToAccreditEx" as const,
       descriptionKey: "onboardingWelcomeMessage" as const,
-    },
-    {
+    };
+    const dashboard = {
       icon: ChartPieIcon,
       titleKey: "onboardingDashboardTitle" as const,
       descriptionKey: "onboardingDashboardMessage" as const,
-    },
-    {
+    };
+    const projects = {
       icon: FolderIcon,
       titleKey: "onboardingProjectsTitle" as const,
       descriptionKey: "onboardingProjectsMessage" as const,
-    },
-    {
+    };
+    const accreditation = {
       icon: ShieldCheckIcon,
       titleKey: "onboardingAccreditationTitle" as const,
       descriptionKey: "onboardingAccreditationMessage" as const,
-    },
-    {
+    };
+    const users = {
       icon: UsersIcon,
       titleKey: "onboardingUsersTitle" as const,
       descriptionKey: "onboardingUsersMessage" as const,
-    },
-    {
+    };
+    const ai = {
       icon: SparklesIcon,
       titleKey: "onboardingAiTitle" as const,
       descriptionKey: "onboardingAiMessage" as const,
-    },
-  ];
+    };
+    const auditHub = {
+      icon: ClipboardDocumentCheckIcon,
+      titleKey: "tourAuditHubTitle" as const,
+      descriptionKey: "tourAuditHubDesc" as const,
+    };
+    const riskHub = {
+      icon: ExclamationTriangleIcon,
+      titleKey: "tourRiskHubTitle" as const,
+      descriptionKey: "tourRiskHubDesc" as const,
+    };
+    const analytics = {
+      icon: ChartBarIcon,
+      titleKey: "tourAnalyticsTitle" as const,
+      descriptionKey: "tourAnalyticsDesc" as const,
+    };
+    const documents = {
+      icon: DocumentTextIcon,
+      titleKey: "tourDocumentsTitle" as const,
+      descriptionKey: "tourDocumentsDesc" as const,
+    };
+    const training = {
+      icon: UsersIcon,
+      titleKey: "tourTrainingTitle" as const,
+      descriptionKey: "tourTrainingDesc" as const,
+    };
+
+    if (role === UserRole.Admin) {
+      return [welcome, dashboard, projects, users, accreditation, ai];
+    }
+    if (role === UserRole.ProjectLead) {
+      return [welcome, dashboard, projects, documents, auditHub, ai];
+    }
+    if (role === UserRole.TeamMember) {
+      return [welcome, dashboard, projects, documents, training, ai];
+    }
+    if (role === UserRole.Auditor) {
+      return [welcome, dashboard, auditHub, riskHub, analytics, ai];
+    }
+    if (role === UserRole.Viewer) {
+      return [welcome, dashboard, analytics, accreditation, riskHub, ai];
+    }
+    // Default (unknown role)
+    return [welcome, dashboard, projects, accreditation, users, ai];
+  }, [role]);
 
   const CurrentIcon = steps[step].icon;
   const isLastStep = step === steps.length - 1;
@@ -63,7 +149,16 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) => {
     <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background flex flex-col items-center justify-center p-4 transition-colors duration-300">
       <div className="w-full max-w-2xl bg-brand-surface dark:bg-dark-brand-surface rounded-2xl shadow-2xl overflow-hidden animate-[scaleIn_0.5s_ease-out_forwards]">
         <div className="p-8 sm:p-12 text-center">
-          <div className="flex justify-end mb-4">
+          <div className="flex items-center justify-between mb-4">
+            {badge ? (
+              <span
+                className={`text-xs font-semibold px-3 py-1 rounded-full ${badge.color}`}
+              >
+                {dir === "rtl" ? badge.labelAr : badge.label}
+              </span>
+            ) : (
+              <span />
+            )}
             <button
               onClick={onComplete}
               className="text-sm text-brand-text-secondary hover:text-brand-primary dark:text-dark-brand-text-secondary dark:hover:text-brand-primary underline transition-colors"
@@ -75,7 +170,9 @@ const OnboardingPage: React.FC<OnboardingPageProps> = ({ onComplete }) => {
           <div key={step} className="animate-[fadeInUp_0.5s_ease-out]">
             <CurrentIcon className="w-16 h-16 mx-auto text-brand-primary" />
             <h1 className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-6">
-              {t(steps[step].titleKey)}
+              {step === 0 && currentUser?.name
+                ? `${t(steps[step].titleKey)} ${currentUser.name.split(" ")[0]} 👋`
+                : t(steps[step].titleKey)}
             </h1>
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-4 max-w-md mx-auto">
               {t(steps[step].descriptionKey)}

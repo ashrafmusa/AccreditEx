@@ -42,8 +42,9 @@ export const routes: RouteConfig[] = [
     // Standards
     { path: "/programs/:programId/standards", view: "standards", requiresAuth: true },
 
-    // Tasks (redirects to dashboard)
+    // Tasks
     { path: "/tasks", view: "dashboard", requiresAuth: true },
+    { path: "/my-tasks", view: "myTasks", requiresAuth: true },
 
     // Departments
     { path: "/departments", view: "departments", requiresAuth: true, requiresAdmin: true },
@@ -180,6 +181,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/quality-rounding";
         case "qualityTools":
             return "/quality-tools";
+        case "myTasks":
+            return "/my-tasks";
         case "workflowAutomation":
             return "/workflow-automation";
         case "qualityInsights":
@@ -219,6 +222,7 @@ export const pathToNavigationState = (
     if (path === "/audit") return { view: "auditHub" };
     if (path === "/documents") return { view: "documentControl" };
     if (path === "/tasks") return { view: "dashboard" };
+    if (path === "/my-tasks") return { view: "myTasks" };
     if (path === "/departments") return { view: "departments" };
     if (path === "/settings") return { view: "settings" };
     if (path === "/training") return { view: "trainingHub" };

@@ -1,16 +1,19 @@
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
+import AIDailyBriefingWidget from "@/components/dashboard/AIDailyBriefingWidget";
 import AuditorDashboard from "@/components/dashboard/AuditorDashboard";
 import ClinicDashboard from "@/components/dashboard/ClinicDashboard";
 import MyTasksWidget from "@/components/dashboard/MyTasksWidget";
 import ProjectLeadDashboard from "@/components/dashboard/ProjectLeadDashboard";
 import TeamMemberDashboard from "@/components/dashboard/TeamMemberDashboard";
+import ViewerDashboard from "@/components/dashboard/ViewerDashboard";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState, Risk, UserRole } from "@/types";
+import { getAIDailyBriefingVisibility } from "@/utils/dashboardPreferences";
 import { normalizeUserRole } from "@/utils/roleAccess";
 import React from "react";
 
@@ -31,6 +34,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   const normalizedRole = currentUser
     ? (normalizeUserRole(currentUser.role) as UserRole)
     : null;
+  const showAIDailyBriefing = React.useMemo(
+    () => getAIDailyBriefingVisibility(currentUser?.id),
+    [currentUser?.id],
+  );
 
   const discoverabilityActions = React.useMemo(() => {
     if (!normalizedRole)
@@ -47,22 +54,28 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
             navigation: { view: "myTasks" },
           },
           {
-            label: t("standards") || "Standards",
-            navigation: { view: "standards" },
+            label: t("accreditationHub") || "Accreditation Hub",
+            navigation: { view: "accreditationHub" },
           },
-          { label: t("reports") || "Reports", navigation: { view: "reports" } },
+          {
+            label: t("analyticsHub") || "Analytics",
+            navigation: { view: "analyticsHub" },
+          },
         ];
       case UserRole.Auditor:
         return [
           {
-            label: t("auditPlans") || "Audit Plans",
-            navigation: { view: "audits" },
+            label: t("auditHub") || "Audit Hub",
+            navigation: { view: "auditHub" },
           },
           {
-            label: t("compliance") || "Compliance",
-            navigation: { view: "compliance" },
+            label: t("riskHub") || "Risk Hub",
+            navigation: { view: "riskHub" },
           },
-          { label: t("reports") || "Reports", navigation: { view: "reports" } },
+          {
+            label: t("analyticsHub") || "Analytics",
+            navigation: { view: "analyticsHub" },
+          },
         ];
       case UserRole.Viewer:
         return [
@@ -74,7 +87,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
             label: t("projects") || "Projects",
             navigation: { view: "projects" },
           },
-          { label: t("reports") || "Reports", navigation: { view: "reports" } },
+          {
+            label: t("analyticsHub") || "Analytics",
+            navigation: { view: "analyticsHub" },
+          },
         ];
       default:
         return [];
@@ -148,16 +164,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
       case UserRole.TeamMember:
         return <TeamMemberDashboard setNavigation={setNavigation} />;
       case UserRole.Viewer:
-        return (
-          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
-            <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-              {t("dashboard")}
-            </h1>
-            <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              {t("welcomeBack").replace("{name}", currentUser.name)}
-            </p>
-          </div>
-        );
+        return <ViewerDashboard setNavigation={setNavigation} />;
       default:
         return (
           <div className="text-center p-8">
@@ -174,6 +181,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
     <ErrorBoundary>
       <div className="space-y-6">
         {renderDashboard()}
+        {showAIDailyBriefing && (
+          <AIDailyBriefingWidget setNavigation={setNavigation} />
+        )}
         {discoverabilityActions.length > 0 && (
           <section
             aria-label={t("quickNavigation") || "Quick navigation"}

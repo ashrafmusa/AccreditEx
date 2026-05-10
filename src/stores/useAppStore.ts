@@ -1,25 +1,26 @@
 import { AppError, handleError } from '@/services/errorHandling';
 import { logger } from '@/services/logger';
 import {
-  AccreditationProgram,
-  AppDocument,
-  AppSettings,
-  Audit,
-  AuditPlan,
-  CertificateData,
-  Competency,
-  CustomCalendarEvent,
-  Department,
-  IncidentReport,
-  Risk,
-  Standard,
-  TrainingProgram,
-  UserTrainingStatus
+    AccreditationProgram,
+    AppDocument,
+    AppSettings,
+    Audit,
+    AuditPlan,
+    CertificateData,
+    Competency,
+    CustomCalendarEvent,
+    Department,
+    IncidentReport,
+    Risk,
+    Standard,
+    TrainingProgram,
+    UserTrainingStatus
 } from '@/types';
 import { ProjectTemplate } from '@/types/templates';
 import { create } from 'zustand';
 // MIGRATION: Replaced BackendService with Firebase services
 import { generateProjectTemplates } from '@/data/projectTemplates';
+import { getAuthInstance } from '@/firebase/firebaseConfig';
 import { addAccreditationProgram, deleteAccreditationProgram, getAccreditationPrograms, updateAccreditationProgram } from '@/services/accreditationProgramService';
 import { ActivityLogger } from '@/services/activityLogService';
 import { getAppSettings, updateAppSettings as updateAppSettingsInFirebase } from '@/services/appSettingsService';
@@ -194,6 +195,24 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   fetchAllData: async () => {
     try {
+      const auth = getAuthInstance();
+      if (!auth.currentUser) {
+        // Public/login routes should not fetch protected collections.
+        set({
+          appSettings: null,
+          standards: [],
+          competencies: [],
+          departments: [],
+          accreditationPrograms: [],
+          trainingPrograms: [],
+          risks: [],
+          documents: [],
+          initializationError: null,
+          projectTemplates: []
+        });
+        return;
+      }
+
       // Fetch all data concurrently using Promise.allSettled to allow partial success
       const results = await Promise.allSettled([
         getAppSettings(),

@@ -37,6 +37,22 @@ export function isPlanSufficient(
 }
 
 /**
+ * Returns the effective plan tier for an organization, accounting for trial expiry.
+ * If a trial has expired, the plan downgrades to 'free' until a paid subscription
+ * is activated.
+ */
+export function getEffectivePlan(org: Organization): PlanTier {
+    const plan: PlanTier = org.plan || 'free';
+    if (org.trialActive && org.trialEndsAt) {
+        const endDate = new Date(org.trialEndsAt);
+        if (endDate < new Date()) {
+            return 'free';
+        }
+    }
+    return plan;
+}
+
+/**
  * Resolve the set of enabled modules for an organization.
  *
  * Resolution order:
@@ -58,7 +74,7 @@ export function resolveEnabledModules(
         return new Set(Object.keys(MODULE_REGISTRY) as ModuleId[]);
     }
 
-    const plan: PlanTier = org.plan || 'free';
+    const plan: PlanTier = getEffectivePlan(org);
     const orgType = org.type || 'other';
 
     // 1. Core modules (always on)

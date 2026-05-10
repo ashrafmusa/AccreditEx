@@ -1,7 +1,7 @@
 import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import { User } from '@/types';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { collection, deleteDoc, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { create } from 'zustand';
 // MIGRATION: Replaced BackendService with Firebase services
 import { analytics } from '@/services/analyticsTrackingService';
@@ -39,38 +39,59 @@ export const useUserStore = create<UserState>((set, get) => ({
     set({ users });
   },
   login: async (email, password) => {
-    try {
-      const auth = getAuthInstance();
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+    const auth = getAuthInstance();
+    let firebaseUser;
 
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      firebaseUser = userCredential.user;
+    } catch (error) {
+      // Bubble up auth failures so UI can show the right message
+      throw error;
+    }
+
+    // Track login immediately after successful authentication.
+    analytics.trackLogin('email');
+
+    // Hydrate the Zustand store immediately after successful auth.
+    // Try UID-keyed doc first (fast path), then fall back to email query.
+    try {
+      // Fast path: document keyed by Auth UID
+      const uidDocRef = doc(db, 'users', firebaseUser.uid);
+      const directSnap = await getDoc(uidDocRef);
+
+      if (directSnap.exists()) {
+        const user = { ...directSnap.data(), id: directSnap.id } as User;
+        set({ currentUser: user });
+        useTenantStore.getState().loadOrganizationForUser(user.organizationId);
+        deviceSessionService.createOrUpdateSession(user.id).catch(err =>
+          logger.warn('Failed to track session', err)
+        );
+        return user;
+      }
+
+      // Fallback: email query (legacy users with non-UID document IDs)
       if (firebaseUser.email) {
-        // The onAuthStateChanged listener in firebaseHooks will handle fetching 
-        // from Firestore and setting the current user.
-        // We just need to find the user to return it immediately for any post-login actions.
         const usersRef = collection(db, 'users');
-        const q = query(usersRef, where("email", "==", firebaseUser.email));
+        const q = query(usersRef, where('email', '==', firebaseUser.email));
         const querySnapshot = await getDocs(q);
 
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const user = { ...userDoc.data(), id: userDoc.id } as User;
-
-          // Track device session (non-blocking)
+          set({ currentUser: user });
+          useTenantStore.getState().loadOrganizationForUser(user.organizationId);
           deviceSessionService.createOrUpdateSession(user.id).catch(err =>
             logger.warn('Failed to track session', err)
           );
-
-          // Track login event
-          analytics.trackLogin('email');
-
           return user;
         }
       }
-      return null;
     } catch (error) {
-      return null;
+      logger.warn('[useUserStore.login] Post-auth profile lookup failed; deferring to auth listener.', error);
     }
+
+    return null;
   },
   logout: async () => {
     const currentUser = get().currentUser;

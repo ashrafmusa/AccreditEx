@@ -54,6 +54,10 @@ const CommandPalette: FC<CommandPaletteProps> = ({
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
+  const getDocumentName = (doc: AppDocument): string => {
+    return doc.name?.[lang] || doc.name?.en || doc.name?.ar || doc.id;
+  };
+
   // Load recent searches from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("accreditex_recent_searches");
@@ -121,12 +125,10 @@ const CommandPalette: FC<CommandPaletteProps> = ({
     if (activeFilter === "all" || activeFilter === "documents") {
       results.push(
         ...documents
-          .filter((d) =>
-            (d.name[lang] || d.name.en).toLowerCase().includes(lowerSearch),
-          )
+          .filter((d) => getDocumentName(d).toLowerCase().includes(lowerSearch))
           .map((d) => ({
             type: "documents" as FilterType,
-            name: d.name[lang] || d.name.en,
+            name: getDocumentName(d),
             subtitle: d.status,
             link: () =>
               setNavigation({ view: "documentControl", documentId: d.id }),

@@ -1,5 +1,6 @@
 import ChartSkeleton from "@/components/common/ChartSkeleton";
 import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import StatCard from "@/components/common/StatCard";
 import StatCardSkeleton from "@/components/common/StatCardSkeleton";
 import { useTheme } from "@/components/common/ThemeProvider";
@@ -57,11 +58,15 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import DashboardHeader from "./DashboardHeader";
-// FIX: Corrected import path for CapaListItem
-import { ErrorBoundary } from "@/components/common/ErrorBoundary";
+import AuditReadinessCard from "./AuditReadinessCard";
 import CapaListItem from "./CapaListItem";
+import DashboardAlertsBanner from "./DashboardAlertsBanner";
+import DashboardHeader from "./DashboardHeader";
+import OverdueTasksWidget from "./OverdueTasksWidget";
 import PendingApprovalsWidget from "./PendingApprovalsWidget";
+import QuickActionsWidget from "./QuickActionsWidget";
+import ReadinessCountdownWidget from "./ReadinessCountdownWidget";
+import RecentItemsWidget from "./RecentItemsWidget";
 import { FeatureDiscoveryWidget } from "./widgets/FeatureDiscoveryWidget";
 
 interface DashboardPageProps {
@@ -101,8 +106,8 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
   const { users } = useUserStore();
   const { documents, auditPlans, audits } = useAppStore();
 
-  // Loading state - simulate loading for first 1.5 seconds
-  const [isLoading, setIsLoading] = useState(true);
+  // Loading state — driven by store data availability, no artificial delay
+  const [isLoading, setIsLoading] = useState(false);
   const [cycleGuideDismissed, setCycleGuideDismissed] = useState<boolean>(
     () => {
       try {
@@ -126,11 +131,6 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       }
     },
   );
-
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     try {
@@ -498,7 +498,7 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       <div className="space-y-6">
         <DashboardHeader
           setNavigation={setNavigation}
-          title={t("welcomeBack")}
+          title={`${t("welcomeBack")}!`}
           greeting={t("dashboardGreeting")}
           onExport={handleExportMetrics}
           roleShortcuts={[
@@ -517,52 +517,24 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
           ]}
         />
 
-        {/* Feature Discovery Widget - Added to top for visibility */}
+        {/* Smart Alerts Banner */}
+        {!isLoading && (
+          <DashboardAlertsBanner
+            openCapaCount={dashboardData.openCapaCount}
+            documentsReviewOverdue={dashboardData.documentsReviewOverdue}
+            riskExposure={dashboardData.riskExposure}
+            upcomingDeadlinesCount={dashboardData.upcomingDeadlinesCount}
+            setNavigation={setNavigation}
+          />
+        )}
+
+        {/* Feature Discovery Widget */}
         <div>
           <FeatureDiscoveryWidget setNavigation={setNavigation} />
         </div>
 
-        {/* Quick Actions - Click-depth reduction for high-frequency admin journeys */}
-        <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-xl border border-brand-border dark:border-dark-brand-border shadow-sm">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-              {t("quickActions") || "Quick Actions"}
-            </h2>
-            <span className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              {t("priorityActions") || "Priority Actions"}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <button
-              onClick={() => setNavigation({ view: "auditHub" })}
-              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
-            >
-              {t("scheduleAudit") || "Schedule Audit"}
-            </button>
-            <button
-              onClick={() => setNavigation({ view: "reportBuilder" })}
-              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
-            >
-              {t("reportBuilder") || "Report Builder"}
-            </button>
-            <button
-              onClick={() =>
-                setNavigation({ view: "documentControl", filter: "overdue" })
-              }
-              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
-            >
-              {t("documentsReviewOverdue") || "Overdue Document Reviews"}
-            </button>
-            <button
-              onClick={() =>
-                setNavigation({ view: "projects", filter: "openCapa" })
-              }
-              className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border text-left hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 transition-colors"
-            >
-              {t("openCapaReports") || "Open CAPA Reports"}
-            </button>
-          </div>
-        </div>
+        {/* Quick Actions - Icon cards (using rich QuickActionsWidget) */}
+        <QuickActionsWidget setNavigation={setNavigation} />
 
         {/* Loading State for Stats Cards */}
         {isLoading ? (
@@ -671,43 +643,16 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
               />
             </div>
 
-            <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                    {t("qualityQuickActions")}
-                  </h3>
-                  <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                    {t("qualityQuickActionsDesc")}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => setNavigation({ view: "analyticsHub" })}
-                    className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
-                  >
-                    {t("openQualityInsights")}
-                  </button>
-                  <button
-                    onClick={() => setNavigation({ view: "auditHub" })}
-                    className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
-                  >
-                    {t("openAuditHub")}
-                  </button>
-                  <button
-                    onClick={() => setNavigation({ view: "standards" })}
-                    className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
-                  >
-                    {t("openStandards")}
-                  </button>
-                  <button
-                    onClick={() => setNavigation({ view: "documentControl" })}
-                    className="px-3 py-2 text-sm rounded-lg border border-brand-border dark:border-dark-brand-border hover:bg-gray-50 dark:hover:bg-gray-700/50 text-brand-text-primary dark:text-dark-brand-text-primary"
-                  >
-                    {t("openDocumentControl")}
-                  </button>
-                </div>
-              </div>
+            {/* Audit Readiness Predictor + Countdown side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AuditReadinessCard setNavigation={setNavigation} />
+              <ReadinessCountdownWidget setNavigation={setNavigation} />
+            </div>
+
+            {/* Recent Activity + Overdue Tasks side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <RecentItemsWidget setNavigation={setNavigation} />
+              <OverdueTasksWidget setNavigation={setNavigation} />
             </div>
 
             {!cycleGuideDismissed && (
@@ -771,51 +716,117 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
               </div>
             )}
 
+            {/* Governance Adoption Snapshot — upgraded with progress bars */}
             <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
-              <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
+              <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-5">
                 {t("governanceAdoptionSnapshot")}
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
-                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+                {/* Metric 1: Cycle Guide Completion */}
+                <div className="rounded-xl border border-brand-border dark:border-dark-brand-border p-4 space-y-3">
+                  <p className="text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     {t("firstCycleGuideCompletion")}
                   </p>
-                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                  <p className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {cycleGuideProgress}%
                   </p>
-                </div>
-                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full bg-linear-to-r from-brand-primary to-brand-primary/70 transition-all duration-700"
+                      style={{ width: `${cycleGuideProgress}%` }}
+                    />
+                  </div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {cycleGuideCompleted.length}/
+                    {accreditationCycleSteps.length}{" "}
+                    {t("stepsCompleted") || "steps"}
+                  </p>
+                </div>
+
+                {/* Metric 2: Assessor Pack Exports */}
+                <div className="rounded-xl border border-brand-border dark:border-dark-brand-border p-4 space-y-3">
+                  <p className="text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     {t("assessorPackExports30d")}
                   </p>
-                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                  <p className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {assessorExportMetrics.exportsLast30Days}
                   </p>
-                </div>
-                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full bg-linear-to-r from-sky-500 to-sky-400 transition-all duration-700"
+                      style={{
+                        width: `${Math.min(100, assessorExportMetrics.exportsLast30Days * 10)}%`,
+                      }}
+                    />
+                  </div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {t("inLast30Days") || "in last 30 days"}
+                  </p>
+                </div>
+
+                {/* Metric 3: Reviewer Sign-Off Rate */}
+                <div className="rounded-xl border border-brand-border dark:border-dark-brand-border p-4 space-y-3">
+                  <p className="text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     {t("reviewerSignOffRate")}
                   </p>
-                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                  <p
+                    className={`text-3xl font-bold ${
+                      assessorExportMetrics.reviewerSignOffRatePercent >= 80
+                        ? "text-emerald-600 dark:text-emerald-400"
+                        : assessorExportMetrics.reviewerSignOffRatePercent >= 50
+                          ? "text-amber-600 dark:text-amber-400"
+                          : "text-red-600 dark:text-red-400"
+                    }`}
+                  >
                     {assessorExportMetrics.reviewerSignOffRatePercent}%
                   </p>
-                </div>
-                <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-700 ${
+                        assessorExportMetrics.reviewerSignOffRatePercent >= 80
+                          ? "bg-linear-to-r from-emerald-500 to-emerald-400"
+                          : assessorExportMetrics.reviewerSignOffRatePercent >=
+                              50
+                            ? "bg-linear-to-r from-amber-500 to-amber-400"
+                            : "bg-linear-to-r from-red-500 to-red-400"
+                      }`}
+                      style={{
+                        width: `${assessorExportMetrics.reviewerSignOffRatePercent}%`,
+                      }}
+                    />
+                  </div>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {assessorExportMetrics.reviewerSignOffRatePercent >= 80
+                      ? t("onTrack") || "On track"
+                      : t("needsAttention") || "Needs attention"}
+                  </p>
+                </div>
+
+                {/* Metric 4: Guide vs Readiness Correlation */}
+                <div className="rounded-xl border border-brand-border dark:border-dark-brand-border p-4 space-y-3">
+                  <p className="text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wide">
                     {t("guideVsReadinessCorrelation")}
                   </p>
-                  <p className="text-2xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+                  <p className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
                     {guideReadinessCorrelation.coefficient}
                   </p>
-                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-                    {guideReadinessCorrelation.label} (
-                    {monthlyOutcomeSnapshots.length} {t("monthSnapshots")})
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                    <div
+                      className="h-2 rounded-full bg-linear-to-r from-rose-500 to-pink-400 transition-all duration-700"
+                      style={{
+                        width: `${Math.min(100, Math.abs(parseFloat(String(guideReadinessCorrelation.coefficient)) || 0) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {guideReadinessCorrelation.label} ·{" "}
+                    {monthlyOutcomeSnapshots.length} {t("monthSnapshots")}
                   </p>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
               <div className="lg:col-span-3 bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-xl shadow-lg border border-brand-border dark:border-dark-brand-border">
                 <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
                   {t("projectComplianceRate")}

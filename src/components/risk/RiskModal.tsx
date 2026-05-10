@@ -1,12 +1,12 @@
-import React, { useState, useEffect, FC } from "react";
-import { Risk, User, TrainingProgram } from "../../types";
+import React, { FC, useEffect, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
-import {
-  getRiskLevel,
-  computeRiskScore,
-  computeRiskLevelName,
-} from "../../utils/riskUtils";
 import { useAppStore } from "../../stores/useAppStore";
+import { Risk, TrainingProgram, User } from "../../types";
+import {
+  computeRiskLevelName,
+  computeRiskScore,
+  getRiskLevel,
+} from "../../utils/riskUtils";
 
 interface RiskModalProps {
   isOpen: boolean;
@@ -139,9 +139,9 @@ const RiskModal: FC<RiskModalProps> = ({
   const score = computeRiskScore(likelihood, impact);
   const level = getRiskLevel(score);
   const inputClasses =
-    "mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white dark:bg-gray-700 dark:text-white";
+    "mt-1 block w-full border-brand-border dark:border-dark-brand-border rounded-md shadow-sm focus:ring-2 focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-brand-surface dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary";
   const labelClasses =
-    "block text-sm font-medium text-gray-700 dark:text-gray-300";
+    "block text-sm font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary";
 
   return (
     <div
@@ -153,7 +153,7 @@ const RiskModal: FC<RiskModalProps> = ({
       onKeyDown={(e) => e.key === "Escape" && onClose()}
     >
       <div
-        className="bg-white dark:bg-dark-brand-surface rounded-lg shadow-xl w-full max-w-2xl m-4 modal-content-enter"
+        className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-xl w-full max-w-2xl m-4 modal-content-enter"
         onClick={(e) => e.stopPropagation()}
         dir={dir}
       >

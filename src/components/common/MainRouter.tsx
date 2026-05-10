@@ -99,6 +99,9 @@ const SupplierHubPage = lazy(() => import("@/pages/SupplierHubPage"));
 // Change Control Management
 const ChangeControlHubPage = lazy(() => import("@/pages/ChangeControlHubPage"));
 
+// My Tasks
+const MyTasksPage = lazy(() => import("@/pages/MyTasksPage"));
+
 // Pricing / Subscription Plans
 const PricingPage = lazy(() => import("@/pages/PricingPage"));
 
@@ -194,6 +197,8 @@ const MainRouter: React.FC<MainRouterProps> = ({
           labOperations: "Lab Operations",
           workflowAutomation: "Workflow Automation",
           reportBuilder: "Report Builder",
+          supplierHub: "Supplier Management",
+          changeControlHub: "Change Control Management",
         };
         const viewName =
           viewNames[navigation.view as keyof typeof viewNames] || "this area";
@@ -286,7 +291,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
   }
 
   if (!currentUser) {
-    return <div>Loading...</div>;
+    return <LoadingScreen />;
   }
 
   // Display unauthorized access attempt
@@ -445,7 +450,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
         );
       }
       case "settings": {
-        if (!appSettings) return <div>Loading settings...</div>;
+        if (!appSettings) return <LoadingScreen />;
         return (
           <SettingsLayout
             section={navigation.section}
@@ -504,6 +509,16 @@ const MainRouter: React.FC<MainRouterProps> = ({
         return <QualityRoundingPage />;
       case "qualityTools":
         return <QualityToolsPage setNavigation={setNavigation} />;
+      case "questionBank":
+        return <KnowledgeBasePage />;
+      case "myTasks":
+        return (
+          <MyTasksPage
+            projects={projects}
+            currentUser={currentUser}
+            programs={accreditationPrograms}
+          />
+        );
       case "workflowAutomation":
         return <WorkflowAutomationPage />;
       case "reportBuilder":

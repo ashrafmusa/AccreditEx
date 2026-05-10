@@ -46,9 +46,9 @@ export interface Branch {
   updatedAt?: string;
 }
 
-export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'changeControl' | 'supplierHub' | 'orgPlan' | 'branches' | 'platformAdmin';
+export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'globeSettings' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'hisIntegration' | 'changeControl' | 'supplierHub' | 'orgPlan' | 'branches' | 'platformAdmin';
 
-export type NavigationView = 'dashboard' | 'analyticsHub' | 'analytics' | 'calendar' | 'riskHub' | 'risk' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'accreditation' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'supplierHub' | 'changeControlHub' | 'myTasks' | 'qualityInsights' | 'users' | 'competencies' | 'templateLibrary' | 'pricing' | 'multiFacility' | 'qualityRounding' | 'qualityTools';
+export type NavigationView = 'dashboard' | 'analyticsHub' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'supplierHub' | 'changeControlHub' | 'myTasks' | 'qualityInsights' | 'templateLibrary' | 'pricing' | 'multiFacility' | 'qualityRounding' | 'qualityTools' | 'questionBank';
 
 // ── Knowledge Base Types ──────────────────────────────────
 
@@ -375,6 +375,16 @@ export interface User {
   phone?: string;
   licenses?: UserLicense[];
   personnelDocuments?: PersonnelDocument[];
+  /** User profile with organization and accreditation details */
+  profile?: {
+    accreditationProgram?: string;
+    organizationName?: string;
+    organizationType?: string;
+    country?: string;
+    city?: string;
+    region?: string;
+    programSelectedAt?: string;
+  };
 }
 
 export interface UserLicense {

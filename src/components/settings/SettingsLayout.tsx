@@ -1,4 +1,5 @@
 import {
+  ArchiveBoxIcon,
   ArrowUpTrayIcon,
   Bars3Icon,
   BeakerIcon,
@@ -7,14 +8,15 @@ import {
   ChartBarIcon,
   CircleStackIcon,
   ClockIcon,
-  Cog6ToothIcon,
-  DocumentDuplicateIcon,
+  CogIcon,
   EyeIcon,
   GlobeAltIcon,
   IdentificationIcon,
   InformationCircleIcon,
   MagnifyingGlassIcon,
+  MapPinIcon,
   PaintBrushIcon,
+  ServerStackIcon,
   ShieldCheckIcon,
   SparklesIcon,
   StarIcon,
@@ -59,9 +61,14 @@ const DepartmentsPage = lazy(() => import("@/pages/DepartmentsPage"));
 const LIMSIntegrationSettingsPage = lazy(
   () => import("./LIMSIntegrationSettingsPage"),
 );
+const HISIntegrationSettingsPage = lazy(
+  () => import("./HISIntegrationSettingsPage"),
+);
+const GlobeSettingsPage = lazy(() => import("./GlobeSettingsPage"));
 const OrgPlanSettingsPage = lazy(() => import("./OrgPlanSettingsPage"));
 const BranchManagementPage = lazy(() => import("@/pages/BranchManagementPage"));
 const PlatformAdminPage = lazy(() => import("./PlatformAdminPage"));
+const DemoRequestsPage = lazy(() => import("./DemoRequestsPage"));
 
 interface SettingsLayoutProps {
   section: SettingsSection | undefined;
@@ -114,7 +121,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       adminOnly: false,
       category: t("settingsCategoryPersonal"),
     },
-    // ── ORGANIZATION ──────────────────────────────────────────
+    // ── WORKSPACE ─────────────────────────────────────────────
     {
       id: "orgPlan",
       label: t("planAndSubscription") || "Plan & Subscription",
@@ -125,7 +132,7 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
     {
       id: "branches",
       label: t("branches") || "Branches",
-      icon: BuildingOffice2Icon,
+      icon: MapPinIcon,
       adminOnly: true,
       category: t("settingsCategoryOrganization"),
     },
@@ -138,12 +145,19 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
     },
     {
       id: "visual",
-      label: t("visualSettings"),
+      label: t("brandingAndAppearance") || "Branding & Appearance",
       icon: PaintBrushIcon,
       adminOnly: true,
       category: t("settingsCategoryOrganization"),
     },
-    // ── PEOPLE ────────────────────────────────────────────────
+    {
+      id: "globeSettings",
+      label: t("globeSettings") || "Globe Visualization",
+      icon: GlobeAltIcon,
+      adminOnly: true,
+      category: t("settingsCategoryOrganization"),
+    },
+    // ── PEOPLE & TEAMS ────────────────────────────────────────
     {
       id: "users",
       label: t("userManagement"),
@@ -165,28 +179,6 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       adminOnly: true,
       category: t("settingsCategoryPeople"),
     },
-    // ── QUALITY & COMPLIANCE ──────────────────────────────────
-    {
-      id: "accreditationHub",
-      label: t("accreditationHub"),
-      icon: GlobeAltIcon,
-      adminOnly: true,
-      category: t("settingsCategoryQuality"),
-    },
-    {
-      id: "changeControl",
-      label: t("changeControlManagement"),
-      icon: DocumentDuplicateIcon,
-      adminOnly: true,
-      category: t("settingsCategoryQuality"),
-    },
-    {
-      id: "supplierHub",
-      label: t("supplierQualityManagement"),
-      icon: BuildingOffice2Icon,
-      adminOnly: true,
-      category: t("settingsCategoryQuality"),
-    },
     // ── INTEGRATIONS ──────────────────────────────────────────
     {
       id: "limsIntegration",
@@ -195,18 +187,25 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       adminOnly: true,
       category: t("settingsCategoryIntegrations"),
     },
+    {
+      id: "hisIntegration",
+      label: t("hisIntegration") || "HIS Integration",
+      icon: ServerStackIcon,
+      adminOnly: true,
+      category: t("settingsCategoryIntegrations"),
+    },
     ...(isAdmin
       ? [
           {
             id: "firebaseSetup",
             label: t("firebaseSetup"),
-            icon: SparklesIcon,
+            icon: CogIcon,
             adminOnly: true,
             category: t("settingsCategoryIntegrations"),
           },
         ]
       : []),
-    // ── ADMINISTRATION ────────────────────────────────────────
+    // ── SECURITY & DATA ───────────────────────────────────────
     {
       id: "security",
       label: t("security"),
@@ -228,33 +227,34 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       adminOnly: true,
       category: t("settingsCategoryAdministration"),
     },
+    // ── MONITORING ────────────────────────────────────────────
     {
       id: "usageTracking",
-      label: t("usageTracking") || "Usage Tracking Settings",
-      icon: Cog6ToothIcon,
+      label: t("usageTracking") || "Usage Tracking",
+      icon: ChartBarIcon,
       adminOnly: true,
-      category: t("settingsCategoryAdministration"),
+      category: t("settingsCategoryMonitoring"),
     },
     {
       id: "firebaseUsage",
       label: t("firebaseUsageDashboard") || "Firebase Usage Dashboard",
       icon: ChartBarIcon,
       adminOnly: true,
-      category: t("settingsCategoryAdministration"),
+      category: t("settingsCategoryMonitoring"),
     },
     {
       id: "settingsPresets",
       label: t("settingsPresets"),
       icon: StarIcon,
       adminOnly: true,
-      category: t("settingsCategoryAdministration"),
+      category: t("settingsCategoryMonitoring"),
     },
     {
       id: "versionHistory",
       label: t("versionHistory"),
-      icon: DocumentDuplicateIcon,
+      icon: ArchiveBoxIcon,
       adminOnly: true,
-      category: t("settingsCategoryAdministration"),
+      category: t("settingsCategoryMonitoring"),
     },
     // ── PLATFORM (super-admin only) ───────────────────────────
     ...(isSuperAdmin
@@ -263,6 +263,13 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
             id: "platformAdmin",
             label: t("platformAdmin") || "Platform Administration",
             icon: ShieldCheckIcon,
+            adminOnly: true,
+            category: t("settingsCategoryPlatform"),
+          },
+          {
+            id: "demoRequests",
+            label: "Demo Requests",
+            icon: IdentificationIcon,
             adminOnly: true,
             category: t("settingsCategoryPlatform"),
           },
@@ -302,6 +309,8 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
     switch (section) {
       case "visual":
         return isAdmin ? <VisualSettingsPage /> : <ProfileSettingsPage />;
+      case "globeSettings":
+        return isAdmin ? <GlobeSettingsPage /> : <ProfileSettingsPage />;
       case "profile":
         return <ProfileSettingsPage />;
       case "security":
@@ -340,12 +349,20 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         ) : (
           <ProfileSettingsPage />
         );
+      case "hisIntegration":
+        return isAdmin ? (
+          <HISIntegrationSettingsPage />
+        ) : (
+          <ProfileSettingsPage />
+        );
       case "limsIntegration":
         return isAdmin ? (
           <LIMSIntegrationSettingsPage />
         ) : (
           <ProfileSettingsPage />
         );
+      case "demoRequests":
+        return <DemoRequestsPage />;
       case "changeControl":
         return isAdmin ? <ChangeControlHubPage /> : <ProfileSettingsPage />;
       case "supplierHub":

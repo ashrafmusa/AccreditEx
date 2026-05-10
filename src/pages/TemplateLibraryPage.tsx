@@ -13,7 +13,7 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import { NavigationState } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 
 // ── Icons (inline SVG to avoid extra icon imports) ──────────────────────────
 

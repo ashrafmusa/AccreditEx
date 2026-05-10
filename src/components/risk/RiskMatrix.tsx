@@ -1,6 +1,6 @@
 import React from "react";
-import { Risk } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { Risk } from "../../types";
 import { getRiskLevel } from "../../utils/riskUtils";
 
 interface RiskMatrixProps {
@@ -94,6 +94,32 @@ const RiskMatrix: React.FC<RiskMatrixProps> = ({ risks }) => {
             <span>{t("high")}</span>
           </div>
         </div>
+      </div>
+      {/* Legend */}
+      <div className="flex flex-wrap gap-3 pt-3 border-t border-brand-border dark:border-dark-brand-border mt-2">
+        {[
+          {
+            color: "bg-red-700",
+            label: t("critical") || "Critical",
+            range: "16–25",
+          },
+          { color: "bg-red-500", label: t("high") || "High", range: "10–15" },
+          {
+            color: "bg-yellow-400",
+            label: t("medium") || "Medium",
+            range: "5–9",
+          },
+          { color: "bg-green-500", label: t("low") || "Low", range: "1–4" },
+        ].map((item) => (
+          <div
+            key={item.label}
+            className="flex items-center gap-1.5 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary"
+          >
+            <span className={`inline-block w-3 h-3 rounded-sm ${item.color}`} />
+            <span className="font-semibold">{item.label}</span>
+            <span className="opacity-60">({item.range})</span>
+          </div>
+        ))}
       </div>
     </div>
   );

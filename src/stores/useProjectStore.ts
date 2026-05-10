@@ -1,11 +1,10 @@
-import { create } from 'zustand';
-import { Project, ChecklistItem, DesignControlItem, CAPAReport, MockSurvey, ComplianceStatus, PDCACycle, PDCAStage, ProjectStatus } from '@/types';
+import { getAuthInstance } from '@/firebase/firebaseConfig';
+import { handleError } from '@/services/errorHandling';
 import * as projectService from '@/services/projectService';
-import { useUserStore } from './useUserStore';
-import { useAppStore } from './useAppStore';
-import { handleError, AppError } from '@/services/errorHandling';
-import { logger } from '@/services/logger';
 import { workflowEngine } from '@/services/workflowEngine';
+import { CAPAReport, ChecklistItem, ComplianceStatus, DesignControlItem, MockSurvey, PDCACycle, PDCAStage, Project, ProjectStatus } from '@/types';
+import { create } from 'zustand';
+import { useUserStore } from './useUserStore';
 
 interface ProjectState {
   projects: Project[];
@@ -64,6 +63,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
   fetchAllProjects: async () => {
     try {
+      const auth = getAuthInstance();
+      if (!auth.currentUser) {
+        set({ projects: [], loading: false, error: null });
+        return;
+      }
+
       set({ loading: true, error: null });
       const projectsFromBackend = await projectService.getProjects();
       const projectsWithProgress = projectsFromBackend.map(p => ({

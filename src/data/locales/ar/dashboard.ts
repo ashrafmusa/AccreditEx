@@ -15,6 +15,13 @@ export const ar = {
     pendingTasks: 'المهام المعلقة',
     inProject: 'في مشروع',
     noOpenCapa: 'لا توجد تقارير CAPA مفتوحة. عمل رائع في الحفاظ على الامتثال!',
+    // Viewer Dashboard
+    viewerDashboardTitle: 'نظرة عامة على المنظمة',
+    openRisks: 'المخاطر المفتوحة',
+    complianceByProject: 'الامتثال حسب المشروع',
+    // Auditor Dashboard Extended
+    auditsCompleted: 'التدقيقات المكتملة',
+    nonConformitiesByAudit: 'عدم المطابقات حسب التدقيق',
     // Project Lead Dashboard
     projectLeadDashboardTitle: "لوحة تحكم قائد المشروع",
     myProjects: "مشاريعي",
@@ -171,4 +178,31 @@ export const ar = {
     clinicCycleStep3: 'تدريب الموظفين',
     clinicCycleStep4: 'التدقيق الداخلي',
     clinicCycleStep5: 'مراجعة الجاهزية',
+
+    // AI Daily Briefing
+    aiDailyBriefingTitle: 'الإحاطة اليومية بالذكاء الاصطناعي',
+    aiDailyBriefingSubtitle: 'أهم 3 أولويات لليوم بناءً على مؤشرات الامتثال الفعلية.',
+    aiDailyBriefingGenerate: 'إنشاء الإحاطة',
+    aiDailyBriefingRefresh: 'تحديث',
+    aiDailyBriefingLoading: 'جارٍ إعداد أولوياتك المخصصة...',
+    aiDailyBriefingError: 'تعذر الحصول على استجابة الذكاء الاصطناعي. يتم عرض أولويات بديلة ذكية.',
+    aiDailyBriefingOpen: 'فتح مساحة العمل',
+    aiDailyBriefingUpdated: 'آخر تحديث',
+    aiDailyBriefingUrgencyHigh: 'عالي',
+    aiDailyBriefingUrgencyMedium: 'متوسط',
+    aiDailyBriefingUrgencyLow: 'منخفض',
+    aiDailyBriefingHeadlineDefault: 'ركز اليوم على إجراءات الامتثال الأعلى تأثيراً.',
+
+    aiBriefingActionOverdueTasksTitle: 'إنهاء المهام المتأخرة الموكلة لك',
+    aiBriefingActionOverdueTasksReason: 'لديك {count} مهام متأخرة قد تؤثر على درجة الجاهزية.',
+    aiBriefingActionCapaTitle: 'إغلاق تقارير CAPA المفتوحة',
+    aiBriefingActionCapaReason: 'يوجد {count} تقارير CAPA مفتوحة تحتاج متابعة تصحيحية.',
+    aiBriefingActionDocsTitle: 'مراجعة المستندات المنضبطة القريبة من الاستحقاق',
+    aiBriefingActionDocsReason: 'يوجد {count} مستندات مجدولة للمراجعة خلال 7 أيام.',
+    aiBriefingActionAuditsTitle: 'الاستعداد للتدقيقات المعلقة',
+    aiBriefingActionAuditsReason: 'يوجد {count} تدقيقات قريبة تحتاج تجهيزاً.',
+    aiBriefingActionRisksTitle: 'معالجة المخاطر المفتوحة',
+    aiBriefingActionRisksReason: 'لا تزال {count} مخاطر مفتوحة تتطلب خطة تخفيف.',
+    aiBriefingActionMaintainTitle: 'الحفاظ على الزخم الحالي',
+    aiBriefingActionMaintainReason: 'لا توجد عوائق عاجلة حالياً. استمر في جودة الأدلة والانضباط التدقيقي.',
 };

@@ -39,6 +39,7 @@
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.1",
     "@cloudinary/url-gen": "^1.22.0",
+    "@emailjs/browser": "^4.4.1",
     "@floating-ui/react": "^0.27.19",
     "@headlessui/react": "^2.2.9",
     "@heroicons/react": "^2.2.0",

@@ -1,16 +1,18 @@
-import React, { useState, lazy, Suspense } from "react";
-import { useTranslation } from "../hooks/useTranslation";
+import React, { lazy, Suspense, useState } from "react";
 import { ExclamationTriangleIcon } from "../components/icons";
-import RiskRegisterTab from "../components/risk/RiskRegisterTab";
 import CapaReportsTab from "../components/risk/CapaReportsTab";
+import RiskRegisterTab from "../components/risk/RiskRegisterTab";
+import { useTranslation } from "../hooks/useTranslation";
 // FIX: Corrected import path for IncidentReportingTab
+import LoadingScreen from "@/components/common/LoadingScreen";
+import { Button } from "@/components/ui";
+import EffectivenessChecksTab from "../components/risk/EffectivenessChecksTab";
 import IncidentReportingTab from "../components/risk/IncidentReportingTab";
 import IncidentTrendingTab from "../components/risk/IncidentTrendingTab";
-import EffectivenessChecksTab from "../components/risk/EffectivenessChecksTab";
-import { useAppStore } from "../stores/useAppStore";
+import type { ClassificationResult } from "../components/risk/PatientSafetyEventClassifier";
+import PatientSafetyEventClassifier from "../components/risk/PatientSafetyEventClassifier";
+import PredictiveCAPAGenerator from "../components/risk/PredictiveCAPAGenerator";
 import { useProjectStore } from "../stores/useProjectStore";
-import { Button } from "@/components/ui";
-import LoadingScreen from "@/components/common/LoadingScreen";
 
 const RCAToolTab = lazy(() => import("../components/risk/RCAToolTab"));
 
@@ -20,7 +22,8 @@ type RiskHubTab =
   | "incidents"
   | "trending"
   | "checks"
-  | "rca";
+  | "rca"
+  | "aiTools";
 
 const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
   setNavigation,
@@ -29,6 +32,23 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
   const [activeTab, setActiveTab] = useState<RiskHubTab>("register");
   const { updateCapa } = useProjectStore();
   const projects = useProjectStore((state) => state.projects);
+
+  // AI Tools state: pass classifier output to CAPA generator
+  const [classifierDescription, setClassifierDescription] = useState<
+    string | undefined
+  >();
+  const [classifierResult, setClassifierResult] = useState<
+    ClassificationResult | undefined
+  >();
+
+  const handleClassified = (
+    description: string,
+    result: ClassificationResult,
+  ) => {
+    setClassifierDescription(description);
+    setClassifierResult(result);
+    setActiveTab("aiTools");
+  };
 
   return (
     <div className="space-y-6">
@@ -90,7 +110,14 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             variant={activeTab === "rca" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
           >
-            RCA Tool
+            {t("rcaToolTitle")}
+          </Button>
+          <Button
+            onClick={() => setActiveTab("aiTools")}
+            variant={activeTab === "aiTools" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2"
+          >
+            ✨ {t("aiToolsTab") || "AI Tools"}
           </Button>
         </nav>
       </div>
@@ -110,6 +137,21 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
           <Suspense fallback={<LoadingScreen />}>
             <RCAToolTab />
           </Suspense>
+        )}
+        {activeTab === "aiTools" && (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            {/* Column 1: Classifier */}
+            <div className="rounded-xl border border-gray-200 dark:border-dark-brand-border bg-white dark:bg-dark-brand-card p-5">
+              <PatientSafetyEventClassifier onClassified={handleClassified} />
+            </div>
+            {/* Column 2: CAPA Generator */}
+            <div className="rounded-xl border border-gray-200 dark:border-dark-brand-border bg-white dark:bg-dark-brand-card p-5">
+              <PredictiveCAPAGenerator
+                prefillDescription={classifierDescription}
+                prefillClassification={classifierResult}
+              />
+            </div>
+          </div>
         )}
       </div>
     </div>

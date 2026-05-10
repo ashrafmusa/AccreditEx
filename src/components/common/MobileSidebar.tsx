@@ -1,22 +1,29 @@
 import {
   AcademicCapIcon,
+  ArrowPathIcon,
+  BeakerIcon,
   BoltIcon,
+  BookOpenIcon,
   BuildingOffice2Icon,
   CalendarDaysIcon,
+  ChartBarIcon,
   ChartBarSquareIcon,
   ChartPieIcon,
   ChatBubbleLeftEllipsisIcon,
   CircleStackIcon,
-  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
   ClipboardDocumentSearchIcon,
   Cog6ToothIcon,
+  CubeIcon,
   DocumentTextIcon,
   ExclamationTriangleIcon,
   FolderIcon,
   LightBulbIcon,
+  ListBulletIcon,
   LogoIcon,
   ShieldCheckIcon,
   SparklesIcon,
+  Squares2X2Icon,
   XMarkIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -43,6 +50,7 @@ interface NavItemType {
   label: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   adminOnly?: boolean;
+  auditorAllowed?: boolean;
   bottom?: boolean;
 }
 
@@ -113,9 +121,15 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       icon: ChartPieIcon,
     },
     {
-      nav: { view: "analytics" },
-      key: "analytics",
-      label: t("analytics"),
+      nav: { view: "accreditationHub" },
+      key: "accreditationHub",
+      label: t("accreditationHub"),
+      icon: ShieldCheckIcon,
+    },
+    {
+      nav: { view: "analyticsHub" },
+      key: "analyticsHub",
+      label: t("analyticsHub") || "Analytics",
       icon: ChartBarSquareIcon,
     },
     {
@@ -123,12 +137,6 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       key: "qualityInsights",
       label: t("qualityInsights"),
       icon: LightBulbIcon,
-    },
-    {
-      nav: { view: "calendar" },
-      key: "calendar",
-      label: t("calendar"),
-      icon: CalendarDaysIcon,
     },
     {
       nav: { view: "projects" },
@@ -143,18 +151,6 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       icon: DocumentTextIcon,
     },
     {
-      nav: { view: "myTasks" },
-      key: "myTasks",
-      label: t("myTasks"),
-      icon: ClipboardDocumentCheckIcon,
-    },
-    {
-      nav: { view: "messaging" },
-      key: "messaging",
-      label: t("messages"),
-      icon: ChatBubbleLeftEllipsisIcon,
-    },
-    {
       nav: { view: "riskHub" },
       key: "riskHub",
       label: t("riskHub"),
@@ -164,8 +160,51 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       nav: { view: "auditHub" },
       key: "auditHub",
       label: t("auditHub"),
+      auditorAllowed: true,
       icon: ClipboardDocumentSearchIcon,
       adminOnly: true,
+    },
+    {
+      nav: { view: "trainingHub" },
+      key: "trainingHub",
+      label: t("trainingHub"),
+      icon: AcademicCapIcon,
+    },
+    {
+      nav: { view: "myTasks" },
+      key: "myTasks",
+      label: t("myTasks") || "My Tasks",
+      icon: ListBulletIcon,
+    },
+    {
+      nav: { view: "qualityTools" },
+      key: "qualityTools",
+      label: t("qualityTools") || "Quality Tools",
+      icon: SparklesIcon,
+    },
+    {
+      nav: { view: "knowledgeBase" },
+      key: "knowledgeBase",
+      label: t("knowledgeBase") || "Knowledge Base",
+      icon: BookOpenIcon,
+    },
+    {
+      nav: { view: "calendar" },
+      key: "calendar",
+      label: t("calendar"),
+      icon: CalendarDaysIcon,
+    },
+    {
+      nav: { view: "messaging" },
+      key: "messaging",
+      label: t("messages"),
+      icon: ChatBubbleLeftEllipsisIcon,
+    },
+    {
+      nav: { view: "templateLibrary" },
+      key: "templateLibrary",
+      label: t("templateLibrary") || "Template Library",
+      icon: Squares2X2Icon,
     },
     {
       nav: { view: "dataHub" },
@@ -182,34 +221,24 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       adminOnly: true,
     },
     {
-      nav: { view: "trainingHub" },
-      key: "trainingHub",
-      label: t("trainingHub"),
-      icon: AcademicCapIcon,
-    },
-    {
-      nav: { view: "accreditationHub" },
-      key: "accreditationHub",
-      label: t("accreditationHub"),
-      icon: ShieldCheckIcon,
-    },
-    {
-      nav: { view: "qualityTools" },
-      key: "qualityTools",
-      label: t("qualityTools") || "Quality Tools",
-      icon: SparklesIcon,
-    },
-    {
-      nav: { view: "knowledgeBase" },
-      key: "knowledgeBase",
-      label: t("knowledgeBase") || "Knowledge Base",
-      icon: DocumentTextIcon,
-    },
-    {
       nav: { view: "labOperations" },
       key: "labOperations",
       label: t("labOperations") || "Lab Operations",
-      icon: ClipboardDocumentSearchIcon,
+      icon: BeakerIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "qualityRounding" },
+      key: "qualityRounding",
+      label: t("qualityRounding") || "Quality Rounding",
+      icon: ClipboardDocumentListIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "multiFacility" },
+      key: "multiFacility",
+      label: t("multiFacilityDashboard") || "Multi-Facility",
+      icon: BuildingOffice2Icon,
       adminOnly: true,
     },
     {
@@ -217,6 +246,28 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       key: "workflowAutomation",
       label: t("workflowAutomation") || "Workflow Automation",
       icon: BoltIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "reportBuilder" },
+      key: "reportBuilder",
+      label: t("reportBuilder") || "Report Builder",
+      icon: ChartBarIcon,
+      adminOnly: true,
+      auditorAllowed: true,
+    },
+    {
+      nav: { view: "supplierHub" },
+      key: "supplierHub",
+      label: t("supplierHub") || "Suppliers",
+      icon: CubeIcon,
+      adminOnly: true,
+    },
+    {
+      nav: { view: "changeControlHub" },
+      key: "changeControlHub",
+      label: t("changeControl") || "Change Control",
+      icon: ArrowPathIcon,
       adminOnly: true,
     },
     {
@@ -228,9 +279,12 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
     },
   ];
 
+  const isAuditor = currentUser?.role?.toLowerCase() === "auditor";
   const visibleNavItems = allNavItems.filter(
     (item) =>
-      (!item.adminOnly || currentUser?.role?.toLowerCase() === "admin") &&
+      (!item.adminOnly ||
+        currentUser?.role?.toLowerCase() === "admin" ||
+        (item.auditorAllowed && isAuditor)) &&
       isNavKeyEnabled(item.key),
   );
   const mainItems = visibleNavItems.filter((item) => !item.bottom);

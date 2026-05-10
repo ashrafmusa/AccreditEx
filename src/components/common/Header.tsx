@@ -1,13 +1,15 @@
-import React from "react";
-import { NavigationState, Notification } from "@/types";
-import { Bars3Icon } from "@/components/icons";
-import HeaderTitle from "@/components/common/HeaderTitle";
 import HeaderActions from "@/components/common/HeaderActions";
+import HeaderTitle from "@/components/common/HeaderTitle";
 import NotificationButton from "@/components/common/NotificationButton";
-import MessagingBell from "@/components/messaging/MessagingBell";
 import UserMenu from "@/components/common/UserMenu";
-import { useTranslation } from "@/hooks/useTranslation";
+import { Bars3Icon } from "@/components/icons";
+import MessagingBell from "@/components/messaging/MessagingBell";
 import { useOfflineSync } from "@/hooks/useOfflineSync";
+import { useTranslation } from "@/hooks/useTranslation";
+import { NavigationState, Notification } from "@/types";
+import React, { lazy, Suspense } from "react";
+
+const TourLauncher = lazy(() => import("@/components/onboarding/TourLauncher"));
 
 interface HeaderProps {
   navigation: NavigationState;
@@ -90,6 +92,10 @@ const Header: React.FC<HeaderProps> = ({
       </div>
       <div className="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
         <HeaderActions onOpenCommandPalette={onOpenCommandPalette} />
+        {/* Tour Launcher — centralized tour menu */}
+        <Suspense fallback={null}>
+          <TourLauncher variant="icon" size="md" />
+        </Suspense>
         <MessagingBell position="left" showCount={true} />
         <NotificationButton
           notifications={notifications}

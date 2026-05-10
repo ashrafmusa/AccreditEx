@@ -8,23 +8,23 @@
  * @version 1.0.0
  */
 
-import React, { useState, useEffect, useRef } from "react";
-import DOMPurify from "dompurify";
-import {
-  ChatBubbleBottomCenterTextIcon,
-  XMarkIcon,
-  PaperAirplaneIcon,
-  MinusIcon,
-  ArrowsPointingOutIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   aiAgentService,
   ChatMessage,
   ChatResponse,
 } from "@/services/aiAgentService";
-import { useToast } from "@/hooks/useToast";
-import { useTranslation } from "@/hooks/useTranslation";
+import {
+  ArrowsPointingOutIcon,
+  ChatBubbleBottomCenterTextIcon,
+  ExclamationCircleIcon,
+  MinusIcon,
+  PaperAirplaneIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import DOMPurify from "dompurify";
+import React, { useEffect, useRef, useState } from "react";
 
 interface AIAssistantProps {
   defaultOpen?: boolean;
@@ -199,9 +199,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
             )}
           </div>
           <div>
-            <h3 className="font-semibold text-sm">AI Assistant</h3>
+            <h3 className="font-semibold text-sm">
+              {t("aiAssistant") || "AI Assistant"}
+            </h3>
             <p className="text-xs text-white/80">
-              {isHealthy ? "Online" : "Offline"}
+              {isHealthy ? t("online") || "Online" : t("offline") || "Offline"}
             </p>
           </div>
           {!isHealthy && (
@@ -212,8 +214,16 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
           <button
             onClick={() => setIsMinimized(!isMinimized)}
             className="hover:bg-white/20 p-1.5 rounded-lg transition-all duration-200"
-            aria-label={isMinimized ? "Maximize" : "Minimize"}
-            title={isMinimized ? "Maximize" : "Minimize"}
+            aria-label={
+              isMinimized
+                ? t("maximize") || "Maximize"
+                : t("minimize") || "Minimize"
+            }
+            title={
+              isMinimized
+                ? t("maximize") || "Maximize"
+                : t("minimize") || "Minimize"
+            }
           >
             {isMinimized ? (
               <ArrowsPointingOutIcon className="w-4 h-4" />

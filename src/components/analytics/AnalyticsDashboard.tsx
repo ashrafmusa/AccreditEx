@@ -1,24 +1,30 @@
-import React, { useState } from 'react';
-import { AnalyticsOverview } from './AnalyticsOverview';
-import { TrendChart } from './TrendChart';
-import { HealthScoreGauge } from './HealthScoreGauge';
-import { InsightsPanel } from './InsightsPanel';
-import { DataQualityPanel } from './DataQualityPanel';
-import { useReport } from '../../hooks/useAnalyticsHooks';
-import { Download, RefreshCw, BarChart3 } from 'lucide-react';
+import { BarChart3, Download, RefreshCw } from "lucide-react";
+import React, { useState } from "react";
+import { useReport } from "../../hooks/useAnalyticsHooks";
+import { AnalyticsOverview } from "./AnalyticsOverview";
+import { DataQualityPanel } from "./DataQualityPanel";
+import { HealthScoreGauge } from "./HealthScoreGauge";
+import { InsightsPanel } from "./InsightsPanel";
+import { TrendChart } from "./TrendChart";
 
 interface AnalyticsDashboardProps {
   configId?: string;
   title?: string;
 }
 
-type TabType = 'overview' | 'trends' | 'health' | 'quality' | 'insights' | 'reports';
+type TabType =
+  | "overview"
+  | "trends"
+  | "health"
+  | "quality"
+  | "insights"
+  | "reports";
 
 export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
-  configId = 'default',
-  title = 'HIS Integration Analytics',
+  configId = "default",
+  title = "HIS Integration Analytics",
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [refreshKey, setRefreshKey] = useState(0);
   const { reports, isLoading: reportsLoading } = useReport();
 
@@ -27,12 +33,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
   };
 
   const tabs: Array<{ id: TabType; label: string; icon: React.ReactNode }> = [
-    { id: 'overview', label: 'Overview', icon: <BarChart3 size={18} /> },
-    { id: 'trends', label: 'Trends', icon: <BarChart3 size={18} /> },
-    { id: 'health', label: 'Health', icon: <BarChart3 size={18} /> },
-    { id: 'quality', label: 'Data Quality', icon: <BarChart3 size={18} /> },
-    { id: 'insights', label: 'Insights', icon: <BarChart3 size={18} /> },
-    { id: 'reports', label: 'Reports', icon: <Download size={18} /> },
+    { id: "overview", label: "Overview", icon: <BarChart3 size={18} /> },
+    { id: "trends", label: "Trends", icon: <BarChart3 size={18} /> },
+    { id: "health", label: "Health", icon: <BarChart3 size={18} /> },
+    { id: "quality", label: "Data Quality", icon: <BarChart3 size={18} /> },
+    { id: "insights", label: "Insights", icon: <BarChart3 size={18} /> },
+    { id: "reports", label: "Reports", icon: <Download size={18} /> },
   ];
 
   return (
@@ -41,7 +47,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-          <p className="text-gray-600 text-sm mt-1">Configuration: {configId}</p>
+          <p className="text-gray-600 text-sm mt-1">
+            Configuration: {configId}
+          </p>
         </div>
         <button
           onClick={handleRefresh}
@@ -53,36 +61,36 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
       </div>
 
       {/* Tab Navigation */}
-      <div className="bg-white rounded-lg shadow border-b border-gray-200">
-        <div className="flex overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'border-blue-600 text-blue-600'
-                  : 'border-transparent text-gray-700 hover:text-gray-900'
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
+      <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow border-b border-brand-border dark:border-dark-brand-border">
+        <div className="relative">
+          <div className="flex overflow-x-auto scrollbar-hide">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-3 font-medium text-sm whitespace-nowrap border-b-2 transition-colors ${
+                  activeTab === tab.id
+                    ? "border-brand-primary text-brand-primary"
+                    : "border-transparent text-brand-text-secondary dark:text-dark-brand-text-secondary hover:text-brand-text-primary dark:hover:text-dark-brand-text-primary"
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          {/* Right-edge fade to indicate scrollable overflow */}
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-linear-to-l from-brand-surface dark:from-dark-brand-surface to-transparent" />
         </div>
       </div>
 
       {/* Tab Content */}
       <div key={refreshKey}>
-        {activeTab === 'overview' && (
-          <AnalyticsOverview configId={configId} />
-        )}
+        {activeTab === "overview" && <AnalyticsOverview configId={configId} />}
 
-        {activeTab === 'trends' && (
-          <TrendChart configId={configId} />
-        )}
+        {activeTab === "trends" && <TrendChart configId={configId} />}
 
-        {activeTab === 'health' && (
+        {activeTab === "health" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1">
               <HealthScoreGauge configId={configId} showDetails={true} />
@@ -93,11 +101,9 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
         )}
 
-        {activeTab === 'quality' && (
-          <DataQualityPanel configId={configId} />
-        )}
+        {activeTab === "quality" && <DataQualityPanel configId={configId} />}
 
-        {activeTab === 'insights' && (
+        {activeTab === "insights" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <InsightsPanel configId={configId} />
@@ -108,8 +114,12 @@ export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({
           </div>
         )}
 
-        {activeTab === 'reports' && (
-          <ReportsTab configId={configId} reports={reports} isLoading={reportsLoading} />
+        {activeTab === "reports" && (
+          <ReportsTab
+            configId={configId}
+            reports={reports}
+            isLoading={reportsLoading}
+          />
         )}
       </div>
     </div>
@@ -125,8 +135,12 @@ interface ReportsTabProps {
   isLoading: boolean;
 }
 
-const ReportsTab: React.FC<ReportsTabProps> = ({ configId, reports, isLoading }) => {
-  const [selectedPeriod, setSelectedPeriod] = useState('7d');
+const ReportsTab: React.FC<ReportsTabProps> = ({
+  configId,
+  reports,
+  isLoading,
+}) => {
+  const [selectedPeriod, setSelectedPeriod] = useState("7d");
 
   if (isLoading) {
     return (
@@ -141,13 +155,13 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ configId, reports, isLoading })
     const cutoff = new Date();
 
     switch (period) {
-      case '7d':
+      case "7d":
         cutoff.setDate(cutoff.getDate() - 7);
         break;
-      case '30d':
+      case "30d":
         cutoff.setDate(cutoff.getDate() - 30);
         break;
-      case '90d':
+      case "90d":
         cutoff.setDate(cutoff.getDate() - 90);
         break;
       default:
@@ -163,13 +177,15 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ configId, reports, isLoading })
     <div className="space-y-6">
       {/* Report Generator */}
       <div className="bg-linear-to-br from-blue-50 to-brand-primary/80 rounded-lg shadow p-6 border border-blue-200">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Generate New Report</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Generate New Report
+        </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: 'Daily Summary', type: 'daily' },
-            { name: 'Weekly Report', type: 'weekly' },
-            { name: 'Monthly Report', type: 'monthly' },
-            { name: 'Custom Report', type: 'custom' },
+            { name: "Daily Summary", type: "daily" },
+            { name: "Weekly Report", type: "weekly" },
+            { name: "Monthly Report", type: "monthly" },
+            { name: "Custom Report", type: "custom" },
           ].map((report) => (
             <button
               key={report.type}
@@ -185,16 +201,18 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ configId, reports, isLoading })
       <div className="bg-white rounded-lg shadow">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Recent Reports</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Recent Reports
+            </h3>
             <div className="flex gap-2">
-              {['7d', '30d', '90d'].map((period) => (
+              {["7d", "30d", "90d"].map((period) => (
                 <button
                   key={period}
                   onClick={() => setSelectedPeriod(period)}
                   className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
                     selectedPeriod === period
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
                   {period}
@@ -211,14 +229,24 @@ const ReportsTab: React.FC<ReportsTabProps> = ({ configId, reports, isLoading })
         ) : (
           <div className="divide-y divide-gray-200">
             {filteredReports.map((report) => (
-              <div key={report.id} className="p-4 hover:bg-gray-50 transition-colors">
+              <div
+                key={report.id}
+                className="p-4 hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="font-semibold text-gray-900">{report.name}</h4>
+                    <h4 className="font-semibold text-gray-900">
+                      {report.name}
+                    </h4>
                     <div className="flex gap-4 mt-1 text-xs text-gray-600">
-                      <span>Generated: {new Date(report.generatedAt).toLocaleDateString()}</span>
+                      <span>
+                        Generated:{" "}
+                        {new Date(report.generatedAt).toLocaleDateString()}
+                      </span>
                       <span>Format: {report.format.toUpperCase()}</span>
-                      <span>Size: {(report.fileSize / 1024).toFixed(1)} KB</span>
+                      <span>
+                        Size: {(report.fileSize / 1024).toFixed(1)} KB
+                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">

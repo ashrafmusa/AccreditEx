@@ -5,7 +5,18 @@
  */
 
 import { db } from '@/firebase/firebaseConfig';
-import { addDoc, collection, Timestamp } from 'firebase/firestore';
+import emailjs from '@emailjs/browser';
+import {
+    addDoc,
+    collection,
+    doc,
+    getDocs,
+    orderBy,
+    query,
+    Timestamp,
+    updateDoc,
+    where,
+} from 'firebase/firestore';
 
 export interface DemoRequestPayload {
     name: string;
@@ -14,16 +25,114 @@ export interface DemoRequestPayload {
     message: string;
 }
 
+export type DemoRequestStatus = 'new' | 'contacted' | 'scheduled' | 'completed' | 'closed';
+
+export interface DemoRequest extends DemoRequestPayload {
+    id: string;
+    status: DemoRequestStatus;
+    createdAt: Timestamp;
+    notes?: string;
+}
+
+// ── Email (EmailJS) ──────────────────────────────────────────────────────────
+// Gracefully skipped if env vars are not configured.
+const EJ_SERVICE = import.meta.env.VITE_EMAILJS_SERVICE_ID ?? '';
+const EJ_ADMIN_T = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID ?? '';
+const EJ_REPLY_T = import.meta.env.VITE_EMAILJS_REPLY_TEMPLATE_ID ?? '';
+const EJ_PUB_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY ?? '';
+const ALERT_EMAIL = import.meta.env.VITE_DEMO_ALERT_EMAIL ?? '';
+
+async function sendEmailNotifications(payload: DemoRequestPayload): Promise<void> {
+    if (!EJ_SERVICE || !EJ_PUB_KEY) return; // not configured — skip silently
+
+    const baseParams = {
+        from_name: payload.name,
+        from_email: payload.email,
+        organization: payload.organization || '—',
+        message: payload.message || '—',
+    };
+
+    // Alert to sales/admin team
+    if (EJ_ADMIN_T && ALERT_EMAIL) {
+        await emailjs.send(EJ_SERVICE, EJ_ADMIN_T, {
+            ...baseParams,
+            to_email: ALERT_EMAIL,
+        }, EJ_PUB_KEY).catch(() => { /* non-blocking */ });
+    }
+
+    // Auto-reply to the prospect
+    if (EJ_REPLY_T) {
+        await emailjs.send(EJ_SERVICE, EJ_REPLY_T, {
+            ...baseParams,
+            to_email: payload.email,
+            to_name: payload.name,
+        }, EJ_PUB_KEY).catch(() => { /* non-blocking */ });
+    }
+}
+
+// ── Duplicate check ───────────────────────────────────────────────────────────
+
 /**
- * Submit a demo request to Firestore.
- * @param payload - Contact details entered by the prospect.
+ * Returns true if an existing demo request for this email already exists.
+ */
+export async function isDuplicateDemoRequest(email: string): Promise<boolean> {
+    const q = query(
+        collection(db, 'demoRequests'),
+        where('email', '==', email.toLowerCase().trim()),
+    );
+    const snap = await getDocs(q);
+    return !snap.empty;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+
+/**
+ * Submit a demo request to Firestore + send email notifications.
  * @returns The new document ID on success.
+ * @throws {Error} with message 'duplicate' if this email already requested a demo.
  */
 export async function submitDemoRequest(payload: DemoRequestPayload): Promise<string> {
+    const normalizedEmail = payload.email.toLowerCase().trim();
+
+    // Best-effort duplicate check — silently skip if read is denied (unauthenticated user)
+    try {
+        const duplicate = await isDuplicateDemoRequest(normalizedEmail);
+        if (duplicate) throw new Error('duplicate');
+    } catch (err) {
+        if (err instanceof Error && err.message === 'duplicate') throw err;
+        // Permission denied or network error — proceed with the write
+    }
+
     const ref = await addDoc(collection(db, 'demoRequests'), {
         ...payload,
+        email: normalizedEmail,
         createdAt: Timestamp.now(),
-        status: 'new',
+        status: 'new' as DemoRequestStatus,
     });
+
+    // Non-blocking — don't fail the submission if email fails
+    sendEmailNotifications({ ...payload, email: normalizedEmail }).catch(() => { });
+
     return ref.id;
 }
+
+// ── Admin: list all requests ──────────────────────────────────────────────────
+
+export async function listDemoRequests(): Promise<DemoRequest[]> {
+    const q = query(collection(db, 'demoRequests'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as DemoRequest));
+}
+
+// ── Admin: update status ──────────────────────────────────────────────────────
+
+export async function updateDemoRequestStatus(
+    id: string,
+    status: DemoRequestStatus,
+    notes?: string,
+): Promise<void> {
+    const data: Record<string, unknown> = { status };
+    if (notes !== undefined) data.notes = notes;
+    await updateDoc(doc(db, 'demoRequests', id), data);
+}
+

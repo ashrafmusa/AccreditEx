@@ -6,17 +6,27 @@
  * "Contact Sales" for the Network (enterprise) tier opens a mailto link.
  */
 
+import { useToast } from "@/hooks/useToast";
 import {
   planMeetsRequirement,
   PLANS,
   redirectToStripePaymentLink,
+  startFreeTrial,
   type PlanInfo,
 } from "@/services/subscriptionService";
 import { useTenantStore } from "@/stores/useTenantStore";
 import type { PlanTier } from "@/types/modules";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Check, Network, Star, Zap } from "lucide-react";
-import React from "react";
+import {
+  ArrowLeft,
+  Building2,
+  Check,
+  Loader2,
+  Network,
+  Star,
+  Zap,
+} from "lucide-react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PLAN_ICONS: Record<PlanTier, React.ReactNode> = {
@@ -30,16 +40,27 @@ function PlanCard({
   plan,
   currentPlan,
   orgId,
+  trialEligible,
+  onStartTrial,
+  trialLoading,
 }: {
   plan: PlanInfo;
   currentPlan: PlanTier;
   orgId: string | undefined;
+  trialEligible: boolean;
+  onStartTrial: () => void;
+  trialLoading: boolean;
 }) {
   const isCurrent = currentPlan === plan.tier;
   const isOwned = planMeetsRequirement(currentPlan, plan.tier);
   const isEnterprise = plan.tier === "enterprise";
+  const isTrialTarget = plan.tier === "professional" && trialEligible;
 
   function handleCTA() {
+    if (isTrialTarget) {
+      onStartTrial();
+      return;
+    }
     if (isEnterprise) {
       window.location.href =
         "mailto:sales@accreditex.io?subject=Network%20Plan%20Inquiry";
@@ -50,14 +71,26 @@ function PlanCard({
     redirectToStripePaymentLink(plan.tier, orgId);
   }
 
-  let ctaLabel = "Get Started";
+  let ctaLabel: React.ReactNode = "Get Started";
   if (plan.tier === "free") ctaLabel = "Current Plan";
   else if (isCurrent) ctaLabel = "Current Plan";
   else if (isOwned) ctaLabel = "Included";
   else if (isEnterprise) ctaLabel = "Contact Sales";
+  else if (isTrialTarget)
+    ctaLabel = trialLoading ? (
+      <span className="flex items-center justify-center gap-2">
+        <Loader2 className="w-4 h-4 animate-spin" /> Activating…
+      </span>
+    ) : (
+      "🎁 Start 14-Day Free Trial"
+    );
   else ctaLabel = "Upgrade Now";
 
-  const ctaDisabled = plan.tier === "free" || isCurrent || isOwned;
+  const ctaDisabled =
+    plan.tier === "free" ||
+    isCurrent ||
+    isOwned ||
+    (isTrialTarget && trialLoading);
 
   return (
     <motion.div
@@ -166,9 +199,38 @@ function PlanCard({
 
 export default function PricingPage() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const currentOrg = useTenantStore((s) => s.currentOrganization);
+  const loadOrganization = useTenantStore((s) => s.loadOrganization);
   const currentPlan: PlanTier = (currentOrg?.plan as PlanTier) ?? "free";
   const orgId = currentOrg?.id;
+
+  // Eligible if on free plan and has never started a trial (trialEndsAt not set)
+  const trialEligible =
+    currentPlan === "free" &&
+    !currentOrg?.trialActive &&
+    !currentOrg?.trialEndsAt;
+
+  const [trialLoading, setTrialLoading] = useState(false);
+
+  async function handleStartTrial() {
+    if (!orgId) return;
+    setTrialLoading(true);
+    try {
+      await startFreeTrial(orgId);
+      await loadOrganization(orgId);
+      toast.success(
+        "Your 14-day free trial is now active! Enjoy Hospital plan features.",
+      );
+      navigate(-1);
+    } catch {
+      toast.error(
+        "Could not activate trial. Please contact support or try again.",
+      );
+    } finally {
+      setTrialLoading(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background">
@@ -220,6 +282,9 @@ export default function PricingPage() {
               plan={plan}
               currentPlan={currentPlan}
               orgId={orgId}
+              trialEligible={trialEligible}
+              onStartTrial={handleStartTrial}
+              trialLoading={trialLoading}
             />
           ))}
         </div>

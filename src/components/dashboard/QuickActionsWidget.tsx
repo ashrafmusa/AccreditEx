@@ -1,14 +1,14 @@
-import React from "react";
-import { NavigationState } from "@/types";
-import { useTranslation } from "@/hooks/useTranslation";
 import {
-  FolderIcon,
-  ExclamationTriangleIcon,
-  DocumentTextIcon,
   CalendarDaysIcon,
   CheckCircleIcon,
   ClipboardDocumentCheckIcon,
+  DocumentTextIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
 } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
+import { NavigationState } from "@/types";
+import React from "react";
 
 interface QuickActionsWidgetProps {
   setNavigation: (state: NavigationState) => void;
@@ -75,7 +75,7 @@ const QuickActionsWidget: React.FC<QuickActionsWidgetProps> = ({
       descriptionKey: "quickActionAddStandard",
       icon: CheckCircleIcon,
       color: "from-sky-500 to-sky-600",
-      action: () => setNavigation({ view: "accreditation" }),
+      action: () => setNavigation({ view: "accreditationHub" }),
     },
   ];
 

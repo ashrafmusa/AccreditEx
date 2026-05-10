@@ -15,6 +15,13 @@ export const en = {
     pendingTasks: 'Pending Tasks',
     inProject: 'in project',
     noOpenCapa: 'No open CAPA reports. Great job maintaining compliance!',
+    // Viewer Dashboard
+    viewerDashboardTitle: 'Organisation Overview',
+    openRisks: 'Open Risks',
+    complianceByProject: 'Compliance by Project',
+    // Auditor Dashboard Extended
+    auditsCompleted: 'Audits Completed',
+    nonConformitiesByAudit: 'Non-Conformities by Audit',
     // Project Lead Dashboard
     projectLeadDashboardTitle: "Project Lead Dashboard",
     myProjects: "My Projects",
@@ -170,4 +177,31 @@ export const en = {
     clinicCycleStep3: 'Staff Training',
     clinicCycleStep4: 'Internal Audit',
     clinicCycleStep5: 'Readiness Review',
+
+    // AI Daily Briefing
+    aiDailyBriefingTitle: 'AI Daily Briefing',
+    aiDailyBriefingSubtitle: 'Your top 3 priorities for today based on live compliance signals.',
+    aiDailyBriefingGenerate: 'Generate Briefing',
+    aiDailyBriefingRefresh: 'Refresh',
+    aiDailyBriefingLoading: 'Preparing your personalized priorities...',
+    aiDailyBriefingError: 'AI response unavailable. Showing smart fallback priorities.',
+    aiDailyBriefingOpen: 'Open work area',
+    aiDailyBriefingUpdated: 'Last updated',
+    aiDailyBriefingUrgencyHigh: 'High',
+    aiDailyBriefingUrgencyMedium: 'Medium',
+    aiDailyBriefingUrgencyLow: 'Low',
+    aiDailyBriefingHeadlineDefault: 'Focus on the highest impact compliance actions today.',
+
+    aiBriefingActionOverdueTasksTitle: 'Clear overdue assigned tasks',
+    aiBriefingActionOverdueTasksReason: 'You have {count} overdue tasks that can impact readiness scoring.',
+    aiBriefingActionCapaTitle: 'Close open CAPA reports',
+    aiBriefingActionCapaReason: 'There are {count} open CAPA reports that need corrective follow-through.',
+    aiBriefingActionDocsTitle: 'Review expiring controlled documents',
+    aiBriefingActionDocsReason: '{count} documents are scheduled for review within 7 days.',
+    aiBriefingActionAuditsTitle: 'Prepare pending audits',
+    aiBriefingActionAuditsReason: '{count} audits are pending soon and need preparation.',
+    aiBriefingActionRisksTitle: 'Mitigate open risks',
+    aiBriefingActionRisksReason: '{count} open risks still require mitigation planning.',
+    aiBriefingActionMaintainTitle: 'Maintain current momentum',
+    aiBriefingActionMaintainReason: 'No urgent blockers detected. Keep evidence quality and audit discipline high.',
 };

@@ -6,6 +6,7 @@ import {
   enableBiometric,
   type BiometricStatus,
 } from "@/services/nativeBiometricService";
+import { FirebaseError } from "firebase/app";
 import { sendPasswordResetEmail } from "firebase/auth";
 import React, { Suspense, useEffect, useState } from "react";
 import {
@@ -23,6 +24,40 @@ const Globe = React.lazy(() => import("../components/ui/Globe"));
 interface LoginPageProps {
   // onLogin prop is no longer needed
 }
+
+const getLoginErrorMessage = (
+  error: unknown,
+  t: (key: string) => string,
+): string => {
+  if (!(error instanceof FirebaseError)) {
+    return t("loginFailed") || "Login failed. Please try again.";
+  }
+
+  switch (error.code) {
+    case "auth/invalid-credential":
+    case "auth/wrong-password":
+    case "auth/user-not-found":
+    case "auth/invalid-email":
+      return t("invalidCredentials") || "Invalid email or password.";
+    case "auth/user-disabled":
+      return (
+        t("accountDisabled") ||
+        "This account is disabled. Please contact your administrator."
+      );
+    case "auth/too-many-requests":
+      return (
+        t("tooManyLoginAttempts") ||
+        "Too many login attempts. Please wait a few minutes and try again."
+      );
+    case "auth/network-request-failed":
+      return (
+        t("networkError") ||
+        "Network error. Please check your connection and try again."
+      );
+    default:
+      return t("loginFailed") || "Login failed. Please try again.";
+  }
+};
 
 const LoginPage: React.FC<LoginPageProps> = () => {
   const { t, dir } = useTranslation();
@@ -64,13 +99,18 @@ const LoginPage: React.FC<LoginPageProps> = () => {
     try {
       const credentials = await biometricLogin();
       if (credentials) {
-        const user = await login(credentials.email, credentials.password);
-        if (!user) {
-          setError(
-            t("invalidCredentialsEnterprise") ||
-              t("invalidCredentials") ||
-              "Invalid credentials or account not provisioned for your organization.",
-          );
+        try {
+          const user = await login(credentials.email, credentials.password);
+          if (!user) {
+            // If Firebase Auth succeeded but profile hydration is still in progress,
+            // avoid showing a false invalid-credentials message.
+            const authUser = getAuthInstance().currentUser;
+            if (!authUser) {
+              setError(t("invalidCredentials") || "Invalid email or password.");
+            }
+          }
+        } catch (error) {
+          setError(getLoginErrorMessage(error, t));
         }
       }
     } catch {
@@ -89,22 +129,27 @@ const LoginPage: React.FC<LoginPageProps> = () => {
     setResetNotice("");
     setLoading(true);
     try {
-      const user = await login(email, password);
-      if (!user) {
-        setError(
-          t("invalidCredentialsEnterprise") ||
-            t("invalidCredentials") ||
-            "Invalid credentials or account not provisioned for your organization.",
-        );
-      } else {
-        // Offer to enable biometric on successful login (native only)
-        checkBiometricAvailability().then((status) => {
-          if (status.isAvailable && !status.isEnabled && email && password) {
-            enableBiometric(email, password).catch(() => {
-              // Silently fail — biometric is optional
-            });
+      try {
+        const user = await login(email, password);
+        if (!user) {
+          // If Firebase Auth succeeded but profile hydration is still in progress,
+          // avoid showing a false invalid-credentials message.
+          const authUser = getAuthInstance().currentUser;
+          if (!authUser) {
+            setError(t("invalidCredentials") || "Invalid email or password.");
           }
-        });
+        } else {
+          // Offer to enable biometric on successful login (native only)
+          checkBiometricAvailability().then((status) => {
+            if (status.isAvailable && !status.isEnabled && email && password) {
+              enableBiometric(email, password).catch(() => {
+                // Silently fail — biometric is optional
+              });
+            }
+          });
+        }
+      } catch (error) {
+        setError(getLoginErrorMessage(error, t));
       }
       // onLogin is no longer needed here; the auth listener handles the UI change.
     } finally {

@@ -30,6 +30,10 @@ const OnboardingPage = React.lazy(() => import("@/pages/OnboardingPage"));
 const LoginPage = React.lazy(() => import("@/pages/LoginPage"));
 const LandingPage = React.lazy(() => import("@/pages/LandingPage"));
 const PitchDeckPage = React.lazy(() => import("@/pages/PitchDeckPage"));
+const RegistrationPage = React.lazy(() => import("@/pages/RegistrationPage"));
+const ProgramSelectorPage = React.lazy(
+  () => import("@/pages/ProgramSelectorPage"),
+);
 
 // AI Assistant Component — lazy loaded (not needed until user is authenticated & idle)
 const AIAssistant = React.lazy(() =>
@@ -147,6 +151,8 @@ const AppManager: React.FC = () => {
   const [showOnboarding, setShowOnboarding] = useState<boolean>(
     () => !localStorage.getItem("accreditex-onboarding-complete"),
   );
+  const [showProgramSelector, setShowProgramSelector] =
+    useState<boolean>(false);
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -191,8 +197,6 @@ const AppManager: React.FC = () => {
     };
   }, [currentUser, navigate]);
 
-  useFirebaseAuth(); // This hook handles user state
-
   useEffect(() => {
     const auth = getAuthInstance();
     // Optimization: Check current auth state synchronously to avoid unnecessary loading delay
@@ -209,11 +213,27 @@ const AppManager: React.FC = () => {
     return () => unsubscribe();
   }, []);
 
+  // Check if user needs to select an accreditation program
+  useEffect(() => {
+    if (currentUser && !currentUser.profile?.accreditationProgram) {
+      setShowProgramSelector(true);
+    } else {
+      setShowProgramSelector(false);
+    }
+  }, [currentUser]);
+
   const handleOnboardingComplete = () => {
     localStorage.setItem("accreditex-onboarding-complete", "true");
     localStorage.setItem("hasCompletedOnboarding", "true");
     setShowOnboarding(false);
   };
+
+  // Listen for replay-tour event dispatched from DashboardHeader "Tour" button
+  useEffect(() => {
+    const handler = () => setShowOnboarding(true);
+    window.addEventListener("accreditex:replay-tour", handler);
+    return () => window.removeEventListener("accreditex:replay-tour", handler);
+  }, []);
 
   // Combine auth check with lazy loading - single loading screen
   if (!authChecked) {
@@ -233,6 +253,21 @@ const AppManager: React.FC = () => {
           }
         >
           <PitchDeckPage />
+        </Suspense>
+      );
+    }
+
+    // /register — Self-service free trial registration
+    if (location.pathname === "/register") {
+      return (
+        <Suspense
+          fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
+            </div>
+          }
+        >
+          <RegistrationPage />
         </Suspense>
       );
     }
@@ -262,6 +297,14 @@ const AppManager: React.FC = () => {
         }
       >
         <LandingPage onLogin={() => navigate("/login")} />
+      </Suspense>
+    );
+  }
+
+  if (showProgramSelector) {
+    return (
+      <Suspense fallback={<LoadingScreen />}>
+        <ProgramSelectorPage />
       </Suspense>
     );
   }

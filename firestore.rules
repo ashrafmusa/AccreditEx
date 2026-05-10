@@ -72,6 +72,18 @@ service cloud.firestore {
              || request.resource.data.role == resource.data.role 
              || isAdmin();
     }
+
+    // Owners can update their own profile fields, but not tenant or account control fields.
+    function ownerCannotChangeProtectedUserFields() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'organizationId', 'isActive']);
+    }
+
+    // Self-registration creates the caller's own profile doc before any org claim exists.
+    function ownerCanCreateOwnUserDoc(userId) {
+      return isOwner(userId)
+        && request.resource.data.keys().hasAll(['email'])
+        && request.resource.data.email == request.auth.token.email;
+    }
     
     // Check if user is the document owner
     function isOwner(userId) {
@@ -119,9 +131,13 @@ service cloud.firestore {
     // Security: Users keyed by Firebase Auth UID
     // Multi-tenancy: Reads filtered by org, writes must set correct org
     match /users/{userId} {
-      allow read: if isAuthenticated() && belongsToUserOrg();
-      allow create: if (isAdmin() || isOwner(userId)) && setsCorrectOrg();
-      allow update: if (isOwner(userId) || isAdmin()) && cannotEscalatePrivilege() && setsCorrectOrg();
+      // Always allow a signed-in user to read their own profile doc.
+      // This prevents tenant-claim mismatch edge cases from blocking login hydration.
+      allow read: if isAuthenticated() && (isOwner(userId) || belongsToUserOrg());
+      allow create: if ownerCanCreateOwnUserDoc(userId)
+                    || (isAdmin() && setsCorrectOrg());
+      allow update: if (isOwner(userId) && ownerCannotChangeProtectedUserFields())
+                    || (isAdmin() && cannotEscalatePrivilege() && setsCorrectOrg());
       allow delete: if isAdmin() 
                     || (isAuthenticated() && resource.data.email == request.auth.token.email);
     }
@@ -239,6 +255,16 @@ service cloud.firestore {
       allow create, update: if isAuthenticated();
       allow delete: if isAdmin() || isOwner(sessionId);
     }
+
+    // User-scoped device sessions (actual path used by deviceSessionService)
+    // Path: users/{userId}/sessions/{sessionId}
+    match /users/{userId}/sessions/{sessionId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create, update: if isAuthenticated()
+                            && isOwner(userId)
+                            && request.resource.data.userId == userId;
+      allow delete: if isAuthenticated() && (isOwner(userId) || isAdmin());
+    }
     
     // User Activity Logs collection
     match /user_activity_logs/{logId} {
@@ -280,12 +306,45 @@ service cloud.firestore {
     // SECURITY (2026-04-16): Writes restricted to platform super-admins ONLY.
     // Org-level Admins can read their own org doc but CANNOT modify plan, maxUsers,
     // trialEndsAt, subscriptionExpiresAt, or moduleConfig — prevents self-upgrade attacks.
+    //
+    // EXCEPTION (2026-04-21): Any authenticated user may create ONE org for themselves
+    // via self-service registration (free trial flow). The org must have:
+    //   - createdBy == auth.uid (can only create for themselves)
+    //   - plan == 'professional' and trialActive == true (trial terms enforced)
+    //   - All required fields present
+    //
+    // EXCEPTION (2026-05-XX): Org Admins may activate a one-time 14-day free trial
+    // on their own org, restricted to trial fields only, and only when no prior
+    // trial has been issued (trialEndsAt field must not exist).
     match /organizations/{orgId} {
       // Any authenticated user can read org docs (org data is not sensitive).
-      // Writes are restricted to platform super-admins only.
       allow read: if isAuthenticated();
-      allow create: if isSuperAdmin();
-      allow update: if isSuperAdmin();
+      // Super-admins: full create access.
+      // Self-registration: any authenticated user may create an org for themselves
+      // (free trial only — plan must be professional, trialActive must be true).
+      allow create: if isSuperAdmin() || (
+        isAuthenticated() &&
+        request.resource.data.createdBy == request.auth.uid &&
+        request.resource.data.plan == 'professional' &&
+        request.resource.data.trialActive == true &&
+        request.resource.data.isActive == true &&
+        request.resource.data.keys().hasAll([
+          'name', 'type', 'isActive', 'plan',
+          'trialActive', 'trialEndsAt', 'createdAt', 'createdBy'
+        ])
+      );
+      // Super-admins: full update access.
+      // Org admins: may self-activate a free trial ONCE (trialActive, trialEndsAt, plan only),
+      //   only when the token orgId matches, trial is not active, and trialEndsAt has never been set.
+      allow update: if isSuperAdmin() || (
+        isAdmin() &&
+        isTenantActive() &&
+        request.auth.token.organizationId == orgId &&
+        !resource.data.get('trialActive', false) &&
+        !resource.data.keys().hasAny(['trialEndsAt']) &&
+        request.resource.data.diff(resource.data).affectedKeys()
+          .hasOnly(['trialActive', 'trialEndsAt', 'plan'])
+      );
       allow delete: if isSuperAdmin();
     }
 
@@ -447,7 +506,10 @@ service cloud.firestore {
                     && request.resource.data.status == 'new';
 
       allow read: if isAdmin();
-      allow update: if false;
+      // Super-admins can update status and notes only
+      allow update: if isSuperAdmin()
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                       .hasOnly(['status', 'notes']);
       allow delete: if false;
     }
 

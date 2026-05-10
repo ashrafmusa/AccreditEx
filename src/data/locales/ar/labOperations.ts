@@ -180,8 +180,6 @@ export const ar = {
     thSDIndex: "مؤشر الانحراف",
     thScore: "الدرجة",
     noProficiencyTests: "لا توجد اختبارات كفاءة",
-    thSection: "القسم",
-    allStatuses: "جميع الحالات",
     allSections: "جميع الأقسام",
     selectProvider: "اختر مزوداً…",
     ptAnalyte: "المادة التحليلية",

@@ -13,11 +13,14 @@
  * - RTL support
  * - Progress indicator
  * - Persists completion to localStorage
+ * - Confetti animation on completion
+ * - Integrated badge/reward system
  */
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useTranslation } from "@/hooks/useTranslation";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import Confetti from "./Confetti";
 
 export interface TourStep {
   /** CSS selector for the target element to highlight */
@@ -43,6 +46,10 @@ interface GuidedTourProps {
   onComplete: () => void;
   /** Optional: auto-start even if previously completed */
   forceShow?: boolean;
+  /** Optional: show completion reward/badge */
+  completionBadge?: string;
+  /** Optional: hide the tour if already completed */
+  hideIfCompleted?: boolean;
 }
 
 const TOUR_STORAGE_PREFIX = "accreditex_tour_completed_";
@@ -53,11 +60,14 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
   isActive,
   onComplete,
   forceShow = false,
+  completionBadge,
+  hideIfCompleted = true,
 }) => {
   const { t, dir } = useTranslation();
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({});
+  const [showConfetti, setShowConfetti] = useState(false);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   // Check if tour already completed
@@ -67,7 +77,13 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
 
   const markComplete = useCallback(() => {
     localStorage.setItem(`${TOUR_STORAGE_PREFIX}${tourId}`, "true");
-    onComplete();
+    setShowConfetti(true);
+
+    // Give confetti time to play, then call onComplete
+    setTimeout(() => {
+      onComplete();
+      setShowConfetti(false);
+    }, 2500);
   }, [tourId, onComplete]);
 
   // Position the tooltip relative to the target element
@@ -186,13 +202,21 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isActive, isCompleted, currentStep, steps.length, markComplete]);
 
-  if (!isActive || isCompleted || !targetRect) return null;
+  if (!isActive || (isCompleted && hideIfCompleted) || !targetRect) return null;
 
   const step = steps[currentStep];
   const isLast = currentStep === steps.length - 1;
 
   return createPortal(
     <>
+      {/* Confetti animation on completion */}
+      <Confetti
+        active={showConfetti}
+        onComplete={() => {
+          // Animation complete
+        }}
+      />
+
       {/* Semi-transparent overlay with cutout for target */}
       <div
         className="fixed inset-0 z-[10000] pointer-events-none"
@@ -234,6 +258,13 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
         <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mb-4 leading-relaxed">
           {t(step.descriptionKey)}
         </p>
+
+        {/* Completion badge (shown on last step) */}
+        {isLast && completionBadge && (
+          <div className="mb-4 p-3 bg-brand-primary/10 dark:bg-dark-brand-primary/10 rounded-lg border border-brand-primary/30 dark:border-dark-brand-primary/30 text-sm text-brand-primary dark:text-dark-brand-primary font-medium">
+            🏆 {completionBadge}
+          </div>
+        )}
 
         <div className="flex items-center justify-between">
           {/* Progress dots */}

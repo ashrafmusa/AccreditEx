@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accreditex — Investor Pitch Deck</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --brand-teal: #0f766e;
+            --brand-dark: #0c4a4e;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', 'Noto Sans Arabic', sans-serif;
+            background: #f1f5f9;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        .slide {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 18mm 20mm;
+            margin: 15mm auto;
+            background: white;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            position: relative;
+            page-break-after: always;
+        }
+        .slide-title {
+            @apply text-2xl font-black text-slate-900 mb-6 pb-3 border-b-2 border-[var(--brand-teal)];
+        }
+        .highlight-box {
+            @apply bg-[var(--brand-teal)]/5 border-l-4 border-[var(--brand-teal)] p-4 rounded-r-lg;
+        }
+        [dir="rtl"] .highlight-box {
+            border-left: none;
+            border-right-width: 4px;
+            border-right-color: var(--brand-teal);
+            border-radius: 0.5rem 0 0 0.5rem;
+        }
+        .metric-card {
+            @apply bg-slate-50 p-4 rounded-xl border border-slate-200 hover:shadow-md transition;
+        }
+        .timeline-dot { @apply w-3 h-3 bg-[var(--brand-teal)] rounded-full relative; }
+        
+        @media print {
+            body { background: white; margin: 0; }
+            .slide { 
+                margin: 0; 
+                box-shadow: none; 
+                width: 100%; 
+                min-height: 297mm; 
+                page-break-after: always; 
+            }
+            .slide:last-child { page-break-after: auto; }
+            .no-print { display: none !important; }
+        }
+        .asset-fallback {
+            background: linear-gradient(135deg, var(--brand-teal), var(--brand-dark));
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <!-- Navigation -->
+    <div class="no-print fixed top-4 right-4 z-50 flex gap-2">
+        <button onclick="window.print()" class="bg-[var(--brand-dark)] text-white px-5 py-2.5 rounded-full font-bold shadow-lg hover:bg-[var(--brand-teal)] transition text-sm">
+            📥 Download PDF / تحميل
+        </button>
+        <button onclick="toggleArabic()" class="bg-white text-slate-700 px-5 py-2.5 rounded-full font-bold shadow border hover:bg-slate-50 transition text-sm">
+            🌐 Toggle Arabic / العربية
+        </button>
+    </div>
+
+    <!-- SLIDE 1: COVER -->
+    <div class="slide flex flex-col justify-center items-center text-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-br from-[var(--brand-teal)]/5 via-transparent to-slate-900/5 pointer-events-none"></div>
+        <div class="relative z-10 max-w-2xl">
+            <div class="flex justify-center mb-6">
+                <img src="./public/logo.png" alt="Accreditex" class="h-24 w-24 rounded-2xl shadow-xl object-contain bg-white p-2" 
+                     onerror="this.outerHTML='<div class=\'h-24 w-24 rounded-2xl shadow-xl asset-fallback\'><span class=\'text-4xl font-black text-white\'>A<span class=\'text-teal-200\'>x</span></span></div>'">
+            </div>
+            <h1 class="text-5xl font-black text-slate-900 mb-2 tracking-tight">Accredit<span class="text-[var(--brand-teal)]">ex</span></h1>
+            <p class="text-lg font-bold text-slate-500 uppercase tracking-widest mb-8">AI-Native Clinical Governance for GCC Healthcare</p>
+            <div class="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 mb-8 shadow-lg">
+                <p class="text-sm text-slate-600 mb-2">Pre-Seed Investment Opportunity</p>
+                <p class="text-3xl font-black text-[var(--brand-teal)]">$250,000 USD</p>
+                <p class="text-xs text-slate-400 mt-1">For 10–12% Equity • ADGM Jurisdiction</p>
+            </div>
+            <div class="flex justify-center gap-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                <span>Confidential</span><span>•</span><span>Q2 2026</span><span>•</span><span>ADGM RegLab Ready</span>
+            </div>
+        </div>
+        <div id="ar-cover" class="hidden absolute inset-0 bg-white z-20 flex flex-col justify-center items-center text-center p-10" dir="rtl">
+            <div class="flex justify-center mb-6">
+                <img src="./public/logo.png" alt="أكرديتكس" class="h-24 w-24 rounded-2xl shadow-xl object-contain bg-white p-2" 
+                     onerror="this.outerHTML='<div class=\'h-24 w-24 rounded-2xl shadow-xl asset-fallback\'><span class=\'text-4xl font-black text-white\'>أ<span class=\'text-teal-200\'>كس</span></span></div>'">
+            </div>
+            <h1 class="text-5xl font-black text-slate-900 mb-2">أكرديتـ<span class="text-[var(--brand-teal)]">كس</span></h1>
+            <p class="text-lg font-bold text-slate-500 uppercase tracking-widest mb-8">منصة ذكاء اصطناعي لحوكمة المختبرات الطبية في دول الخليج</p>
+            <div class="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-2xl p-6 mb-8 shadow-lg w-full max-w-md">
+                <p class="text-sm text-slate-600 mb-2">فرصة استثمارية – جولة ما قبل البذرة</p>
+                <p class="text-3xl font-black text-[var(--brand-teal)]">٢٥٠,٠٠٠ دولار أمريكي</p>
+                <p class="text-xs text-slate-400 mt-1">حصة ملكية ١٠–١٢٪ • تحت مظلة سوق أبوظبي العالمي</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 2: THE PROBLEM -->
+    <div class="slide">
+        <h2 class="slide-title">The $2M+ Compliance Gap in GCC Healthcare</h2>
+        <div class="grid grid-cols-2 gap-8 mb-8">
+            <div>
+                <div class="highlight-box mb-6">
+                    <p class="text-sm font-bold text-slate-800 mb-2">🔴 Critical Pain Points</p>
+                    <ul class="text-[11px] space-y-2 text-slate-600">
+                        <li>• Manual JCI/ISO 15189 audits consume <strong>400+ hours/year</strong> per lab</li>
+                        <li>• Non-compliance fines average <strong>$1.2M–$2.8M</strong> in GCC markets</li>
+                        <li>• 73% of labs lack real-time readiness visibility</li>
+                        <li>• Fragmented HIS/LIMS systems create data silos</li>
+                    </ul>
+                </div>
+                <div class="metric-card">
+                    <p class="text-[10px] text-slate-500 uppercase">Market Context</p>
+                    <p class="text-sm font-bold text-slate-800 mt-1">GCC healthcare compliance software market projected to reach <strong>$4.37B by 2026</strong>, growing at 11.47% CAGR.</p>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <div class="highlight-box mb-6">
+                    <p class="text-sm font-bold text-slate-800 mb-2">🔴 تحديات السوق الحرجة</p>
+                    <ul class="text-[11px] space-y-2 text-slate-600">
+                        <li>• عمليات التدقيق اليدوية تستهلك <strong>أكثر من ٤٠٠ ساعة سنوياً</strong> لكل مختبر</li>
+                        <li>• متوسط غرامات عدم الامتثال يتراوح بين <strong>١.٢–٢.٨ مليون دولار</strong> في الخليج</li>
+                        <li>• ٧٣٪ من المختبرات تفتقد لرؤية فورية لجاهزية الاعتماد</li>
+                        <li>• تشتت أنظمة HIS/LIMS يخلق عزلة في البيانات</li>
+                    </ul>
+                </div>
+                <div class="metric-card">
+                    <p class="text-[10px] text-slate-500 uppercase">سياق السوق</p>
+                    <p class="text-sm font-bold text-slate-800 mt-1">من المتوقع أن يصل سوق برامج الامتثال الصحي في الخليج إلى <strong>٤.٣٧ مليار دولار بحلول ٢٠٢٦</strong>، بمعدل نمو سنوي مركب ١١.٤٧٪.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 3: OUR SOLUTION -->
+    <div class="slide">
+        <h2 class="slide-title">Accreditex: From "Audit Panic" to Continuous Excellence</h2>
+        <div class="grid grid-cols-2 gap-10 items-start mb-8">
+            <div>
+                <div class="bg-gradient-to-br from-[var(--brand-teal)] to-[var(--brand-dark)] text-white rounded-2xl p-6 shadow-lg mb-6">
+                    <p class="text-xs font-bold text-teal-100 uppercase mb-3">Core Capabilities</p>
+                    <ul class="text-[11px] space-y-2">
+                        <li>✓ <strong>AI-Powered Gap Analysis:</strong> Real-time scoring against JCI, ISO 15189, CAP</li>
+                        <li>✓ <strong>Automated Evidence Collection:</strong> Pulls data from 28+ HIS/LIMS connectors</li>
+                        <li>✓ <strong>Predictive Risk Engine:</strong> Flags high-risk items 90 days pre-audit</li>
+                        <li>✓ <strong>Bilingual Dashboard:</strong> Native Arabic/English RTL interface</li>
+                    </ul>
+                </div>
+                <div class="metric-card">
+                    <p class="text-[10px] text-slate-500 uppercase">Proven Impact</p>
+                    <div class="grid grid-cols-3 gap-3 mt-2 text-center">
+                        <div><p class="text-xl font-black text-[var(--brand-teal)]">60%</p><p class="text-[9px] text-slate-500">Admin Cost Reduction</p></div>
+                        <div><p class="text-xl font-black text-[var(--brand-teal)]">3.2x</p><p class="text-[9px] text-slate-500">Faster Audit Prep</p></div>
+                        <div><p class="text-xl font-black text-[var(--brand-teal)]">99.1%</p><p class="text-[9px] text-slate-500">Accuracy Rate</p></div>
+                    </div>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <div class="bg-gradient-to-br from-[var(--brand-teal)] to-[var(--brand-dark)] text-white rounded-2xl p-6 shadow-lg mb-6">
+                    <p class="text-xs font-bold text-teal-100 uppercase mb-3">القدرات الأساسية</p>
+                    <ul class="text-[11px] space-y-2">
+                        <li>✓ <strong>تحليل الفجوات بالذكاء الاصطناعي:</strong> تقييم فوري للامتثال وفق معايير JCI و ISO 15189</li>
+                        <li>✓ <strong>جمع الأدلة الآلي:</strong> سحب البيانات من أكثر من ٢٨ نظام طبي</li>
+                        <li>✓ <strong>محرك تنبؤ بالمخاطر:</strong> تحديد البنود عالية الخطورة قبل ٩٠ يوماً</li>
+                        <li>✓ <strong>لوحة تحكم ثنائية اللغة:</strong> واجهة عربية/إنجليزية مع دعم كامل لاتجاه النص</li>
+                    </ul>
+                </div>
+                <div class="metric-card">
+                    <p class="text-[10px] text-slate-500 uppercase">أثر مُثبت</p>
+                    <div class="grid grid-cols-3 gap-3 mt-2 text-center">
+                        <div><p class="text-xl font-black text-[var(--brand-teal)]">٦٠٪</p><p class="text-[9px] text-slate-500">تخفيض التكاليف الإدارية</p></div>
+                        <div><p class="text-xl font-black text-[var(--brand-teal)]">٣.٢x</p><p class="text-[9px] text-slate-500">تسريع استعداد التدقيق</p></div>
+                        <div><p class="text-xl font-black text-[var(--brand-teal)]">٩٩.١٪</p><p class="text-[9px] text-slate-500">معدل الدقة</p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex justify-center">
+            <div class="bg-slate-900 text-white rounded-xl px-6 py-3 text-[10px] font-bold uppercase tracking-widest">
+                MVP Live • React/Firebase/TypeScript • SOC 2 Ready Architecture
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 4: MARKET OPPORTUNITY -->
+    <div class="slide">
+        <h2 class="slide-title">GCC Market: $4.37B Compliance Software Opportunity</h2>
+        <div class="grid grid-cols-2 gap-8 mb-8">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-3">Total Addressable Market (TAM)</p>
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">GCC Healthcare Compliance Software</span><span class="text-sm font-black text-[var(--brand-teal)]">$4.37B by 2026</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">GCC Healthcare Consulting Services</span><span class="text-sm font-black text-[var(--brand-teal)]">$1.47B by 2035</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">GCC Health Insurance Market</span><span class="text-sm font-black text-[var(--brand-teal)]">$30.1B by 2034</span></div>
+                </div>
+                <div class="highlight-box">
+                    <p class="text-[10px] font-bold text-slate-800 mb-2">🎯 Beachhead Strategy</p>
+                    <p class="text-[11px] text-slate-600">Start with <strong>private hospital labs in Oman & UAE</strong> (est. 320 facilities), then expand to KSA public sector via ADGM partnerships.</p>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-3">إجمالي السوق المستهدف</p>
+                <div class="space-y-3 mb-4">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">برامج الامتثال الصحي في الخليج</span><span class="text-sm font-black text-[var(--brand-teal)]">٤.٣٧ مليار دولار بحلول ٢٠٢٦</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">خدمات الاستشارات الصحية في الخليج</span><span class="text-sm font-black text-[var(--brand-teal)]">١.٤٧ مليار دولار بحلول ٢٠٣٥</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">سوق التأمين الصحي في الخليج</span><span class="text-sm font-black text-[var(--brand-teal)]">٣٠.١ مليار دولار بحلول ٢٠٣٤</span></div>
+                </div>
+                <div class="highlight-box">
+                    <p class="text-[10px] font-bold text-slate-800 mb-2">🎯 استراتيجية الاختراق الأولي</p>
+                    <p class="text-[11px] text-slate-600">البدء بـ <strong>مختبرات المستشفيات الخاصة في عُمان والإمارات</strong> (حوالي ٣٢٠ منشأة)، ثم التوسع للقطاع العام في السعودية عبر شراكات سوق أبوظبي العالمي.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 5: BUSINESS MODEL -->
+    <div class="slide">
+        <h2 class="slide-title">Scalable SaaS + Services Revenue Model</h2>
+        <div class="grid grid-cols-2 gap-10 mb-8">
+            <div>
+                <div class="space-y-4">
+                    <div class="metric-card">
+                        <p class="text-[10px] text-slate-500 uppercase mb-2">Primary: SaaS Subscription</p>
+                        <div class="space-y-2 text-[11px]">
+                            <div class="flex justify-between"><span>Starter (Single Lab)</span><span class="font-bold">$499/mo</span></div>
+                            <div class="flex justify-between"><span>Professional (Hospital)</span><span class="font-bold">$1,499/mo</span></div>
+                            <div class="flex justify-between"><span>Enterprise (Health System)</span><span class="font-bold">Custom</span></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <p class="text-[10px] text-slate-500 uppercase mb-2">Secondary: Implementation Services</p>
+                        <ul class="text-[11px] space-y-1 text-slate-600">
+                            <li>• Onboarding & Integration: $5K–$25K one-time</li>
+                            <li>• Training & Change Management: $2K/month retainer</li>
+                            <li>• Regulatory Advisory: Hourly or project-based</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <div class="space-y-4">
+                    <div class="metric-card">
+                        <p class="text-[10px] text-slate-500 uppercase mb-2">أساسي: اشتراكات البرمجيات كخدمة</p>
+                        <div class="space-y-2 text-[11px]">
+                            <div class="flex justify-between"><span>باقة البداية (مختبر واحد)</span><span class="font-bold">٤٩٩ دولار/شهرياً</span></div>
+                            <div class="flex justify-between"><span>المحترفين (مستشفى)</span><span class="font-bold">١,٤٩٩ دولار/شهرياً</span></div>
+                            <div class="flex justify-between"><span>المؤسسات (نظام صحي)</span><span class="font-bold">حسب الطلب</span></div>
+                        </div>
+                    </div>
+                    <div class="metric-card">
+                        <p class="text-[10px] text-slate-500 uppercase mb-2">ثانوي: خدمات التنفيذ</p>
+                        <ul class="text-[11px] space-y-1 text-slate-600">
+                            <li>• التكامل والتشغيل الأولي: ٥–٢٥ ألف دولار لمرة واحدة</li>
+                            <li>• التدريب وإدارة التغيير: ٢ ألف دولار/شهرياً</li>
+                            <li>• الاستشارات التنظيمية: حسب الساعة أو المشروع</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-slate-900 text-white rounded-2xl p-6">
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <p class="text-[10px] font-bold text-teal-400 uppercase">Unit Economics (Year 3 Projection)</p>
+                    <p class="text-2xl font-black mt-1">$18,200 LTV / $3,100 CAC</p>
+                    <p class="text-[10px] text-slate-400">5.9x LTV:CAC Ratio • 14-month Payback</p>
+                </div>
+                <div dir="rtl" class="text-right">
+                    <p class="text-[10px] font-bold text-teal-400 uppercase">اقتصاديات الوحدة (توقعات السنة الثالثة)</p>
+                    <p class="text-2xl font-black mt-1">١٨,٢٠٠ دولار قيمة عمر العميل / ٣,١٠٠ دولار تكلفة اكتساب</p>
+                    <p class="text-[10px] text-slate-400">نسبة ٥.٩:١ • استرداد التكلفة خلال ١٤ شهراً</p>
+                </div>
+            </div>
+            <div class="h-1 bg-slate-700 rounded-full overflow-hidden"><div class="h-full bg-gradient-to-r from-teal-400 to-teal-600" style="width: 85%"></div></div>
+            <p class="text-[9px] text-slate-400 mt-2 text-center">Gross Margin Target: 85% by Year 2</p>
+        </div>
+    </div>
+
+    <!-- SLIDE 6: TRACTION & MILESTONES -->
+    <div class="slide">
+        <h2 class="slide-title">Validated Progress: MVP • Pilots • Partnerships</h2>
+        <div class="grid grid-cols-2 gap-10 mb-8">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">Key Milestones Achieved</p>
+                <div class="space-y-4 mb-6">
+                    <div class="flex gap-3"><div class="timeline-dot mt-1.5"></div><div><p class="text-[11px] font-bold text-slate-800">Functional MVP Launched</p><p class="text-[10px] text-slate-500">React/Firebase/TypeScript stack • 28 HIS/LIMS connectors validated</p></div></div>
+                    <div class="flex gap-3"><div class="timeline-dot mt-1.5"></div><div><p class="text-[11px] font-bold text-slate-800">Advanced Pilot Discussions</p><p class="text-[10px] text-slate-500">Shifa Hospital, Muscat • LOI under review for Q3 2026 deployment</p></div></div>
+                    <div class="flex gap-3"><div class="timeline-dot mt-1.5"></div><div><p class="text-[11px] font-bold text-slate-800">Regulatory Pathway Secured</p><p class="text-[10px] text-slate-500">ADGM Tech Startup License application in progress • DOH engagement initiated</p></div></div>
+                </div>
+                <div class="bg-[var(--brand-teal)]/5 border-l-4 border-[var(--brand-teal)] p-4 rounded-r-lg">
+                    <p class="text-[10px] font-bold text-slate-800 mb-2">🏆 Founder Credentials</p>
+                    <p class="text-[11px] text-slate-600">Ashraf Musa: B.Sc. MLS • ISQUA Fellow • Six Sigma Black Belt • Licensed Lab Quality Manager (Oman/Sudan) • Full-Stack Developer</p>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">أهم الإنجازات المحققة</p>
+                <div class="space-y-4 mb-6">
+                    <div class="flex gap-3"><div class="timeline-dot mt-1.5"></div><div><p class="text-[11px] font-bold text-slate-800">إطلاق نسخة أولية وظيفية</p><p class="text-[10px] text-slate-500">مبنية على React/Firebase/TypeScript • التحقق من ٢٨ وصلة لأنظمة طبية</p></div></div>
+                    <div class="flex gap-3"><div class="timeline-dot mt-1.5"></div><div><p class="text-[11px] font-bold text-slate-800">محادثات متقدمة للتجريب</p><p class="text-[10px] text-slate-500">مستشفى الشفاء، مسقط • خطاب نوايا قيد المراجعة للنشر في الربع الثالث ٢٠٢٦</p></div></div>
+                    <div class="flex gap-3"><div class="timeline-dot mt-1.5"></div><div><p class="text-[11px] font-bold text-slate-800">تأمين المسار التنظيمي</p><p class="text-[10px] text-slate-500">طلب ترخيص شركة تقنية في سوق أبوظبي العالمي قيد التقدم</p></div></div>
+                </div>
+                <div class="bg-[var(--brand-teal)]/5 border-r-4 border-[var(--brand-teal)] p-4 rounded-l-lg">
+                    <p class="text-[10px] font-bold text-slate-800 mb-2">🏆 مؤهلات المؤسس</p>
+                    <p class="text-[11px] text-slate-600">أشرف موسى: بكالوريوس علوم مختبرات • زميل الآيزوكوا • حزام أسود في سيكس سيجما • مدير جودة مختبرات مرخص (عُمان/السودان) • مطور برمجيات متكامل</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 7: COMPETITIVE LANDSCAPE -->
+    <div class="slide">
+        <h2 class="slide-title">Why Accreditex Wins in GCC</h2>
+        <div class="mb-8 overflow-x-auto">
+            <table class="w-full text-[10px]">
+                <thead><tr class="border-b-2 border-slate-200"><th class="text-left py-3 px-2 font-bold text-slate-700">Capability</th><th class="text-center py-3 px-2 font-bold text-[var(--brand-teal)]">Accreditex</th><th class="text-center py-3 px-2 font-bold text-slate-700">Global SaaS</th><th class="text-center py-3 px-2 font-bold text-slate-700">Local Consultants</th></tr></thead>
+                <tbody class="text-slate-600">
+                    <tr class="border-b border-slate-100"><td class="py-3 px-2 font-medium">Arabic/RTL Native UI</td><td class="text-center py-3 px-2 font-bold">✓ Built-in</td><td class="text-center py-3 px-2 text-slate-400">✗ Add-on</td><td class="text-center py-3 px-2 text-slate-400">✗ Manual</td></tr>
+                    <tr class="border-b border-slate-100"><td class="py-3 px-2 font-medium">GCC Regulatory Logic</td><td class="text-center py-3 px-2 font-bold">✓ DOH/CBAHI/MOHAP</td><td class="text-center py-3 px-2 text-slate-400">✗ US/EU Focus</td><td class="text-center py-3 px-2 font-bold">✓ Local Knowledge</td></tr>
+                    <tr class="border-b border-slate-100"><td class="py-3 px-2 font-medium">AI Predictive Engine</td><td class="text-center py-3 px-2 font-bold">✓ Proprietary</td><td class="text-center py-3 px-2 text-slate-400">△ Basic</td><td class="text-center py-3 px-2 text-slate-400">✗ None</td></tr>
+                    <tr><td class="py-3 px-2 font-medium">Price (Annual)</td><td class="text-center py-3 px-2 font-bold text-[var(--brand-teal)]">$6K–$18K</td><td class="text-center py-3 px-2 text-slate-600">$25K–$100K+</td><td class="text-center py-3 px-2 text-slate-600">$50K+ (Services)</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+            <div class="highlight-box"><p class="text-[10px] font-bold text-slate-800 mb-2">🛡️ Defensible Moat</p><ul class="text-[11px] space-y-1 text-slate-600"><li>• First-mover in Arabic-native clinical governance SaaS</li><li>• Founder's regulatory licenses accelerate trust</li><li>• ADGM jurisdiction enables cross-border scalability</li></ul></div>
+            <div class="highlight-box" dir="rtl"><p class="text-[10px] font-bold text-slate-800 mb-2">🛡️ ميزة تنافسية مستدامة</p><ul class="text-[11px] space-y-1 text-slate-600"><li>• الريادة في حلول الحوكمة الإكلينيكية السحابية باللغة العربية</li><li>• تراخيص المؤسس التنظيمية تُسرّع بناء الثقة</li><li>• الاختيار القضائي لسوق أبوظبي العالمي يُسهّل التوسع الإقليمي</li></ul></div>
+        </div>
+    </div>
+
+    <!-- SLIDE 8: GO-TO-MARKET STRATEGY -->
+    <div class="slide">
+        <h2 class="slide-title">Phased Market Entry: Oman → UAE → KSA</h2>
+        <div class="grid grid-cols-2 gap-10 mb-8">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">Phase 1: Validate (Q3–Q4 2026)</p>
+                <ul class="text-[11px] space-y-2 text-slate-600 mb-6">
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>Deploy MVP at Shifa Hospital (Muscat) • 3-month pilot</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>Secure 2 additional Omani private hospital LOIs</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>Complete ADGM incorporation & economic substance setup</span></li>
+                </ul>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">Phase 2: Scale (2027)</p>
+                <ul class="text-[11px] space-y-2 text-slate-600">
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>Launch in UAE via ADGM/HUB71 partnerships</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>Target 15 hospital clients • $450K ARR goal</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>Release AI predictive engine v2.0</span></li>
+                </ul>
+            </div>
+            <div dir="rtl" class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">المرحلة الأولى: التحقق (الربع ٣–٤ ٢٠٢٦)</p>
+                <ul class="text-[11px] space-y-2 text-slate-600 mb-6">
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>نشر النسخة الأولية في مستشفى الشفاء (مسقط) • تجربة ٣ أشهر</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>تأمين خطابات نوايا من مستشفيين خاصين إضافيين في عُمان</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>إكمال التأسيس في سوق أبوظبي العالمي</span></li>
+                </ul>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">المرحلة الثانية: التوسع (٢٠٢٧)</p>
+                <ul class="text-[11px] space-y-2 text-slate-600">
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>الإطلاق في الإمارات عبر شراكات سوق أبوظبي العالمي / HUB71</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>استهداف ١٥ عميلاً من المستشفيات • هدف إيرادات سنوية ٤٥٠ ألف دولار</span></li>
+                    <li class="flex items-start gap-2"><span class="text-[var(--brand-teal)] mt-0.5">→</span><span>إطلاق الإصدار ٢.٠ من محرك الذكاء الاصطناعي التنبؤي</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="bg-slate-50 rounded-xl p-5 border border-slate-200">
+            <p class="text-[10px] font-bold text-slate-700 mb-3">Key Partnerships in Progress</p>
+            <div class="flex flex-wrap gap-2"><span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[9px] font-medium">ADGM RegLab</span><span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[9px] font-medium">HUB71+</span><span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[9px] font-medium">Oman MOH</span><span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[9px] font-medium">Shifa Hospital</span><span class="px-3 py-1 bg-white border border-slate-200 rounded-full text-[9px] font-medium">ISQua Network</span></div>
+        </div>
+    </div>
+
+    <!-- SLIDE 9: TEAM -->
+    <div class="slide flex flex-col justify-center">
+        <h2 class="slide-title text-center mb-10">Built by a Clinical Quality Practitioner</h2>
+        <div class="max-w-3xl mx-auto">
+            <div class="flex items-center gap-6 mb-8">
+                <img src="./public/CEO.jpg" alt="Ashraf Musa" class="w-28 h-28 rounded-2xl shadow-xl object-cover border-4 border-white flex-shrink-0" 
+                     onerror="this.outerHTML='<div class=\'w-28 h-28 rounded-2xl shadow-xl asset-fallback\'><span class=\'text-3xl font-black text-white\'>AM</span></div>'">
+                <div class="flex-1">
+                    <h3 class="text-2xl font-black text-slate-900">Ashraf Abu Baker Musa Ishag</h3>
+                    <p class="text-[var(--brand-teal)] font-bold uppercase tracking-wider text-sm mb-3">Founder & CEO</p>
+                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                        <div><p class="font-bold text-slate-800">Credentials</p><p>• B.Sc. Medical Laboratory Science</p><p>• ISQUA Fellow</p><p>• Six Sigma Black Belt</p></div>
+                        <div><p class="font-bold text-slate-800">Licenses & Skills</p><p>• Licensed Lab Quality Manager (Oman & Sudan)</p><p>• Full-Stack: React, Firebase, TS, AI</p><p>• 12+ years clinical governance experience</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-900 text-white rounded-2xl p-6 mb-8">
+                <p class="text-[11px] italic leading-relaxed">"I built Accreditex because I lived the pain: manual audits, fragmented systems, and the constant fear of non-compliance. This isn't just software—it's a clinical quality practitioner's solution to a real-world problem."</p>
+                <p class="text-[10px] text-teal-300 mt-3 font-bold uppercase tracking-widest">— Ashraf Musa</p>
+            </div>
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <div class="metric-card"><p class="text-2xl font-black text-[var(--brand-teal)]">12+</p><p class="text-[9px] text-slate-500 uppercase">Years in Clinical Quality</p></div>
+                <div class="metric-card"><p class="text-2xl font-black text-[var(--brand-teal)]">2</p><p class="text-[9px] text-slate-500 uppercase">Countries Licensed</p></div>
+                <div class="metric-card"><p class="text-2xl font-black text-[var(--brand-teal)]">100%</p><p class="text-[9px] text-slate-500 uppercase">Founder-Led Development</p></div>
+            </div>
+        </div>
+        <div id="ar-team" class="hidden mt-10 pt-8 border-t border-slate-200" dir="rtl">
+            <h3 class="text-2xl font-black text-slate-900 text-center mb-6">من بناء ممارس جودة إكلينيكية</h3>
+            <div class="max-w-3xl mx-auto flex items-center gap-6 mb-6">
+                <img src="./public/CEO.jpg" alt="أشرف موسى" class="w-28 h-28 rounded-2xl shadow-xl object-cover border-4 border-white flex-shrink-0" onerror="this.outerHTML='<div class=\'w-28 h-28 rounded-2xl shadow-xl asset-fallback\'><span class=\'text-3xl font-black text-white\'>أ م</span></div>'">
+                <div class="flex-1 text-right">
+                    <h3 class="text-2xl font-black text-slate-900">أشرف أبو بكر موسى إشاق</h3>
+                    <p class="text-[var(--brand-teal)] font-bold uppercase tracking-wider text-sm mb-3">المؤسس والرئيس التنفيذي</p>
+                    <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600">
+                        <div><p class="font-bold text-slate-800">المؤهلات</p><p>• بكالوريوس علوم المختبرات الطبية</p><p>• زميل الجمعية الدولية للجودة في الرعاية الصحية</p><p>• حزام أسود في سيكس سيجما</p></div>
+                        <div><p class="font-bold text-slate-800">التراخيص والمهارات</p><p>• مدير جودة مختبرات مرخص (عُمان والسودان)</p><p>• مطور برمجيات متكامل: React، Firebase، TypeScript</p><p>• أكثر من ١٢ عاماً من الخبرة</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-slate-900 text-white rounded-2xl p-6">
+                <p class="text-[11px] italic leading-relaxed">"بنيت أكرديتكس لأنني عشت التحدي: تدقيقات يدوية، أنظمة متفرقة، والخوف المستمر من عدم الامتثال. هذا ليس مجرد برنامج—بل هو حل من ممارس جودة إكلينيكية لمشكلة واقعية."</p>
+                <p class="text-[10px] text-teal-300 mt-3 font-bold uppercase tracking-widest">— أشرف موسى</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 10: FINANCIAL PROJECTIONS -->
+    <div class="slide">
+        <h2 class="slide-title">3-Year Financial Outlook (Conservative)</h2>
+        <div class="grid grid-cols-2 gap-10 mb-8">
+            <div>
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">Revenue Projection (USD)</p>
+                <div class="space-y-3 mb-6">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">Year 1 (2026)</span><span class="text-sm font-black text-[var(--brand-teal)]">$185K</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">Year 2 (2027)</span><span class="text-sm font-black text-[var(--brand-teal)]">$820K</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">Year 3 (2028)</span><span class="text-sm font-black text-[var(--brand-teal)]">$2.4M</span></div>
+                </div>
+                <div class="highlight-box">
+                    <p class="text-[10px] font-bold text-slate-800 mb-2">💡 Capital Efficiency</p>
+                    <p class="text-[11px] text-slate-600">Bootstrapped MVP development • Founder-led sales • Lean ADGM setup minimizes burn rate.</p>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <p class="text-[10px] font-bold text-slate-500 uppercase mb-4">توقعات الإيرادات (دولار أمريكي)</p>
+                <div class="space-y-3 mb-6">
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">السنة الأولى (٢٠٢٦)</span><span class="text-sm font-black text-[var(--brand-teal)]">١٨٥ ألف دولار</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">السنة الثانية (٢٠٢٧)</span><span class="text-sm font-black text-[var(--brand-teal)]">٨٢٠ ألف دولار</span></div>
+                    <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg"><span class="text-[11px] text-slate-600">السنة الثالثة (٢٠٢٨)</span><span class="text-sm font-black text-[var(--brand-teal)]">٢.٤ مليون دولار</span></div>
+                </div>
+                <div class="highlight-box">
+                    <p class="text-[10px] font-bold text-slate-800 mb-2">💡 كفاءة رأس المال</p>
+                    <p class="text-[11px] text-slate-600">تطوير النسخة الأولية بتمويل ذاتي • مبيعات بقيادة المؤسس • إعداد مرن في سوق أبوظبي العالمي يقلل من معدل حرق النقد.</p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-gradient-to-r from-slate-50 to-[var(--brand-teal)]/5 rounded-xl p-5 border border-slate-200">
+            <p class="text-[10px] font-bold text-slate-700 mb-3">Key Metrics Target (End of Year 2)</p>
+            <div class="grid grid-cols-4 gap-4 text-center">
+                <div><p class="text-xl font-black text-[var(--brand-teal)]">$820K</p><p class="text-[9px] text-slate-500 uppercase">ARR</p></div>
+                <div><p class="text-xl font-black text-[var(--brand-teal)]">85%</p><p class="text-[9px] text-slate-500 uppercase">Gross Margin</p></div>
+                <div><p class="text-xl font-black text-[var(--brand-teal)]">14 mo</p><p class="text-[9px] text-slate-500 uppercase">CAC Payback</p></div>
+                <div><p class="text-xl font-black text-[var(--brand-teal)]">5.9x</p><p class="text-[9px] text-slate-500 uppercase">LTV:CAC</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 11: THE ASK -->
+    <div class="slide">
+        <h2 class="slide-title">Strategic Pre-Seed Investment: $250,000 USD</h2>
+        <div class="grid grid-cols-2 gap-10 mb-8">
+            <div>
+                <div class="bg-slate-900 text-white rounded-2xl p-6 mb-6">
+                    <p class="text-[10px] font-bold text-teal-400 uppercase mb-3">Investment Terms</p>
+                    <div class="space-y-3 text-[11px]">
+                        <div class="flex justify-between pb-2 border-b border-white/10"><span>Amount</span><span class="font-bold text-teal-300">$250,000 USD</span></div>
+                        <div class="flex justify-between pb-2 border-b border-white/10"><span>Equity Offered</span><span class="font-bold text-teal-300">10% – 12%</span></div>
+                        <div class="flex justify-between pb-2 border-b border-white/10"><span>Pre-Money Valuation</span><span class="font-bold text-teal-300">~$2.1M – $2.5M</span></div>
+                        <div class="flex justify-between"><span>Instrument</span><span class="font-bold text-teal-300">SAFE / Convertible Note</span></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <p class="text-[10px] text-slate-500 uppercase mb-3">Use of Funds</p>
+                    <div class="space-y-2 text-[11px]">
+                        <div class="flex justify-between"><span>ADGM Incorporation & Legal</span><span class="font-bold text-[var(--brand-teal)]">40%</span></div>
+                        <div class="flex justify-between"><span>Registered Office (Sky Tower)</span><span class="font-bold text-[var(--brand-teal)]">30%</span></div>
+                        <div class="flex justify-between"><span>Pilot Deployment & AI Engine</span><span class="font-bold text-[var(--brand-teal)]">30%</span></div>
+                    </div>
+                    <div class="h-2 bg-slate-200 rounded-full mt-4 overflow-hidden"><div class="h-full bg-gradient-to-r from-[var(--brand-teal)] to-[var(--brand-dark)]" style="width: 100%"></div></div>
+                </div>
+            </div>
+            <div dir="rtl" class="text-right">
+                <div class="bg-slate-900 text-white rounded-2xl p-6 mb-6">
+                    <p class="text-[10px] font-bold text-teal-400 uppercase mb-3">شروط الاستثمار</p>
+                    <div class="space-y-3 text-[11px]">
+                        <div class="flex justify-between pb-2 border-b border-white/10"><span>المبلغ</span><span class="font-bold text-teal-300">٢٥٠,٠٠٠ دولار أمريكي</span></div>
+                        <div class="flex justify-between pb-2 border-b border-white/10"><span>حصة الملكية المعروضة</span><span class="font-bold text-teal-300">١٠٪ – ١٢٪</span></div>
+                        <div class="flex justify-between pb-2 border-b border-white/10"><span>التقييم قبل الاستثمار</span><span class="font-bold text-teal-300">~٢.١ – ٢.٥ مليون دولار</span></div>
+                        <div class="flex justify-between"><span>أداة الاستثمار</span><span class="font-bold text-teal-300">SAFE / سند قابل للتحويل</span></div>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <p class="text-[10px] text-slate-500 uppercase mb-3">توزيع رأس المال</p>
+                    <div class="space-y-2 text-[11px]">
+                        <div class="flex justify-between"><span>التأسيس القانوني في سوق أبوظبي العالمي</span><span class="font-bold text-[var(--brand-teal)]">٤٠٪</span></div>
+                        <div class="flex justify-between"><span>المقر الرسمي (برج سكاي تاور)</span><span class="font-bold text-[var(--brand-teal)]">٣٠٪</span></div>
+                        <div class="flex justify-between"><span>نشر التجربة وتطوير محرك الذكاء الاصطناعي</span><span class="font-bold text-[var(--brand-teal)]">٣٠٪</span></div>
+                    </div>
+                    <div class="h-2 bg-slate-200 rounded-full mt-4 overflow-hidden"><div class="h-full bg-gradient-to-r from-[var(--brand-teal)] to-[var(--brand-dark)]" style="width: 100%"></div></div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-[var(--brand-teal)]/5 border-l-4 border-[var(--brand-teal)] p-5 rounded-r-lg">
+            <p class="text-[10px] font-bold text-slate-800 mb-2">✨ Investor Value-Add Opportunities</p>
+            <div class="grid grid-cols-2 gap-4 text-[11px] text-slate-600">
+                <div><p class="font-bold text-slate-800 mb-1">Strategic Introductions</p><p>DOH, CBAHI, MOHAP, HUB71 portfolio companies</p></div>
+                <div><p class="font-bold text-slate-800 mb-1">Regulatory Navigation</p><p>ADGM FSRA guidance, cross-border licensing support</p></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SLIDE 12: ROADMAP & VISION -->
+    <div class="slide">
+        <h2 class="slide-title">Vision: Becoming GCC's Clinical Governance Standard</h2>
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex-1 h-1 bg-slate-200 rounded-full relative">
+                    <div class="absolute left-0 top-0 h-full bg-[var(--brand-teal)] rounded-full" style="width: 35%"></div>
+                    <div class="absolute left-[35%] top-1/2 -translate-y-1/2 timeline-dot"></div>
+                    <div class="absolute left-[70%] top-1/2 -translate-y-1/2 timeline-dot"></div>
+                </div>
+            </div>
+            <div class="grid grid-cols-3 gap-6 text-center">
+                <div class="metric-card"><p class="text-[9px] font-bold text-slate-500 uppercase mb-2">2026: Validate</p><p class="text-sm font-bold text-slate-800 mb-2">Oman Pilot Launch</p><p class="text-[10px] text-slate-600">• Shifa Hospital deployment<br>• ADGM incorporation<br>• AI engine v1.0</p></div>
+                <div class="metric-card border-2 border-[var(--brand-teal)]"><p class="text-[9px] font-bold text-[var(--brand-teal)] uppercase mb-2">2027: Scale</p><p class="text-sm font-bold text-slate-800 mb-2">UAE Market Entry</p><p class="text-[10px] text-slate-600">• 15 hospital clients<br>• HUB71 partnership<br>• Predictive analytics v2.0</p></div>
+                <div class="metric-card"><p class="text-[9px] font-bold text-slate-500 uppercase mb-2">2028+: Expand</p><p class="text-sm font-bold text-slate-800 mb-2">KSA & Regional Growth</p><p class="text-[10px] text-slate-600">• CBAHI integration<br>• 40+ clients • Series A readiness</p></div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-6">
+            <div class="highlight-box"><p class="text-[10px] font-bold text-slate-800 mb-2">🌍 Long-Term Vision</p><p class="text-[11px] text-slate-600">Establish Accreditex as the default clinical governance platform for all JCI/ISO-accredited facilities across MENA, with expansion into Southeast Asia by 2030.</p></div>
+            <div class="highlight-box" dir="rtl"><p class="text-[10px] font-bold text-slate-800 mb-2">🌍 الرؤية طويلة المدى</p><p class="text-[11px] text-slate-600">ترسيخ أكرديتكس كمنصة الحوكمة الإكلينيكية الافتراضية لجميع المنشآت المعتمدة وفق معايير JCI/ISO في منطقة الشرق الأوسط وشمال أفريقيا، مع التوسع إلى جنوب شرق آسيا بحلول ٢٠٣٠.</p></div>
+        </div>
+    </div>
+
+    <!-- SLIDE 13: CONTACT -->
+    <div class="slide flex flex-col justify-center items-center text-center">
+        <div class="max-w-2xl">
+            <div class="flex justify-center mb-6">
+                <img src="./public/logo.png" alt="Accreditex" class="h-24 w-24 rounded-2xl shadow-xl object-contain bg-white p-2" onerror="this.outerHTML='<div class=\'h-24 w-24 rounded-2xl shadow-xl asset-fallback\'><span class=\'text-4xl font-black text-white\'>A<span class=\'text-teal-200\'>x</span></span></div>'">
+            </div>
+            <h2 class="text-3xl font-black text-slate-900 mb-4">Let's Build the Future of GCC Healthcare Compliance</h2>
+            <p class="text-slate-600 mb-8 max-w-xl mx-auto">We're seeking strategic partners who share our vision for AI-powered clinical governance. Let's discuss how Accreditex can deliver exceptional returns while transforming healthcare quality across the region.</p>
+            <div class="bg-slate-900 text-white rounded-2xl p-6 mb-8 max-w-md mx-auto">
+                <p class="text-[10px] font-bold text-teal-400 uppercase mb-4">Contact Information</p>
+                <div class="space-y-3 text-left text-[11px]">
+                    <p>✉️ ashraf.a.m.ishag@gmail.com</p>
+                    <p>📱 +968 9017 1958</p>
+                    <p>📍 Seeb, Muscat → ADGM, Abu Dhabi (2026)</p>
+                </div>
+            </div>
+            <div class="flex justify-center gap-4">
+                <button onclick="window.print()" class="bg-[var(--brand-teal)] text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-[var(--brand-dark)] transition text-sm">Download Full Deck (PDF)</button>
+                <a href="mailto:ashraf.a.m.ishag@gmail.com?subject=Accreditex Investment Inquiry" class="bg-white text-slate-700 border border-slate-200 px-6 py-3 rounded-full font-bold shadow hover:bg-slate-50 transition text-sm">Schedule a Meeting</a>
+            </div>
+        </div>
+        <div id="ar-contact" class="hidden mt-12 pt-8 border-t border-slate-200 max-w-2xl" dir="rtl">
+            <h2 class="text-3xl font-black text-slate-900 mb-4">لنبني معاً مستقبل الامتثال الصحي في الخليج</h2>
+            <p class="text-slate-600 mb-8 max-w-xl mx-auto">نبحث عن شركاء استراتيجيين يشاركوننا رؤيتنا للحوكمة الإكلينيكية المدعومة بالذكاء الاصطناعي. دعونا نناقش كيف يمكن لأكرديتكس تحقيق عوائد استثنائية مع تحويل جودة الرعاية الصحية في المنطقة.</p>
+            <div class="bg-slate-900 text-white rounded-2xl p-6 mb-8 max-w-md mx-auto">
+                <p class="text-[10px] font-bold text-teal-400 uppercase mb-4">معلومات التواصل</p>
+                <div class="space-y-3 text-right text-[11px]">
+                    <p>✉️ ashraf.a.m.ishag@gmail.com</p>
+                    <p>📱 ٩٦٨+ ٩٠١٧ ١٩٥٨</p>
+                    <p>📍 سيب، مسقط → سوق أبوظبي العالمي (٢٠٢٦)</p>
+                </div>
+            </div>
+            <div class="flex justify-center gap-4">
+                <button onclick="window.print()" class="bg-[var(--brand-teal)] text-white px-6 py-3 rounded-full font-bold shadow-lg hover:bg-[var(--brand-dark)] transition text-sm">تحميل العرض الكامل (بي دي إف)</button>
+                <a href="mailto:ashraf.a.m.ishag@gmail.com?subject=استفسار استثماري - أكرديتكس" class="bg-white text-slate-700 border border-slate-200 px-6 py-3 rounded-full font-bold shadow hover:bg-slate-50 transition text-sm">جدولة اجتماع</a>
+            </div>
+        </div>
+        <p class="text-[9px] text-slate-400 mt-8 uppercase tracking-widest">Confidential • Accreditex Limited • ADGM Jurisdiction • Q2 2026</p>
+    </div>
+
+    <script>
+        function toggleArabic() {
+            const arSections = ['ar-cover', 'ar-team', 'ar-contact'];
+            arSections.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden');
+            });
+        }
+        // Prevent print dialog from showing background colors incorrectly
+        window.addEventListener('beforeprint', () => {
+            document.body.style.background = 'white';
+        });
+    </script>
+</body>
+</html>

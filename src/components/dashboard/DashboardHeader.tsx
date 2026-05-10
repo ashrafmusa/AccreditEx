@@ -4,6 +4,7 @@ import {
   DownloadIcon,
   PlusIcon,
 } from "@/components/icons";
+import TourLauncher from "@/components/onboarding/TourLauncher";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
@@ -139,6 +140,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
           )}
         </div>
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto shrink-0">
+          <TourLauncher
+            variant="text"
+            size="md"
+            label={t("tourButton") || "Tours"}
+          />
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
