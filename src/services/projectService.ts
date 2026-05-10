@@ -276,7 +276,7 @@ export const updateCapa = async (
   if (!project) throw new Error('Project not found');
 
   const strictClosureValidationEnabled =
-    (import.meta.env.VITE_STRICT_CAPA_CLOSURE_VALIDATION || 'false') === 'true';
+    (process.env.VITE_STRICT_CAPA_CLOSURE_VALIDATION || 'false') === 'true';
 
   const updatedCapas = (project.capaReports || []).map(capa => {
     if (capa.id !== capaId) {

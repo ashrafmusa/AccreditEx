@@ -77,13 +77,12 @@ export class AIAgentService {
         // Detect environment at RUNTIME (not build-time) so a stale .env
         // value like "http://localhost:8000" doesn't break production.
         const isDevelopment =
-            window.location.hostname === 'localhost' ||
-            window.location.hostname === '127.0.0.1';
+            typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1');
 
-        const envUrl =
-            import.meta.env.VITE_AI_AGENT_URL ||
-            import.meta.env.VITE_AI_AGENT_BASE_URL ||
-            '';
+        // Get environment URL - compatible with both Vite and Jest
+        let envUrl = process.env.VITE_AI_AGENT_URL || process.env.VITE_AI_AGENT_BASE_URL || '';
 
         // In production, NEVER use a localhost URL — fall back to Render.
         const envIsLocalhost = envUrl.includes('localhost') || envUrl.includes('127.0.0.1');
@@ -98,7 +97,7 @@ export class AIAgentService {
         // Auth is now handled exclusively via Firebase ID tokens (Bearer).
         // The API_KEY stays on the Render server only (never bundled into client JS).
 
-        if (import.meta.env.DEV) {
+        if (process.env.NODE_ENV === 'development') {
             console.log('🤖 AI Agent Service initialized:', {
                 baseUrl: this.baseUrl,
                 auth: 'Firebase Bearer token',
@@ -613,6 +612,219 @@ Analyze compliance with the specified standard and provide:
         } catch (error) {
             console.error('Design compliance check error:', error);
             throw error;
+        }
+    }
+
+    /**
+     * Generate AI-powered action plan (dedicated endpoint with fallback)
+     */
+    async generateActionPlanDedicated(context: {
+        standardId: string;
+        item: string;
+        status: string;
+        findings?: string;
+    }): Promise<any> {
+        try {
+            // Try dedicated endpoint first
+            const response = await fetch(`${this.baseUrl}/generate-action-plan`, {
+                method: 'POST',
+                headers: await this.getHeaders(),
+                body: JSON.stringify({
+                    standard_id: context.standardId,
+                    item: context.item,
+                    status: context.status,
+                    findings: context.findings,
+                }),
+            });
+
+            if (!response.ok) {
+                // Fallback to chat on endpoint failure
+                console.warn('Action plan endpoint failed, falling back to chat');
+                return await this.generateActionPlan(context);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('Action plan endpoint error, falling back to chat:', error);
+            return await this.generateActionPlan(context);
+        }
+    }
+
+    /**
+     * Analyze root cause (dedicated endpoint with fallback)
+     */
+    async analyzeRootCauseDedicated(context: {
+        title: string;
+        description: string;
+        category?: string;
+        findings?: string;
+    }): Promise<any> {
+        try {
+            // Try dedicated endpoint first
+            const response = await fetch(`${this.baseUrl}/analyze-root-cause`, {
+                method: 'POST',
+                headers: await this.getHeaders(),
+                body: JSON.stringify({
+                    issue_title: context.title,
+                    description: context.description,
+                    context: context.category,
+                    affected_areas: context.findings ? [context.findings] : undefined,
+                }),
+            });
+
+            if (!response.ok) {
+                // Fallback to chat on endpoint failure
+                console.warn('Root cause analysis endpoint failed, falling back to chat');
+                return await this.analyzeRootCause(context);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('Root cause analysis endpoint error, falling back to chat:', error);
+            return await this.analyzeRootCause(context);
+        }
+    }
+
+    /**
+     * Suggest PDCA improvements (dedicated endpoint with fallback)
+     */
+    async suggestPDCAImprovementsDedicated(context: {
+        title: string;
+        currentStage: string;
+        description: string;
+        actions?: string[];
+    }): Promise<any> {
+        try {
+            // Try dedicated endpoint first
+            const response = await fetch(`${this.baseUrl}/suggest-pdca-improvements`, {
+                method: 'POST',
+                headers: await this.getHeaders(),
+                body: JSON.stringify({
+                    process_name: context.title,
+                    current_state: context.description,
+                    problem_identified: context.currentStage,
+                    previous_actions: context.actions?.join(', '),
+                }),
+            });
+
+            if (!response.ok) {
+                // Fallback to chat on endpoint failure
+                console.warn('PDCA endpoint failed, falling back to chat');
+                return await this.suggestPDCAImprovements(context);
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('PDCA endpoint error, falling back to chat:', error);
+            return await this.suggestPDCAImprovements(context);
+        }
+    }
+
+    /**
+     * Assess survey risk (dedicated endpoint with fallback)
+     */
+    async assessSurveyRiskDedicated(context: {
+        standard: string;
+        organizationArea: string;
+        readinessLevel: string;
+        criticalConcerns?: string[];
+        surveyDate?: string;
+    }): Promise<any> {
+        try {
+            // Try dedicated endpoint first
+            const response = await fetch(`${this.baseUrl}/assess-survey-risk`, {
+                method: 'POST',
+                headers: await this.getHeaders(),
+                body: JSON.stringify({
+                    standard: context.standard,
+                    organization_area: context.organizationArea,
+                    readiness_level: context.readinessLevel,
+                    critical_concerns: context.criticalConcerns,
+                    survey_date: context.surveyDate,
+                }),
+            });
+
+            if (!response.ok) {
+                // Fallback: use generic chat for survey risk discussion
+                console.warn('Survey risk endpoint failed, falling back to chat');
+                const prompt = `Assess survey readiness risk:
+
+Standard: ${context.standard}
+Organization Area: ${context.organizationArea}
+Current Readiness: ${context.readinessLevel}
+${context.criticalConcerns?.length ? `Critical Concerns: ${context.criticalConcerns.join(', ')}` : ''}
+${context.surveyDate ? `Survey Date: ${context.surveyDate}` : ''}
+
+Provide high-risk areas, compliance gaps, and priority actions.`;
+                
+                const chatResponse = await this.chat(prompt, true);
+                return { survey_risk_assessment: chatResponse.response, timestamp: new Date().toISOString() };
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('Survey risk endpoint error, falling back to chat:', error);
+            const prompt = `Assess survey readiness risk:
+
+Standard: ${context.standard}
+Organization Area: ${context.organizationArea}
+Current Readiness: ${context.readinessLevel}
+${context.criticalConcerns?.length ? `Critical Concerns: ${context.criticalConcerns.join(', ')}` : ''}
+${context.surveyDate ? `Survey Date: ${context.surveyDate}` : ''}
+
+Provide high-risk areas, compliance gaps, and priority actions.`;
+            
+            const chatResponse = await this.chat(prompt, true);
+            return { survey_risk_assessment: chatResponse.response, timestamp: new Date().toISOString() };
+        }
+    }
+
+    /**
+     * Check design compliance (dedicated endpoint with fallback)
+     */
+    async checkDesignComplianceDedicated(context: {
+        standard: string;
+        phase?: string;
+        description?: string;
+        requirements?: string[];
+    }): Promise<any> {
+        try {
+            // Try dedicated endpoint first
+            const response = await fetch(`${this.baseUrl}/check-design-compliance`, {
+                method: 'POST',
+                headers: await this.getHeaders(),
+                body: JSON.stringify({
+                    design_element: context.standard,
+                    requirement: context.requirements?.join(', ') || 'Design control compliance',
+                    current_implementation: context.description || 'Under review',
+                    design_phase: context.phase,
+                }),
+            });
+
+            if (!response.ok) {
+                // Fallback: use existing checkDesignCompliance method
+                console.warn('Design compliance endpoint failed, falling back to local method');
+                const result = await this.checkDesignCompliance({
+                    designTitle: context.standard,
+                    standard: context.standard,
+                    phase: context.phase || 'Implementation',
+                    description: context.description,
+                    requirements: context.requirements,
+                });
+                return { design_compliance_assessment: result, timestamp: new Date().toISOString() };
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.warn('Design compliance endpoint error, falling back to local method:', error);
+            const result = await this.checkDesignCompliance({
+                designTitle: context.standard,
+                standard: context.standard,
+                phase: context.phase || 'Implementation',
+                description: context.description,
+                requirements: context.requirements,
+            });
+            return { design_compliance_assessment: result, timestamp: new Date().toISOString() };
         }
     }
 

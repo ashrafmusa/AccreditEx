@@ -187,22 +187,72 @@ class ChatResponse(BaseModel):
 # Week 2: Specialist Request Models
 class ComplianceCheckRequest(BaseModel):
     """Request for CBAHI/JCI compliance checking"""
-    document: str = Field(..., description="Document text to check")
-    standard: Optional[str] = Field(None, description="Standard code (CBAHI 4.2.1, JCI PCI.1)")
+    document_type: str = Field(..., description="Document type to check")
+    standard: str = Field(..., description="Target standard or framework")
+    content_summary: str = Field(..., description="Document content or summary to analyze")
+    requirements: Optional[list[str]] = Field(None, description="Optional specific requirements to verify")
     user_id: Optional[str] = None
 
 class RiskAssessmentRequest(BaseModel):
     """Request for risk assessment"""
-    risk_description: str = Field(..., description="Risk description")
-    likelihood: Optional[int] = Field(None, ge=1, le=5, description="1-5")
-    impact: Optional[int] = Field(None, ge=1, le=5, description="1-5")
+    area: str = Field(..., description="Area or workflow being assessed")
+    current_status: str = Field(..., description="Current state or findings summary")
+    upcoming_review_date: str = Field(..., description="Upcoming review or audit date")
+    critical_areas: Optional[list[str]] = Field(None, description="Optional critical concerns to prioritize")
     user_id: Optional[str] = None
 
 class TrainingRequest(BaseModel):
     """Request for training recommendations"""
     role: str = Field(..., description="Staff role")
+    department: Optional[str] = Field(None, description="Department or team")
+    competency_gaps: Optional[list[str]] = Field(None, description="Explicit competency gaps from the frontend")
+    upcoming_accreditation: Optional[str] = Field(None, description="Upcoming accreditation focus from the frontend")
+    accreditation_focus: Optional[str] = Field(None, description="Normalized accreditation focus")
+    timeline: Optional[str] = Field(None, description="Desired completion timeline")
     gap_description: Optional[str] = None
     current_skills: Optional[list[str]] = None
+    user_id: Optional[str] = None
+
+# Week 3: Dedicated AI Workflow Endpoints
+class ActionPlanRequest(BaseModel):
+    """Request for AI-powered action plan generation"""
+    standard_id: str = Field(..., description="Accreditation standard identifier", example="CBAHI-4.1")
+    item: str = Field(..., description="Non-compliant item or requirement")
+    status: str = Field(..., description="Current status or gap description")
+    findings: Optional[str] = Field(None, description="Additional findings or context")
+    user_id: Optional[str] = None
+
+class RootCauseAnalysisRequest(BaseModel):
+    """Request for root cause analysis"""
+    issue_title: str = Field(..., description="Title of the issue or incident")
+    description: str = Field(..., description="Detailed description of the issue")
+    context: Optional[str] = Field(None, description="Additional context or background")
+    affected_areas: Optional[list[str]] = Field(None, description="Areas affected by the issue")
+    user_id: Optional[str] = None
+
+class PDCARequest(BaseModel):
+    """Request for PDCA cycle improvement suggestions"""
+    process_name: str = Field(..., description="Name of the process to improve")
+    current_state: str = Field(..., description="Description of current state")
+    problem_identified: str = Field(..., description="Identified problem or gap")
+    previous_actions: Optional[str] = Field(None, description="Previous corrective actions attempted")
+    user_id: Optional[str] = None
+
+class SurveyRiskRequest(BaseModel):
+    """Request for survey risk assessment"""
+    standard: str = Field(..., description="Accreditation standard (e.g., CBAHI, JCI)")
+    organization_area: str = Field(..., description="Area or department being surveyed")
+    readiness_level: str = Field(..., description="Current readiness (Low/Medium/High)")
+    critical_concerns: Optional[list[str]] = Field(None, description="Critical concerns to address")
+    survey_date: Optional[str] = Field(None, description="Planned survey date")
+    user_id: Optional[str] = None
+
+class DesignComplianceRequest(BaseModel):
+    """Request for design control compliance assessment"""
+    design_element: str = Field(..., description="Design element or component being assessed")
+    requirement: str = Field(..., description="Applicable compliance requirement")
+    current_implementation: str = Field(..., description="Current implementation or status")
+    design_phase: Optional[str] = Field(None, description="Design phase (Concept/Development/Validation/Post-Market)")
     user_id: Optional[str] = None
 
 class HealthResponse(BaseModel):
@@ -260,7 +310,7 @@ async def chat(request: Request, chat_request: ChatRequest):
     """
     Chat with the AI agent (streaming response)
     Accepts optional context for context-aware responses including forms and templates
-    Requires X-API-Key header for authentication
+    Requires Firebase Bearer auth for frontend requests or the backend API key for trusted service calls
     """
     start_time = time.time()
     
@@ -322,10 +372,7 @@ async def chat(request: Request, chat_request: ChatRequest):
 @limiter.limit("20/minute")
 async def check_compliance(
     request: Request,
-    document_type: str,
-    standard: str,
-    content_summary: str,
-    requirements: Optional[list] = None
+    payload: ComplianceCheckRequest,
 ):
     """Check document compliance against standards"""
     if not agent:
@@ -333,10 +380,10 @@ async def check_compliance(
     
     try:
         result = await agent.check_document_compliance(
-            document_type=document_type,
-            standard=standard,
-            content_summary=content_summary,
-            requirements=requirements
+            document_type=payload.document_type,
+            standard=payload.standard,
+            content_summary=payload.content_summary,
+            requirements=payload.requirements,
         )
         return JSONResponse(content=result)
     except Exception as e:
@@ -348,10 +395,7 @@ async def check_compliance(
 @limiter.limit("20/minute")
 async def assess_risk(
     request: Request,
-    area: str,
-    current_status: str,
-    upcoming_review_date: str,
-    critical_areas: Optional[list] = None
+    payload: RiskAssessmentRequest,
 ):
     """Assess compliance risk"""
     if not agent:
@@ -359,10 +403,10 @@ async def assess_risk(
     
     try:
         result = await agent.assess_risk(
-            area=area,
-            current_status=current_status,
-            upcoming_review_date=upcoming_review_date,
-            critical_areas=critical_areas
+            area=payload.area,
+            current_status=payload.current_status,
+            upcoming_review_date=payload.upcoming_review_date,
+            critical_areas=payload.critical_areas,
         )
         return JSONResponse(content=result)
     except Exception as e:
@@ -374,25 +418,136 @@ async def assess_risk(
 @limiter.limit("15/minute")
 async def get_training_recommendations(
     request: Request,
-    role: str,
-    competency_gaps: list,
-    accreditation_focus: str,
-    timeline: str
+    payload: TrainingRequest,
 ):
     """Get training recommendations"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
+        competency_gaps = payload.competency_gaps or payload.current_skills or []
+        accreditation_focus = (
+            payload.accreditation_focus
+            or payload.upcoming_accreditation
+            or payload.department
+            or "General healthcare accreditation readiness"
+        )
+        timeline = payload.timeline or "Next accreditation cycle"
+
         result = await agent.get_training_recommendations(
-            role=role,
+            role=payload.role,
             competency_gaps=competency_gaps,
             accreditation_focus=accreditation_focus,
-            timeline=timeline
+            timeline=timeline,
         )
         return JSONResponse(content=result)
     except Exception as e:
         logger.error(f"Training recommendations error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ─────────────────────────────────────────────────────────────
+# Week 3: Dedicated AI Workflow Endpoints
+# ─────────────────────────────────────────────────────────────
+
+# Action Plan Generation endpoint
+@app.post("/generate-action-plan", dependencies=[Depends(verify_api_key)], tags=["workflows"])
+@limiter.limit("20/minute")
+async def generate_action_plan(request: Request, payload: ActionPlanRequest):
+    """Generate actionable compliance action plan"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.generate_action_plan(
+            standard_id=payload.standard_id,
+            item=payload.item,
+            status=payload.status,
+            findings=payload.findings,
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"Action plan generation error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Root Cause Analysis endpoint
+@app.post("/analyze-root-cause", dependencies=[Depends(verify_api_key)], tags=["workflows"])
+@limiter.limit("20/minute")
+async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest):
+    """Perform structured root cause analysis"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.analyze_root_cause(
+            issue_title=payload.issue_title,
+            description=payload.description,
+            context=payload.context,
+            affected_areas=payload.affected_areas,
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"Root cause analysis error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# PDCA Improvement Suggestions endpoint
+@app.post("/suggest-pdca-improvements", dependencies=[Depends(verify_api_key)], tags=["workflows"])
+@limiter.limit("20/minute")
+async def suggest_pdca_improvements(request: Request, payload: PDCARequest):
+    """Suggest Plan-Do-Check-Act improvements"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.suggest_pdca_improvements(
+            process_name=payload.process_name,
+            current_state=payload.current_state,
+            problem_identified=payload.problem_identified,
+            previous_actions=payload.previous_actions,
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"PDCA improvement error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Survey Risk Assessment endpoint
+@app.post("/assess-survey-risk", dependencies=[Depends(verify_api_key)], tags=["workflows"])
+@limiter.limit("20/minute")
+async def assess_survey_risk(request: Request, payload: SurveyRiskRequest):
+    """Assess readiness risk for upcoming accreditation survey"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.assess_survey_risk(
+            standard=payload.standard,
+            organization_area=payload.organization_area,
+            readiness_level=payload.readiness_level,
+            critical_concerns=payload.critical_concerns,
+            survey_date=payload.survey_date,
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"Survey risk assessment error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# Design Control Compliance endpoint
+@app.post("/check-design-compliance", dependencies=[Depends(verify_api_key)], tags=["workflows"])
+@limiter.limit("20/minute")
+async def check_design_compliance(request: Request, payload: DesignComplianceRequest):
+    """Assess design control compliance"""
+    if not agent:
+        raise HTTPException(status_code=503, detail="Agent not initialized")
+    
+    try:
+        result = await agent.check_design_compliance(
+            design_element=payload.design_element,
+            requirement=payload.requirement,
+            current_implementation=payload.current_implementation,
+            design_phase=payload.design_phase,
+        )
+        return JSONResponse(content=result)
+    except Exception as e:
+        logger.error(f"Design compliance error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # NEW: Project Insights endpoint

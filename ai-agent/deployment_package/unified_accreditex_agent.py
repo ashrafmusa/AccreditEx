@@ -771,6 +771,211 @@ Always be specific and actionable, using real data from their workspace.
             "timestamp": datetime.now().isoformat()
         }
 
+    # ─────────────────────────────────────────────────────────────
+    # Week 3: Dedicated AI Workflow Methods
+    # ─────────────────────────────────────────────────────────────
+
+    async def generate_action_plan(self, standard_id: str, item: str, status: str, findings: Optional[str] = None) -> Dict[str, Any]:
+        """Generate actionable compliance action plan"""
+        system_prompt = f"""You are an expert compliance consultant helping create actionable action plans.
+
+Your role is to:
+1. Analyze non-compliant items
+2. Provide specific, measurable, achievable actions
+3. Suggest timelines and responsible parties
+4. Identify required resources
+
+Format response in clear sections with bullet points."""
+
+        prompt = f"""Generate a detailed action plan for this compliance issue:
+
+**Standard**: {standard_id}
+**Non-Compliant Item**: {item}
+**Current Status**: {status}
+{f"**Additional Findings**: {findings}" if findings else ""}
+
+Provide:
+1. Root cause analysis
+2. Specific corrective actions (3-5 actions)
+3. Timeline for each action
+4. Responsible parties
+5. Success metrics
+6. Required resources"""
+
+        response = await self._create_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2048
+        )
+
+        return {
+            "status": "completed",
+            "action_plan": response.choices[0].message.content,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    async def analyze_root_cause(self, issue_title: str, description: str, context: Optional[str] = None, affected_areas: Optional[List[str]] = None) -> Dict[str, Any]:
+        """Perform structured root cause analysis"""
+        system_prompt = """You are a Root Cause Analysis expert using the "5 Whys" methodology and Fishbone Diagram thinking.
+
+Your role is to:
+1. Identify immediate causes
+2. Dig deeper with systematic questioning
+3. Identify systemic or process issues
+4. Provide evidence-based recommendations"""
+
+        affected = ", ".join(affected_areas) if affected_areas else "Not specified"
+        prompt = f"""Perform root cause analysis for this issue:
+
+**Issue Title**: {issue_title}
+**Description**: {description}
+{f"**Context**: {context}" if context else ""}
+**Affected Areas**: {affected}
+
+Use the 5 Whys methodology and provide:
+1. Immediate cause
+2. 5 Whys analysis (structured)
+3. Root cause(s)
+4. Contributing factors
+5. Preventive and corrective actions
+6. Implementation plan"""
+
+        response = await self._create_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2048
+        )
+
+        return {
+            "status": "completed",
+            "root_cause_analysis": response.choices[0].message.content,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    async def suggest_pdca_improvements(self, process_name: str, current_state: str, problem_identified: str, previous_actions: Optional[str] = None) -> Dict[str, Any]:
+        """Suggest Plan-Do-Check-Act improvements"""
+        system_prompt = """You are a Quality Improvement specialist trained in PDCA (Plan-Do-Check-Act) methodology.
+
+Your role is to:
+1. Analyze the current process state
+2. Design targeted improvements
+3. Plan data collection and verification
+4. Enable continuous improvement cycles"""
+
+        prompt = f"""Suggest PDCA cycle improvements for this process:
+
+**Process Name**: {process_name}
+**Current State**: {current_state}
+**Problem Identified**: {problem_identified}
+{f"**Previous Actions Attempted**: {previous_actions}" if previous_actions else ""}
+
+Provide a PDCA cycle with:
+1. **PLAN**: What needs to change? (2-3 specific changes)
+2. **DO**: How will you implement? (timeline, responsible parties)
+3. **CHECK**: How will you verify effectiveness? (metrics, data to collect)
+4. **ACT**: How will you standardize? (documentation, training, monitoring)
+5. **Expected Outcomes**: What will success look like?"""
+
+        response = await self._create_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2048
+        )
+
+        return {
+            "status": "completed",
+            "pdca_improvements": response.choices[0].message.content,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    async def assess_survey_risk(self, standard: str, organization_area: str, readiness_level: str, critical_concerns: Optional[List[str]] = None, survey_date: Optional[str] = None) -> Dict[str, Any]:
+        """Assess readiness risk for upcoming accreditation survey"""
+        system_prompt = f"""You are an accreditation survey readiness expert specializing in {standard} standards.
+
+Your role is to:
+1. Assess current readiness against standards
+2. Identify high-risk areas
+3. Prioritize corrective actions
+4. Prepare for survey scenarios"""
+
+        concerns = ", ".join(critical_concerns) if critical_concerns else "None specified"
+        prompt = f"""Assess survey readiness risk:
+
+**Standard**: {standard}
+**Organization Area**: {organization_area}
+**Current Readiness Level**: {readiness_level}
+**Critical Concerns**: {concerns}
+{f"**Survey Date**: {survey_date}" if survey_date else ""}
+
+Provide:
+1. **Readiness Assessment**: Overall readiness (Low/Medium/High) with justification
+2. **High-Risk Areas**: Top 3-5 areas most likely to be cited
+3. **Compliance Gaps**: Specific non-conformities that surveyors may find
+4. **Priority Actions**: Immediate actions to take before survey
+5. **Recommended Timeline**: Realistic completion dates
+6. **Mock Survey Scenarios**: Likely surveyor questions and recommended responses"""
+
+        response = await self._create_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2048
+        )
+
+        return {
+            "status": "completed",
+            "survey_risk_assessment": response.choices[0].message.content,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    async def check_design_compliance(self, design_element: str, requirement: str, current_implementation: str, design_phase: Optional[str] = None) -> Dict[str, Any]:
+        """Assess design control compliance"""
+        system_prompt = """You are a Design Control and Quality Assurance expert in healthcare.
+
+Your role is to:
+1. Evaluate design against requirements
+2. Identify compliance gaps
+3. Recommend design changes
+4. Ensure traceability to requirements"""
+
+        phase_info = f"Design Phase: {design_phase}" if design_phase else ""
+        prompt = f"""Assess design control compliance:
+
+**Design Element**: {design_element}
+**Applicable Requirement**: {requirement}
+**Current Implementation**: {current_implementation}
+{phase_info}
+
+Provide:
+1. **Compliance Status**: Compliant/Non-Compliant/Conditionally Compliant
+2. **Gap Analysis**: What's missing or needs improvement?
+3. **Risk Assessment**: What are the compliance and patient safety risks?
+4. **Design Changes Recommended**: Specific modifications needed
+5. **Verification Plan**: How to verify compliance after changes
+6. **Validation Plan**: How to prove design meets requirements
+7. **Traceability**: Link back to original requirements"""
+
+        response = await self._create_completion(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=2048
+        )
+
+        return {
+            "status": "completed",
+            "design_compliance_assessment": response.choices[0].message.content,
+            "timestamp": datetime.now().isoformat()
+        }
+
     async def get_project_insights(self, project_id: str, user_id: str) -> Dict[str, Any]:
         """
         Get AI-generated insights for a specific project using Firebase data

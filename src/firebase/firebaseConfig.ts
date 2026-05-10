@@ -7,13 +7,13 @@ import { getStorage } from "firebase/storage";
 const processEnv = (typeof process !== 'undefined' ? process.env : {}) as Record<string, string | undefined>;
 
 const firebaseEnv = {
-    apiKey: import.meta.env.VITE_API_KEY || processEnv.VITE_API_KEY,
-    authDomain: import.meta.env.VITE_AUTH_DOMAIN || processEnv.VITE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_PROJECT_ID || processEnv.VITE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_STORAGE_BUCKET || processEnv.VITE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID || processEnv.VITE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_APP_ID || processEnv.VITE_APP_ID,
-    measurementId: import.meta.env.VITE_MEASUREMENT_ID || processEnv.VITE_MEASUREMENT_ID
+    apiKey: processEnv.VITE_API_KEY,
+    authDomain: processEnv.VITE_AUTH_DOMAIN,
+    projectId: processEnv.VITE_PROJECT_ID,
+    storageBucket: processEnv.VITE_STORAGE_BUCKET,
+    messagingSenderId: processEnv.VITE_MESSAGING_SENDER_ID,
+    appId: processEnv.VITE_APP_ID,
+    measurementId: processEnv.VITE_MEASUREMENT_ID
 };
 
 const missingFirebaseEnv = Object.entries(firebaseEnv)

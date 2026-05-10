@@ -1,18 +1,7 @@
 import '@testing-library/jest-dom';
 
-// Polyfill Blob.arrayBuffer for jsdom (needed by ExcelJS tests)
-if (!Blob.prototype.arrayBuffer) {
-  Blob.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = () => reject(reader.error);
-      reader.readAsArrayBuffer(this);
-    });
-  };
-}
-
-// Mock import.meta.env for Vite (both window and global)
+// Mock import.meta BEFORE any modules are imported
+// This must be done early to intercept module loading
 const mockEnv = {
   DEV: true,
   PROD: false,
@@ -25,10 +14,23 @@ const mockEnv = {
   VITE_APP_ID: 'test-app-id',
   VITE_AI_AGENT_URL: 'http://localhost:8000',
   VITE_AI_AGENT_API_KEY: 'test-api-key',
+  VITE_CLOUDINARY_CLOUD_NAME: 'demo',
+  VITE_CLOUDINARY_UPLOAD_PRESET: 'ml_default',
+  VITE_EMAILJS_SERVICE_ID: 'test-service',
+  VITE_EMAILJS_ADMIN_TEMPLATE_ID: 'test-template',
+  VITE_EMAILJS_REPLY_TEMPLATE_ID: 'test-template',
+  VITE_STRICT_CAPA_CLOSURE_VALIDATION: 'false',
 };
 
-// Mock for window environment
-Object.defineProperty(window, 'import', {
+// Set in process.env so it's available during module resolution
+Object.keys(mockEnv).forEach((key) => {
+  if (!process.env[key]) {
+    process.env[key] = (mockEnv as any)[key] || '';
+  }
+});
+
+// Mock import.meta globally for jsdom window context
+Object.defineProperty(globalThis, 'import', {
   value: {
     meta: {
       env: mockEnv,
@@ -38,12 +40,17 @@ Object.defineProperty(window, 'import', {
   configurable: true,
 });
 
-// Mock for Node.js global environment
-(global as any).import = {
-  meta: {
-    env: mockEnv,
-  },
-};
+// Polyfill Blob.arrayBuffer for jsdom (needed by ExcelJS tests)
+if (!Blob.prototype.arrayBuffer) {
+  Blob.prototype.arrayBuffer = function (): Promise<ArrayBuffer> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as ArrayBuffer);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsArrayBuffer(this);
+    });
+  };
+}
 
 // Mock logger service to avoid import.meta.env issues
 jest.mock('@/services/logger', () => ({

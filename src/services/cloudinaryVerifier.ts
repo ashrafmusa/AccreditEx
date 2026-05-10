@@ -23,8 +23,8 @@ export async function verifyCloudinarySetup(): Promise<CloudinaryVerificationRes
     const checks: CloudinaryVerificationResult['checks'] = [];
 
     // 1. Check environment variables
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+    const cloudName = process.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = process.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
     checks.push({
         name: 'VITE_CLOUDINARY_CLOUD_NAME',

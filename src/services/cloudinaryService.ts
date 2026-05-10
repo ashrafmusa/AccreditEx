@@ -1,17 +1,17 @@
 import { Cloudinary } from '@cloudinary/url-gen';
 
 // Cloudinary configuration
-const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
-const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
+const cloudName = process.env.VITE_CLOUDINARY_CLOUD_NAME || 'demo';
+const uploadPreset = process.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'ml_default';
 
 // Validate configuration on load
-if (!import.meta.env.VITE_CLOUDINARY_CLOUD_NAME) {
+if (!process.env.VITE_CLOUDINARY_CLOUD_NAME) {
   console.warn(
     '[Cloudinary] VITE_CLOUDINARY_CLOUD_NAME not set — using fallback "demo". ' +
     'Create a .env file with your Cloudinary credentials. See .env.example'
   );
 }
-if (!import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET) {
+if (!process.env.VITE_CLOUDINARY_UPLOAD_PRESET) {
   console.warn(
     '[Cloudinary] VITE_CLOUDINARY_UPLOAD_PRESET not set — using fallback "ml_default". ' +
     'Create a .env file with your Cloudinary credentials. See .env.example'

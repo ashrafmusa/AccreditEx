@@ -36,11 +36,11 @@ export interface DemoRequest extends DemoRequestPayload {
 
 // ── Email (EmailJS) ──────────────────────────────────────────────────────────
 // Gracefully skipped if env vars are not configured.
-const EJ_SERVICE = import.meta.env.VITE_EMAILJS_SERVICE_ID ?? '';
-const EJ_ADMIN_T = import.meta.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID ?? '';
-const EJ_REPLY_T = import.meta.env.VITE_EMAILJS_REPLY_TEMPLATE_ID ?? '';
-const EJ_PUB_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY ?? '';
-const ALERT_EMAIL = import.meta.env.VITE_DEMO_ALERT_EMAIL ?? '';
+const EJ_SERVICE = process.env.VITE_EMAILJS_SERVICE_ID ?? '';
+const EJ_ADMIN_T = process.env.VITE_EMAILJS_ADMIN_TEMPLATE_ID ?? '';
+const EJ_REPLY_T = process.env.VITE_EMAILJS_REPLY_TEMPLATE_ID ?? '';
+const EJ_PUB_KEY = process.env.VITE_EMAILJS_PUBLIC_KEY ?? '';
+const ALERT_EMAIL = process.env.VITE_DEMO_ALERT_EMAIL ?? '';
 
 async function sendEmailNotifications(payload: DemoRequestPayload): Promise<void> {
     if (!EJ_SERVICE || !EJ_PUB_KEY) return; // not configured — skip silently

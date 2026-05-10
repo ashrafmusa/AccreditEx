@@ -1,10 +1,10 @@
 # AccreditEx — Healthcare Accreditation Management Platform
 
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Tests](https://img.shields.io/badge/tests-28%2B-blue)
+![Tests](https://img.shields.io/badge/tests-37%2B-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Pages](https://img.shields.io/badge/pages-39-blue)
-![AI Tools](https://img.shields.io/badge/AI%20tools-21%2B-blue)
+![Pages](https://img.shields.io/badge/pages-46-blue)
+![AI Workflows](https://img.shields.io/badge/AI%20Workflows-8-blue)
 ![Deploy](https://img.shields.io/badge/live-accreditex.web.app-green)
 
 AccreditEx is a modern, AI-powered healthcare accreditation management platform designed to support hospitals and clinical laboratories throughout their accreditation journey. Built with a **live Firebase + Firestore backend** and deployed at **https://accreditex.web.app**, it streamlines the management of accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001), ensures traceability of all actions, and maintains compliance across the entire organization — in **English and Arabic** with full RTL support.
@@ -23,7 +23,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 ## Key Features
 
-### Core Platform (39 Pages)
+### Core Platform (46 Pages)
 -   **Role-Based Dashboards**: Admin, Project Lead, Team Member, and Auditor views with real-time compliance KPIs.
 -   **Project Management**: Full accreditation project lifecycle with pre-built templates for 7+ accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001).
 -   **Document Control Hub**: Version-controlled document management with AI-powered document generation, automatic document numbering, and approval workflows.
@@ -48,20 +48,25 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **Knowledge Base**: 552-line searchable knowledge base with categorized articles and quick-reference guides.
 -   **Tracer Worksheets**: 931-line interactive tracer worksheet tool for CAP/JCI survey preparation.
 
-### AI-Powered Features (15+ Tools)
--   **AI Action Plan Generation**: Compliance roadmaps from non-compliant standards.
--   **AI Root Cause Analysis**: Structured RCA (Process, Human, Training, System).
--   **AI Policy Generation**: Formal policy documents from accreditation standards.
--   **AI Writing Improvement**: Professional document refinement.
--   **AI Translation (EN ↔ AR)**: Bidirectional with cultural context.
--   **AI Executive Briefings**: Data-driven quality insights in JSON format.
--   **AI Document Summarization, Gap Analysis, Risk Assessment**, and more.
--   **AI Report Analysis**: Analyzes custom report structure for quality, gaps, and best practices.
--   **AI Text Generation**: Generates professional narrative content for report text blocks.
--   **AI Template Recommendations**: Suggests next report type based on existing portfolio.
--   **AI Workflow Suggestions**: Recommends new automation workflows based on gap analysis.
--   **AI Execution Log Analysis**: Analyzes workflow execution patterns, failures, and health score.
--   **AI Generate Action**: Configurable AI content generation as a workflow automation action.
+### AI-Assisted Workflows (8 Capabilities)
+
+AccreditEx integrates **AI-powered workflows** powered by **3 specialist domains** (Compliance, Risk Assessment, Training) and **Groq/Llama-3.3-70b** inference:
+
+**Specialist Routing**:
+-   **Compliance Specialist**: Analyzes documents against accreditation standards (CBAHI, JCI, ISO 9001). Detects gaps, assigns risk levels, recommends corrective actions.
+-   **Risk Assessment Specialist**: Evaluates compliance risks using 5×5 risk matrices, identifies high-impact threats, proposes mitigation strategies.
+-   **Training Coordinator**: Plans competency-based training, designs learning paths, generates training needs analyses aligned with accreditation requirements.
+
+**Dedicated Workflows**:
+-   **Action Plan Generation**: Creates compliance roadmaps from non-compliant standards with specific, measurable corrective actions.
+-   **Root Cause Analysis**: Applies 5 Whys methodology and Fishbone analysis for structured problem-solving (Process, Human, Training, System factors).
+-   **PDCA Improvement Suggestions**: Guides Plan-Do-Check-Act cycles with measurable success metrics and implementation timelines.
+-   **Survey Readiness Assessment**: Evaluates organizational readiness for upcoming accreditation surveys, identifies high-risk areas, suggests preparation priorities.
+-   **Design Control Compliance**: Assesses design traceability, verifies compliance with design control requirements, validates verification and validation plans.
+
+**General Chat**: Context-aware conversational AI for questions about accreditation standards, best practices, compliance strategies, and platform guidance. Fallback for all workflow endpoints if specialists are unavailable.
+
+**Provider**: Groq API (Llama-3.3-70b-versatile, free tier) with Firebase authentication. Response caching reduces token usage by 60-80%.
 
 ### Workflow Automation
 -   **Trigger-Condition-Action Engine**: 10 entity types × 10 event types, 8 condition operators, 11 action types.
@@ -101,7 +106,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 -   **Frontend**: React 19.1.1, TypeScript 5.x, Tailwind CSS v4 (native), Vite 6.x
 -   **Native Mobile**: Capacitor 8.x (10 plugins: camera, push-notifications, haptics, status-bar, splash-screen, app, keyboard, preferences, filesystem + capacitor-native-biometric)
--   **State Management**: Zustand (13 stores: `useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`, `useChangeControlStore`, `useModuleStore`, `useSupplierStore`, `useTenantStore`)
+-   **State Management**: Zustand (15 stores: `useAIChatStore`, `useAppStore`, `useChangeControlStore`, `useConfirmStore`, `useCustomizationStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useModuleStore`, `useProjectStore`, `useReportBuilderStore`, `useSupplierStore`, `useTenantStore`, `useTourStore`, `useUserStore`, `useWorkflowStore`)
 -   **Offline Storage**: IndexedDB via `idb` (3 stores: `cachedData`, `pendingSync`, `meta`) + in-memory Firestore cache with 5-min TTL
 -   **Backend**: Google Firebase
     -   **Authentication**: Firebase Authentication (Email/Password)
@@ -110,18 +115,18 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
     -   **Hosting**: Firebase Hosting (https://accreditex.web.app)
 -   **Charting**: Recharts
 -   **AI Integration**: Custom AI Agent Backend (Python FastAPI on Render — https://accreditex.onrender.com)
--   **Routing**: React Router DOM 7.13.0 (34 routes including legacy redirects)
--   **Testing**: Jest + Playwright + React Testing Library (~50% coverage)
+-   **Routing**: React Router DOM 7.13.0 (43 route definitions including legacy redirects)
+-   **Testing**: Jest + Playwright + React Testing Library (37 unit test files + 6 E2E specs)
 
 ## Architectural Approach
 
 AccreditEx is built on a clean, scalable, and modular architecture to ensure long-term maintainability.
 
-1.  **Frontend (React Application)**: 39 page components, 295 feature components, and reusable UI components across 33 domains. The application uses `AppRouter.tsx` with URL-based routing via React Router DOM.
+1.  **Frontend (React Application)**: 46 page components, 333 feature components, and reusable UI components across 34 domains. The application uses `AppRouter.tsx` with URL-based routing via React Router DOM.
 
-2.  **State Management (Zustand)**: 13 feature-based stores (`useAppStore`, `useProjectStore`, `useUserStore`, `useCustomizationStore`, `useAIChatStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useWorkflowStore`, `useReportBuilderStore`, `useChangeControlStore`, `useModuleStore`, `useSupplierStore`, `useTenantStore`) provide reactive state management decoupled from the UI.
+2.  **State Management (Zustand)**: 15 feature-based stores (`useAIChatStore`, `useAppStore`, `useChangeControlStore`, `useConfirmStore`, `useCustomizationStore`, `useHISIntegrationStore`, `useLabOpsStore`, `useModuleStore`, `useProjectStore`, `useReportBuilderStore`, `useSupplierStore`, `useTenantStore`, `useTourStore`, `useUserStore`, `useWorkflowStore`) provide reactive state management decoupled from the UI.
 
-3.  **Service Layer (107 services)**: 79 root-level services + 18 HIS integration + 10 LIMS integration files. Specialized services for each domain (accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, native camera, native push, native biometric, etc.). The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
+3.  **Service Layer (123 services)**: Domain-specific services across accreditation, audit, training, escalation, QC import, LIMS integration, HIS integration, native camera, native push, native biometric, and supporting platform modules. The `BackendService.ts` remains the central orchestrator for Firebase/Firestore operations.
 
 4.  **Integration Layer**: HIS Integration (18 files — Epic, Cerner, HL7, FHIR connectors) and LIMS Integration (10 files — Orchard, SoftLab, Sunquest connectors) provide healthcare system interoperability.
 
@@ -149,12 +154,12 @@ src/
 ├── firebase/                # Firebase configuration and hooks
 ├── hooks/                   # Custom React hooks
 │   └── usePushNotifications.ts  # NEW: Push notification lifecycle hook
-├── pages/                   # 39 page components
+├── pages/                   # 46 page components
 │   ├── LabOperationsPage.tsx    # 5-tab lab operations hub
 │   ├── KnowledgeBasePage.tsx    # Searchable knowledge base
-│   └── ...                      # 37 additional page components
-├── router/                  # AppRouter.tsx + routes.ts (34 routes)
-├── services/                # 107 domain services
+│   └── ...                      # 44 additional page components
+├── router/                  # AppRouter.tsx + routes.ts (43 route definitions)
+├── services/                # 123 domain services
 │   ├── hisIntegration/      # 18 files: Epic, Cerner, HL7, FHIR connectors
 │   ├── limsIntegration/     # 10 files: Orchard, SoftLab, Sunquest connectors
 │   ├── nativeCameraService.ts   # NEW: Camera capture with web fallback
@@ -163,9 +168,9 @@ src/
 │   ├── escalationService.ts     # Automated escalation workflows
 │   ├── qcDataImportService.ts   # QC data import with validation
 │   └── ...                      # 70+ additional root services
-├── stores/                  # 13 Zustand stores
-├── types/                   # 12 type definition files
-├── utils/                   # Utility modules
+├── stores/                  # 15 Zustand stores
+├── types/                   # 14 type definition files
+├── utils/                   # 39 utility modules
 │   ├── capacitorPlatform.ts     # NEW: Platform detection & native fallbacks
 │   ├── capacitorInit.ts         # NEW: Native lifecycle initialization
 │   └── ...                      # Additional utilities
@@ -233,4 +238,4 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-**Last Updated:** March 3, 2026 | **Version:** 2.3 | **Live:** https://accreditex.web.app
+**Last Updated:** May 10, 2026 | **Version:** 2.4 | **Live:** https://accreditex.web.app

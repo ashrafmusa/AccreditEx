@@ -3,10 +3,10 @@ import type { Config } from 'jest';
 const config: Config = {
   preset: 'ts-jest',
   testEnvironment: 'jsdom',
-  extensionsToTreatAsEsm: ['.ts', '.tsx'],
   roots: ['<rootDir>/src'],
   testMatch: ['**/__tests__/**/*.ts?(x)', '**/?(*.)+(spec|test).ts?(x)'],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
 
   // Module resolution
   moduleNameMapper: {
@@ -17,11 +17,12 @@ const config: Config = {
   // Transform files
   transform: {
     '^.+\\.tsx?$': ['ts-jest', {
-      useESM: true,
       tsconfig: {
         jsx: 'react-jsx',
         esModuleInterop: true,
         allowSyntheticDefaultImports: true,
+        target: 'ES2022',
+        module: 'CommonJS',
       },
     }],
   },
@@ -50,9 +51,6 @@ const config: Config = {
       statements: 0,
     },
   },
-
-  // Setup files
-  setupFilesAfterEnv: ['<rootDir>/src/test/setup.ts'],
 
   // Ignore patterns
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],

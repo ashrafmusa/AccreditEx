@@ -205,7 +205,7 @@ ${gap.hint}
 Format the output as a ready-to-use document with numbered sections, clear policy statements or step-by-step procedures, scope, purpose, definitions, and references to the relevant ${selectedStandard} standards. Use formal English.`;
 
       const result = await aiAgentService.chat(prompt, false);
-      setGenerated((prev) => ({ ...prev, [gap.label]: result }));
+      setGenerated((prev) => ({ ...prev, [gap.label]: result.response }));
     } catch {
       setErrors((prev) => ({
         ...prev,
