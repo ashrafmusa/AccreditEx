@@ -75,7 +75,10 @@ jest.mock('@/services/ai', () => ({
 // Mock Firebase config to avoid import.meta.env issues
 jest.mock('@/firebase/firebaseConfig', () => ({
   app: {},
-  auth: {},
+  auth: {
+    currentUser: null,
+  },
+  getAuthInstance: jest.fn(() => ({ currentUser: null })),
   db: {},
   storage: {},
 }));

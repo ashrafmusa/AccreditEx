@@ -19,7 +19,7 @@ describe('AIAgentService', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        (global.fetch as jest.Mock).mockClear();
+        (global.fetch as jest.Mock).mockReset();
         service = new AIAgentService();
     });
 

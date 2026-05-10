@@ -205,6 +205,37 @@ class UnifiedAccreditexAgent:
                 return await self.client.chat.completions.create(**kwargs)
             raise
 
+    def _estimate_quality_confidence(self, text: str) -> float:
+        """Simple deterministic quality score for workflow output confidence."""
+        if not text:
+            return 0.4
+        length = len(text)
+        sections = 0
+        for marker in ("1.", "2.", "3.", "-", "**"):
+            if marker in text:
+                sections += 1
+
+        if length > 1200 and sections >= 4:
+            return 0.9
+        if length > 700 and sections >= 3:
+            return 0.82
+        if length > 350:
+            return 0.74
+        return 0.62
+
+    def _build_workflow_response(self, field_name: str, content: str) -> Dict[str, Any]:
+        """Build a consistent workflow response payload with additive metadata."""
+        return {
+            "status": "completed",
+            field_name: content,
+            "timestamp": datetime.now().isoformat(),
+            "meta": {
+                "route_mode": "endpoint",
+                "model": self.model,
+                "quality_confidence": self._estimate_quality_confidence(content),
+            }
+        }
+
     async def _get_organization_context(self, user_id: Optional[str] = None) -> Dict[str, Any]:
         """Fetch comprehensive organizational data using enhanced Firebase client"""
         context = {
@@ -810,11 +841,10 @@ Provide:
             max_tokens=2048
         )
 
-        return {
-            "status": "completed",
-            "action_plan": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "action_plan",
+            response.choices[0].message.content,
+        )
 
     async def analyze_root_cause(self, issue_title: str, description: str, context: Optional[str] = None, affected_areas: Optional[List[str]] = None) -> Dict[str, Any]:
         """Perform structured root cause analysis"""
@@ -850,11 +880,10 @@ Use the 5 Whys methodology and provide:
             max_tokens=2048
         )
 
-        return {
-            "status": "completed",
-            "root_cause_analysis": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "root_cause_analysis",
+            response.choices[0].message.content,
+        )
 
     async def suggest_pdca_improvements(self, process_name: str, current_state: str, problem_identified: str, previous_actions: Optional[str] = None) -> Dict[str, Any]:
         """Suggest Plan-Do-Check-Act improvements"""
@@ -888,11 +917,10 @@ Provide a PDCA cycle with:
             max_tokens=2048
         )
 
-        return {
-            "status": "completed",
-            "pdca_improvements": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "pdca_improvements",
+            response.choices[0].message.content,
+        )
 
     async def assess_survey_risk(self, standard: str, organization_area: str, readiness_level: str, critical_concerns: Optional[List[str]] = None, survey_date: Optional[str] = None) -> Dict[str, Any]:
         """Assess readiness risk for upcoming accreditation survey"""
@@ -929,11 +957,10 @@ Provide:
             max_tokens=2048
         )
 
-        return {
-            "status": "completed",
-            "survey_risk_assessment": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "survey_risk_assessment",
+            response.choices[0].message.content,
+        )
 
     async def check_design_compliance(self, design_element: str, requirement: str, current_implementation: str, design_phase: Optional[str] = None) -> Dict[str, Any]:
         """Assess design control compliance"""
@@ -970,11 +997,10 @@ Provide:
             max_tokens=2048
         )
 
-        return {
-            "status": "completed",
-            "design_compliance_assessment": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "design_compliance_assessment",
+            response.choices[0].message.content,
+        )
 
     async def get_project_insights(self, project_id: str, user_id: str) -> Dict[str, Any]:
         """

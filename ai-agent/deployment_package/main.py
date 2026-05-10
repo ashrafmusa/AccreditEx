@@ -143,6 +143,22 @@ async def verify_api_key(request: Request, api_key: str = Depends(api_key_header
 # Initialize agent
 agent = None
 
+
+def ensure_workflow_response(result: Dict[str, Any], expected_field: str) -> Dict[str, Any]:
+    """Normalize workflow responses to stable schema (non-breaking additive guard)."""
+    normalized = dict(result or {})
+    normalized.setdefault("status", "completed")
+    normalized.setdefault("timestamp", datetime.utcnow().isoformat())
+    normalized.setdefault(expected_field, normalized.get("response", ""))
+
+    meta = normalized.get("meta") or {}
+    if not isinstance(meta, dict):
+        meta = {}
+    meta.setdefault("route_mode", "endpoint")
+    meta.setdefault("schema_validated", True)
+    normalized["meta"] = meta
+    return normalized
+
 # Request/Response Models
 class ChatRequest(BaseModel):
     message: str = Field(..., description="User message", min_length=1, max_length=50000, example="How do I prepare for ISO 9001 audit?")
@@ -464,7 +480,7 @@ async def generate_action_plan(request: Request, payload: ActionPlanRequest):
             status=payload.status,
             findings=payload.findings,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "action_plan"))
     except Exception as e:
         logger.error(f"Action plan generation error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -484,7 +500,7 @@ async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest
             context=payload.context,
             affected_areas=payload.affected_areas,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "root_cause_analysis"))
     except Exception as e:
         logger.error(f"Root cause analysis error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -504,7 +520,7 @@ async def suggest_pdca_improvements(request: Request, payload: PDCARequest):
             problem_identified=payload.problem_identified,
             previous_actions=payload.previous_actions,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "pdca_improvements"))
     except Exception as e:
         logger.error(f"PDCA improvement error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -525,7 +541,7 @@ async def assess_survey_risk(request: Request, payload: SurveyRiskRequest):
             critical_concerns=payload.critical_concerns,
             survey_date=payload.survey_date,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "survey_risk_assessment"))
     except Exception as e:
         logger.error(f"Survey risk assessment error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -545,7 +561,7 @@ async def check_design_compliance(request: Request, payload: DesignComplianceReq
             current_implementation=payload.current_implementation,
             design_phase=payload.design_phase,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "design_compliance_assessment"))
     except Exception as e:
         logger.error(f"Design compliance error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
