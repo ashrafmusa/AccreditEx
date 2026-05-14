@@ -4,16 +4,33 @@ import { Auth, getAuth } from "firebase/auth";
 import { enableIndexedDbPersistence, getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
+type ViteEnv = Record<string, string | boolean | undefined>;
+
+const viteEnv = ((import.meta as unknown as { env?: ViteEnv }).env ?? {}) as ViteEnv;
 const processEnv = (typeof process !== 'undefined' ? process.env : {}) as Record<string, string | undefined>;
 
+const getEnvValue = (key: string): string | undefined => {
+    const viteValue = viteEnv[key];
+    if (typeof viteValue === "string" && viteValue.trim() !== "") {
+        return viteValue;
+    }
+
+    const processValue = processEnv[key];
+    if (typeof processValue === "string" && processValue.trim() !== "") {
+        return processValue;
+    }
+
+    return undefined;
+};
+
 const firebaseEnv = {
-    apiKey: processEnv.VITE_API_KEY,
-    authDomain: processEnv.VITE_AUTH_DOMAIN,
-    projectId: processEnv.VITE_PROJECT_ID,
-    storageBucket: processEnv.VITE_STORAGE_BUCKET,
-    messagingSenderId: processEnv.VITE_MESSAGING_SENDER_ID,
-    appId: processEnv.VITE_APP_ID,
-    measurementId: processEnv.VITE_MEASUREMENT_ID
+    apiKey: getEnvValue('VITE_API_KEY'),
+    authDomain: getEnvValue('VITE_AUTH_DOMAIN'),
+    projectId: getEnvValue('VITE_PROJECT_ID'),
+    storageBucket: getEnvValue('VITE_STORAGE_BUCKET'),
+    messagingSenderId: getEnvValue('VITE_MESSAGING_SENDER_ID'),
+    appId: getEnvValue('VITE_APP_ID'),
+    measurementId: getEnvValue('VITE_MEASUREMENT_ID')
 };
 
 const missingFirebaseEnv = Object.entries(firebaseEnv)

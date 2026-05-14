@@ -1,5 +1,5 @@
 import React, { lazy, Suspense, useState } from "react";
-import { ExclamationTriangleIcon } from "../components/icons";
+import { ExclamationTriangleIcon, PlusIcon } from "../components/icons";
 import CapaReportsTab from "../components/risk/CapaReportsTab";
 import RiskRegisterTab from "../components/risk/RiskRegisterTab";
 import { useTranslation } from "../hooks/useTranslation";
@@ -8,6 +8,7 @@ import LoadingScreen from "@/components/common/LoadingScreen";
 import { Button } from "@/components/ui";
 import EffectivenessChecksTab from "../components/risk/EffectivenessChecksTab";
 import IncidentReportingTab from "../components/risk/IncidentReportingTab";
+import IncidentToCAPAWorkflow from "../components/risk/IncidentToCAPAWorkflow";
 import IncidentTrendingTab from "../components/risk/IncidentTrendingTab";
 import type { ClassificationResult } from "../components/risk/PatientSafetyEventClassifier";
 import PatientSafetyEventClassifier from "../components/risk/PatientSafetyEventClassifier";
@@ -32,6 +33,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
   const [activeTab, setActiveTab] = useState<RiskHubTab>("register");
   const { updateCapa } = useProjectStore();
   const projects = useProjectStore((state) => state.projects);
+  const [isWorkflowOpen, setIsWorkflowOpen] = useState(false);
 
   // AI Tools state: pass classifier output to CAPA generator
   const [classifierDescription, setClassifierDescription] = useState<
@@ -50,18 +52,33 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
     setActiveTab("aiTools");
   };
 
+  const handleWorkflowSuccess = () => {
+    // Refresh the current tab's data
+    setActiveTab("incidents");
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-3 rtl:space-x-reverse self-start">
-        <ExclamationTriangleIcon className="h-8 w-8 text-brand-primary" />
-        <div>
-          <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-            {t("riskHubTitle")}
-          </h1>
-          <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-            {t("riskHubDescription")}
-          </p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3 rtl:space-x-reverse">
+          <ExclamationTriangleIcon className="h-8 w-8 text-brand-primary" />
+          <div>
+            <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
+              {t("riskHubTitle")}
+            </h1>
+            <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+              {t("riskHubDescription")}
+            </p>
+          </div>
         </div>
+        <Button
+          variant="primary"
+          onClick={() => setIsWorkflowOpen(true)}
+          className="whitespace-nowrap"
+        >
+          <PlusIcon className="w-4 h-4 mr-2" />
+          {t("newIncident") || "New Incident"}
+        </Button>
       </div>
 
       <div className="border-b border-gray-200 dark:border-dark-brand-border">
@@ -154,6 +171,13 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
           </div>
         )}
       </div>
+
+      {/* Unified Incident-to-CAPA Workflow Modal */}
+      <IncidentToCAPAWorkflow
+        isOpen={isWorkflowOpen}
+        onClose={() => setIsWorkflowOpen(false)}
+        onSuccess={handleWorkflowSuccess}
+      />
     </div>
   );
 };

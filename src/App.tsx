@@ -113,6 +113,26 @@ const AppInitializer: React.FC = () => {
     initializeApp();
   }, [fetchAllAppData, fetchAllUsers, fetchAllProjects, toast]);
 
+  // FIX: If fetchAllData ran before Firebase Auth restored the session,
+  // appSettings will be null even though the user is logged in.
+  // Re-fetch once auth resolves and appSettings is still missing.
+  useEffect(() => {
+    const auth = getAuthInstance();
+    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser && !appSettings) {
+        try {
+          await fetchAllAppData();
+        } catch {
+          // Silent — already handled above
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    });
+    return () => unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Set the primary color theme variable when app settings load/change.
   useEffect(() => {
     if (appSettings?.primaryColor) {

@@ -21,6 +21,7 @@ import SignatureModal from "../components/common/SignatureModal";
 import StatCard from "../components/common/StatCard";
 import DocumentGapFiller from "../components/documents/DocumentGapFiller";
 
+import ControlledDocumentsTable from "../components/documents/ControlledDocumentsTable";
 import DocumentSearch, {
   DocumentFilters,
 } from "../components/documents/DocumentSearch";
