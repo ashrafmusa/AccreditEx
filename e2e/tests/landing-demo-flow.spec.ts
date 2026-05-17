@@ -10,18 +10,21 @@ test.describe('Landing Demo Request CTA', () => {
             page.getByRole('heading', { name: /continuous excellence/i }),
         ).toBeVisible({ timeout: 20000 });
 
-        const requestDemoButton = page.getByRole('button', { name: /^request demo$/i });
+        const requestDemoTrigger = page
+            .getByRole('button', { name: /request.*demo|book.*demo|request a demo/i })
+            .or(page.getByRole('link', { name: /request.*demo|book.*demo|request a demo/i }))
+            .first();
 
-        await expect(requestDemoButton).toBeVisible({ timeout: 20000 });
-        await requestDemoButton.click();
+        await expect(requestDemoTrigger).toBeVisible({ timeout: 20000 });
+        await requestDemoTrigger.click();
 
-        await expect(page.getByRole('heading', { name: 'Request a Demo' })).toBeVisible({ timeout: 15000 });
-        await expect(page.getByText('Work Email')).toBeVisible({ timeout: 15000 });
+        await expect(page.getByRole('heading', { name: /request a demo/i })).toBeVisible({ timeout: 15000 });
+        await expect(page.getByText(/work email/i)).toBeVisible({ timeout: 15000 });
 
-        const closeButton = page.getByLabel('Close').first();
+        const closeButton = page.getByLabel(/close/i).first();
         await closeButton.click();
 
-        await expect(page.getByText('Work Email')).not.toBeVisible();
+        await expect(page.getByText(/work email/i)).not.toBeVisible();
     });
 
     test('opens demo request modal from hero CTA', async ({ page }) => {

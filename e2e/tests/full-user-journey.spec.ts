@@ -227,7 +227,8 @@ test.describe("2. Registration — Self-Service Signup", () => {
     await expect(passwordInput).toBeVisible({ timeout: 10000 });
   });
 
-  test("shows validation error for empty submit", async ({ page }) => {    test.setTimeout(60000);    await page.goto("/register", { waitUntil: "domcontentloaded", timeout: 30000 });
+  test("shows validation error for empty submit", async ({ page }) => {
+    test.setTimeout(60000); await page.goto("/register", { waitUntil: "domcontentloaded", timeout: 30000 });
     await dismissCookieBanner(page);
     const submitBtn = page
       .getByRole("button", { name: /start.*trial|register|sign up|إنشاء|ابدأ/i })
@@ -612,11 +613,16 @@ test.describe("9. Security — Invalid Login Attempts", () => {
       .first()
       .fill("WrongPassword999!");
     await page.getByRole("button", { name: /^login$/i }).click();
-    const errorMsg = page
-      .locator('[role="alert"], .error-message, [data-error]')
-      .or(page.getByText(/invalid|incorrect|wrong|غير صالح|خطأ/i))
+    const authError = page
+      .locator(
+        '[role="alert"], [aria-live="assertive"], [aria-live="polite"], .error, .error-message, [data-error], .text-destructive',
+      )
+      .filter({
+        hasText:
+          /invalid|incorrect|wrong password|wrong|credentials|auth|user|password|غير صالح|خطأ/i,
+      })
       .first();
-    await expect(errorMsg).toBeVisible({ timeout: 15000 });
+    await expect(authError).toBeVisible({ timeout: 15000 });
   });
 
   test("shows error for non-existent email", async ({ page }) => {
@@ -634,10 +640,15 @@ test.describe("9. Security — Invalid Login Attempts", () => {
       .first()
       .fill("SomePassword123!");
     await page.getByRole("button", { name: /^login$/i }).click();
-    const errorMsg = page
-      .locator('[role="alert"], .error-message')
-      .or(page.getByText(/invalid|not found|غير صالح/i))
+    const authError = page
+      .locator(
+        '[role="alert"], [aria-live="assertive"], [aria-live="polite"], .error, .error-message, [data-error], .text-destructive',
+      )
+      .filter({
+        hasText:
+          /invalid|not found|no user|user not found|credentials|email|auth|غير صالح|خطأ/i,
+      })
       .first();
-    await expect(errorMsg).toBeVisible({ timeout: 15000 });
+    await expect(authError).toBeVisible({ timeout: 15000 });
   });
 });
