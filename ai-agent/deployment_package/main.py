@@ -170,6 +170,7 @@ def resolve_request_scope(
 
     if auth_type == "firebase":
         uid = auth_info.get("uid")
+        email = auth_info.get("email")
         org_id = auth_info.get("organization_id")
         if not uid:
             raise HTTPException(status_code=401, detail="Invalid Firebase token: missing uid")
@@ -183,11 +184,29 @@ def resolve_request_scope(
                 if user_doc.exists:
                     user_data = user_doc.to_dict() or {}
                     org_id = user_data.get("organizationId")
+
+                # Legacy fallback: some older user docs were keyed by non-UID ids.
+                # Use email query as a safe lookup for organizationId when needed.
+                if not org_id and email:
+                    legacy_matches = (
+                        firebase_client.db.collection("users")
+                        .where("email", "==", email)
+                        .limit(1)
+                        .get()
+                    )
+                    for legacy_doc in legacy_matches:
+                        legacy_data = legacy_doc.to_dict() or {}
+                        org_id = legacy_data.get("organizationId")
+                        if org_id:
+                            break
             except Exception as scope_error:
                 logger.warning(f"Unable to resolve organizationId from users/{uid}: {scope_error}")
 
         if requested_user_id and requested_user_id != uid:
-            raise HTTPException(status_code=403, detail="Cannot access another user's scope")
+            logger.warning(
+                "Requested user_id does not match token uid; enforcing token scope",
+                extra={"requested_user_id": requested_user_id, "uid": uid},
+            )
         if not org_id:
             raise HTTPException(status_code=403, detail="Missing organizationId claim")
         return {"user_id": uid, "organization_id": org_id}

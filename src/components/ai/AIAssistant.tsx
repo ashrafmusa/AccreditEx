@@ -97,8 +97,9 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     if (!input.trim() || isLoading) return;
 
     if (!isHealthy) {
-      toast.error("AI Assistant is currently offline. Please try again later.");
-      return;
+      toast.error(
+        "AI health check is offline. Attempting direct request now...",
+      );
     }
 
     const userMessage: ChatMessage = {
@@ -115,6 +116,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       console.log("🤖 Sending message to AI:", input);
       const response: ChatResponse = await aiAgentService.chat(input);
       console.log("✅ AI response received:", response);
+      setIsHealthy(true);
 
       const assistantMessage: ChatMessage = {
         role: "assistant",
@@ -127,11 +129,11 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
       console.error("❌ AI chat error:", error);
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       toast.error(`AI error: ${errorMsg}`);
+      setIsHealthy(false);
 
       const errorMessage: ChatMessage = {
         role: "assistant",
-        content:
-          "I'm currently unable to respond. The AI service may be temporarily unavailable. Please try again in a few moments.",
+        content: `I'm currently unable to respond.\n\nTechnical details: ${errorMsg}\n\nIf this persists, verify AI backend URL/configuration and authentication scope.`,
         timestamp: new Date().toISOString(),
       };
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'accreditex-v2';
+const CACHE_NAME = 'accreditex-v3';
 
 // Install: skip waiting, don't pre-cache anything
 self.addEventListener('install', event => {

@@ -74,6 +74,8 @@ export interface TrainingRecommendationsRequest {
 const FETCH_TIMEOUT_MS = 90_000;
 /** Maximum retry attempts for network failures */
 const MAX_RETRIES = 2;
+const BUILD_AI_AGENT_URL = process.env.VITE_AI_AGENT_URL || process.env.VITE_AI_AGENT_BASE_URL || '';
+const BUILD_NODE_ENV = process.env.NODE_ENV || '';
 
 export class AIAgentService {
     private baseUrl: string;
@@ -88,7 +90,7 @@ export class AIAgentService {
                 window.location.hostname === '127.0.0.1');
 
         // Get environment URL - compatible with both Vite and Jest
-        let envUrl = process.env.VITE_AI_AGENT_URL || process.env.VITE_AI_AGENT_BASE_URL || '';
+        const envUrl = BUILD_AI_AGENT_URL;
 
         // In production, NEVER use a localhost URL — fall back to Render.
         const envIsLocalhost = envUrl.includes('localhost') || envUrl.includes('127.0.0.1');
@@ -101,7 +103,7 @@ export class AIAgentService {
             this.baseUrl = envIsLocalhost || !envUrl ? '' : envUrl;
         }
 
-        if (!this.baseUrl && process.env.NODE_ENV !== 'test') {
+        if (!this.baseUrl && BUILD_NODE_ENV !== 'test') {
             console.error('[AI Agent] Missing VITE_AI_AGENT_URL/VITE_AI_AGENT_BASE_URL in production runtime.');
         }
 
@@ -109,7 +111,7 @@ export class AIAgentService {
         // Auth is now handled exclusively via Firebase ID tokens (Bearer).
         // The API_KEY stays on the Render server only (never bundled into client JS).
 
-        if (process.env.NODE_ENV === 'development') {
+        if (BUILD_NODE_ENV === 'development') {
             console.log('🤖 AI Agent Service initialized:', {
                 baseUrl: this.baseUrl,
                 auth: 'Firebase Bearer token',
@@ -172,8 +174,8 @@ export class AIAgentService {
 
         return {
             // Backend auth scope compares requested user_id with Firebase token uid.
-            // Always prefer auth uid to avoid mismatches with legacy Firestore user doc IDs.
-            user_id: authUser?.uid || resolvedUser?.id,
+            // Send only Firebase auth uid to avoid mismatches with legacy Firestore user doc IDs.
+            user_id: authUser?.uid,
             organization_id: resolvedOrgId,
             page_title: document.title,
             route: window.location.pathname,
@@ -494,7 +496,7 @@ export class AIAgentService {
      */
     async checkCompliance(request: ComplianceCheckRequest): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}/check-compliance`, {
+            const response = await fetch(this.getApiUrl('/check-compliance'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify(request),
@@ -517,7 +519,7 @@ export class AIAgentService {
      */
     async assessRisk(request: RiskAssessmentRequest): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}/assess-risk`, {
+            const response = await fetch(this.getApiUrl('/assess-risk'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify(request),
@@ -540,7 +542,7 @@ export class AIAgentService {
      */
     async getTrainingRecommendations(request: TrainingRecommendationsRequest): Promise<any> {
         try {
-            const response = await fetch(`${this.baseUrl}/training-recommendations`, {
+            const response = await fetch(this.getApiUrl('/training-recommendations'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify(request),
@@ -719,7 +721,7 @@ Analyze compliance with the specified standard and provide:
     }): Promise<any> {
         try {
             // Try dedicated endpoint first
-            const response = await this.fetchWithRetry(`${this.baseUrl}/generate-action-plan`, {
+            const response = await this.fetchWithRetry(this.getApiUrl('/generate-action-plan'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
@@ -768,7 +770,7 @@ Analyze compliance with the specified standard and provide:
     }): Promise<any> {
         try {
             // Try dedicated endpoint first
-            const response = await this.fetchWithRetry(`${this.baseUrl}/analyze-root-cause`, {
+            const response = await this.fetchWithRetry(this.getApiUrl('/analyze-root-cause'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
@@ -817,7 +819,7 @@ Analyze compliance with the specified standard and provide:
     }): Promise<any> {
         try {
             // Try dedicated endpoint first
-            const response = await this.fetchWithRetry(`${this.baseUrl}/suggest-pdca-improvements`, {
+            const response = await this.fetchWithRetry(this.getApiUrl('/suggest-pdca-improvements'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
@@ -865,7 +867,7 @@ Analyze compliance with the specified standard and provide:
     }): Promise<any> {
         try {
             // Try dedicated endpoint first
-            const response = await this.fetchWithRetry(`${this.baseUrl}/assess-survey-risk`, {
+            const response = await this.fetchWithRetry(this.getApiUrl('/assess-survey-risk'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
@@ -937,7 +939,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
     }): Promise<any> {
         try {
             // Try dedicated endpoint first
-            const response = await this.fetchWithRetry(`${this.baseUrl}/check-design-compliance`, {
+            const response = await this.fetchWithRetry(this.getApiUrl('/check-design-compliance'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
