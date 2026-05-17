@@ -10,6 +10,7 @@
 
 import { getAuthInstance } from '@/firebase/firebaseConfig';
 import { useAppStore } from '@/stores/useAppStore';
+import { useTenantStore } from '@/stores/useTenantStore';
 import { useUserStore } from '@/stores/useUserStore';
 
 export interface ChatMessage {
@@ -23,6 +24,7 @@ export interface ChatRequest {
     thread_id?: string;
     context?: {
         user_id?: string;
+        organization_id?: string;
         page_title?: string;
         route?: string;
         user_role?: string;
@@ -119,6 +121,7 @@ export class AIAgentService {
      */
     private getContext(): ChatRequest['context'] {
         const { currentUser, users } = useUserStore.getState();
+        const { organizationId } = useTenantStore.getState();
         const appState = useAppStore.getState();
         const { appSettings, departments, documents } = appState;
         const projects = (appState as any).projects || [];
@@ -154,9 +157,13 @@ export class AIAgentService {
             .slice(0, 10); // Limit to recent 10
 
         const resolvedRole = resolvedUser?.role || (authUser ? 'Authenticated User' : 'Guest');
+        const resolvedOrgId = organizationId || currentUser?.organizationId || resolvedUser?.organizationId;
 
         return {
-            user_id: resolvedUser?.id || authUser?.uid,
+            // Backend auth scope compares requested user_id with Firebase token uid.
+            // Always prefer auth uid to avoid mismatches with legacy Firestore user doc IDs.
+            user_id: authUser?.uid || resolvedUser?.id,
+            organization_id: resolvedOrgId,
             page_title: document.title,
             route: window.location.pathname,
             user_role: resolvedRole,
