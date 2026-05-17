@@ -401,9 +401,11 @@ export class AIAgentService {
                 body: JSON.stringify(request),
             });
 
-            // If token is stale (e.g., claims not refreshed yet), retry once with a forced token refresh.
-            if (response && (response.status === 401 || response.status === 403)) {
-                console.warn('🔐 AI auth returned 401/403, retrying once with a refreshed Firebase token...');
+            // If token is stale, retry once with a forced token refresh.
+            // 403 usually indicates scope/authorization (not solved by token refresh),
+            // so avoid duplicate failing requests.
+            if (response && response.status === 401) {
+                console.warn('🔐 AI auth returned 401, retrying once with a refreshed Firebase token...');
                 response = await this.fetchWithRetry(chatUrl, {
                     method: 'POST',
                     headers: await this.getHeaders(true),
@@ -435,8 +437,10 @@ export class AIAgentService {
                     const errorJson = JSON.parse(errorText);
                     errorMessage = errorJson.detail || errorJson.message || errorMessage;
                     console.error('❌ Parsed error:', errorJson);
+                    console.log('❌ AI backend detail:', errorMessage);
                 } catch {
                     errorMessage = errorText || errorMessage;
+                    console.log('❌ AI backend detail (raw):', errorMessage);
                 }
 
                 if (response.status === 401) {
