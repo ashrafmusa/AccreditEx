@@ -236,7 +236,7 @@ class UnifiedAccreditexAgent:
             }
         }
 
-    async def _get_organization_context(self, user_id: Optional[str] = None) -> Dict[str, Any]:
+    async def _get_organization_context(self, user_id: Optional[str] = None, organization_id: Optional[str] = None) -> Dict[str, Any]:
         """Fetch comprehensive organizational data using enhanced Firebase client"""
         context = {
             "users_count": 0,
@@ -261,7 +261,7 @@ class UnifiedAccreditexAgent:
         try:
             # Get comprehensive user context from Firebase client
             if user_id:
-                user_context = firebase_client.get_user_context(user_id)
+                user_context = firebase_client.get_user_context(user_id, organization_id)
                 
                 if not user_context.get('error'):
                     # Extract user data
@@ -290,7 +290,10 @@ class UnifiedAccreditexAgent:
                     logger.info(f"✅ Retrieved user context: {context['user_name']} ({context['user_role']}) with {len(context['assigned_projects'])} projects")
             
             # Get workspace analytics
-            analytics = firebase_client.get_workspace_analytics()
+            if organization_id:
+                analytics = firebase_client.get_workspace_analytics(organization_id)
+            else:
+                analytics = {}
             if analytics:
                 context["workspace_analytics"] = analytics
                 context["active_projects"] = [{
@@ -629,6 +632,7 @@ Always be specific and actionable, using real data from their workspace.
             # ── Context loading — SKIP heavy Firebase fetch when frontend
             #    already omitted context (writing / document commands).
             user_id = context.get('user_id') if context else None
+            organization_id = context.get('organization_id') if context else None
             has_context = bool(context and context.get('current_data'))
 
             if has_context and user_id:
@@ -636,9 +640,9 @@ Always be specific and actionable, using real data from their workspace.
                 context_tier = context.get('context_tier') if context else None
                 if not context_tier:
                     context_tier = self.context_manager.detect_context_tier(message)
-                tiered_context = self.context_manager.get_context(user_id, context_tier)
+                tiered_context = self.context_manager.get_context(user_id, context_tier, organization_id)
                 logger.info(f"📦 Using {context_tier} context tier ({len(str(tiered_context))} chars)")
-                org_context = await self._get_organization_context(user_id)
+                org_context = await self._get_organization_context(user_id, organization_id)
                 enhanced_context = {
                     **(context or {}),
                     **tiered_context,
@@ -1002,12 +1006,12 @@ Provide:
             response.choices[0].message.content,
         )
 
-    async def get_project_insights(self, project_id: str, user_id: str) -> Dict[str, Any]:
+    async def get_project_insights(self, project_id: str, user_id: str, organization_id: str) -> Dict[str, Any]:
         """
         Get AI-generated insights for a specific project using Firebase data
         """
         try:
-            project = firebase_client.get_project_details(project_id)
+            project = firebase_client.get_project_details(project_id, organization_id)
             
             if not project:
                 return {'error': 'Project not found'}
@@ -1063,13 +1067,13 @@ Format your response in clear Markdown with headings and bullet points."""
             logger.error(f"Error generating project insights: {e}")
             return {'error': str(e)}
 
-    async def search_documents_ai(self, query: str, user_id: str, document_type: Optional[str] = None) -> Dict[str, Any]:
+    async def search_documents_ai(self, query: str, user_id: str, organization_id: str, document_type: Optional[str] = None) -> Dict[str, Any]:
         """
         AI-powered document search with relevance ranking
         """
         try:
             # Search Firebase
-            results = firebase_client.search_documents(query, document_type)
+            results = firebase_client.search_documents(query, organization_id, document_type)
             
             if not results:
                 return {
@@ -1114,12 +1118,12 @@ Format with clear headings and bullet points."""
             logger.error(f"Error in AI document search: {e}")
             return {'error': str(e)}
 
-    async def get_user_training_status_ai(self, user_id: str) -> Dict[str, Any]:
+    async def get_user_training_status_ai(self, user_id: str, organization_id: str) -> Dict[str, Any]:
         """
         Get user's training status with AI recommendations
         """
         try:
-            training_status = firebase_client.get_user_training_status(user_id)
+            training_status = firebase_client.get_user_training_status(user_id, organization_id)
             
             if training_status.get('error'):
                 return training_status

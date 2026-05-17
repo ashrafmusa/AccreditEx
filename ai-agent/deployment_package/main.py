@@ -159,6 +159,31 @@ def ensure_workflow_response(result: Dict[str, Any], expected_field: str) -> Dic
     normalized["meta"] = meta
     return normalized
 
+
+def resolve_request_scope(
+    auth_info: Dict[str, Any],
+    requested_user_id: Optional[str] = None,
+    requested_org_id: Optional[str] = None,
+) -> Dict[str, Optional[str]]:
+    """Resolve and enforce user/org scope for tenant-safe backend access."""
+    auth_type = auth_info.get("auth_type")
+
+    if auth_type == "firebase":
+        uid = auth_info.get("uid")
+        org_id = auth_info.get("organization_id")
+        if not uid:
+            raise HTTPException(status_code=401, detail="Invalid Firebase token: missing uid")
+        if requested_user_id and requested_user_id != uid:
+            raise HTTPException(status_code=403, detail="Cannot access another user's scope")
+        if not org_id:
+            raise HTTPException(status_code=403, detail="Missing organizationId claim")
+        return {"user_id": uid, "organization_id": org_id}
+
+    # API key callers must explicitly provide an organization scope.
+    if not requested_org_id:
+        raise HTTPException(status_code=400, detail="organization_id is required for API key requests")
+    return {"user_id": requested_user_id, "organization_id": requested_org_id}
+
 # Request/Response Models
 class ChatRequest(BaseModel):
     message: str = Field(..., description="User message", min_length=1, max_length=50000, example="How do I prepare for ISO 9001 audit?")
@@ -316,13 +341,12 @@ async def health_check():
 # Chat endpoint
 @app.post(
     "/chat",
-    dependencies=[Depends(verify_api_key)],
     tags=["chat"],
     summary="Chat with AI Assistant",
     description="Send a message to the AI assistant and receive streaming response with context awareness"
 )
 @limiter.limit("30/minute")
-async def chat(request: Request, chat_request: ChatRequest):
+async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(verify_api_key)):
     """
     Chat with the AI agent (streaming response)
     Accepts optional context for context-aware responses including forms and templates
@@ -336,6 +360,18 @@ async def chat(request: Request, chat_request: ChatRequest):
     
     try:
         performance_monitor.log_info("chat_request_received", message_preview=chat_request.message[:100])
+
+        # Normalize auth scope into context so downstream queries stay tenant-scoped.
+        context_payload = dict(chat_request.context or {})
+        scope = resolve_request_scope(
+            auth_info,
+            requested_user_id=context_payload.get("user_id") or chat_request.user_id,
+            requested_org_id=context_payload.get("organization_id"),
+        )
+        if scope.get("user_id"):
+            context_payload["user_id"] = scope["user_id"]
+        context_payload["organization_id"] = scope["organization_id"]
+        chat_request.context = context_payload
         
         # Log enhanced context information
         if chat_request.context and chat_request.context.get('current_data'):
@@ -569,15 +605,26 @@ async def check_design_compliance(request: Request, payload: DesignComplianceReq
 # NEW: Project Insights endpoint
 @app.post("/api/ai/insights", dependencies=[Depends(verify_api_key)])
 @limiter.limit("20/minute")
-async def get_project_insights(request: Request, project_id: str, user_id: str):
+async def get_project_insights(
+    request: Request,
+    project_id: str,
+    user_id: Optional[str] = None,
+    organization_id: Optional[str] = None,
+    auth_info = Depends(verify_api_key),
+):
     """Get AI-generated insights for a specific project"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
+        scope = resolve_request_scope(auth_info, requested_user_id=user_id, requested_org_id=organization_id)
+        org_id = scope.get("organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="organization_id is required")
         result = await agent.get_project_insights(
             project_id=project_id,
-            user_id=user_id
+            user_id=scope.get("user_id") or user_id or "",
+            organization_id=org_id,
         )
         
         if result.get('error'):
@@ -593,15 +640,27 @@ async def get_project_insights(request: Request, project_id: str, user_id: str):
 # NEW: AI-powered document search endpoint
 @app.get("/api/ai/search", dependencies=[Depends(verify_api_key)])
 @limiter.limit("30/minute")
-async def search_documents_ai(request: Request, query: str, user_id: str, document_type: Optional[str] = None):
+async def search_documents_ai(
+    request: Request,
+    query: str,
+    user_id: Optional[str] = None,
+    organization_id: Optional[str] = None,
+    document_type: Optional[str] = None,
+    auth_info = Depends(verify_api_key),
+):
     """AI-powered document search with relevance ranking"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
+        scope = resolve_request_scope(auth_info, requested_user_id=user_id, requested_org_id=organization_id)
+        org_id = scope.get("organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="organization_id is required")
         result = await agent.search_documents_ai(
             query=query,
-            user_id=user_id,
+            user_id=scope.get("user_id") or user_id or "",
+            organization_id=org_id,
             document_type=document_type
         )
         return JSONResponse(content=result)
@@ -611,7 +670,12 @@ async def search_documents_ai(request: Request, query: str, user_id: str, docume
 
 # NEW: User context endpoint (for debugging)
 @app.get("/api/ai/context/{user_id}", dependencies=[Depends(verify_api_key)])
-async def get_user_context_endpoint(user_id: str, request: Request, auth_info = Depends(verify_api_key)):
+async def get_user_context_endpoint(
+    user_id: str,
+    request: Request,
+    organization_id: Optional[str] = None,
+    auth_info = Depends(verify_api_key),
+):
     """Get comprehensive user context from Firebase.
     
     Security (audit fix): Firebase-authenticated users can only access
@@ -620,14 +684,11 @@ async def get_user_context_endpoint(user_id: str, request: Request, auth_info = 
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    # Tenant isolation: Firebase users can only access their own context
-    if auth_info.get("auth_type") == "firebase":
-        if auth_info.get("uid") != user_id:
-            raise HTTPException(status_code=403, detail="Cannot access another user's context")
+    scope = resolve_request_scope(auth_info, requested_user_id=user_id, requested_org_id=organization_id)
     
     try:
         from firebase_client import firebase_client
-        context = firebase_client.get_user_context(user_id)
+        context = firebase_client.get_user_context(scope["user_id"] or user_id, scope["organization_id"])
         
         if context.get('error'):
             raise HTTPException(status_code=404, detail=context['error'])
@@ -641,14 +702,21 @@ async def get_user_context_endpoint(user_id: str, request: Request, auth_info = 
 
 # NEW: Workspace analytics endpoint
 @app.get("/api/ai/analytics", dependencies=[Depends(verify_api_key)])
-async def get_workspace_analytics_endpoint():
+async def get_workspace_analytics_endpoint(
+    organization_id: Optional[str] = None,
+    auth_info = Depends(verify_api_key),
+):
     """Get workspace-wide analytics"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
+        scope = resolve_request_scope(auth_info, requested_org_id=organization_id)
+        org_id = scope.get("organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="organization_id is required")
         from firebase_client import firebase_client
-        analytics = firebase_client.get_workspace_analytics()
+        analytics = firebase_client.get_workspace_analytics(org_id)
         return JSONResponse(content=analytics)
     except Exception as e:
         logger.error(f"Analytics retrieval error: {e}")
@@ -672,13 +740,24 @@ async def get_ai_routing_metrics():
 
 # NEW: Training status with AI recommendations
 @app.get("/api/ai/training/{user_id}", dependencies=[Depends(verify_api_key)])
-async def get_training_status_ai(user_id: str):
+async def get_training_status_ai(
+    user_id: str,
+    organization_id: Optional[str] = None,
+    auth_info = Depends(verify_api_key),
+):
     """Get user training status with AI recommendations"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
     try:
-        result = await agent.get_user_training_status_ai(user_id)
+        scope = resolve_request_scope(auth_info, requested_user_id=user_id, requested_org_id=organization_id)
+        org_id = scope.get("organization_id")
+        if not org_id:
+            raise HTTPException(status_code=400, detail="organization_id is required")
+        result = await agent.get_user_training_status_ai(
+            scope.get("user_id") or user_id,
+            org_id,
+        )
         
         if result.get('error'):
             raise HTTPException(status_code=404, detail=result['error'])

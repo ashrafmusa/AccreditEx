@@ -57,7 +57,14 @@ class FirebaseClient:
         
         self.db = firestore.client()
 
-    def get_user_context(self, user_id: str) -> Dict[str, Any]:
+    def _resolve_org_id(self, user_data: Dict[str, Any], organization_id: Optional[str]) -> Optional[str]:
+        """Resolve and validate organization scope for tenant-safe queries."""
+        user_org = user_data.get('organizationId')
+        if organization_id and user_org and organization_id != user_org:
+            return None
+        return organization_id or user_org
+
+    def get_user_context(self, user_id: str, organization_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Get comprehensive user context from Firebase with caching
         
@@ -93,9 +100,16 @@ class FirebaseClient:
                 }
             
             user_data = user_doc.to_dict()
+            org_id = self._resolve_org_id(user_data, organization_id)
+            if not org_id:
+                return {
+                    'error': 'Organization scope mismatch or missing organizationId',
+                    'user_data': None
+                }
             
-            # Get user's projects (as lead)
+            # Get user's projects (as lead) within the same organization
             projects_as_lead = self.db.collection('projects')\
+                .where('organizationId', '==', org_id)\
                 .where('projectLeadId', '==', user_id)\
                 .limit(50)\
                 .stream()
@@ -109,10 +123,13 @@ class FirebaseClient:
                     .document(user_data['department'])\
                     .get()
                 if dept_doc.exists:
-                    department = dept_doc.to_dict()
+                    dept_data = dept_doc.to_dict()
+                    if dept_data.get('organizationId') == org_id:
+                        department = dept_data
             
-            # Get user's recent documents
+            # Get user's recent documents inside their organization
             recent_docs = self.db.collection('documents')\
+                .where('organizationId', '==', org_id)\
                 .where('uploadedBy', '==', user_data.get('name', ''))\
                 .order_by('uploadedAt', direction=firestore.Query.DESCENDING)\
                 .limit(10)\
@@ -126,6 +143,7 @@ class FirebaseClient:
                     'name': user_data.get('name'),
                     'email': user_data.get('email'),
                     'role': user_data.get('role'),
+                    'organizationId': org_id,
                     'department': user_data.get('department'),
                     'permissions': user_data.get('permissions', [])
                 },
@@ -165,7 +183,7 @@ class FirebaseClient:
                 'user_data': None
             }
 
-    def get_project_details(self, project_id: str) -> Optional[Dict[str, Any]]:
+    def get_project_details(self, project_id: str, organization_id: str) -> Optional[Dict[str, Any]]:
         """
         Get detailed project information
         
@@ -183,6 +201,8 @@ class FirebaseClient:
                 return None
             
             project_data = project_doc.to_dict()
+            if project_data.get('organizationId') != organization_id:
+                return None
             
             # Calculate compliance statistics
             checklist = project_data.get('checklist', [])
@@ -216,7 +236,7 @@ class FirebaseClient:
             print(f"❌ Error fetching project: {e}")
             return None
 
-    def get_workspace_analytics(self) -> Dict[str, Any]:
+    def get_workspace_analytics(self, organization_id: str) -> Dict[str, Any]:
         """
         Get workspace-wide analytics for strategic insights
         
@@ -224,14 +244,17 @@ class FirebaseClient:
             Aggregate statistics across all projects, users, departments
         """
         try:
-            # Get all projects
-            projects = list(self.db.collection('projects').stream())
+            # Get all projects in organization scope
+            projects = list(self.db.collection('projects').where('organizationId', '==', organization_id).stream())
             
-            # Get all risks
-            risks = list(self.db.collection('risks').stream())
+            # Get all risks in organization scope
+            risks = list(self.db.collection('risks').where('organizationId', '==', organization_id).stream())
             
-            # Get all departments
-            departments = list(self.db.collection('departments').stream())
+            # Get all departments in organization scope
+            departments = list(self.db.collection('departments').where('organizationId', '==', organization_id).stream())
+
+            # Get all users in organization scope
+            users = list(self.db.collection('users').where('organizationId', '==', organization_id).stream())
             
             # Calculate statistics
             total_projects = len(projects)
@@ -254,6 +277,9 @@ class FirebaseClient:
                 },
                 'departments': {
                     'total': len(departments)
+                },
+                'users': {
+                    'total': len(users)
                 }
             }
             
@@ -261,7 +287,7 @@ class FirebaseClient:
             print(f"❌ Error fetching analytics: {e}")
             return {}
 
-    def search_documents(self, query: str, document_type: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
+    def search_documents(self, query: str, organization_id: str, document_type: Optional[str] = None, limit: int = 10) -> List[Dict[str, Any]]:
         """
         Search documents by name or type
         
@@ -274,7 +300,7 @@ class FirebaseClient:
             List of matching documents
         """
         try:
-            docs_ref = self.db.collection('documents')
+            docs_ref = self.db.collection('documents').where('organizationId', '==', organization_id)
             
             if document_type:
                 docs_ref = docs_ref.where('type', '==', document_type)
@@ -305,7 +331,7 @@ class FirebaseClient:
             print(f"❌ Error searching documents: {e}")
             return []
 
-    def get_user_training_status(self, user_id: str) -> Dict[str, Any]:
+    def get_user_training_status(self, user_id: str, organization_id: str) -> Dict[str, Any]:
         """
         Get user's training completion status
         
@@ -322,9 +348,11 @@ class FirebaseClient:
                 return {'error': 'User not found'}
             
             user_data = user_doc.to_dict()
+            if user_data.get('organizationId') != organization_id:
+                return {'error': 'User does not belong to the requested organization'}
             
-            # Get all training modules
-            all_training = list(self.db.collection('training').stream())
+            # Get all training modules for this organization
+            all_training = list(self.db.collection('training').where('organizationId', '==', organization_id).stream())
             
             # Get user's completed training
             completed_ids = user_data.get('completedTraining', [])

@@ -64,8 +64,6 @@ export interface TrainingRecommendationsRequest {
     upcoming_accreditation?: string;
 }
 
-/** Production backend URL */
-const RENDER_URL = 'https://accreditex.onrender.com';
 /**
  * API key – MUST be set via VITE_AI_AGENT_API_KEY env var.
  * Security (audit fix S-1): No hardcoded fallback key in source code.
@@ -96,7 +94,13 @@ export class AIAgentService {
         if (isDevelopment) {
             this.baseUrl = envUrl || 'http://localhost:8000';
         } else {
-            this.baseUrl = envIsLocalhost || !envUrl ? RENDER_URL : envUrl;
+            // Security hardening: require explicit production backend configuration.
+            // Never silently route to a shared fallback backend.
+            this.baseUrl = envIsLocalhost || !envUrl ? '' : envUrl;
+        }
+
+        if (!this.baseUrl && process.env.NODE_ENV !== 'test') {
+            console.error('[AI Agent] Missing VITE_AI_AGENT_URL/VITE_AI_AGENT_BASE_URL in production runtime.');
         }
 
         // Security fix (2026-04-17 SEC-H1): API key no longer read from frontend env.
@@ -858,7 +862,7 @@ ${context.criticalConcerns?.length ? `Critical Concerns: ${context.criticalConce
 ${context.surveyDate ? `Survey Date: ${context.surveyDate}` : ''}
 
 Provide high-risk areas, compliance gaps, and priority actions.`;
-                
+
                 const chatResponse = await this.chat(prompt, true).catch(() => ({
                     response: this.buildSafeFallbackText('survey_risk_assessment', context as unknown as Record<string, unknown>),
                 } as ChatResponse));
@@ -882,7 +886,7 @@ ${context.criticalConcerns?.length ? `Critical Concerns: ${context.criticalConce
 ${context.surveyDate ? `Survey Date: ${context.surveyDate}` : ''}
 
 Provide high-risk areas, compliance gaps, and priority actions.`;
-            
+
             const chatResponse = await this.chat(prompt, true).catch(() => ({
                 response: this.buildSafeFallbackText('survey_risk_assessment', context as unknown as Record<string, unknown>),
             } as ChatResponse));

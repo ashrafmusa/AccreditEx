@@ -27,7 +27,7 @@ class ContextManager:
         self.cache = {}
         self.cache_ttl = 300  # 5 minutes
     
-    def get_context(self, user_id: str, context_tier: str = 'standard') -> Dict[str, Any]:
+    def get_context(self, user_id: str, context_tier: str = 'standard', organization_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Get context based on tier selection
         
@@ -41,16 +41,16 @@ class ContextManager:
         logger.info(f"📦 Loading {context_tier} context for user {user_id}")
         
         if context_tier == 'minimal':
-            return self._get_minimal_context(user_id)
+            return self._get_minimal_context(user_id, organization_id)
         elif context_tier == 'standard':
-            return self._get_standard_context(user_id)
+            return self._get_standard_context(user_id, organization_id)
         elif context_tier == 'full':
-            return self._get_full_context(user_id)
+            return self._get_full_context(user_id, organization_id)
         else:
             logger.warning(f"Unknown context tier: {context_tier}, defaulting to standard")
-            return self._get_standard_context(user_id)
+            return self._get_standard_context(user_id, organization_id)
     
-    def _get_minimal_context(self, user_id: str) -> Dict[str, Any]:
+    def _get_minimal_context(self, user_id: str, organization_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Minimal context - just user essentials
         Tokens: ~50
@@ -60,7 +60,7 @@ class ContextManager:
             return {'user_id': user_id, 'tier': 'minimal'}
         
         # Check cache
-        cache_key = f"minimal_{user_id}"
+        cache_key = f"minimal_{user_id}_{organization_id or 'auto'}"
         if self._is_cached(cache_key):
             logger.info("✅ Using cached minimal context")
             return self.cache[cache_key]['data']
@@ -78,7 +78,12 @@ class ContextManager:
                 user_data = user_doc.to_dict()
                 context['user_name'] = user_data.get('name', 'User')
                 context['user_role'] = user_data.get('role', 'Unknown')
-                context['organization_id'] = user_data.get('organizationId', None)
+                user_org = user_data.get('organizationId', None)
+                if organization_id and user_org and organization_id != user_org:
+                    logger.warning(f"User {user_id} attempted cross-tenant context access")
+                    context['organization_id'] = None
+                else:
+                    context['organization_id'] = organization_id or user_org
         except Exception as e:
             logger.error(f"Error loading minimal context: {e}")
         
@@ -88,7 +93,7 @@ class ContextManager:
         logger.info(f"📊 Minimal context size: {len(str(context))} chars (~50 tokens)")
         return context
     
-    def _get_standard_context(self, user_id: str) -> Dict[str, Any]:
+    def _get_standard_context(self, user_id: str, organization_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Standard context - user + recent activity
         Tokens: ~200
@@ -98,13 +103,13 @@ class ContextManager:
             return {'user_id': user_id, 'tier': 'standard'}
         
         # Check cache
-        cache_key = f"standard_{user_id}"
+        cache_key = f"standard_{user_id}_{organization_id or 'auto'}"
         if self._is_cached(cache_key):
             logger.info("✅ Using cached standard context")
             return self.cache[cache_key]['data']
         
         # Start with minimal context
-        context = self._get_minimal_context(user_id)
+        context = self._get_minimal_context(user_id, organization_id)
         context['tier'] = 'standard'
         
         try:
@@ -114,7 +119,8 @@ class ContextManager:
             
             # Add assigned projects (limit to 3 most recent)
             projects = []
-            projects_ref = self.db.collection(f'organizations/{org_id}/projects') \
+            projects_ref = self.db.collection('projects') \
+                .where('organizationId', '==', org_id) \
                 .where('assignedUsers', 'array_contains', user_id) \
                 .order_by('createdAt', direction='DESCENDING') \
                 .limit(3)
@@ -131,7 +137,8 @@ class ContextManager:
             
             # Add recent documents (limit to 5 most recent)
             documents = []
-            docs_ref = self.db.collection(f'organizations/{org_id}/documents') \
+            docs_ref = self.db.collection('documents') \
+                .where('organizationId', '==', org_id) \
                 .order_by('uploadedAt', direction='DESCENDING') \
                 .limit(5)
             
@@ -154,7 +161,7 @@ class ContextManager:
         logger.info(f"📊 Standard context size: {len(str(context))} chars (~200 tokens)")
         return context
     
-    def _get_full_context(self, user_id: str) -> Dict[str, Any]:
+    def _get_full_context(self, user_id: str, organization_id: Optional[str] = None) -> Dict[str, Any]:
         """
         Full context - complete workspace awareness
         Tokens: ~1000
@@ -164,13 +171,13 @@ class ContextManager:
             return {'user_id': user_id, 'tier': 'full'}
         
         # Check cache
-        cache_key = f"full_{user_id}"
+        cache_key = f"full_{user_id}_{organization_id or 'auto'}"
         if self._is_cached(cache_key):
             logger.info("✅ Using cached full context")
             return self.cache[cache_key]['data']
         
         # Start with standard context
-        context = self._get_standard_context(user_id)
+        context = self._get_standard_context(user_id, organization_id)
         context['tier'] = 'full'
         
         try:
@@ -179,11 +186,11 @@ class ContextManager:
                 return context
             
             # Add all templates (summarized)
-            templates_count = len(list(self.db.collection(f'organizations/{org_id}/templates').stream()))
+            templates_count = len(list(self.db.collection('templates').where('organizationId', '==', org_id).stream()))
             context['templates_count'] = templates_count
             
             # Add all forms (summarized)
-            forms_count = len(list(self.db.collection(f'organizations/{org_id}/forms').stream()))
+            forms_count = len(list(self.db.collection('forms').where('organizationId', '==', org_id).stream()))
             context['forms_count'] = forms_count
             
             # Add workspace analytics summary
@@ -209,11 +216,11 @@ class ContextManager:
         """Get high-level analytics summary"""
         try:
             # Count projects by status
-            projects_ref = self.db.collection(f'organizations/{org_id}/projects')
+            projects_ref = self.db.collection('projects').where('organizationId', '==', org_id)
             total_projects = len(list(projects_ref.stream()))
             
             # Count pending risks
-            risks_ref = self.db.collection(f'organizations/{org_id}/risks').where('status', '==', 'open')
+            risks_ref = self.db.collection('risks').where('organizationId', '==', org_id).where('status', '==', 'open')
             pending_risks = len(list(risks_ref.stream()))
             
             # Count active users
