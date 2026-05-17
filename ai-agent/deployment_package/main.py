@@ -173,6 +173,19 @@ def resolve_request_scope(
         org_id = auth_info.get("organization_id")
         if not uid:
             raise HTTPException(status_code=401, detail="Invalid Firebase token: missing uid")
+
+        # Backward-compatible fallback for users whose custom token claims
+        # have not been refreshed with organizationId yet.
+        if not org_id:
+            try:
+                from firebase_client import firebase_client
+                user_doc = firebase_client.db.collection("users").document(uid).get()
+                if user_doc.exists:
+                    user_data = user_doc.to_dict() or {}
+                    org_id = user_data.get("organizationId")
+            except Exception as scope_error:
+                logger.warning(f"Unable to resolve organizationId from users/{uid}: {scope_error}")
+
         if requested_user_id and requested_user_id != uid:
             raise HTTPException(status_code=403, detail="Cannot access another user's scope")
         if not org_id:
@@ -411,6 +424,10 @@ async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(
             media_type="text/plain"
         )
     
+    except HTTPException:
+        # Preserve explicit auth/scope HTTP status codes (401/403/400)
+        # instead of converting them to a generic 500.
+        raise
     except Exception as e:
         duration = time.time() - start_time
         performance_monitor.track_request("chat", success=False)
