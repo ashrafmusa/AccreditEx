@@ -46,7 +46,7 @@ export interface Branch {
   updatedAt?: string;
 }
 
-export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'globeSettings' | 'usageTracking' | 'firebaseUsage' | 'users' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'hisIntegration' | 'changeControl' | 'supplierHub' | 'orgPlan' | 'branches' | 'platformAdmin';
+export type SettingsSection = 'profile' | 'security' | 'notifications' | 'accessibility' | 'visual' | 'globeSettings' | 'usageTracking' | 'firebaseUsage' | 'users' | 'roles' | 'accreditationHub' | 'competencies' | 'data' | 'firebaseSetup' | 'about' | 'settingsPresets' | 'versionHistory' | 'auditLog' | 'bulkUserImport' | 'departments' | 'limsIntegration' | 'hisIntegration' | 'changeControl' | 'supplierHub' | 'orgPlan' | 'organizationSettings' | 'branches' | 'platformAdmin';
 
 export type NavigationView = 'dashboard' | 'analyticsHub' | 'calendar' | 'riskHub' | 'auditHub' | 'documentControl' | 'projects' | 'projectDetail' | 'createProject' | 'editProject' | 'standards' | 'departments' | 'departmentDetail' | 'settings' | 'userProfile' | 'trainingHub' | 'trainingDetail' | 'certificate' | 'mockSurvey' | 'surveyReport' | 'accreditationHub' | 'dataHub' | 'messaging' | 'knowledgeBase' | 'labOperations' | 'workflowAutomation' | 'reportBuilder' | 'supplierHub' | 'changeControlHub' | 'myTasks' | 'qualityInsights' | 'templateLibrary' | 'pricing' | 'multiFacility' | 'qualityRounding' | 'qualityTools' | 'questionBank';
 

@@ -275,4 +275,25 @@ export const ar = {
     projectLead: 'قائد المشروع',
     createNewProject: 'إنشاء مشروع جديد',
     documentControl: 'التحكم في المستندات',
+
+    // Audit Readiness + Countdown
+    auditReadinessPredictor: 'مؤشر الجاهزية للتدقيق',
+    auditReady: 'جاهز للتدقيق',
+    auditPartiallyReady: 'جاهز جزئياً',
+    auditNotReady: 'غير جاهز',
+    complianceScore: 'درجة الامتثال',
+    predictedNonConformities: 'عدم المطابقات المتوقعة',
+    clickForDetails: 'اضغط لعرض التحليلات الكاملة <-',
+    accreditationCountdown: 'العد التنازلي للاعتماد',
+    noActiveSurveyScheduled:
+        'لا يوجد تدقيق مجدول حالياً. حدِّد تاريخ نهاية لمشروع قيد التنفيذ لتفعيل العد التنازلي.',
+    goToProjects: 'الانتقال إلى المشاريع',
+    urgent: 'عاجل',
+    approaching: 'قريب',
+    onTrack: 'على المسار',
+    days: 'يوماً',
+    untilSurveyDate: 'حتى موعد التدقيق',
+    readiness: 'الجاهزية',
+    priorityGapsToClose: 'فجوات الأولوية للإغلاق',
+    viewProject: 'عرض المشروع',
 };

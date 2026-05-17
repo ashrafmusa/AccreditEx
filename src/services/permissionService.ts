@@ -28,6 +28,7 @@
 
 import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import { migrateUserDocToAuthUid } from '@/services/secureUserService';
+import { logUserActivity } from '@/services/userActivityService';
 import { useUserStore } from '@/stores/useUserStore';
 import { User, UserRole } from '@/types';
 import { normalizeUserRole } from '@/utils/roleAccess';
@@ -77,6 +78,12 @@ interface UserLike {
     isActive?: boolean;
 }
 
+export interface PermissionCacheSnapshot {
+    role: UserRole;
+    allowedActionsByResource: Record<string, Action[]>;
+    cachedAt: number;
+}
+
 /**
  * Permission matrix defining what each role can do.
  * 
@@ -121,6 +128,52 @@ const PERMISSION_MATRIX: Record<string, Record<string, Action[]>> = {
 // ── Permission Service ─────────────────────────────────────
 
 class PermissionService {
+    buildPermissionCache(role: UserRole): PermissionCacheSnapshot {
+        const normalizedRole = normalizeUserRole(role);
+        const rolePermissions = normalizedRole ? PERMISSION_MATRIX[normalizedRole] : undefined;
+        return {
+            role,
+            allowedActionsByResource: rolePermissions ?? {},
+            cachedAt: Date.now(),
+        };
+    }
+
+    canUsingCache(cache: PermissionCacheSnapshot | null | undefined, action: Action, resource: Resource): boolean {
+        if (!cache) return false;
+        const allowedActions =
+            cache.allowedActionsByResource[resource] ??
+            cache.allowedActionsByResource._default ??
+            [];
+        return allowedActions.includes(action);
+    }
+
+    private logPermissionDecision(
+        user: UserLike | null | undefined,
+        action: Action,
+        resource: Resource,
+        success: boolean,
+        code?: string,
+        message?: string,
+    ): void {
+        if (!user?.id) return;
+        void logUserActivity(
+            user.id,
+            'permission_check',
+            resource,
+            undefined,
+            {
+                action,
+                result: success ? 'allowed' : 'denied',
+                code: code ?? null,
+                message: message ?? null,
+                role: user.role,
+            },
+            undefined,
+            success,
+            success ? undefined : message,
+        );
+    }
+
     /**
      * Check if a user can perform an action on a resource
      */
@@ -233,10 +286,12 @@ class PermissionService {
             throw new PermissionError('Not authenticated. Please log in.', 'NOT_AUTHENTICATED');
         }
         if (user.isActive === false) {
+            this.logPermissionDecision(user, action, resource, false, 'ACCOUNT_INACTIVE', 'Your account is deactivated.');
             throw new PermissionError('Your account is deactivated.', 'ACCOUNT_INACTIVE');
         }
         const normalizedRole = normalizeUserRole(user.role);
         if (!normalizedRole) {
+            this.logPermissionDecision(user, action, resource, false, 'INVALID_ROLE', `Invalid or unsupported role value: ${user.role}.`);
             throw new PermissionError(
                 `Invalid or unsupported role value: ${user.role}.`,
                 'INVALID_ROLE',
@@ -244,12 +299,22 @@ class PermissionService {
             );
         }
         if (!this.can(user, action, resource)) {
+            this.logPermissionDecision(
+                user,
+                action,
+                resource,
+                false,
+                'INSUFFICIENT_ROLE',
+                `Your role (${normalizedRole}) does not have ${action} permission on ${resource}.`,
+            );
             throw new PermissionError(
                 `Your role (${normalizedRole}) does not have ${action} permission on ${resource}.`,
                 'INSUFFICIENT_ROLE',
                 { role: normalizedRole, action, resource }
             );
         }
+
+        this.logPermissionDecision(user, action, resource, true);
     }
 
     /**

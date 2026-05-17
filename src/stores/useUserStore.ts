@@ -21,6 +21,7 @@ import { useTenantStore } from '@/stores/useTenantStore';
 interface UserState {
   currentUser: User | null;
   users: User[];
+  permissionCache: ReturnType<typeof permissionService.buildPermissionCache> | null;
   setCurrentUser: (user: User | null) => void;
   fetchAllUsers: () => Promise<void>;
   login: (email: string, password: string) => Promise<User | null>;
@@ -33,7 +34,14 @@ interface UserState {
 export const useUserStore = create<UserState>((set, get) => ({
   currentUser: null,
   users: [],
-  setCurrentUser: (user) => set({ currentUser: user }),
+  permissionCache: null,
+  setCurrentUser: (user) =>
+    set({
+      currentUser: user,
+      permissionCache: user
+        ? permissionService.buildPermissionCache(user.role)
+        : null,
+    }),
   fetchAllUsers: async () => {
     const users = await getUsers();
     set({ users });
@@ -62,7 +70,10 @@ export const useUserStore = create<UserState>((set, get) => ({
 
       if (directSnap.exists()) {
         const user = { ...directSnap.data(), id: directSnap.id } as User;
-        set({ currentUser: user });
+        set({
+          currentUser: user,
+          permissionCache: permissionService.buildPermissionCache(user.role),
+        });
         useTenantStore.getState().loadOrganizationForUser(user.organizationId);
         deviceSessionService.createOrUpdateSession(user.id).catch(err =>
           logger.warn('Failed to track session', err)
@@ -79,7 +90,10 @@ export const useUserStore = create<UserState>((set, get) => ({
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const user = { ...userDoc.data(), id: userDoc.id } as User;
-          set({ currentUser: user });
+          set({
+            currentUser: user,
+            permissionCache: permissionService.buildPermissionCache(user.role),
+          });
           useTenantStore.getState().loadOrganizationForUser(user.organizationId);
           deviceSessionService.createOrUpdateSession(user.id).catch(err =>
             logger.warn('Failed to track session', err)
@@ -113,7 +127,7 @@ export const useUserStore = create<UserState>((set, get) => ({
     useProjectStore.setState({ projects: [], loading: false, error: null });
     useReportBuilderStore.setState({ reports: [], loading: false, error: null });
     useTenantStore.getState().clearTenant();
-    set({ currentUser: null, users: [] });
+    set({ currentUser: null, users: [], permissionCache: null });
   },
   // Security fix (2026-02-18): addUser now creates a Firebase Auth account
   // AND stores the Firestore document keyed by Auth UID (fixes C-1 + C-2).
@@ -160,7 +174,11 @@ export const useUserStore = create<UserState>((set, get) => ({
       await setDoc(userRef, updatedUser, { merge: true });
       set(state => ({
         users: state.users.map(u => u.id === updatedUser.id ? updatedUser : u),
-        currentUser: state.currentUser?.id === updatedUser.id ? updatedUser : state.currentUser
+        currentUser: state.currentUser?.id === updatedUser.id ? updatedUser : state.currentUser,
+        permissionCache:
+          state.currentUser?.id === updatedUser.id
+            ? permissionService.buildPermissionCache(updatedUser.role)
+            : state.permissionCache,
       }));
     } catch (error) {
       handleError(error, 'updateUser');

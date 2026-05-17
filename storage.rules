@@ -30,6 +30,10 @@ service firebase.storage {
     function isProjectLead() {
       return getUserRole() in ['Admin', 'ProjectLead'];
     }
+
+    function isTenantActive() {
+      return request.auth.token.organizationId != null;
+    }
     
     // Tenant isolation: verify the requesting user belongs to the
     // organization whose path they are accessing.
@@ -124,36 +128,36 @@ service firebase.storage {
     // Program documents - accessible by all authenticated users, managed by admin
     match /documents/programs/{programId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidDocumentUpload();
-      allow delete: if isAdmin();
+      allow write: if isAdmin() && !isTenantActive() && isValidDocumentUpload();
+      allow delete: if isAdmin() && !isTenantActive();
     }
     
     // Standard documents - accessible by all authenticated users, managed by admin
     match /documents/standards/{standardId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isAdmin() && isValidDocumentUpload();
-      allow delete: if isAdmin();
+      allow write: if isAdmin() && !isTenantActive() && isValidDocumentUpload();
+      allow delete: if isAdmin() && !isTenantActive();
     }
     
     // User profile documents - accessible by owner and admin
     match /documents/users/{userId}/{allFiles=**} {
       allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
-      allow write: if (request.auth.uid == userId || isAdmin()) && isValidFileSize() && (isAllowedDocumentType() || isAllowedImageType());
-      allow delete: if isAdmin();
+      allow write: if !isTenantActive() && (request.auth.uid == userId || isAdmin()) && isValidFileSize() && (isAllowedDocumentType() || isAllowedImageType());
+      allow delete: if isAdmin() && !isTenantActive();
     }
     
     // Project documents - accessible by project members and admin
     match /documents/projects/{projectId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if (isAdmin() || isProjectLead()) && isValidDocumentUpload();
-      allow delete: if isAdmin();
+      allow write: if !isTenantActive() && (isAdmin() || isProjectLead()) && isValidDocumentUpload();
+      allow delete: if isAdmin() && !isTenantActive();
     }
     
     // Reports - accessible by authenticated users, write restricted to leads+
     match /reports/{projectId}/{allFiles=**} {
       allow read: if isAuthenticated();
-      allow write: if isProjectLead() && isValidDocumentUpload();
-      allow delete: if isAdmin();
+      allow write: if !isTenantActive() && isProjectLead() && isValidDocumentUpload();
+      allow delete: if isAdmin() && !isTenantActive();
     }
     
     // Security fix (2026-02-18): REMOVED catch-all rule that was here:

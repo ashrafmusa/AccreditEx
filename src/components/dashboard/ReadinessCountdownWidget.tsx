@@ -70,7 +70,7 @@ const CountdownRing: React.FC<{
         {daysLeft > 999 ? "999+" : daysLeft}
       </text>
       <text x="50" y="62" textAnchor="middle" fontSize="9" fill="#94a3b8">
-        days
+        D
       </text>
     </svg>
   );
@@ -154,17 +154,17 @@ const ReadinessCountdownWidget: React.FC<Props> = ({ setNavigation }) => {
     return (
       <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-brand-surface dark:bg-dark-brand-surface p-5 shadow-sm">
         <p className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-1">
-          Accreditation Countdown
+          {t("accreditationCountdown") || "Accreditation Countdown"}
         </p>
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-          No active survey scheduled. Set an end date on an in-progress project
-          to activate the countdown.
+          {t("noActiveSurveyScheduled") ||
+            "No active survey scheduled. Set an end date on an in-progress project to activate the countdown."}
         </p>
         <button
           onClick={() => setNavigation({ view: "projects" })}
           className="mt-3 text-xs text-brand-primary hover:underline"
         >
-          Go to Projects →
+          {t("goToProjects") || "Go to Projects"}
         </button>
       </div>
     );
@@ -187,7 +187,7 @@ const ReadinessCountdownWidget: React.FC<Props> = ({ setNavigation }) => {
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-            Accreditation Countdown
+            {t("accreditationCountdown") || "Accreditation Countdown"}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary truncate max-w-[200px]">
             {countdownData.nearestProject?.name}
@@ -203,10 +203,10 @@ const ReadinessCountdownWidget: React.FC<Props> = ({ setNavigation }) => {
           }`}
         >
           {countdownData.daysLeft <= 30
-            ? "Urgent"
+            ? t("urgent") || "Urgent"
             : countdownData.daysLeft <= 90
-              ? "Approaching"
-              : "On Track"}
+              ? t("approaching") || "Approaching"
+              : t("onTrack") || "On Track"}
         </span>
       </div>
 
@@ -218,14 +218,14 @@ const ReadinessCountdownWidget: React.FC<Props> = ({ setNavigation }) => {
         />
         <div>
           <p className={`text-2xl font-bold ${urgencyColor}`}>
-            {countdownData.daysLeft} days
+            {countdownData.daysLeft} {t("days") || "days"}
           </p>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            until survey date
+            {t("untilSurveyDate") || "until survey date"}
           </p>
           <div className="mt-2">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Readiness
+              {t("readiness") || "Readiness"}
             </p>
             <div className="flex items-center gap-2 mt-0.5">
               <div className="flex-1 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full">
@@ -246,7 +246,7 @@ const ReadinessCountdownWidget: React.FC<Props> = ({ setNavigation }) => {
       {countdownData.topGaps.length > 0 && (
         <div>
           <p className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wider mb-2">
-            Priority Gaps to Close
+            {t("priorityGapsToClose") || "Priority Gaps to Close"}
           </p>
           <ul className="space-y-1.5">
             {countdownData.topGaps.map((gap, i) => (
@@ -281,7 +281,7 @@ const ReadinessCountdownWidget: React.FC<Props> = ({ setNavigation }) => {
         }
         className="mt-4 text-xs text-brand-primary hover:underline"
       >
-        View Project →
+        {t("viewProject") || "View Project"}
       </button>
     </motion.div>
   );

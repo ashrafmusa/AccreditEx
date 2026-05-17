@@ -20,6 +20,7 @@ import {
   ClipboardDocumentListIcon,
   SparklesIcon,
 } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 import { NavigationState } from "@/types";
 import React, { lazy, Suspense, useState } from "react";
 
@@ -32,78 +33,74 @@ const BurnsCalculatorModal = lazy(
 
 interface Tool {
   id: string;
-  title: string;
-  subtitle: string;
-  description: string;
-  standard: string;
+  titleKey: string;
+  subtitleKey: string;
+  descriptionKey: string;
+  standardKey: string;
   icon: React.FC<React.SVGProps<SVGSVGElement>>;
   iconBg: string;
   iconColor: string;
   action: "modal-ews" | "modal-burns" | "nav-training" | "nav-templates";
-  badge?: string;
+  badgeKey?: "clinical" | "training" | "documents";
 }
 
 const TOOLS: Tool[] = [
   {
     id: "news2",
-    title: "NEWS2 Early Warning Score",
-    subtitle: "Deteriorating Patient Detection",
-    description:
-      "Calculate the National Early Warning Score 2 using all 7 vital signs. Provides a risk band (Low / Medium / High) with escalation guidance aligned to the Royal College of Physicians 2017 specification.",
-    standard: "SMCS.87",
+    titleKey: "qualityToolNews2Title",
+    subtitleKey: "qualityToolNews2Subtitle",
+    descriptionKey: "qualityToolNews2Description",
+    standardKey: "qualityToolNews2Standard",
     icon: ClipboardDocumentListIcon,
     iconBg: "bg-blue-100 dark:bg-blue-900/30",
     iconColor: "text-blue-600 dark:text-blue-400",
     action: "modal-ews",
-    badge: "Clinical",
+    badgeKey: "clinical",
   },
   {
     id: "burns",
-    title: "Burns Assessment & Fluid Calculator",
-    subtitle: "Parkland Formula · Lund & Browder",
-    description:
-      "Calculate Parkland fluid resuscitation volumes (total 24h, first 8h rate, next 16h rate, urine output targets). Includes Curreri caloric requirements, Lund & Browder TBSA reference, and burn depth classification guide.",
-    standard: "SMCS Burn Care Unit",
+    titleKey: "qualityToolBurnsTitle",
+    subtitleKey: "qualityToolBurnsSubtitle",
+    descriptionKey: "qualityToolBurnsDescription",
+    standardKey: "qualityToolBurnsStandard",
     icon: SparklesIcon,
     iconBg: "bg-orange-100 dark:bg-orange-900/30",
     iconColor: "text-orange-600 dark:text-orange-400",
     action: "modal-burns",
-    badge: "Clinical",
+    badgeKey: "clinical",
   },
   {
     id: "competency",
-    title: "SMCS Competency Tracker",
-    subtitle: "14 SMCS Department Competency Records",
-    description:
-      "Track annual clinical competency assessments for all SMCS departments. Add, edit, and export staff competency records with status badges (Competent / Due / Overdue). Covers SMCS standards .55, .67, .82, .96, .104, and .116.",
-    standard: "SMCS.55 · .67 · .82 · .96 · .104 · .116",
+    titleKey: "qualityToolCompetencyTitle",
+    subtitleKey: "qualityToolCompetencySubtitle",
+    descriptionKey: "qualityToolCompetencyDescription",
+    standardKey: "qualityToolCompetencyStandard",
     icon: AcademicCapIcon,
     iconBg: "bg-teal-100 dark:bg-teal-900/30",
     iconColor: "text-teal-600 dark:text-teal-400",
     action: "nav-training",
-    badge: "Training",
+    badgeKey: "training",
   },
   {
     id: "templates",
-    title: "SMCS Template Library",
-    subtitle: "9 OHAS-tagged SMCS Templates",
-    description:
-      "Access accreditation-ready SMCS templates including WHO Surgical Safety Checklist, ED Triage, Informed Consent Register, NEWS2 Observation Log, Medication Reconciliation, Post-Op Monitoring, NICU Vitals Chart, and Burns Assessment Form.",
-    standard: "OHAS (Oman) · All SMCS Departments",
+    titleKey: "qualityToolTemplatesTitle",
+    subtitleKey: "qualityToolTemplatesSubtitle",
+    descriptionKey: "qualityToolTemplatesDescription",
+    standardKey: "qualityToolTemplatesStandard",
     icon: BookOpenIcon,
     iconBg: "bg-green-100 dark:bg-green-900/30",
     iconColor: "text-green-600 dark:text-green-400",
     action: "nav-templates",
-    badge: "Documents",
+    badgeKey: "documents",
   },
 ];
 
 // ── Badge colours ─────────────────────────────────────────────────────────────
 
-const BADGE_STYLE: Record<string, string> = {
-  Clinical: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-  Training: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
-  Documents:
+const BADGE_STYLE: Record<"clinical" | "training" | "documents", string> = {
+  clinical: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  training: "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
+  documents:
     "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
 };
 
@@ -116,6 +113,7 @@ interface QualityToolsPageProps {
 const QualityToolsPage: React.FC<QualityToolsPageProps> = ({
   setNavigation,
 }) => {
+  const { t } = useTranslation();
   const [showEws, setShowEws] = useState(false);
   const [showBurns, setShowBurns] = useState(false);
 
@@ -146,11 +144,11 @@ const QualityToolsPage: React.FC<QualityToolsPageProps> = ({
           </div>
           <div>
             <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
-              Quality Aid Tools
+              {t("qualityAidTools") || "Quality Aid Tools"}
             </h1>
             <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              Clinical decision-support tools and resources for SMCS
-              accreditation compliance
+              {t("qualityAidToolsDescription") ||
+                "Clinical decision-support tools and resources for SMCS accreditation compliance"}
             </p>
           </div>
         </div>
@@ -158,10 +156,16 @@ const QualityToolsPage: React.FC<QualityToolsPageProps> = ({
         {/* Stats row */}
         <div className="flex flex-wrap gap-4 mt-2">
           {[
-            { label: "Clinical Calculators", value: "2" },
-            { label: "SMCS Standards Covered", value: "9+" },
-            { label: "Departments Supported", value: "14" },
-            { label: "Templates Available", value: "9" },
+            { label: t("qualityAidToolsStatClinicalCalculators"), value: "2" },
+            {
+              label: t("qualityAidToolsStatSmcsStandardsCovered"),
+              value: "9+",
+            },
+            {
+              label: t("qualityAidToolsStatDepartmentsSupported"),
+              value: "14",
+            },
+            { label: t("qualityAidToolsStatTemplatesAvailable"), value: "9" },
           ].map((s) => (
             <div
               key={s.label}
@@ -184,7 +188,7 @@ const QualityToolsPage: React.FC<QualityToolsPageProps> = ({
       {/* Tools grid */}
       <div>
         <h2 className="text-sm font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wider mb-4">
-          Available Tools
+          {t("qualityAidToolsAvailableTools") || "Available Tools"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {TOOLS.map((tool) => {
@@ -207,37 +211,43 @@ const QualityToolsPage: React.FC<QualityToolsPageProps> = ({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                        {tool.title}
+                        {t(tool.titleKey)}
                       </h3>
-                      {tool.badge && (
+                      {tool.badgeKey && (
                         <span
-                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${BADGE_STYLE[tool.badge]}`}
+                          className={`px-2 py-0.5 rounded-full text-xs font-medium ${BADGE_STYLE[tool.badgeKey]}`}
                         >
-                          {tool.badge}
+                          {tool.badgeKey === "clinical"
+                            ? t("qualityAidToolsBadgeClinical")
+                            : tool.badgeKey === "training"
+                              ? t("qualityAidToolsBadgeTraining")
+                              : t("qualityAidToolsBadgeDocuments")}
                         </span>
                       )}
                     </div>
                     <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
-                      {tool.subtitle}
+                      {t(tool.subtitleKey)}
                     </p>
                   </div>
                 </div>
 
                 {/* Description */}
                 <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary leading-relaxed flex-1">
-                  {tool.description}
+                  {t(tool.descriptionKey)}
                 </p>
 
                 {/* Footer */}
                 <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-dark-brand-border">
                   <span className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary font-mono">
-                    {tool.standard}
+                    {t(tool.standardKey)}
                   </span>
                   <button
                     onClick={() => handleToolAction(tool.action)}
                     className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-primary text-white text-sm font-medium hover:bg-brand-primary/90 transition-colors"
                   >
-                    {isExternal ? "Go to Tool →" : "Launch Tool"}
+                    {isExternal
+                      ? t("qualityAidToolsGoToTool") || "Go to Tool ->"
+                      : t("qualityAidToolsLaunchTool") || "Launch Tool"}
                   </button>
                 </div>
               </div>
@@ -249,24 +259,24 @@ const QualityToolsPage: React.FC<QualityToolsPageProps> = ({
       {/* Coming soon section */}
       <div>
         <h2 className="text-sm font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary uppercase tracking-wider mb-4">
-          Coming Soon
+          {t("qualityAidToolsComingSoon") || "Coming Soon"}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {[
             {
-              title: "Paediatric Resuscitation Calculator",
-              desc: "Weight-based drug dosing, fluid resuscitation, and equipment sizing for paediatric emergencies.",
-              std: "SMCS ED · PICU",
+              title: t("qualityAidToolsComingSoonPaediatricTitle"),
+              desc: t("qualityAidToolsComingSoonPaediatricDesc"),
+              std: t("qualityAidToolsComingSoonPaediatricStd"),
             },
             {
-              title: "Sepsis Bundle Checklist",
-              desc: "SEPSIS-3 criteria evaluation and hour-1 bundle tracker with documentation support.",
-              std: "SMCS.87 · ICU · ED",
+              title: t("qualityAidToolsComingSoonSepsisTitle"),
+              desc: t("qualityAidToolsComingSoonSepsisDesc"),
+              std: t("qualityAidToolsComingSoonSepsisStd"),
             },
             {
-              title: "Pressure Injury Risk Score",
-              desc: "Braden Scale assessment tool with automated care planning recommendations.",
-              std: "SMCS Nursing",
+              title: t("qualityAidToolsComingSoonPressureTitle"),
+              desc: t("qualityAidToolsComingSoonPressureDesc"),
+              std: t("qualityAidToolsComingSoonPressureStd"),
             },
           ].map((item) => (
             <div

@@ -245,8 +245,25 @@ service cloud.firestore {
     // Security fix (2026-02-18): Added missing rules for custom_roles.
     // Previously had no rules, defaulting to deny-all.
     match /custom_roles/{roleId} {
-      allow read: if isAuthenticated();
-      allow create, update, delete: if isAdmin();
+      // Tenant-aware read:
+      // - Super-admin can read all
+      // - Tenant users can read tenant-scoped docs
+      // - Legacy docs (without organizationId) are admin-only in tenant mode
+      // - In legacy no-claim mode, reads remain allowed for compatibility
+      allow read: if isAuthenticated() && (
+        isSuperAdmin() ||
+        !isTenantActive() ||
+        (
+          (resource.data.keys().hasAny(['organizationId']) && resource.data.organizationId == getUserOrgId()) ||
+          (!resource.data.keys().hasAny(['organizationId']) && isAdmin())
+        )
+      );
+      // New writes must be tenant-correct when tenant claims are active
+      allow create: if isAdmin() && (
+        !isTenantActive() || request.resource.data.organizationId == getUserOrgId()
+      );
+      allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
+      allow delete: if isAdmin() && belongsToUserOrg();
     }
     
     // Device Sessions collection (for session tracking)
@@ -317,8 +334,15 @@ service cloud.firestore {
     // on their own org, restricted to trial fields only, and only when no prior
     // trial has been issued (trialEndsAt field must not exist).
     match /organizations/{orgId} {
-      // Any authenticated user can read org docs (org data is not sensitive).
-      allow read: if isAuthenticated();
+      // Read hardening:
+      // - Super-admin can read all orgs
+      // - Tenant users can read only their org
+      // - Legacy no-claim mode remains compatible
+      allow read: if isSuperAdmin() || (
+        isAuthenticated() && (
+          !isTenantActive() || request.auth.token.organizationId == orgId
+        )
+      );
       // Super-admins: full create access.
       // Self-registration: any authenticated user may create an org for themselves
       // (free trial only — plan must be professional, trialActive must be true).

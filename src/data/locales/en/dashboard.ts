@@ -274,4 +274,25 @@ export const en = {
     projectLead: 'Project Lead',
     createNewProject: 'Create New Project',
     documentControl: 'Document Control',
+
+    // Audit Readiness + Countdown
+    auditReadinessPredictor: 'Audit Readiness Predictor',
+    auditReady: 'Audit Ready',
+    auditPartiallyReady: 'Partially Ready',
+    auditNotReady: 'Not Ready',
+    complianceScore: 'Compliance Score',
+    predictedNonConformities: 'Non-Conformities',
+    clickForDetails: 'Click for full analytics ->',
+    accreditationCountdown: 'Accreditation Countdown',
+    noActiveSurveyScheduled:
+        'No active survey scheduled. Set an end date on an in-progress project to activate the countdown.',
+    goToProjects: 'Go to Projects',
+    urgent: 'Urgent',
+    approaching: 'Approaching',
+    onTrack: 'On Track',
+    days: 'days',
+    untilSurveyDate: 'until survey date',
+    readiness: 'Readiness',
+    priorityGapsToClose: 'Priority Gaps to Close',
+    viewProject: 'View Project',
 };

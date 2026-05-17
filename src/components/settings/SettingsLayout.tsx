@@ -51,6 +51,7 @@ const UsageMonitorSettingsPage = lazy(
 );
 const UsageMonitorPage = lazy(() => import("./UsageMonitorPage"));
 const UsersPage = lazy(() => import("@/pages/UsersPage"));
+const RoleManagementPage = lazy(() => import("./RoleManagementPage"));
 const FirebaseSetupPage = lazy(() => import("./firebase/FirebaseSetupPage"));
 const VisualSettingsPage = lazy(() => import("./VisualSettingsPage"));
 const SettingsAuditLogViewer = lazy(() => import("./SettingsAuditLogViewer"));
@@ -66,6 +67,9 @@ const HISIntegrationSettingsPage = lazy(
 );
 const GlobeSettingsPage = lazy(() => import("./GlobeSettingsPage"));
 const OrgPlanSettingsPage = lazy(() => import("./OrgPlanSettingsPage"));
+const OrganizationSettingsPage = lazy(
+  () => import("./OrganizationSettingsPage"),
+);
 const BranchManagementPage = lazy(() => import("@/pages/BranchManagementPage"));
 const PlatformAdminPage = lazy(() => import("./PlatformAdminPage"));
 const DemoRequestsPage = lazy(() => import("./DemoRequestsPage"));
@@ -123,6 +127,13 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
     },
     // ── WORKSPACE ─────────────────────────────────────────────
     {
+      id: "organizationSettings",
+      label: t("organizationSettings") || "Organization Settings",
+      icon: BuildingOffice2Icon,
+      adminOnly: true,
+      category: t("settingsCategoryOrganization"),
+    },
+    {
       id: "orgPlan",
       label: t("planAndSubscription") || "Plan & Subscription",
       icon: SparklesIcon,
@@ -162,6 +173,13 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       id: "users",
       label: t("userManagement"),
       icon: UsersIcon,
+      adminOnly: true,
+      category: t("settingsCategoryPeople"),
+    },
+    {
+      id: "roles",
+      label: t("roleManagement") || "Role Management",
+      icon: ShieldCheckIcon,
       adminOnly: true,
       category: t("settingsCategoryPeople"),
     },
@@ -333,6 +351,8 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
         ) : (
           <ProfileSettingsPage />
         );
+      case "roles":
+        return isAdmin ? <RoleManagementPage /> : <ProfileSettingsPage />;
       case "accreditationHub":
         return <AccreditationHubPage setNavigation={setNavigation} />;
       case "competencies":
@@ -368,7 +388,17 @@ const SettingsLayout: React.FC<SettingsLayoutProps> = ({
       case "supplierHub":
         return isAdmin ? <SupplierHubPage /> : <ProfileSettingsPage />;
       case "orgPlan":
-        return isAdmin ? <OrgPlanSettingsPage /> : <ProfileSettingsPage />;
+        return isAdmin || isSuperAdmin ? (
+          <OrgPlanSettingsPage />
+        ) : (
+          <ProfileSettingsPage />
+        );
+      case "organizationSettings":
+        return isAdmin || isSuperAdmin ? (
+          <OrganizationSettingsPage />
+        ) : (
+          <ProfileSettingsPage />
+        );
       case "platformAdmin":
         return <PlatformAdminPage />;
       case "branches":

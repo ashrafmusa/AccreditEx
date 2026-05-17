@@ -1,6 +1,7 @@
 import HeaderActions from "@/components/common/HeaderActions";
 import HeaderTitle from "@/components/common/HeaderTitle";
 import NotificationButton from "@/components/common/NotificationButton";
+import OrganizationSwitcher from "@/components/common/OrganizationSwitcher";
 import UserMenu from "@/components/common/UserMenu";
 import { Bars3Icon } from "@/components/icons";
 import MessagingBell from "@/components/messaging/MessagingBell";
@@ -91,6 +92,7 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
       <div className="flex items-center space-x-2 sm:space-x-4 rtl:space-x-reverse">
+        <OrganizationSwitcher />
         <HeaderActions onOpenCommandPalette={onOpenCommandPalette} />
         {/* Tour Launcher — centralized tour menu */}
         <Suspense fallback={null}>

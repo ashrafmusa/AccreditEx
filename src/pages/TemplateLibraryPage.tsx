@@ -11,6 +11,7 @@ import {
   templateLibrary,
 } from "@/data/templateLibrary";
 import { useTranslation } from "@/hooks/useTranslation";
+import { logTemplateUsage } from "@/services/complianceTemplatesService";
 import { NavigationState } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useCallback, useMemo, useState } from "react";
@@ -342,7 +343,7 @@ const PreviewModal: React.FC<{
                     key={idx}
                     className="flex items-start gap-2 text-sm text-gray-700 dark:text-gray-300"
                   >
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-brand-primary/10 text-brand-primary text-xs flex items-center justify-center font-semibold mt-0.5">
+                    <span className="shrink-0 w-5 h-5 rounded-full bg-brand-primary/10 text-brand-primary text-xs flex items-center justify-center font-semibold mt-0.5">
                       {idx + 1}
                     </span>
                     {section}
@@ -700,7 +701,7 @@ const TemplateLibraryPage: React.FC<TemplateLibraryPageProps> = ({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           {/* Title Row */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
             <div>
@@ -750,7 +751,7 @@ const TemplateLibraryPage: React.FC<TemplateLibraryPageProps> = ({
                 className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 flex items-center gap-3"
               >
                 <div
-                  className={`w-10 h-10 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center flex-shrink-0`}
+                  className={`w-10 h-10 rounded-lg ${stat.bg} ${stat.color} flex items-center justify-center shrink-0`}
                 >
                   {stat.icon}
                 </div>
@@ -769,10 +770,10 @@ const TemplateLibraryPage: React.FC<TemplateLibraryPageProps> = ({
       </div>
 
       {/* ── Main Content ──────────────────────────────────────────────────── */}
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* ── Sidebar ─────────────────────────────────────────────────── */}
-          <aside className="lg:w-56 flex-shrink-0 space-y-6">
+          <aside className="lg:w-56 shrink-0 space-y-6">
             {/* Search */}
             <div className="relative">
               <span className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 text-gray-400">

@@ -115,12 +115,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
       onInsertTemplate(template);
       setSelectedTemplate(null);
       onClose();
-      showToast(
-        t("documents.templateInserted", {
-          defaultValue: "Template inserted successfully",
-        }),
-        "success",
-      );
+      showToast(t("documents.templateInserted"), "success");
     },
     [onInsertTemplate, onClose, showToast, t],
   );
@@ -137,9 +132,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
-            {t("documents.templateLibrary", {
-              defaultValue: "Compliance Template Library",
-            })}
+            {t("documents.templateLibrary")}
           </h2>
           <button
             onClick={onClose}
@@ -157,10 +150,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
             <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder={t("documents.searchTemplates", {
-                defaultValue:
-                  "Search templates by name, description, or tag...",
-              })}
+              placeholder={t("documents.searchTemplates")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-brand-text-primary dark:text-dark-brand-text-primary focus:ring-2 focus:ring-brand-primary"
@@ -174,7 +164,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
             <div className="flex-1">
               <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
                 <Filter className="w-4 h-4 inline mr-2" />
-                {t("documents.category", { defaultValue: "Category" })}
+                {t("documents.category")}
               </label>
               <select
                 value={selectedCategory}
@@ -192,7 +182,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
 
             <div className="flex-1">
               <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-                {t("documents.standard", { defaultValue: "Standard" })}
+                {t("documents.standard")}
               </label>
               <select
                 value={selectedStandard}
@@ -215,18 +205,13 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
           {loading ? (
             <div className="flex items-center justify-center h-32">
               <div className="text-gray-500">
-                {t("documents.loadingTemplates", {
-                  defaultValue: "Loading templates...",
-                })}
+                {t("documents.loadingTemplates")}
               </div>
             </div>
           ) : displayedTemplates.length === 0 ? (
             <div className="flex items-center justify-center h-32">
               <div className="text-gray-500">
-                {t("documents.noTemplatesFound", {
-                  defaultValue:
-                    "No templates found. Try adjusting your search or filters.",
-                })}
+                {t("documents.noTemplatesFound")}
               </div>
             </div>
           ) : (
@@ -264,27 +249,25 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
                       {/* Metadata */}
                       <div className="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-gray-400">
                         <span>
-                          {t("documents.wordCount", {
-                            defaultValue: "Words: {{count}}",
-                          }).replace("{{count}}", String(metadata.wordCount))}
+                          {t("documents.wordCount").replace(
+                            "{{count}}",
+                            String(metadata.wordCount),
+                          )}
                         </span>
                         <span>
-                          {t("documents.readingTime", {
-                            defaultValue: "Reading time: {{minutes}} min",
-                          }).replace(
+                          {t("documents.readingTime").replace(
                             "{{minutes}}",
                             String(metadata.estimatedReadingTime),
                           )}
                         </span>
                         <span>
-                          {t("documents.complexity", {
-                            defaultValue: "Complexity: {{level}}",
-                          }).replace("{{level}}", metadata.complexity)}
+                          {t("documents.complexity").replace(
+                            "{{level}}",
+                            metadata.complexity,
+                          )}
                         </span>
                         <span>
-                          {t("documents.sections", {
-                            defaultValue: "Sections: {{count}}",
-                          }).replace(
+                          {t("documents.sections").replace(
                             "{{count}}",
                             String(metadata.requiredSectionsCount),
                           )}
@@ -305,7 +288,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
                     </div>
 
                     {isSelected && (
-                      <CheckCircle2 className="w-6 h-6 text-brand-primary ml-4 flex-shrink-0" />
+                      <CheckCircle2 className="w-6 h-6 text-brand-primary ml-4 shrink-0" />
                     )}
                   </div>
                 </div>
@@ -317,9 +300,10 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
         {/* Footer - Actions */}
         <div className="flex items-center justify-between p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
           <div className="text-sm text-gray-500 dark:text-gray-400">
-            {t("documents.templatesFound", {
-              defaultValue: "Showing {{count}} template(s)",
-            }).replace("{{count}}", String(displayedTemplates.length))}
+            {t("documents.templatesFound").replace(
+              "{{count}}",
+              String(displayedTemplates.length),
+            )}
           </div>
 
           <div
@@ -329,7 +313,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
               onClick={onClose}
               className="px-6 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-brand-text-primary dark:text-dark-brand-text-primary hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              {t("common.cancel", { defaultValue: "Cancel" })}
+              {t("common.cancel")}
             </button>
 
             <button
@@ -344,9 +328,7 @@ export const TemplateLibrary: React.FC<TemplateLibraryProps> = ({
               disabled={!selectedTemplate}
               className="px-6 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {t("documents.insertTemplate", {
-                defaultValue: "Insert Template",
-              })}
+              {t("documents.insertTemplate")}
             </button>
           </div>
         </div>
