@@ -115,7 +115,18 @@ export class AIAgentService {
                 auth: 'Firebase Bearer token',
             });
         }
-    }    /**
+    }
+
+    private getApiUrl(path: string): string {
+        if (!this.baseUrl) {
+            throw new Error(
+                'AI backend is not configured. Set VITE_AI_AGENT_URL (or VITE_AI_AGENT_BASE_URL) to your AI API endpoint.',
+            );
+        }
+        return `${this.baseUrl}${path}`;
+    }
+
+    /**
      * Get current application context for AI agent
      * Enhanced with comprehensive user and workspace data
      */
@@ -329,7 +340,8 @@ export class AIAgentService {
      */
     async healthCheck(): Promise<boolean> {
         try {
-            const response = await fetch(`${this.baseUrl}/health`, {
+            const url = this.getApiUrl('/health');
+            const response = await fetch(url, {
                 method: 'GET',
             });
 
@@ -348,6 +360,7 @@ export class AIAgentService {
      */
     async chat(message: string, includeContext: boolean = true): Promise<ChatResponse> {
         try {
+            const chatUrl = this.getApiUrl('/chat');
             const request: ChatRequest = {
                 message,
                 thread_id: this.threadId || undefined,
@@ -355,13 +368,13 @@ export class AIAgentService {
             };
 
             console.log('📤 Sending chat request:', {
-                url: `${this.baseUrl}/chat`,
+                url: chatUrl,
                 messageLength: message.length,
                 hasThreadId: !!this.threadId,
                 hasContext: !!request.context
             });
 
-            const response = await this.fetchWithRetry(`${this.baseUrl}/chat`, {
+            const response = await this.fetchWithRetry(chatUrl, {
                 method: 'POST',
                 headers: await this.getHeaders(),
                 body: JSON.stringify(request),
@@ -401,6 +414,13 @@ export class AIAgentService {
             const contentType = this.getContentType(response);
 
             console.log('📦 Processing response type:', contentType);
+
+            if (contentType?.includes('text/html')) {
+                const html = await response.text();
+                throw new Error(
+                    'AI backend misrouting detected: received HTML instead of API response. Ensure VITE_AI_AGENT_URL points to the AI backend (not the web app origin).',
+                );
+            }
 
             if (contentType?.includes('text/event-stream') || contentType?.includes('stream')) {
                 // Handle streaming response
