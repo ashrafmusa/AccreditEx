@@ -182,6 +182,14 @@ def resolve_request_scope(
                 from firebase_client import firebase_client
                 users_col = firebase_client.db.collection("users")
 
+                def _first_non_empty_org(docs):
+                    for candidate in docs:
+                        candidate_data = candidate.to_dict() or {}
+                        candidate_org = candidate_data.get("organizationId")
+                        if candidate_org:
+                            return candidate_org
+                    return None
+
                 user_doc = users_col.document(uid).get()
                 if user_doc.exists:
                     user_data = user_doc.to_dict() or {}
@@ -190,20 +198,16 @@ def resolve_request_scope(
                 # Legacy fallback patterns for older user document schemas.
                 if not org_id:
                     legacy_queries = [
-                        users_col.where("id", "==", uid).limit(1),
-                        users_col.where("uid", "==", uid).limit(1),
-                        users_col.where("authUid", "==", uid).limit(1),
+                        users_col.where("id", "==", uid),
+                        users_col.where("uid", "==", uid),
+                        users_col.where("authUid", "==", uid),
                     ]
                     if email:
-                        legacy_queries.append(users_col.where("email", "==", email).limit(1))
+                        legacy_queries.append(users_col.where("email", "==", email))
 
                     for legacy_query in legacy_queries:
                         legacy_matches = legacy_query.get()
-                        for legacy_doc in legacy_matches:
-                            legacy_data = legacy_doc.to_dict() or {}
-                            org_id = legacy_data.get("organizationId")
-                            if org_id:
-                                break
+                        org_id = _first_non_empty_org(legacy_matches)
                         if org_id:
                             break
             except Exception as scope_error:
