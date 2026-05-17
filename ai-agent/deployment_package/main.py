@@ -180,23 +180,30 @@ def resolve_request_scope(
         if not org_id:
             try:
                 from firebase_client import firebase_client
-                user_doc = firebase_client.db.collection("users").document(uid).get()
+                users_col = firebase_client.db.collection("users")
+
+                user_doc = users_col.document(uid).get()
                 if user_doc.exists:
                     user_data = user_doc.to_dict() or {}
                     org_id = user_data.get("organizationId")
 
-                # Legacy fallback: some older user docs were keyed by non-UID ids.
-                # Use email query as a safe lookup for organizationId when needed.
-                if not org_id and email:
-                    legacy_matches = (
-                        firebase_client.db.collection("users")
-                        .where("email", "==", email)
-                        .limit(1)
-                        .get()
-                    )
-                    for legacy_doc in legacy_matches:
-                        legacy_data = legacy_doc.to_dict() or {}
-                        org_id = legacy_data.get("organizationId")
+                # Legacy fallback patterns for older user document schemas.
+                if not org_id:
+                    legacy_queries = [
+                        users_col.where("id", "==", uid).limit(1),
+                        users_col.where("uid", "==", uid).limit(1),
+                        users_col.where("authUid", "==", uid).limit(1),
+                    ]
+                    if email:
+                        legacy_queries.append(users_col.where("email", "==", email).limit(1))
+
+                    for legacy_query in legacy_queries:
+                        legacy_matches = legacy_query.get()
+                        for legacy_doc in legacy_matches:
+                            legacy_data = legacy_doc.to_dict() or {}
+                            org_id = legacy_data.get("organizationId")
+                            if org_id:
+                                break
                         if org_id:
                             break
             except Exception as scope_error:
@@ -208,7 +215,7 @@ def resolve_request_scope(
                 extra={"requested_user_id": requested_user_id, "uid": uid},
             )
         if not org_id:
-            raise HTTPException(status_code=403, detail="Missing organizationId claim")
+            raise HTTPException(status_code=403, detail="Missing organization scope for authenticated user")
         return {"user_id": uid, "organization_id": org_id}
 
     # API key callers must explicitly provide an organization scope.

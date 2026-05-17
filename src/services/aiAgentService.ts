@@ -232,7 +232,7 @@ export class AIAgentService {
      * Auth path: Firebase ID token (Authorization: Bearer) only.
      * The Render backend validates this via firebase_admin.verify_id_token().
      */
-    private async getHeaders(): Promise<HeadersInit> {
+    private async getHeaders(forceRefreshToken: boolean = false): Promise<HeadersInit> {
         const headers: Record<string, string> = {
             'Content-Type': 'application/json',
         };
@@ -242,7 +242,7 @@ export class AIAgentService {
             const { auth } = await import('@/firebase/firebaseConfig');
             const user = auth.currentUser;
             if (user) {
-                const token = await user.getIdToken();
+                const token = await user.getIdToken(forceRefreshToken);
                 headers['Authorization'] = `Bearer ${token}`;
             }
         } catch (e) {
@@ -263,6 +263,22 @@ export class AIAgentService {
             return '';
         }
         return '';
+    }
+
+    private hasAuthorizationHeader(headers: HeadersInit): boolean {
+        if (!headers) return false;
+
+        if (headers instanceof Headers) {
+            return !!headers.get('Authorization');
+        }
+
+        if (Array.isArray(headers)) {
+            return headers.some(([key, value]) => key.toLowerCase() === 'authorization' && !!value);
+        }
+
+        const record = headers as Record<string, string>;
+        const authValue = record.Authorization || record.authorization;
+        return !!authValue;
     }
 
     private normalizeWorkflowResponse(
@@ -376,11 +392,24 @@ export class AIAgentService {
                 hasContext: !!request.context
             });
 
-            const response = await this.fetchWithRetry(chatUrl, {
+            const headers = await this.getHeaders();
+            console.log('🔐 AI auth header attached:', this.hasAuthorizationHeader(headers));
+
+            let response = await this.fetchWithRetry(chatUrl, {
                 method: 'POST',
-                headers: await this.getHeaders(),
+                headers,
                 body: JSON.stringify(request),
             });
+
+            // If token is stale (e.g., claims not refreshed yet), retry once with a forced token refresh.
+            if (response && (response.status === 401 || response.status === 403)) {
+                console.warn('🔐 AI auth returned 401/403, retrying once with a refreshed Firebase token...');
+                response = await this.fetchWithRetry(chatUrl, {
+                    method: 'POST',
+                    headers: await this.getHeaders(true),
+                    body: JSON.stringify(request),
+                });
+            }
 
             if (!response) {
                 throw new Error('Empty response from AI Agent');
@@ -409,6 +438,14 @@ export class AIAgentService {
                 } catch {
                     errorMessage = errorText || errorMessage;
                 }
+
+                if (response.status === 401) {
+                    errorMessage = `AI authentication failed (401). ${errorMessage}`;
+                }
+                if (response.status === 403) {
+                    errorMessage = `AI access forbidden (403). ${errorMessage}`;
+                }
+
                 throw new Error(errorMessage);
             }
 
