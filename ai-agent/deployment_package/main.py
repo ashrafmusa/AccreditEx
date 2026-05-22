@@ -210,6 +210,17 @@ def resolve_request_scope(
                         org_id = _first_non_empty_org(legacy_matches)
                         if org_id:
                             break
+
+                # Last-resort legacy fallback for single-tenant deployments:
+                # if exactly one organization exists, scope legacy users to it.
+                if not org_id:
+                    org_docs = list(firebase_client.db.collection("organizations").limit(2).stream())
+                    if len(org_docs) == 1:
+                        org_id = org_docs[0].id
+                        logger.warning(
+                            "Resolved missing user organization scope via single-organization fallback",
+                            extra={"uid": uid, "organization_id": org_id},
+                        )
             except Exception as scope_error:
                 logger.warning(f"Unable to resolve organizationId from users/{uid}: {scope_error}")
 
