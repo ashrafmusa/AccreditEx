@@ -9,11 +9,12 @@
  * queries run unfiltered so existing data keeps working.
  */
 
-import { create } from 'zustand';
-import { Organization } from '@/types';
-import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
+import { reconcileOrganizationBilling } from '@/services/subscriptionLifecycleService';
 import { useModuleStore } from '@/stores/useModuleStore';
+import { Organization } from '@/types';
+import { doc, getDoc } from 'firebase/firestore';
+import { create } from 'zustand';
 
 interface TenantState {
     /** The currently active organization (null = legacy single-tenant mode) */
@@ -59,6 +60,7 @@ export const useTenantStore = create<TenantState>((set, get) => ({
         if (!orgId) return;
         set({ loading: true, error: null });
         try {
+            await reconcileOrganizationBilling(orgId);
             const orgRef = doc(db, 'organizations', orgId);
             const snap = await getDoc(orgRef);
             if (snap.exists()) {

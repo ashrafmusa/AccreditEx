@@ -10,10 +10,15 @@
  * No Firebase Functions required → stays on Spark (free) plan.
  */
 
-import { db } from '@/firebase/firebaseConfig';
 import type { PlanTier } from '@/types/modules';
-import { doc, updateDoc } from 'firebase/firestore';
 export { getEffectivePlan } from '@/services/moduleService';
+export {
+    evaluateBillingLifecycle,
+    getPlanTransitionDecision,
+    isTrialEligible,
+    reconcileOrganizationBilling,
+    startFreeTrial
+} from '@/services/subscriptionLifecycleService';
 
 // ── Plan metadata (display-only, maps internal tier → marketing info) ──────
 
@@ -144,21 +149,4 @@ export function getPlanInfo(tier: PlanTier): PlanInfo {
     return PLANS.find((p) => p.tier === tier) ?? PLANS[0];
 }
 
-// ── Free Trial ───────────────────────────────────────────────────────────────
-
-/**
- * Self-serve 14-day free trial activation (no credit card required).
- *
- * Sets plan → 'professional', trialActive → true, trialEndsAt → now + 14 days.
- * The Firestore security rule permits this write ONCE per org (only when
- * trialEndsAt doesn't already exist), and only for org Admins.
- */
-export async function startFreeTrial(orgId: string): Promise<void> {
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-    await updateDoc(doc(db, 'organizations', orgId), {
-        trialActive: true,
-        trialEndsAt: trialEndsAt.toISOString(),
-        plan: 'professional' as PlanTier,
-    });
-}
+// Free-trial lifecycle operations are exported from subscriptionLifecycleService.
