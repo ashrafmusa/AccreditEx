@@ -11,7 +11,6 @@ This specialist agent handles all risk-related tasks including:
 - Incident investigation and root cause analysis (Ishikawa/SEIPS)
 """
 
-import json
 from typing import Dict, Any, Optional, List, Tuple
 import logging
 from .base_agent import BaseSpecialistAgent
@@ -54,11 +53,13 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         "Critical": {"range": (16, 25), "color": "red", "priority": 1}
     }
     
+    # Risk assessment requires analytical consistency (env: RISK_TEMPERATURE)
+    CONFIG_PREFIX = "RISK"
+    DEFAULT_TEMPERATURE = 0.2
+    
     def __init__(self, groq_client, firebase_client=None):
         super().__init__(groq_client, firebase_client)
-        # Risk assessment requires analytical consistency
-        self.temperature = 0.2
-        logger.info("⚠️ RiskAssessmentAgent initialized with 5x5 matrix and LSS methodologies")
+        logger.info("[RISK_ASSESSMENT] RiskAssessmentAgent initialized with 5x5 matrix and LSS methodologies")
     
     def get_specialist_name(self) -> str:
         return "Risk Assessment Specialist"
@@ -84,7 +85,7 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
             raise ValueError("Likelihood and Impact must be between 1 and 5")
         
         score = likelihood * impact
-        logger.debug(f"📊 Risk Score: {likelihood} × {impact} = {score}")
+        logger.debug(f"[RISK_ASSESSMENT] Risk Score: {likelihood} x {impact} = {score}")
         return score
     
     def get_risk_level(self, score: int) -> str:
@@ -137,7 +138,8 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Analyze a risk and definitively suggest likelihood/impact ratings"""
-        logger.info(f"⚠️ Analyzing risk: {risk_description[:50]}...")
+        risk_description = self.validator.sanitize(risk_description, field_name="risk_description")
+        logger.info(f"[RISK_ASSESSMENT] Analyzing risk chars={len(risk_description)}")
         
         message = f"""
         Analyze this healthcare clinical/operational risk and provide precise matrix ratings.
@@ -158,22 +160,22 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            parsed_data = json.loads(result['response'])
-            
-            # Auto-calculate the derived metrics based on the LLM's assessment
-            l_rating = parsed_data.get("likelihood_rating", 3)
-            i_rating = parsed_data.get("impact_rating", 3)
-            score = self.calculate_risk_score(l_rating, i_rating)
-            
-            parsed_data["calculated_score"] = score
-            parsed_data["calculated_level"] = self.get_risk_level(score)
-            
-            result['structured_data'] = parsed_data
-            
-        except json.JSONDecodeError:
-            logger.error("Failed to parse analyze_risk LLM response into JSON.")
-            result['structured_data'] = None
+        parsed_data = self.parse_structured_response(
+            result, {"likelihood_rating": int, "impact_rating": int}
+        )
+        if parsed_data is not None:
+            try:
+                # Auto-calculate the derived metrics based on the LLM's assessment
+                score = self.calculate_risk_score(
+                    parsed_data["likelihood_rating"], parsed_data["impact_rating"]
+                )
+                parsed_data["calculated_score"] = score
+                parsed_data["calculated_level"] = self.get_risk_level(score)
+            except ValueError as e:
+                logger.error(f"[RISK_ASSESSMENT] Ratings out of range in LLM response: {e}")
+                result['validation_errors'] = [str(e)]
+                parsed_data = None
+        result['structured_data'] = parsed_data
             
         result['analysis_type'] = 'risk_assessment'
         return result
@@ -184,14 +186,14 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Generate risk mitigation strategy using Hierarchy of Controls"""
-        risk_name = risk.get('name', 'Unnamed Risk')
-        risk_desc = risk.get('description', 'No description')
+        risk_name = self.validator.sanitize(risk.get('name', 'Unnamed Risk'), max_length=200)
+        risk_desc = self.validator.sanitize(risk.get('description', 'No description'))
         likelihood = risk.get('likelihood', 3)
         impact = risk.get('impact', 3)
         score = self.calculate_risk_score(likelihood, impact)
         level = self.get_risk_level(score)
         
-        logger.info(f"🛡️ Generating mitigation plan for {level} risk")
+        logger.info(f"[RISK_ASSESSMENT] Generating mitigation plan level={level}")
         
         message = f"""
         Develop a systemic risk mitigation strategy for this {level} risk using the Hierarchy of Controls.
@@ -219,10 +221,9 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, {"hierarchy_of_controls": dict, "implementation_timeline": list}
+        )
             
         result['mitigation_plan'] = True
         result['original_risk_level'] = level
@@ -235,10 +236,10 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Perform root cause analysis utilizing Ishikawa (Fishbone) structure"""
-        logger.info(f"🔍 Analyzing incident: {incident_data.get('description', 'N/A')[:50]}")
+        logger.info("[RISK_ASSESSMENT] Analyzing incident")
         
-        incident_desc = incident_data.get('description', 'No description')
-        incident_type = incident_data.get('type', 'Unknown')
+        incident_desc = self.validator.sanitize(incident_data.get('description', 'No description'))
+        incident_type = self.validator.sanitize(incident_data.get('type', 'Unknown'), max_length=100)
         
         message = f"""
         Perform a Root Cause Analysis (RCA) on the following incident using the Ishikawa (Fishbone) 6M framework.
@@ -267,17 +268,20 @@ class RiskAssessmentAgent(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, {"ishikawa_analysis": dict, "primary_root_cause": str}
+        )
             
         result['analysis_type'] = 'root_cause_analysis'
         return result
     
     def _format_incident_details(self, incident: Dict[str, Any]) -> str:
         """Format incident details for analysis"""
-        details = [f"- **{k.replace('_', ' ').title()}**: {v}" for k, v in incident.items() if k not in ['description', 'type', 'date']]
+        san = self.validator.sanitize
+        details = [
+            f"- **{san(k, max_length=100).replace('_', ' ').title()}**: {san(v, max_length=1000)}"
+            for k, v in incident.items() if k not in ['description', 'type', 'date']
+        ]
         return "\n".join(details) if details else "No additional details provided"
 
     # ==================== Risk Prioritization and Statistics ====================

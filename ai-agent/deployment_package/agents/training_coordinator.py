@@ -11,7 +11,6 @@ This specialist agent handles all training-related tasks including:
 - Training priority assessment
 """
 
-import json
 from typing import Dict, Any, Optional, List
 import logging
 from .base_agent import BaseSpecialistAgent
@@ -78,11 +77,14 @@ class TrainingCoordinator(BaseSpecialistAgent):
         }
     }
     
+    # Moderate temperature for a balance of structured curriculum and creative instructional design
+    # (env: TRAINING_TEMPERATURE)
+    CONFIG_PREFIX = "TRAINING"
+    DEFAULT_TEMPERATURE = 0.4
+    
     def __init__(self, groq_client, firebase_client=None):
         super().__init__(groq_client, firebase_client)
-        # Moderate temperature for a balance of structured curriculum and creative instructional design
-        self.temperature = 0.4
-        logger.info("🎓 TrainingCoordinator initialized with healthcare training expertise")
+        logger.info("[TRAINING] TrainingCoordinator initialized with healthcare training expertise")
     
     def get_specialist_name(self) -> str:
         """Return specialist name"""
@@ -111,7 +113,10 @@ class TrainingCoordinator(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Identify competency gaps for a role and structure output as JSON"""
-        logger.info(f"🔍 Analyzing competency gaps for role: {role}")
+        role = self.validator.sanitize(role, max_length=200, field_name="role")
+        current_skills = self.validator.sanitize_list(current_skills)
+        required_skills = self.validator.sanitize_list(required_skills)
+        logger.info("[TRAINING] Analyzing competency gaps")
         
         gaps = [skill for skill in required_skills if skill not in current_skills]
         
@@ -140,11 +145,10 @@ class TrainingCoordinator(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            logger.error("Failed to parse analyze_competency_gap LLM response into JSON.")
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, {"gap_summary": str, "prioritized_gaps": list},
+            {"prioritized_gaps": ["skill", "priority"]}
+        )
             
         result['analysis_type'] = 'competency_gap'
         result['role'] = role
@@ -160,14 +164,18 @@ class TrainingCoordinator(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Generate comprehensive, JSON-structured training plan"""
-        logger.info(f"📋 Generating training plan for {staff_count} staff, {len(gaps)} gaps")
+        gaps = [g for g in (gaps or []) if isinstance(g, dict)]
+        staff_count = int(staff_count) if isinstance(staff_count, (int, float)) and not isinstance(staff_count, bool) else 0
+        logger.info(f"[TRAINING] Generating training plan staff={staff_count} gaps={len(gaps)}")
         
         gaps_formatted = "\n".join([
-            f"- **{gap.get('skill', 'Unknown')}** (Priority: {gap.get('priority', 'Medium')})"
+            f"- **{self.validator.sanitize(gap.get('skill', 'Unknown'), max_length=200)}** "
+            f"(Priority: {self.validator.sanitize(gap.get('priority', 'Medium'), max_length=50)})"
             for gap in gaps
         ])
         
-        budget_info = f"\n**Budget**: ${budget:,.2f}" if budget else "\n**Budget**: Not specified"
+        has_budget = isinstance(budget, (int, float)) and not isinstance(budget, bool) and budget > 0
+        budget_info = f"\n**Budget**: ${budget:,.2f}" if has_budget else "\n**Budget**: Not specified"
         
         message = f"""
         Develop a comprehensive training plan to address the following competency gaps.
@@ -204,10 +212,10 @@ class TrainingCoordinator(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, {"training_modules": list, "implementation_phases": dict},
+            {"training_modules": ["module_name"]}
+        )
             
         result['plan_type'] = 'training_plan'
         result['staff_count'] = staff_count
@@ -223,7 +231,10 @@ class TrainingCoordinator(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Recommend specific training modules for a gap"""
-        logger.info(f"📚 Recommending modules for {role}: {gap}")
+        role = self.validator.sanitize(role, max_length=200, field_name="role")
+        gap = self.validator.sanitize(gap, max_length=500, field_name="gap")
+        priority = self.validator.sanitize(priority, max_length=50)
+        logger.info("[TRAINING] Recommending modules")
         
         message = f"""
         Recommend 2-3 specific training modules to address this competency gap.
@@ -252,10 +263,10 @@ class TrainingCoordinator(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, {"recommendations": list},
+            {"recommendations": ["module_title"]}
+        )
             
         result['recommendation_type'] = 'training_modules'
         result['role'] = role
@@ -270,7 +281,9 @@ class TrainingCoordinator(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Create structured new staff orientation program"""
-        logger.info(f"🎯 Creating orientation for {role} in {department}")
+        role = self.validator.sanitize(role, max_length=200, field_name="role")
+        department = self.validator.sanitize(department, max_length=200, field_name="department")
+        logger.info("[TRAINING] Creating orientation program")
         
         message = f"""
         Design a comprehensive 4-week orientation program for new staff.
@@ -306,10 +319,9 @@ class TrainingCoordinator(BaseSpecialistAgent):
         
         result = await self.process_request(message, context, response_format={"type": "json_object"})
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, {"program_title": str, "weekly_schedule": dict}
+        )
             
         result['program_type'] = 'orientation'
         result['role'] = role
@@ -357,7 +369,8 @@ class TrainingCoordinator(BaseSpecialistAgent):
             "at_risk": not_started + (in_progress if in_progress > total * 0.5 else 0)
         }
         
-    def _format_skills_list(self, skills: List[str]) -> str:
+    def _format_skills_list(self, skills: Optional[List[str]]) -> str:
+        """Format a list of skills as a comma separated string"""
         if not skills:
             return "None"
         return ", ".join(skills)
