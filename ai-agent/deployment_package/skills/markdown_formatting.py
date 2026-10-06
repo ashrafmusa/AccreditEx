@@ -40,3 +40,10 @@ You are operating in a strict JSON output environment. However, the text you gen
 {
   "summary_text": "## Overall Status\\nThe laboratory has **78% compliance** with ISO 15189 requirements.\\n\\n### Critical Gaps ❌\\n1. **`ISO 15189 7.2` - Sample Transport**: Cold chain verification missing.\\n\\n> **Warning**: This gap directly impacts analyte stability and patient safety."
 }
+```
+"""
+
+
+def get_markdown_formatting_skill() -> str:
+    """Return the markdown formatting guidelines to append to specialist prompts."""
+    return MARKDOWN_FORMATTING_SKILL

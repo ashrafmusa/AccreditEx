@@ -3,6 +3,7 @@ import json
 import asyncio
 import time
 import hashlib
+import functools
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
 import logging
@@ -45,12 +46,30 @@ from agents import (
     TrainingCoordinator
 )
 
+from agent_utils import env_number, InputValidator, ConversationManager, ErrorHandler
+
 # Load environment variables
 load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def safe_workflow(field_name: str):
+    """Convert exceptions in workflow methods into a structured error payload."""
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(self, *args, **kwargs):
+            try:
+                return await func(self, *args, **kwargs)
+            except Exception as e:
+                payload = ErrorHandler.workflow_error(e, func.__name__)
+                payload[field_name] = ""
+                payload["timestamp"] = datetime.now().isoformat()
+                return payload
+        return wrapper
+    return decorator
+
 
 class UnifiedAccreditexAgent:
     """
@@ -66,7 +85,7 @@ class UnifiedAccreditexAgent:
         # Initialize Groq client using OpenAI SDK
         # Groq is compatible with OpenAI's API structure
         api_key = os.getenv("GROQ_API_KEY") or os.getenv("OPENAI_API_KEY")
-        base_url = "https://api.groq.com/openai/v1" if os.getenv("GROQ_API_KEY") else None
+        base_url = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1") if os.getenv("GROQ_API_KEY") else None
         
         self.client = AsyncOpenAI(
             api_key=api_key,
@@ -76,39 +95,42 @@ class UnifiedAccreditexAgent:
         # Initialize Firebase
         self.db = firebase_client.db
         if self.db:
-            logger.info("✅ Firebase database connected")
+            logger.info("Firebase database connected")
         else:
-            logger.warning("⚠️ Firebase database not initialized!")
+            logger.warning("Firebase database not initialized!")
         
         # Model configuration — primary + fallback for rate limits
-        self.model = "llama-3.3-70b-versatile"
-        self.fallback_model = "llama-3.1-8b-instant"
-        self.temperature = 0.7
-        self.max_tokens = 4096
+        self.model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+        self.fallback_model = os.getenv("GROQ_FALLBACK_MODEL", "llama-3.1-8b-instant")
+        self.temperature = env_number("AGENT_TEMPERATURE", 0.7, float)
+        self.max_tokens = env_number("AGENT_MAX_TOKENS", 4096)
         
         # Response cache — avoids hitting the API for identical prompts
         self._response_cache: Dict[str, Dict[str, Any]] = {}
-        self._cache_ttl = 600  # 10 minutes
+        self._cache_ttl = env_number("RESPONSE_CACHE_TTL_SECONDS", 600)
         
         # Initialize context manager (3-tier system)
         try:
             self.context_manager = ContextManager()
-            logger.info("✅ Context Manager initialized")
+            logger.info("Context Manager initialized")
         except Exception as e:
-            logger.error(f"❌ Failed to initialize Context Manager: {e}")
+            logger.error(f"Failed to initialize Context Manager: {e}")
             # Fallback to basic context handling if needed
             self.context_manager = None
         
         # Initialize specialist agents (Week 2 - Agent Specialization)
-        logger.info("🤖 Initializing specialist agents...")
+        logger.info("Initializing specialist agents...")
         self.compliance_agent = ComplianceAgent(self.client, firebase_client)
         self.risk_agent = RiskAssessmentAgent(self.client, firebase_client)
         self.training_agent = TrainingCoordinator(self.client, firebase_client)
-        logger.info("✅ All specialist agents initialized")
+        logger.info("All specialist agents initialized")
         
         # Conversation history (managed manually since not using Assistants API)
-        # In production, this should be in Redis or Firestore
-        self.conversations: Dict[str, List[Dict[str, str]]] = {}
+        # Bounded store: TTL expiry + max thread count (use Redis/Firestore for multi-instance)
+        self.conversations: Dict[str, List[Dict[str, str]]] = ConversationManager(
+            ttl_seconds=env_number("CONVERSATION_TTL_SECONDS", 3600),
+            max_conversations=env_number("MAX_CONVERSATIONS", 1000),
+        )
 
         # Routing mode and telemetry (additive, safe)
         self.strict_specialist_routing = os.getenv("STRICT_SPECIALIST_ROUTING", "true").lower() == "true"
@@ -152,15 +174,15 @@ class UnifiedAccreditexAgent:
                     cred = credentials.Certificate(cred_path)
                     firebase_admin.initialize_app(cred)
                     self.db = firestore.client()
-                    logger.info("✅ Firebase initialized successfully")
+                    logger.info("Firebase initialized successfully")
                 else:
-                    logger.warning(f"⚠️ Firebase credentials not found at {cred_path}")
+                    logger.warning(f"Firebase credentials not found at {cred_path}")
         except Exception as e:
-            logger.error(f"❌ Firebase initialization failed: {e}")
+            logger.error(f"Firebase initialization failed: {e}")
 
     async def initialize(self):
         """Initialize the agent - mostly a placeholder now as client is init in __init__"""
-        logger.info(f"✅ Agent initialized using model: {self.model} (fallback: {self.fallback_model})")
+        logger.info(f"Agent initialized using model: {self.model} (fallback: {self.fallback_model})")
 
     # ── Response cache helpers ───────────────────────────────────────
     def _cache_key(self, text: str) -> str:
@@ -169,7 +191,7 @@ class UnifiedAccreditexAgent:
     def _cache_get(self, key: str) -> Optional[str]:
         entry = self._response_cache.get(key)
         if entry and time.time() < entry['expires']:
-            logger.info("✅ Cache HIT — returning cached response (0 tokens used)")
+            logger.info("Cache HIT — returning cached response (0 tokens used)")
             return entry['value']
         if entry:
             del self._response_cache[key]
@@ -200,7 +222,7 @@ class UnifiedAccreditexAgent:
         except Exception as e:
             error_str = str(e)
             if '429' in error_str or 'rate_limit' in error_str.lower():
-                logger.warning(f"⚠️ Rate-limited on {self.model}, falling back to {self.fallback_model}")
+                logger.warning(f"Rate-limited on {self.model}, falling back to {self.fallback_model}")
                 kwargs['model'] = self.fallback_model
                 return await self.client.chat.completions.create(**kwargs)
             raise
@@ -256,6 +278,8 @@ class UnifiedAccreditexAgent:
         
         if not self.db:
             logger.warning("Firebase not initialized, returning empty context")
+            context["_error"] = "Firebase not initialized"
+            context["_fallback"] = True
             return context
         
         try:
@@ -287,7 +311,7 @@ class UnifiedAccreditexAgent:
                     # Extract recent documents
                     context["recent_documents"] = user_context.get('recent_documents', [])
                     
-                    logger.info(f"✅ Retrieved user context: {context['user_name']} ({context['user_role']}) with {len(context['assigned_projects'])} projects")
+                    logger.info(f"Retrieved user context: {context['user_name']} ({context['user_role']}) with {len(context['assigned_projects'])} projects")
             
             # Get workspace analytics
             if organization_id:
@@ -312,12 +336,12 @@ class UnifiedAccreditexAgent:
                 context["users_count"] = analytics.get('users', {}).get('total', 0)
                 context["departments"] = [f"{analytics.get('departments', {}).get('total', 0)} departments"]
                 
-                logger.info(f"✅ Retrieved workspace analytics: {analytics.get('projects', {}).get('total', 0)} total projects")
+                logger.info(f"Retrieved workspace analytics: {analytics.get('projects', {}).get('total', 0)} total projects")
             
         except Exception as e:
-            logger.error(f"Error fetching organization context: {e}")
-            import traceback
-            traceback.print_exc()
+            logger.error(f"Error fetching organization context: {e}", exc_info=True)
+            context["_error"] = str(e)
+            context["_fallback"] = True
         
         return context
 
@@ -338,27 +362,9 @@ class UnifiedAccreditexAgent:
         # Return type with highest score, or 'general' if no matches
         if type_scores:
             detected_type = max(type_scores, key=type_scores.get)
-            logger.info(f"🎯 Task type detected: {detected_type} (confidence: {type_scores[detected_type]} keywords)")
+            logger.info(f"Task type detected: {detected_type} (confidence: {type_scores[detected_type]} keywords)")
             return detected_type
-        # Check for compliance keywords
-        compliance_keywords = TASK_ROUTING_MAP.get('compliance', [])
-        if any(keyword in message_lower for keyword in compliance_keywords):
-            logger.info(f"🎯 Task type detected: compliance")
-            return 'compliance'
-        
-        # Check for risk keywords
-        risk_keywords = TASK_ROUTING_MAP.get('risk', [])
-        if any(keyword in message_lower for keyword in risk_keywords):
-            logger.info(f"🎯 Task type detected: risk")
-            return 'risk'
-        
-        # Check for training keywords
-        training_keywords = TASK_ROUTING_MAP.get('training', [])
-        if any(keyword in message_lower for keyword in training_keywords):
-            logger.info(f"🎯 Task type detected: training")
-            return 'training'
-        
-        logger.info(f"🎯 Task type detected: general")
+        logger.info("Task type detected: general")
         return 'general'
 
     def _record_routing_metric(self, task_type: str, route_mode: str, latency_ms: float, success: bool = True):
@@ -412,7 +418,7 @@ class UnifiedAccreditexAgent:
         Yields:
             Response chunks from specialist
         """
-        logger.info(f"📋 Routing to specialist: {task_type}")
+        logger.info(f"Routing to specialist: {task_type}")
         
         # Route to appropriate specialist
         if task_type == 'compliance':
@@ -429,7 +435,7 @@ class UnifiedAccreditexAgent:
                 
         else:
             # Fallback to unified agent for general queries
-            logger.info("📝 Using unified agent for general query")
+            logger.info("Using unified agent for general query")
             async for chunk in self._general_chat(message, context, stream):
                 yield chunk
     
@@ -476,7 +482,7 @@ class UnifiedAccreditexAgent:
         
         if stream:
             async for chunk in stream_response:
-                if chunk.choices[0].delta.content:
+                if chunk.choices and chunk.choices[0].delta.content:
                     yield chunk.choices[0].delta.content
         else:
             response = stream_response.choices[0].message.content
@@ -509,16 +515,16 @@ class UnifiedAccreditexAgent:
         # Select specialist prompt based on task type
         if task_type == 'compliance':
             base_prompt = get_compliance_specialist_prompt()
-            logger.info("📋 Using Compliance Specialist prompt")
+            logger.info("Using Compliance Specialist prompt")
         elif task_type == 'risk':
             base_prompt = get_risk_assessment_specialist_prompt()
-            logger.info("⚠️ Using Risk Assessment Specialist prompt")
+            logger.info("Using Risk Assessment Specialist prompt")
         elif task_type == 'training':
             base_prompt = get_training_specialist_prompt()
-            logger.info("🎓 Using Training Coordinator prompt")
+            logger.info("Using Training Coordinator prompt")
         else:
             base_prompt = get_general_agent_prompt()
-            logger.info("💬 Using General Agent prompt")
+            logger.info("Using General Agent prompt")
         
         # Add dynamic context if provided
         if context:
@@ -539,7 +545,7 @@ class UnifiedAccreditexAgent:
             
             if available_templates or available_forms:
                 base_prompt += f"""
-\n**📋 AVAILABLE CONTENT & CAPABILITIES**:
+\n**AVAILABLE CONTENT & CAPABILITIES**:
 - **Templates Available**: {len(available_templates)} (SOPs, Policies, Procedures, Manuals, Checklists)
 - **Forms Available**: {len(available_forms)} (Incident Reports, Safety Checklists, Risk Assessments, Training Records, Audit Findings)
 - **Context Awareness**: {ai_instructions.get('context_awareness', 'Full app access')}
@@ -615,6 +621,11 @@ Always be specific and actionable, using real data from their workspace.
         Now with specialist routing, tiered context management, caching, and fallback model.
         """
         try:
+            message = InputValidator.sanitize_long_text(message)
+            if not message:
+                yield "Please provide a message."
+                return
+
             # ── Check response cache first (saves 100 % of tokens on repeat requests)
             cache_key = self._cache_key(message)
             cached = self._cache_get(cache_key)
@@ -622,8 +633,8 @@ Always be specific and actionable, using real data from their workspace.
                 yield cached
                 return
 
-            # Generate thread_id if not provided
-            if not thread_id:
+            # Generate thread_id if not provided or invalid
+            if not thread_id or not InputValidator.is_valid_thread_id(thread_id):
                 thread_id = f"thread_{datetime.now().timestamp()}"
             
             # Detect task type from message (Quick Win 1)
@@ -637,22 +648,31 @@ Always be specific and actionable, using real data from their workspace.
 
             if has_context and user_id:
                 # Interactive chat — load tiered context
-                context_tier = context.get('context_tier') if context else None
-                if not context_tier:
-                    context_tier = self.context_manager.detect_context_tier(message)
-                tiered_context = self.context_manager.get_context(user_id, context_tier, organization_id)
-                logger.info(f"📦 Using {context_tier} context tier ({len(str(tiered_context))} chars)")
                 org_context = await self._get_organization_context(user_id, organization_id)
+                if org_context.get('_fallback'):
+                    logger.warning(f"Using fallback context due to: {org_context.get('_error')}")
+                tiered_context: Dict[str, Any] = {}
+                if self.context_manager:
+                    try:
+                        context_tier = (context or {}).get('context_tier') or self.context_manager.detect_context_tier(message)
+                        tiered_context = self.context_manager.get_context(user_id, context_tier, organization_id) or {}
+                        logger.info(f"Using {context_tier} context tier ({len(str(tiered_context))} chars)")
+                    except Exception as ctx_error:
+                        logger.error(f"Context manager failed, using basic context: {ctx_error}")
+                        tiered_context = {}
+                else:
+                    logger.warning("Context Manager not initialized, using basic context")
                 enhanced_context = {
                     **(context or {}),
                     **tiered_context,
                     'organization': org_context,
+                    'context_degraded': bool(org_context.get('_fallback')) or not self.context_manager,
                     'user_role': tiered_context.get('user_role', org_context.get('user_role', 'Unknown'))
                 }
             else:
                 # Lightweight request (writing commands) — zero context overhead
                 enhanced_context = context or {}
-                logger.info("⚡ Lightweight request — skipping context fetch")
+                logger.info("Lightweight request — skipping context fetch")
             
             # Initialize conversation history if new thread
             if thread_id not in self.conversations:
@@ -710,7 +730,7 @@ Always be specific and actionable, using real data from their workspace.
             )
 
             async for chunk in stream:
-                if chunk.choices[0].delta.content:
+                if chunk.choices and chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
                     full_response += content
                     yield content
@@ -722,12 +742,16 @@ Always be specific and actionable, using real data from their workspace.
             self._cache_set(cache_key, full_response)
             
         except Exception as e:
-            logger.error(f"Chat error: {e}")
+            ErrorHandler.log(e, "chat")
             self._record_routing_metric('general', 'legacy', 0.0, success=False)
-            yield f"I encountered an error: {str(e)}"
+            yield ErrorHandler.user_message(e)
 
     async def check_document_compliance(self, document_type: str, standard: str, content_summary: str, requirements: Optional[List[str]] = None) -> Dict[str, Any]:
         """Check if a document meets specific standards"""
+        document_type = InputValidator.validate_required(document_type, "document_type")
+        standard = InputValidator.validate_required(standard, "standard")
+        content_summary = InputValidator.sanitize_long_text(content_summary)
+        requirements = InputValidator.sanitize_list(requirements)
         prompt = f"""
         Analyze the compliance of this {document_type} against {standard}.
         
@@ -759,6 +783,10 @@ Always be specific and actionable, using real data from their workspace.
 
     async def assess_risk(self, area: str, current_status: str, upcoming_review_date: str, critical_areas: Optional[List[str]] = None) -> Dict[str, Any]:
         """Assess compliance risk for a specific area"""
+        area = InputValidator.validate_required(area, "area")
+        current_status = InputValidator.validate_required(current_status, "current_status", InputValidator.LONG_MAX_LENGTH)
+        upcoming_review_date = InputValidator.sanitize_text(upcoming_review_date, 50)
+        critical_areas = InputValidator.sanitize_list(critical_areas)
         prompt = f"""
         Assess the compliance risk for: {area}
         Current Status: {current_status}
@@ -784,6 +812,10 @@ Always be specific and actionable, using real data from their workspace.
 
     async def get_training_recommendations(self, role: str, competency_gaps: List[str], accreditation_focus: str, timeline: str) -> Dict[str, Any]:
         """Get training recommendations based on role and gaps"""
+        role = InputValidator.validate_required(role, "role")
+        competency_gaps = InputValidator.sanitize_list(competency_gaps)
+        accreditation_focus = InputValidator.sanitize_text(accreditation_focus)
+        timeline = InputValidator.sanitize_text(timeline, 100)
         prompt = f"""
         Recommend training for Role: {role}
         Competency Gaps: {', '.join(competency_gaps)}
@@ -810,8 +842,13 @@ Always be specific and actionable, using real data from their workspace.
     # Week 3: Dedicated AI Workflow Methods
     # ─────────────────────────────────────────────────────────────
 
+    @safe_workflow("action_plan")
     async def generate_action_plan(self, standard_id: str, item: str, status: str, findings: Optional[str] = None) -> Dict[str, Any]:
         """Generate actionable compliance action plan"""
+        standard_id = InputValidator.validate_required(standard_id, "standard_id")
+        item = InputValidator.validate_required(item, "item")
+        status = InputValidator.validate_required(status, "status")
+        findings = InputValidator.sanitize_long_text(findings)
         system_prompt = f"""You are an expert compliance consultant helping create actionable action plans.
 
 Your role is to:
@@ -850,8 +887,13 @@ Provide:
             response.choices[0].message.content,
         )
 
+    @safe_workflow("root_cause_analysis")
     async def analyze_root_cause(self, issue_title: str, description: str, context: Optional[str] = None, affected_areas: Optional[List[str]] = None) -> Dict[str, Any]:
         """Perform structured root cause analysis"""
+        issue_title = InputValidator.validate_required(issue_title, "issue_title")
+        description = InputValidator.validate_required(description, "description", InputValidator.LONG_MAX_LENGTH)
+        context = InputValidator.sanitize_long_text(context)
+        affected_areas = InputValidator.sanitize_list(affected_areas)
         system_prompt = """You are a Root Cause Analysis expert using the "5 Whys" methodology and Fishbone Diagram thinking.
 
 Your role is to:
@@ -889,8 +931,13 @@ Use the 5 Whys methodology and provide:
             response.choices[0].message.content,
         )
 
+    @safe_workflow("pdca_improvements")
     async def suggest_pdca_improvements(self, process_name: str, current_state: str, problem_identified: str, previous_actions: Optional[str] = None) -> Dict[str, Any]:
         """Suggest Plan-Do-Check-Act improvements"""
+        process_name = InputValidator.validate_required(process_name, "process_name")
+        current_state = InputValidator.validate_required(current_state, "current_state", InputValidator.LONG_MAX_LENGTH)
+        problem_identified = InputValidator.validate_required(problem_identified, "problem_identified", InputValidator.LONG_MAX_LENGTH)
+        previous_actions = InputValidator.sanitize_long_text(previous_actions)
         system_prompt = """You are a Quality Improvement specialist trained in PDCA (Plan-Do-Check-Act) methodology.
 
 Your role is to:
@@ -926,8 +973,14 @@ Provide a PDCA cycle with:
             response.choices[0].message.content,
         )
 
+    @safe_workflow("survey_risk_assessment")
     async def assess_survey_risk(self, standard: str, organization_area: str, readiness_level: str, critical_concerns: Optional[List[str]] = None, survey_date: Optional[str] = None) -> Dict[str, Any]:
         """Assess readiness risk for upcoming accreditation survey"""
+        standard = InputValidator.validate_required(standard, "standard")
+        organization_area = InputValidator.validate_required(organization_area, "organization_area")
+        readiness_level = InputValidator.validate_required(readiness_level, "readiness_level")
+        critical_concerns = InputValidator.sanitize_list(critical_concerns)
+        survey_date = InputValidator.sanitize_text(survey_date, 50)
         system_prompt = f"""You are an accreditation survey readiness expert specializing in {standard} standards.
 
 Your role is to:
@@ -966,8 +1019,13 @@ Provide:
             response.choices[0].message.content,
         )
 
+    @safe_workflow("design_compliance_assessment")
     async def check_design_compliance(self, design_element: str, requirement: str, current_implementation: str, design_phase: Optional[str] = None) -> Dict[str, Any]:
         """Assess design control compliance"""
+        design_element = InputValidator.validate_required(design_element, "design_element")
+        requirement = InputValidator.validate_required(requirement, "requirement", InputValidator.LONG_MAX_LENGTH)
+        current_implementation = InputValidator.validate_required(current_implementation, "current_implementation", InputValidator.LONG_MAX_LENGTH)
+        design_phase = InputValidator.sanitize_text(design_phase, 100)
         system_prompt = """You are a Design Control and Quality Assurance expert in healthcare.
 
 Your role is to:
@@ -1071,6 +1129,7 @@ Format your response in clear Markdown with headings and bullet points."""
         """
         AI-powered document search with relevance ranking
         """
+        query = InputValidator.sanitize_text(query)
         try:
             # Search Firebase
             results = firebase_client.search_documents(query, organization_id, document_type)

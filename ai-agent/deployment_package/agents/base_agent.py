@@ -14,7 +14,7 @@ from datetime import datetime
 
 # Import the markdown skill we just created. 
 # Adjust the import path depending on where you saved the Markdown Formatting Skill file.
-from .markdown_skill import get_markdown_formatting_skill 
+from skills import get_markdown_formatting_skill
 
 logger = logging.getLogger(__name__)
 
