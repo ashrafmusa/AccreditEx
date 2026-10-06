@@ -31,7 +31,7 @@ class BaseSpecialistAgent(ABC):
         """
         self.client = groq_client
         self.db = firebase_client.db if firebase_client and hasattr(firebase_client, 'db') else None
-        self.model = "llama-3.3-70b-versatile"
+        self.model = "qwen/qwen3-32b"
         self.fallback_model = "llama-3.1-8b-instant"
         self.temperature = 0.7
         self.max_tokens = 1536
