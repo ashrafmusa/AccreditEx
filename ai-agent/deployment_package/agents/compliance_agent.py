@@ -11,7 +11,6 @@ This specialist agent handles all compliance-related tasks including:
 - Gap analysis and remediation planning (Educational Focus)
 """
 
-import json
 from typing import Dict, Any, Optional, List
 import logging
 from .base_agent import BaseSpecialistAgent
@@ -30,11 +29,15 @@ class ComplianceAgent(BaseSpecialistAgent):
     - ISO 9001:2015 (Quality Management)
     """
     
+    # Lower temperature for highly factual, standard-driven responses (env: COMPLIANCE_TEMPERATURE)
+    CONFIG_PREFIX = "COMPLIANCE"
+    DEFAULT_TEMPERATURE = 0.2
+    
+    RESPONSE_SCHEMA = {"findings": list}
+    FINDING_KEYS = ["description", "status", "risk_level"]
+    
     def __init__(self, groq_client, firebase_client=None):
         super().__init__(groq_client, firebase_client)
-        
-        # Lower temperature for highly factual, standard-driven responses
-        self.temperature = 0.2
         
         # Load standard mappings
         self.cbahi_standards = self._load_cbahi_standards()
@@ -42,7 +45,7 @@ class ComplianceAgent(BaseSpecialistAgent):
         self.iso_15189_standards = self._load_iso_15189_standards()
         self.iso_9001_standards = self._load_iso_9001_standards()
         
-        logger.info("📋 ComplianceAgent initialized with CBAHI, JCI, and ISO 15189 knowledge")
+        logger.info("[COMPLIANCE] ComplianceAgent initialized with CBAHI, JCI, and ISO 15189 knowledge")
     
     def get_specialist_name(self) -> str:
         """Return specialist name"""
@@ -67,7 +70,9 @@ class ComplianceAgent(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Check CBAHI compliance for a document or policy"""
-        logger.info(f"📋 Checking CBAHI compliance{f' for standard {standard}' if standard else ''}")
+        document = self.validator.sanitize(document, field_name="document")
+        standard = self.validator.sanitize(standard, max_length=50) if standard else None
+        logger.info(f"[COMPLIANCE] Checking CBAHI compliance standard={standard or 'general'}")
         
         if standard:
             standard_info = self.map_cbahi_standard(standard)
@@ -115,13 +120,10 @@ class ComplianceAgent(BaseSpecialistAgent):
         
         result = await self.process_request(message, context)
         
-        # Attempt to parse the LLM's JSON string into a Python dict
-        try:
-            parsed_response = json.loads(result['response'])
-            result['structured_data'] = parsed_response
-        except json.JSONDecodeError:
-            logger.warning("Failed to parse LLM response into JSON. Returning raw string.")
-            result['structured_data'] = None
+        # Parse and validate the LLM's JSON response
+        result['structured_data'] = self.parse_structured_response(
+            result, self.RESPONSE_SCHEMA, {"findings": self.FINDING_KEYS}
+        )
 
         result['standard_type'] = 'CBAHI'
         result['standard_code'] = standard
@@ -139,7 +141,9 @@ class ComplianceAgent(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Check JCI compliance for a document or policy"""
-        logger.info(f"📋 Checking JCI compliance{f' for standard {standard}' if standard else ''}")
+        document = self.validator.sanitize(document, field_name="document")
+        standard = self.validator.sanitize(standard, max_length=50) if standard else None
+        logger.info(f"[COMPLIANCE] Checking JCI compliance standard={standard or 'general'}")
         
         if standard:
             standard_info = self.map_jci_standard(standard)
@@ -164,15 +168,32 @@ class ComplianceAgent(BaseSpecialistAgent):
             }}
             """
         else:
-            # General JCI prompt omitted for brevity, follows same JSON pattern
-            message = f"Review this document for general JCI 7th Edition compliance... (output JSON)"
+            message = f"""
+            Review this document for general JCI 7th Edition compliance.
+            
+            Document to Review:
+            {document}
+            
+            Output your response strictly as a JSON object matching this schema:
+            {{
+                "findings": [
+                    {{
+                        "description": "Brief description",
+                        "standard": "Applicable standard code",
+                        "status": "compliant" | "partially-compliant" | "non-compliant",
+                        "risk_level": "Low" | "Medium" | "High",
+                        "educational_recommendation": "How to fix this and the clinical rationale"
+                    }}
+                ],
+                "summary_text": "Overall assessment narrative"
+            }}
+            """
             
         result = await self.process_request(message, context)
         
-        try:
-            result['structured_data'] = json.loads(result['response'])
-        except json.JSONDecodeError:
-            result['structured_data'] = None
+        result['structured_data'] = self.parse_structured_response(
+            result, self.RESPONSE_SCHEMA, {"findings": self.FINDING_KEYS}
+        )
             
         result['standard_type'] = 'JCI'
         result['standard_code'] = standard
@@ -187,13 +208,15 @@ class ComplianceAgent(BaseSpecialistAgent):
         context: Optional[Dict] = None
     ) -> Dict[str, Any]:
         """Generate compliance gap analysis from findings"""
-        logger.info(f"📊 Generating gap analysis for {len(findings)} findings")
+        findings = [f for f in (findings or []) if isinstance(f, dict)]
+        logger.info(f"[COMPLIANCE] Generating gap analysis findings={len(findings)}")
         
+        san = self.validator.sanitize
         findings_text = "\n\n".join([
-            f"**Finding {i+1}**: {f.get('description', 'N/A')}\n"
-            f"- Standard: {f.get('standard', 'N/A')}\n"
-            f"- Status: {f.get('status', 'N/A')}\n"
-            f"- Risk Level: {f.get('risk_level', 'Medium')}"
+            f"**Finding {i+1}**: {san(f.get('description', 'N/A'), max_length=1000)}\n"
+            f"- Standard: {san(f.get('standard', 'N/A'), max_length=50)}\n"
+            f"- Status: {san(f.get('status', 'N/A'), max_length=50)}\n"
+            f"- Risk Level: {san(f.get('risk_level', 'Medium'), max_length=50)}"
             for i, f in enumerate(findings)
         ])
         
