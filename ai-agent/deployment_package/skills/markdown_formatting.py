@@ -1,5 +1,4 @@
-# Markdown Formatting Skill
-# Quick Win 2: Consistent markdown formatting across all responses
+# skills/markdown_formatting.py
 
 """
 This skill module contains markdown formatting guidelines for AI responses.
