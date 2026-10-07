@@ -17,7 +17,7 @@ from collections import defaultdict, deque
 from dataclasses import dataclass
 from typing import Any, Deque, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
-DEFAULT_MODEL = "llama-3.3-70b-versatile"
+DEFAULT_MODEL = "openai/gpt-oss-120b"
 DEFAULT_FALLBACK_MODEL = "llama-3.1-8b-instant"
 
 
