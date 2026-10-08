@@ -75,6 +75,8 @@ class UnifiedAccreditexAgent:
             api_key=api_key,
             base_url=base_url
         )
+        self._model_substitutions: Dict[str, str] = {}
+        self._install_model_resolver()
         
         # Initialize Firebase
         self.db = firebase_client.db
@@ -84,8 +86,8 @@ class UnifiedAccreditexAgent:
             logger.warning("⚠️ Firebase database not initialized!")
         
         # Model configuration — primary + fallback for rate limits
-        self.model = "llama-3.3-70b-versatile"
-        self.fallback_model = "llama-3.1-8b-instant"
+        self.model = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
+        self.fallback_model = os.getenv("GROQ_FALLBACK_MODEL") or "llama-3.1-8b-instant"
         self.temperature = 0.7
         self.max_tokens = 4096
         
@@ -187,6 +189,57 @@ class UnifiedAccreditexAgent:
         if len(self._response_cache) > 200:
             oldest = min(self._response_cache, key=lambda k: self._response_cache[k]['expires'])
             del self._response_cache[oldest]
+
+    # ── Model availability resolver ──────────────────────────────────
+    _MODEL_PREFERENCE = (
+        "llama-3.3-70b-versatile",
+        "openai/gpt-oss-120b",
+        "llama-3.1-70b-versatile",
+        "openai/gpt-oss-20b",
+        "qwen/qwen3-32b",
+        "meta-llama/llama-4-scout-17b-16e-instruct",
+        "llama-3.1-8b-instant",
+    )
+    _NON_CHAT_MARKERS = ("whisper", "guard", "tts", "playai", "orpheus", "embed")
+
+    def _install_model_resolver(self) -> None:
+        """Wrap chat.completions.create so a missing model falls back to one the key can access."""
+        original_create = self.client.chat.completions.create
+
+        async def create_with_resolution(*args, **kwargs):
+            requested = kwargs.get('model')
+            if requested in self._model_substitutions:
+                kwargs['model'] = self._model_substitutions[requested]
+            try:
+                return await original_create(*args, **kwargs)
+            except Exception as e:
+                text = str(e).lower()
+                is_missing = getattr(e, 'status_code', None) == 404 or 'model_not_found' in text
+                if not (is_missing and requested):
+                    raise
+                replacement = await self._discover_model(exclude=kwargs.get('model'))
+                if not replacement:
+                    raise
+                logger.warning(f"⚠️ Model {kwargs.get('model')} unavailable, switching to {replacement}")
+                self._model_substitutions[requested] = replacement
+                kwargs['model'] = replacement
+                return await original_create(*args, **kwargs)
+
+        self.client.chat.completions.create = create_with_resolution
+
+    async def _discover_model(self, exclude: Optional[str] = None) -> Optional[str]:
+        """Pick the best chat model this API key can actually access."""
+        try:
+            listing = await self.client.models.list()
+            available = [m.id for m in listing.data if m.id != exclude]
+        except Exception as e:
+            logger.error(f"Could not list available models: {type(e).__name__}")
+            return None
+        chat_models = [m for m in available if not any(x in m.lower() for x in self._NON_CHAT_MARKERS)]
+        for preferred in self._MODEL_PREFERENCE:
+            if preferred in chat_models:
+                return preferred
+        return chat_models[0] if chat_models else None
 
     # ── Rate-limit-aware API call ────────────────────────────────────
     async def _create_completion(self, messages, stream=False, max_tokens=None, temperature=None):
