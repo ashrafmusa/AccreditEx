@@ -601,6 +601,8 @@ export const ar = {
     refreshed: 'تم التحديث',
 
     // إدارة التحكم في التغييرات
+    qualityTools: 'أدوات الجودة',
+    supplierHub: 'الموردون',
     changeControlManagement: 'إدارة التحكم في التغييرات',
     changeControlDescription: 'إدارة طلبات التغيير والموافقات وتحليل التأثير وتتبع التنفيذ',
     addChangeRequest: 'إضافة طلب تغيير',

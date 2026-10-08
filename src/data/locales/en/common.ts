@@ -594,6 +594,8 @@ export const en = {
     refreshed: 'Refreshed',
 
     // Change Control Management
+    qualityTools: 'Quality Tools',
+    supplierHub: 'Suppliers',
     changeControlManagement: 'Change Control Management',
     changeControlDescription: 'Manage change requests, approvals, impact analysis, and implementation tracking',
     addChangeRequest: 'Add Change Request',

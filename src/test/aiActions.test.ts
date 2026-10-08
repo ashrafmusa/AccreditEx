@@ -37,6 +37,15 @@ describe("aiActions", () => {
     expect(actions).toEqual([]);
   });
 
+  it("accepts single-backtick fences produced by the model", () => {
+    const reply =
+      'Ready.\n`accreditex-action {"type":"create_risk","title":"Fridge","likelihood":3,"impact":4,"mitigationPlan":"## Controls\\n- alarm"}`';
+    const { text, actions } = extractActions(reply);
+    expect(actions).toHaveLength(1);
+    expect(actions[0].title).toBe("Fridge");
+    expect(text).toBe("Ready.");
+  });
+
   it("rejects actions missing a title or scores", () => {
     // Arrange / Act / Assert
     expect(validateAction({ type: "create_risk", likelihood: 3, impact: 3 })).toBeNull();
