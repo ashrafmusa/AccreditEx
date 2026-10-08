@@ -54,6 +54,13 @@ describe("aiActions", () => {
     expect(actions[0].mitigationPlan).toContain("Timeline");
   });
 
+  it("converts double-escaped line breaks into real newlines", () => {
+    const reply =
+      'x `accreditex-action {"type":"create_risk","title":"T","likelihood":2,"impact":2,"mitigationPlan":"## A\\\\n- one\\\\n- two"}`';
+    const { actions } = extractActions(reply);
+    expect(actions[0].mitigationPlan).toBe("## A\n- one\n- two");
+  });
+
   it("rejects actions missing a title or scores", () => {
     // Arrange / Act / Assert
     expect(validateAction({ type: "create_risk", likelihood: 3, impact: 3 })).toBeNull();

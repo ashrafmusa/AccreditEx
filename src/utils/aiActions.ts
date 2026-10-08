@@ -20,7 +20,13 @@ const clampScore = (value: unknown): number | null => {
 };
 
 const cleanText = (value: unknown): string =>
-  typeof value === "string" ? value.trim().slice(0, MAX_TEXT) : "";
+  typeof value === "string"
+    ? value
+        .replace(/\\r\\n|\\n|\\r/g, "\n")
+        .replace(/\\t/g, " ")
+        .trim()
+        .slice(0, MAX_TEXT)
+    : "";
 
 /** Validate an untrusted AI payload; returns null if it is not a well-formed action. */
 export function validateAction(raw: unknown): AIAction | null {
