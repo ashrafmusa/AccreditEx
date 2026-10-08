@@ -3,6 +3,8 @@ import { useAIChatStore } from "@/stores/useAIChatStore";
 import { useTranslation } from "@/hooks/useTranslation";
 import DOMPurify from "dompurify";
 import { marked } from "marked";
+import { extractActions } from "@/utils/aiActions";
+import AIActionCard from "@/components/ai/AIActionCard";
 import {
   XMarkIcon,
   PaperAirplaneIcon,
@@ -130,7 +132,12 @@ export default function AIChatPanel() {
           </div>
         )}
 
-        {messages.map((msg) => (
+        {messages.map((msg) => {
+          const { text: displayText, actions } =
+            msg.role === "assistant"
+              ? extractActions(msg.content)
+              : { text: msg.content, actions: [] };
+          return (
           <div
             key={msg.id}
             className={`flex ${
@@ -150,7 +157,7 @@ export default function AIChatPanel() {
                     className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0"
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(
-                        marked.parse(msg.content, { async: false }) as string,
+                        marked.parse(displayText, { async: false }) as string,
                       ),
                     }}
                   />
@@ -158,6 +165,9 @@ export default function AIChatPanel() {
                   msg.content
                 )}
               </p>
+              {actions.map((action, i) => (
+                <AIActionCard key={i} action={action} />
+              ))}
               <p
                 className={`text-xs mt-1 ${
                   msg.role === "user"
@@ -169,7 +179,8 @@ export default function AIChatPanel() {
               </p>
             </div>
           </div>
-        ))}
+          );
+        })}
 
         {isLoading && (
           <div className="flex justify-start">

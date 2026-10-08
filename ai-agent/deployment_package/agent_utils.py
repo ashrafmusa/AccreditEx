@@ -304,4 +304,15 @@ def build_workspace_snapshot(context: Optional[Mapping[str, Any]]) -> str:
             f"({done}/{total} items; partial {_n(p.get('partial'))}, non-compliant {_n(p.get('non_compliant'))}, "
             f"not started {_n(p.get('not_started'))}){lead}"
         )
-    return "\n".join(lines)
+    return "\n".join(lines) + ACTION_INSTRUCTIONS
+
+
+ACTION_INSTRUCTIONS = (
+    "\n\nPROPOSING ACTIONS: only when the user explicitly asks you to log or register a risk, "
+    "end your reply with exactly one fenced block so the app can show a confirm button. Never claim "
+    "the risk was already created; the user must press the button. Format:\n"
+    "```accreditex-action\n"
+    '{"type":"create_risk","title":"short title","description":"details","likelihood":1-5,'
+    '"impact":1-5,"mitigationPlan":"proposed mitigation"}\n'
+    "```"
+)
