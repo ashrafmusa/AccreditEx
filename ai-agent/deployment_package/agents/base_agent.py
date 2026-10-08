@@ -22,6 +22,7 @@ from agent_utils import (
     RateLimiter,
     RateLimitExceeded,
     ResponseValidator,
+    build_workspace_snapshot,
 )
 
 # Import the markdown skill we just created. 
@@ -160,7 +161,7 @@ class BaseSpecialistAgent(ABC):
         specialist_prompt = self.get_system_prompt(context)
         markdown_skill = get_markdown_formatting_skill()
         
-        return f"{specialist_prompt}\n\n{markdown_skill}"
+        return f"{specialist_prompt}\n\n{markdown_skill}{build_workspace_snapshot(context)}"
     
     async def chat(
         self, 
