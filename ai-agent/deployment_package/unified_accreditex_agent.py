@@ -563,6 +563,28 @@ class UnifiedAccreditexAgent:
 **Remember**: You have FULL ACCESS to all {len(available_templates)} templates and {len(available_forms)} forms. Provide them confidently when requested!
 """
             
+            # Live workspace snapshot sent from the user's own session (authoritative)
+            ws_projects = current_data.get('workspace_projects') or []
+            if ws_projects or current_data.get('total_projects') is not None:
+                base_prompt += "\n**LIVE WORKSPACE SNAPSHOT (authoritative - answer from this data, never claim you lack access to it)**:\n"
+                base_prompt += (
+                    f"- Projects: {current_data.get('total_projects', len(ws_projects))} | "
+                    f"Documents: {current_data.get('total_documents', 0)} | "
+                    f"Departments: {current_data.get('total_departments', 0)} | "
+                    f"Users: {current_data.get('total_users', 0)} | "
+                    f"Open risks: {current_data.get('open_risks_count', 0)}\n"
+                )
+                for p in ws_projects[:25]:
+                    total = p.get('checklist_total', 0) or 0
+                    done = p.get('compliant', 0) or 0
+                    pct = round(100 * done / total) if total else 0
+                    base_prompt += (
+                        f"- {str(p.get('name', 'Unnamed'))[:80]} [{p.get('status', '?')}]: "
+                        f"{pct}% compliant ({done}/{total} items; partial {p.get('partial', 0)}, "
+                        f"non-compliant {p.get('non_compliant', 0)}, not started {p.get('not_started', 0)})"
+                        f"{', lead: ' + str(p['lead']) if p.get('lead') else ', no lead assigned'}\n"
+                    )
+
             # Add assigned projects
             assigned_projects = org_context.get('assigned_projects', [])
             if assigned_projects:
@@ -615,16 +637,25 @@ Always be specific and actionable, using real data from their workspace.
         Now with specialist routing, tiered context management, caching, and fallback model.
         """
         try:
-            # ── Check response cache first (saves 100 % of tokens on repeat requests)
-            cache_key = self._cache_key(message)
-            cached = self._cache_get(cache_key)
-            if cached:
-                yield cached
-                return
+            scope_org = (context or {}).get('organization_id') or 'anon'
+            scope_user = (context or {}).get('user_id') or 'anon'
 
-            # Generate thread_id if not provided
+            # Cache only context-free requests, and namespace by tenant+user so
+            # one organization can never be served another's cached answer.
+            cacheable = not (context and context.get('current_data'))
+            cache_key = self._cache_key(f"{scope_org}|{scope_user}|{message}")
+            if cacheable:
+                cached = self._cache_get(cache_key)
+                if cached:
+                    yield cached
+                    return
+
+            # Namespace threads by tenant+user so client-supplied IDs can't cross tenants
             if not thread_id:
                 thread_id = f"thread_{datetime.now().timestamp()}"
+            thread_id = f"{scope_org}:{scope_user}:{thread_id}"
+            if len(self.conversations) > 500 and thread_id not in self.conversations:
+                self.conversations.pop(next(iter(self.conversations)))
             
             # Detect task type from message (Quick Win 1)
             task_type = self.detect_task_type(message)
@@ -688,7 +719,8 @@ Always be specific and actionable, using real data from their workspace.
                     self.conversations[thread_id].append({"role": "assistant", "content": full_response})
                     latency_ms = (time.perf_counter() - routing_start) * 1000
                     self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
-                    self._cache_set(cache_key, full_response)
+                    if cacheable:
+                        self._cache_set(cache_key, full_response)
                     return
                 except Exception as specialist_error:
                     logger.error(f"Specialist routing failed, falling back to legacy path: {specialist_error}")
@@ -719,12 +751,13 @@ Always be specific and actionable, using real data from their workspace.
             self.conversations[thread_id].append({"role": "assistant", "content": full_response})
             latency_ms = (time.perf_counter() - routing_start) * 1000
             self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
-            self._cache_set(cache_key, full_response)
+            if cacheable:
+                self._cache_set(cache_key, full_response)
             
         except Exception as e:
             logger.error(f"Chat error: {e}")
             self._record_routing_metric('general', 'legacy', 0.0, success=False)
-            yield f"I encountered an error: {str(e)}"
+            yield "I'm sorry, I hit a temporary problem generating a response. Please try again in a moment."
 
     async def check_document_compliance(self, document_type: str, standard: str, content_summary: str, requirements: Optional[List[str]] = None) -> Dict[str, Any]:
         """Check if a document meets specific standards"""
