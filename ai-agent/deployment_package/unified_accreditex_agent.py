@@ -63,6 +63,7 @@ class UnifiedAccreditexAgent:
     
     def __init__(self):
         self.client = None
+        self.last_llm_error: Optional[str] = None
         self.db = None
         
         # Initialize Groq client using OpenAI SDK
@@ -198,13 +199,22 @@ class UnifiedAccreditexAgent:
             'max_tokens': max_tokens or 1024,
         }
         try:
-            return await self.client.chat.completions.create(**kwargs)
+            result = await self.client.chat.completions.create(**kwargs)
+            self.last_llm_error = None
+            return result
         except Exception as e:
+            self.last_llm_error = f"{type(e).__name__} status={getattr(e, 'status_code', None)}"
             error_str = str(e)
             if '429' in error_str or 'rate_limit' in error_str.lower():
                 logger.warning(f"⚠️ Rate-limited on {self.model}, falling back to {self.fallback_model}")
                 kwargs['model'] = self.fallback_model
-                return await self.client.chat.completions.create(**kwargs)
+                try:
+                    result = await self.client.chat.completions.create(**kwargs)
+                    self.last_llm_error = None
+                    return result
+                except Exception as e2:
+                    self.last_llm_error = f"fallback {type(e2).__name__} status={getattr(e2, 'status_code', None)}"
+                    raise
             raise
 
     def _estimate_quality_confidence(self, text: str) -> float:

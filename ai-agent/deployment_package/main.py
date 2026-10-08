@@ -355,6 +355,7 @@ class HealthResponse(BaseModel):
     agent_initialized: bool = Field(..., description="Whether AI agent is initialized")
     timestamp: str = Field(..., description="Check timestamp")
     version: str = Field(..., description="API version", example="2.0.0")
+    llm_last_error: Optional[str] = Field(None, description="Type and status of the last LLM provider error")
 
 # Startup event
 @app.on_event("startup")
@@ -389,7 +390,8 @@ async def health_check():
         status="healthy" if agent else "unhealthy",
         agent_initialized=agent is not None,
         timestamp=datetime.utcnow().isoformat(),
-        version="2.0.0"
+        version="2.0.0",
+        llm_last_error=getattr(agent, "last_llm_error", None),
     )
 
 # Chat endpoint
