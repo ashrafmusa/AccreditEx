@@ -8,7 +8,17 @@ export interface CreateRiskAction {
   category?: string;
 }
 
-export type AIAction = CreateRiskAction;
+export interface CreateCapaAction {
+  type: "create_capa";
+  title: string;
+  rootCause: string;
+  correctiveAction: string;
+  preventiveAction: string;
+  projectName?: string;
+  dueInDays: number;
+}
+
+export type AIAction = CreateRiskAction | CreateCapaAction;
 
 const ACTION_BLOCK = /`{1,3}accreditex-action\s*(\{[\s\S]*?\})\s*`{1,3}/g;
 const MAX_TEXT = 2000;
@@ -49,6 +59,22 @@ export function validateAction(raw: unknown): AIAction | null {
       ...(category ? { category } : {}),
     };
   }
+  if (obj.type === "create_capa") {
+    const title = cleanText(obj.title);
+    const correctiveAction = cleanText(obj.correctiveAction);
+    if (!title || !correctiveAction) return null;
+    const days = Number(obj.dueInDays);
+    const projectName = cleanText(obj.projectName);
+    return {
+      type: "create_capa",
+      title,
+      rootCause: cleanText(obj.rootCause),
+      correctiveAction,
+      preventiveAction: cleanText(obj.preventiveAction),
+      dueInDays: Number.isFinite(days) ? Math.min(365, Math.max(1, Math.round(days))) : 30,
+      ...(projectName ? { projectName } : {}),
+    };
+  }
   return null;
 }
 
@@ -67,14 +93,23 @@ const parseLenient = (body: string): unknown => {
         trimmed.match(new RegExp(`"${key}"\\s*:\\s*"?(\\d+)`))?.[1];
       const unescape = (s?: string) =>
         s?.replace(/\\\\n|\\n/g, "\n").replace(/\\"/g, '"');
-      return {
+      const fields = [
+        "title",
+        "description",
+        "mitigationPlan",
+        "rootCause",
+        "correctiveAction",
+        "preventiveAction",
+        "projectName",
+      ];
+      const out: Record<string, unknown> = {
         type: trimmed.match(/"type"\s*:\s*"([^"]+)"/)?.[1],
-        title: unescape(str("title")),
-        description: unescape(str("description")),
         likelihood: num("likelihood"),
         impact: num("impact"),
-        mitigationPlan: unescape(str("mitigationPlan")),
+        dueInDays: num("dueInDays"),
       };
+      for (const f of fields) out[f] = unescape(str(f));
+      return out;
     }
   }
 };

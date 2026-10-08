@@ -1,4 +1,4 @@
-import { extractActions, validateAction } from "@/utils/aiActions";
+﻿import { extractActions, validateAction } from "@/utils/aiActions";
 
 const block = (json: string) => "```accreditex-action\n" + json + "\n```";
 
@@ -51,14 +51,23 @@ describe("aiActions", () => {
       'ok `accreditex-action {"type":"create_risk","title":"Fridge","likelihood":3,"impact":4,"mitigationPlan":"## Controls\n- alarm\n\n## Timeline\n- 30 days"}`';
     const { actions } = extractActions(reply);
     expect(actions).toHaveLength(1);
-    expect(actions[0].mitigationPlan).toContain("Timeline");
+    expect((actions[0] as { mitigationPlan: string }).mitigationPlan).toContain("Timeline");
   });
 
   it("converts double-escaped line breaks into real newlines", () => {
     const reply =
       'x `accreditex-action {"type":"create_risk","title":"T","likelihood":2,"impact":2,"mitigationPlan":"## A\\\\n- one\\\\n- two"}`';
     const { actions } = extractActions(reply);
-    expect(actions[0].mitigationPlan).toBe("## A\n- one\n- two");
+    expect((actions[0] as { mitigationPlan: string }).mitigationPlan).toBe("## A\n- one\n- two");
+  });
+
+  it("validates a create_capa action and clamps dueInDays", () => {
+    const { actions } = extractActions(
+      'x ```accreditex-action\n{"type":"create_capa","title":"Fix","projectName":"SMCS","rootCause":"rc","correctiveAction":"ca","preventiveAction":"pa","dueInDays":9999}\n```',
+    );
+    expect(actions).toHaveLength(1);
+    expect(actions[0]).toMatchObject({ type: "create_capa", dueInDays: 365 });
+    expect(extractActions('```accreditex-action\n{"type":"create_capa","title":"x"}\n```').actions).toHaveLength(0);
   });
 
   it("rejects actions missing a title or scores", () => {

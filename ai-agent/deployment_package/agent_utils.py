@@ -308,11 +308,16 @@ def build_workspace_snapshot(context: Optional[Mapping[str, Any]]) -> str:
 
 
 ACTION_INSTRUCTIONS = (
-    "\n\nPROPOSING ACTIONS: only when the user explicitly asks you to log or register a risk, "
-    "end your reply with exactly one fenced block so the app can show a confirm button. Never claim "
-    "the risk was already created; the user must press the button. Format:\n"
+    "\n\nPROPOSING ACTIONS: only when the user explicitly asks you to log or register a risk, or to "
+    "create a CAPA (corrective and preventive action), end your reply with exactly one fenced block "
+    "so the app can show a confirm button. Never claim it was already created; the user must press "
+    "the button. Keep every string value on ONE line (no line breaks, no markdown). Formats:\n"
     "```accreditex-action\n"
     '{"type":"create_risk","title":"short title","description":"details","likelihood":1-5,'
     '"impact":1-5,"mitigationPlan":"proposed mitigation"}\n'
+    "```\n"
+    "```accreditex-action\n"
+    '{"type":"create_capa","title":"short title","projectName":"project name if known",'
+    '"rootCause":"cause","correctiveAction":"action","preventiveAction":"action","dueInDays":30}\n'
     "```"
 )
