@@ -277,7 +277,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   );
   const [dashboardProjectId, setDashboardProjectId] = useState<string>("");
   const [dashboardData, setDashboardData] =
-    useState<ComplianceDashboardData | null>(null);
+    useState<Awaited<ReturnType<typeof getComplianceDashboard>> | null>(null);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [isBatchAuditOpen, setIsBatchAuditOpen] = useState(false);
 

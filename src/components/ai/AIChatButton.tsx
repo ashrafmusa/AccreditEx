@@ -1,9 +1,15 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAIChatStore } from "@/stores/useAIChatStore";
 import { SparklesIcon } from "@heroicons/react/24/solid";
+import { aiAgentService } from "@/services/aiAgentService";
 
 export default function AIChatButton() {
   const { toggleChat, openChat, isOpen } = useAIChatStore();
+
+  // Wake the (cold-start) AI backend in the background so the first chat is fast
+  useEffect(() => {
+    void aiAgentService.healthCheck();
+  }, []);
 
   if (isOpen) return null;
 

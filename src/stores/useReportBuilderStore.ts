@@ -10,7 +10,7 @@ import {
     REPORT_TEMPLATES,
     ReportDefinition,
 } from '@/types/reportBuilder';
-import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import { getTenantQuery, getTenantStamp, sortByFieldDesc } from '@/utils/tenantQuery';
 import {
     addDoc,
     collection,
@@ -18,7 +18,6 @@ import {
     doc,
     limit as firestoreLimit,
     getDocs,
-    orderBy,
     updateDoc
 } from 'firebase/firestore';
 import { create } from 'zustand';
@@ -64,12 +63,12 @@ export const useReportBuilderStore = create<ReportBuilderState>((set, get) => ({
         set({ loading: true, error: null });
         try {
             // H2 fix: scope query to current org to prevent cross-org data leak
-            const q = getTenantQuery(COLLECTION, orderBy('updatedAt', 'desc'), firestoreLimit(500));
+            const q = getTenantQuery(COLLECTION, firestoreLimit(500));
             const snap = await getDocs(q);
-            const reports: ReportDefinition[] = snap.docs.map((d) => ({
+            const reports: ReportDefinition[] = sortByFieldDesc(snap.docs.map((d) => ({
                 ...(d.data() as Omit<ReportDefinition, 'id'>),
                 id: d.id,
-            }));
+            })), 'updatedAt');
             set({ reports, loading: false });
         } catch (err) {
             console.error('[ReportBuilderStore] fetchReports error:', err);

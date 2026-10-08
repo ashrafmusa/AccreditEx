@@ -1,6 +1,7 @@
 import { BulkUserOperation, User, UserRole } from '@/types';
 import { collection, addDoc, updateDoc, doc, getDocs, Timestamp, query, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const loadExcelJS = async () => {
     const module = await import('exceljs');
@@ -27,6 +28,7 @@ export const createBulkOperation = async (
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
         ...operation,
+        ...getTenantStamp(),
         createdAtTimestamp: Timestamp.now(),
     });
 
@@ -42,10 +44,10 @@ export const updateBulkOperation = async (
 };
 
 export const getBulkOperations = async (userId?: string): Promise<BulkUserOperation[]> => {
-    let q = query(collection(db, COLLECTION_NAME));
+    let q = getTenantQuery(COLLECTION_NAME);
 
     if (userId) {
-        q = query(collection(db, COLLECTION_NAME), where('createdBy', '==', userId));
+        q = getTenantQuery(COLLECTION_NAME, where('createdBy', '==', userId));
     }
 
     const snapshot = await getDocs(q);

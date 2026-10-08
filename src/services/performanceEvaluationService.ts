@@ -1,7 +1,7 @@
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { PerformanceEvaluation } from '../types';
-import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import { getTenantQuery, getTenantStamp, sortByFieldDesc } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'performance_evaluations';
 const evaluationsCollection = collection(db, COLLECTION_NAME);
@@ -12,9 +12,9 @@ const stripUndefined = (obj: Record<string, unknown>): Record<string, unknown> =
 
 export const getPerformanceEvaluations = async (): Promise<PerformanceEvaluation[]> => {
     try {
-        const q = getTenantQuery(COLLECTION_NAME, orderBy('createdAt', 'desc'));
+        const q = getTenantQuery(COLLECTION_NAME);
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as PerformanceEvaluation));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as PerformanceEvaluation)), 'createdAt');
     } catch (error) {
         console.error('Failed to fetch performance evaluations:', error);
         return [];
@@ -23,9 +23,9 @@ export const getPerformanceEvaluations = async (): Promise<PerformanceEvaluation
 
 export const getEmployeeEvaluations = async (employeeId: string): Promise<PerformanceEvaluation[]> => {
     try {
-        const q = getTenantQuery(COLLECTION_NAME, where('employeeId', '==', employeeId), orderBy('createdAt', 'desc'));
+        const q = getTenantQuery(COLLECTION_NAME, where('employeeId', '==', employeeId));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as PerformanceEvaluation));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as PerformanceEvaluation)), 'createdAt');
     } catch (error) {
         console.error('Failed to fetch employee evaluations:', error);
         return [];

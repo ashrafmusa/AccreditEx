@@ -8,7 +8,7 @@
 
 import { ArrowTrendingUpIcon, LockClosedIcon } from "@/components/icons";
 import { MODULE_REGISTRY } from "@/data/moduleRegistry";
-import { useNavigation } from "@/hooks/useNavigation";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/hooks/useTranslation";
 import { getRequiredPlan } from "@/services/moduleService";
 import { useTenantStore } from "@/stores/useTenantStore";
@@ -22,7 +22,7 @@ interface UpgradePromptProps {
 const UpgradePrompt: React.FC<UpgradePromptProps> = ({ moduleId }) => {
   const { t } = useTranslation();
   const currentOrg = useTenantStore((s) => s.currentOrganization);
-  const { setNavigation } = useNavigation();
+  const navigate = useNavigate();
   const moduleDef = MODULE_REGISTRY[moduleId];
   const requiredPlan = getRequiredPlan(moduleId);
   const currentPlan = currentOrg?.plan || "free";
@@ -73,7 +73,7 @@ const UpgradePrompt: React.FC<UpgradePromptProps> = ({ moduleId }) => {
         {/* Upgrade CTA */}
         <div className="mt-2">
           <button
-            onClick={() => setNavigation({ view: "pricing" })}
+            onClick={() => navigate("/pricing")}
             className="inline-flex items-center gap-2 bg-brand-primary hover:bg-brand-primary/90 text-white font-semibold py-3 px-6 rounded-xl transition-colors"
           >
             <ArrowTrendingUpIcon className="h-5 w-5" />

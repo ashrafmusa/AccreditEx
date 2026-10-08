@@ -1,4 +1,5 @@
 import ChartSkeleton from "@/components/common/ChartSkeleton";
+import { useProjectStore } from "@/stores/useProjectStore";
 import EmptyStatePlaceholder from "@/components/common/EmptyStatePlaceholder";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import StatCard from "@/components/common/StatCard";

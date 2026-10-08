@@ -22,11 +22,11 @@ import {
     doc,
     getDoc,
     getDocs,
-    orderBy,
     query,
     Timestamp,
     updateDoc
 } from 'firebase/firestore';
+import { getTenantQuery, getTenantStamp, sortByFieldDesc } from '@/utils/tenantQuery';
 
 // ============================================================
 // CHANGE REQUESTS - CRUD OPERATIONS
@@ -40,11 +40,10 @@ export async function getChangeRequests(
     }
 ): Promise<ChangeRequest[]> {
     try {
-        const requestsRef = collection(db, 'changeRequests');
-        let q = query(requestsRef, orderBy('dateRequested', 'desc'));
+        const q = getTenantQuery('changeRequests');
 
         const snapshot = await getDocs(q);
-        let requests = snapshot.docs.map((doc) => ({
+        let requests = sortByFieldDesc(snapshot.docs.map((doc) => ({
             ...doc.data(),
             id: doc.id,
             dateRequested: doc.data().dateRequested?.toDate?.() ?? new Date(),
@@ -52,7 +51,7 @@ export async function getChangeRequests(
             plannedEndDate: doc.data().plannedEndDate?.toDate?.() ?? new Date(),
             createdAt: doc.data().createdAt?.toDate?.() ?? new Date(),
             updatedAt: doc.data().updatedAt?.toDate?.() ?? new Date(),
-        } as ChangeRequest));
+        } as ChangeRequest)), 'dateRequested');
 
         // Apply filters
         if (filters?.status) {
@@ -110,6 +109,7 @@ export async function createChangeRequest(
         const now = new Date();
         const docRef = await addDoc(collection(db, 'changeRequests'), {
             ...request,
+            ...getTenantStamp(),
             status: 'draft',
             approvals: [],
             auditTrail: [

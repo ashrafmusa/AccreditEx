@@ -1,5 +1,7 @@
 import {
   ArrowRightIcon,
+  CheckCircleIcon,
+  ClipboardDocumentCheckIcon,
   ExclamationCircleIcon,
   XCircleIcon,
 } from "@/components/icons";

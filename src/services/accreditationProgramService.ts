@@ -1,12 +1,12 @@
 import { collection, getDocs, addDoc, doc, updateDoc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { AccreditationProgram } from '../types';
-import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import { getSharedTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const accreditationProgramsCollection = collection(db, 'accreditationPrograms');
 
 export const getAccreditationPrograms = async (): Promise<AccreditationProgram[]> => {
-    const programSnapshot = await getDocs(getTenantQuery('accreditationPrograms'));
+    const programSnapshot = await getDocs(getSharedTenantQuery('accreditationPrograms'));
     return programSnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as AccreditationProgram));
 };
 
@@ -34,7 +34,7 @@ export const updateAccreditationProgram = async (program: AccreditationProgram):
         await updateDoc(docRef, programData);
     } else {
         // Document doesn't exist, create it with setDoc
-        await setDoc(docRef, programData);
+        await setDoc(docRef, { ...programData, ...getTenantStamp() });
     }
 };
 

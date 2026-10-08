@@ -20,14 +20,13 @@ import {
     doc,
     getDoc,
     getDocs,
-    orderBy,
-    query,
     QueryConstraint,
     setDoc,
     Timestamp,
     updateDoc,
     where
 } from 'firebase/firestore';
+import { getTenantQuery, getTenantStamp, sortByFieldDesc } from '@/utils/tenantQuery';
 
 const SUPPLIERS_COLLECTION = 'suppliers';
 const SUPPLIER_AUDITS_COLLECTION = 'supplierAudits';
@@ -52,21 +51,17 @@ export async function getSuppliers(filters?: {
             constraints.push(where('riskLevel', '==', filters.riskLevel));
         }
 
-        const q = query(
-            collection(db, SUPPLIERS_COLLECTION),
-            orderBy('updatedAt', 'desc'),
-            ...constraints
-        );
+        const q = getTenantQuery(SUPPLIERS_COLLECTION, ...constraints);
 
         const snapshot = await getDocs(q);
-        let suppliers = snapshot.docs.map(doc => ({
+        let suppliers = sortByFieldDesc(snapshot.docs.map(doc => ({
             id: doc.id,
             ...doc.data(),
             createdAt: doc.data().createdAt?.toDate(),
             updatedAt: doc.data().updatedAt?.toDate(),
             lastAuditDate: doc.data().lastAuditDate?.toDate(),
             nextAuditDate: doc.data().nextAuditDate?.toDate(),
-        } as Supplier));
+        } as Supplier)), 'updatedAt');
 
         // Apply search filter if provided
         if (filters?.search) {
@@ -125,6 +120,7 @@ export async function createSupplier(supplierData: Omit<Supplier, 'id'>, userId:
 
         const supplier: Supplier = {
             ...supplierData,
+            ...getTenantStamp(),
             id: newSupplierRef.id,
             createdAt: now,
             updatedAt: now,
@@ -241,7 +237,7 @@ export async function createSupplierAudit(
     try {
         const newAuditRef = doc(collection(db, SUPPLIER_AUDITS_COLLECTION));
         const auditData: SupplierAudit = {
-            ...audit,
+            ...audit, ...getTenantStamp(),
             id: newAuditRef.id,
         };
 
@@ -279,14 +275,10 @@ export async function createSupplierAudit(
  */
 export async function getSupplierAudits(supplierId: string): Promise<SupplierAudit[]> {
     try {
-        const q = query(
-            collection(db, SUPPLIER_AUDITS_COLLECTION),
-            where('supplierId', '==', supplierId),
-            orderBy('createdAt', 'desc')
-        );
+        const q = getTenantQuery(SUPPLIER_AUDITS_COLLECTION, where('supplierId', '==', supplierId));
 
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(doc => {
+        return sortByFieldDesc(snapshot.docs.map(doc => {
             const data = doc.data();
             return {
                 id: doc.id,
@@ -298,7 +290,7 @@ export async function getSupplierAudits(supplierId: string): Promise<SupplierAud
                 createdAt: data.createdAt?.toDate(),
                 updatedAt: data.updatedAt?.toDate(),
             } as SupplierAudit;
-        });
+        }), 'createdAt');
     } catch (error) {
         const appError = handleError(error, 'Failed to fetch supplier audits');
         logger.error('getSupplierAudits error:', appError);
@@ -317,7 +309,7 @@ export async function createNonConformance(
     try {
         const newNCRef = doc(collection(db, NON_CONFORMANCES_COLLECTION));
         const ncData: NonConformance = {
-            ...nonConformance,
+            ...nonConformance, ...getTenantStamp(),
             id: newNCRef.id,
         };
 

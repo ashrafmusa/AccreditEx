@@ -1,4 +1,5 @@
 import {
+  ArrowTrendingUpIcon,
   ChevronDownIcon as ArrowDownIcon,
   ChevronUpIcon as ArrowUpIcon,
   CheckCircleIcon,

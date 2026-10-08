@@ -349,7 +349,7 @@
       ]
     },
     {
-      "collectionGroup": "settingsPresets",
+      "collectionGroup": "settings_presets",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -423,7 +423,35 @@
       ]
     },
     {
-      "collectionGroup": "settingsPresets",
+      "collectionGroup": "settings_presets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "createdBy",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "usageCount",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "settings_presets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "createdBy",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "changeRequests",
       "queryScope": "COLLECTION",
       "fields": [
         {
@@ -431,7 +459,35 @@
           "order": "ASCENDING"
         },
         {
+          "fieldPath": "dateRequested",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "bulk_user_operations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "organizationId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdBy",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "settings_presets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "isPublic",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "category",
           "order": "ASCENDING"
         },
         {

@@ -96,9 +96,10 @@ service cloud.firestore {
       return request.auth.token.organizationId;
     }
     
-    // Check if tenant isolation is active for this request
+    // Check if tenant isolation is active for this request.
+    // Platform system admins (custom claim) operate across organizations.
     function isTenantActive() {
-      return getUserOrgId() != null;
+      return getUserOrgId() != null && request.auth.token.get('systemAdmin', false) != true;
     }
     
     // Check that document belongs to the user's organization
@@ -115,6 +116,63 @@ service cloud.firestore {
       return !isTenantActive()
         || !request.resource.data.keys().hasAny(['organizationId'])
         || request.resource.data.organizationId == getUserOrgId();
+    }
+
+    // New tenant-owned collections require an explicit organization ID.
+    // Keep the legacy helpers above for existing collections during migration.
+    function belongsToActiveOrg() {
+      return !isTenantActive()
+        || (
+          resource.data.keys().hasAny(['organizationId'])
+          && resource.data.organizationId == getUserOrgId()
+        );
+    }
+
+    function setsActiveOrg() {
+      return !isTenantActive()
+        || (
+          request.resource.data.keys().hasAny(['organizationId'])
+          && request.resource.data.organizationId == getUserOrgId()
+        );
+    }
+
+    function isGlobalReference() {
+      return 'scope' in resource.data && resource.data.scope == 'global';
+    }
+
+    function canReadReferenceData() {
+      return isAuthenticated() && (isGlobalReference() || belongsToActiveOrg());
+    }
+
+    function canWriteReferenceData() {
+      return isAdmin() && (
+        (
+          request.resource.data.get('scope', null) == 'global'
+          && isSuperAdmin()
+          && !request.resource.data.keys().hasAny(['organizationId'])
+        )
+        || (
+          request.resource.data.get('scope', null) != 'global'
+          && setsActiveOrg()
+        )
+      );
+    }
+
+    function canUpdateReferenceData() {
+      return isAdmin() && (
+        (
+          resource.data.get('scope', null) == 'global'
+          && isSuperAdmin()
+          && request.resource.data.get('scope', null) == 'global'
+          && !request.resource.data.keys().hasAny(['organizationId'])
+        )
+        || (
+          resource.data.get('scope', null) != 'global'
+          && belongsToActiveOrg()
+          && setsActiveOrg()
+          && request.resource.data.get('scope', null) != 'global'
+        )
+      );
     }
     
     // =====================================================
@@ -164,16 +222,24 @@ service cloud.firestore {
     
     // Standards collection
     match /standards/{docId} {
-      allow read: if isAuthenticated() && belongsToUserOrg();
-      allow create, update: if isAdmin() && setsCorrectOrg();
-      allow delete: if isAdmin() && belongsToUserOrg();
+      allow read: if canReadReferenceData();
+      allow create: if canWriteReferenceData();
+      allow update: if canUpdateReferenceData();
+      allow delete: if isAdmin() && (
+        (resource.data.get('scope', null) == 'global' && isSuperAdmin())
+        || (resource.data.get('scope', null) != 'global' && belongsToActiveOrg())
+      );
     }
     
     // Accreditation Programs collection
     match /accreditationPrograms/{docId} {
-      allow read: if isAuthenticated() && belongsToUserOrg();
-      allow create, update: if isAdmin() && setsCorrectOrg();
-      allow delete: if isAdmin() && belongsToUserOrg();
+      allow read: if canReadReferenceData();
+      allow create: if canWriteReferenceData();
+      allow update: if canUpdateReferenceData();
+      allow delete: if isAdmin() && (
+        (resource.data.get('scope', null) == 'global' && isSuperAdmin())
+        || (resource.data.get('scope', null) != 'global' && belongsToActiveOrg())
+      );
     }
     
     // Departments collection
@@ -193,9 +259,13 @@ service cloud.firestore {
     
     // Competencies collection
     match /competencies/{docId} {
-      allow read: if isAuthenticated() && belongsToUserOrg();
-      allow create, update: if isAdmin() && setsCorrectOrg();
-      allow delete: if isAdmin() && belongsToUserOrg();
+      allow read: if canReadReferenceData();
+      allow create: if canWriteReferenceData();
+      allow update: if canUpdateReferenceData();
+      allow delete: if isAdmin() && (
+        (resource.data.get('scope', null) == 'global' && isSuperAdmin())
+        || (resource.data.get('scope', null) != 'global' && belongsToActiveOrg())
+      );
     }
     
     // Risks collection
@@ -402,6 +472,103 @@ service cloud.firestore {
       allow create: if isAtLeastTeamMember() && setsCorrectOrg();
       allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
       allow delete: if isAdmin() && belongsToUserOrg();
+    }
+
+    // CAPA records contain tenant-specific corrective-action and incident data.
+    match /capaReports/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isAtLeastTeamMember() && setsActiveOrg();
+      allow update: if isAtLeastTeamMember() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    // Change-control records are scoped to their owning organization.
+    match /changeRequests/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    // Supplier quality management records are scoped to their owning organization.
+    match /suppliers/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    match /supplierAudits/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    match /nonConformances/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isAtLeastTeamMember() && setsActiveOrg();
+      allow update: if isAtLeastTeamMember() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    match /correctionPlans/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isAtLeastTeamMember() && setsActiveOrg();
+      allow update: if isAtLeastTeamMember() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    // Bulk user-operation logs expose account and import status information.
+    match /bulk_user_operations/{operationId} {
+      allow read: if isAdmin() && belongsToActiveOrg();
+      allow create: if isAdmin()
+                    && request.resource.data.createdBy == request.auth.uid
+                    && setsActiveOrg();
+      allow update: if isAdmin() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    // Personal customization documents are keyed and authorized by Auth UID.
+    match /userCustomizations/{userId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isOwner(userId)
+                    && resource.data.userId == userId
+                    && request.resource.data.userId == userId;
+      allow delete: if isOwner(userId);
+    }
+
+    // Presets are tenant-owned; explicitly public presets can be read by all
+    // signed-in users. Public usage counters may only be incremented by one.
+    match /settings_presets/{presetId} {
+      allow read: if isAuthenticated() && (
+        resource.data.isPublic == true
+        || resource.data.createdBy == request.auth.uid
+        || (isAdmin() && belongsToActiveOrg())
+      );
+      allow create: if isAdmin()
+                    && request.resource.data.createdBy == request.auth.uid
+                    && setsActiveOrg();
+      allow update: if (
+        isAuthenticated()
+        && resource.data.isPublic == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['usageCount'])
+        && request.resource.data.usageCount == resource.data.usageCount + 1
+      ) || (
+        isAdmin() && belongsToActiveOrg() && setsActiveOrg()
+      );
+      allow delete: if isAdmin() && belongsToActiveOrg();
+    }
+
+    // Template-use analytics is append-only and attributed to the signed-in user.
+    match /templateUsage/{usageId} {
+      allow create: if isAuthenticated()
+                    && request.resource.data.userId == request.auth.uid
+                    && request.resource.data.templateId is string
+                    && setsActiveOrg();
+      allow read: if isAdmin() && belongsToActiveOrg();
+      allow update, delete: if false;
     }
     
     // Quality Rounds collection

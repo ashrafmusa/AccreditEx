@@ -1,7 +1,7 @@
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, orderBy, where } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, query, where } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { QualityRound, RoundingTemplate, RoundingFinding } from '../types';
-import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import { getTenantQuery, getTenantStamp, sortByFieldDesc } from '@/utils/tenantQuery';
 
 // ─── Collections ─────────────────────────────────────────
 const ROUNDS_COLLECTION = 'quality_rounds';
@@ -20,9 +20,9 @@ const stripUndefined = (obj: Record<string, unknown>): Record<string, unknown> =
 
 export const getRoundingTemplates = async (): Promise<RoundingTemplate[]> => {
     try {
-        const q = getTenantQuery(TEMPLATES_COLLECTION, orderBy('createdAt', 'desc'));
+        const q = getTenantQuery(TEMPLATES_COLLECTION);
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as RoundingTemplate));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as RoundingTemplate)), 'createdAt');
     } catch (error) {
         console.error('Failed to fetch rounding templates:', error);
         return [];
@@ -66,9 +66,9 @@ export const deleteRoundingTemplate = async (templateId: string): Promise<void> 
 
 export const getQualityRounds = async (): Promise<QualityRound[]> => {
     try {
-        const q = getTenantQuery(ROUNDS_COLLECTION, orderBy('scheduledDate', 'desc'));
+        const q = getTenantQuery(ROUNDS_COLLECTION);
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound)), 'scheduledDate');
     } catch (error) {
         console.error('Failed to fetch quality rounds:', error);
         return [];
@@ -77,9 +77,9 @@ export const getQualityRounds = async (): Promise<QualityRound[]> => {
 
 export const getRoundsByDepartment = async (department: string): Promise<QualityRound[]> => {
     try {
-        const q = getTenantQuery(ROUNDS_COLLECTION, where('department', '==', department), orderBy('scheduledDate', 'desc'));
+        const q = getTenantQuery(ROUNDS_COLLECTION, where('department', '==', department));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound)), 'scheduledDate');
     } catch (error) {
         console.error('Failed to fetch rounds by department:', error);
         return [];
@@ -88,9 +88,9 @@ export const getRoundsByDepartment = async (department: string): Promise<Quality
 
 export const getRoundsByStatus = async (status: string): Promise<QualityRound[]> => {
     try {
-        const q = getTenantQuery(ROUNDS_COLLECTION, where('status', '==', status), orderBy('scheduledDate', 'desc'));
+        const q = getTenantQuery(ROUNDS_COLLECTION, where('status', '==', status));
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound)), 'scheduledDate');
     } catch (error) {
         console.error('Failed to fetch rounds by status:', error);
         return [];
@@ -134,14 +134,11 @@ export const deleteQualityRound = async (roundId: string): Promise<void> => {
 
 export const getRoundingFindings = async (roundId?: string): Promise<RoundingFinding[]> => {
     try {
-        let q;
-        if (roundId) {
-            q = getTenantQuery(FINDINGS_COLLECTION, where('roundId', '==', roundId), orderBy('createdAt', 'desc'));
-        } else {
-            q = getTenantQuery(FINDINGS_COLLECTION, orderBy('createdAt', 'desc'));
-        }
+        const q = roundId
+            ? getTenantQuery(FINDINGS_COLLECTION, where('roundId', '==', roundId))
+            : getTenantQuery(FINDINGS_COLLECTION);
         const snapshot = await getDocs(q);
-        return snapshot.docs.map(d => ({ ...d.data(), id: d.id } as RoundingFinding));
+        return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as RoundingFinding)), 'createdAt');
     } catch (error) {
         console.error('Failed to fetch rounding findings:', error);
         return [];

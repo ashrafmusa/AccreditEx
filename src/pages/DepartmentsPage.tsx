@@ -3,6 +3,7 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardNavigation";
 import { usePermission } from "@/hooks/usePermission";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useUserStore } from "@/stores/useUserStore";
 import React, { useMemo, useState } from "react";
 import RestrictedFeatureIndicator from "../components/common/RestrictedFeatureIndicator";

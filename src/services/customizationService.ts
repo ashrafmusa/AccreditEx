@@ -86,7 +86,11 @@ export class CustomizationService {
     static async deleteCustomization(userId: string): Promise<void> {
         try {
             const docRef = doc(db, COLLECTION_NAME, userId);
-            await setDoc(docRef, { deleted: true, deletedAt: new Date().toISOString() });
+            await setDoc(docRef, {
+                userId,
+                deleted: true,
+                deletedAt: new Date().toISOString(),
+            });
             logger.info('Customization deleted');
         } catch (error) {
             logger.error('Error deleting customization:', error);

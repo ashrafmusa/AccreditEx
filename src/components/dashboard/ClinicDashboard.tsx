@@ -203,6 +203,7 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
     const activeProjects = projects.filter(
       (p) =>
         p.status === ProjectStatus.InProgress ||
+        p.status === ProjectStatus.Open ||
         p.status === ProjectStatus.NotStarted,
     ).length;
 
@@ -211,18 +212,20 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
     ).length;
 
     const totalItems = projects.reduce(
-      (sum, p) => sum + (p.totalItems ?? 0),
+      (sum, p) => sum + (p.checklist?.length ?? 0),
       0,
     );
     const compliantItems = projects.reduce(
-      (sum, p) => sum + (p.compliantItems ?? 0),
+      (sum, p) =>
+        sum +
+        (p.checklist?.filter((c) => c.status === "Compliant").length ?? 0),
       0,
     );
     const complianceRate =
       totalItems > 0 ? Math.round((compliantItems / totalItems) * 100) : 0;
 
     const openRisks = (risks ?? []).filter(
-      (r) => r.status === "Open" || r.status === "In Progress",
+      (r) => r.status !== "Closed" && r.status !== "Mitigated",
     ).length;
 
     const activeUsers = users.filter((u) => u.isActive !== false).length;
@@ -241,14 +244,18 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
 
   const complianceChartData = useMemo(() => {
     return projects
-      .filter((p) => (p.totalItems ?? 0) > 0)
+      .filter((p) => (p.checklist?.length ?? 0) > 0)
       .slice(0, 6)
-      .map((p) => ({
-        name: p.name.length > 18 ? p.name.slice(0, 16) + "…" : p.name,
-        rate: p.totalItems
-          ? Math.round(((p.compliantItems ?? 0) / p.totalItems) * 100)
-          : 0,
-      }));
+      .map((p) => {
+        const total = p.checklist.length;
+        const compliant = p.checklist.filter(
+          (c) => c.status === "Compliant",
+        ).length;
+        return {
+          name: p.name.length > 18 ? p.name.slice(0, 16) + "…" : p.name,
+          rate: Math.round((compliant / total) * 100),
+        };
+      });
   }, [projects]);
 
   const barColor = (rate: number) =>
@@ -289,7 +296,7 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
           title={t("activeProjects") || "Active Projects"}
           value={metrics.activeProjects}
           icon={FolderIcon}
-          color="text-brand-primary"
+          color="bg-brand-primary"
           onClick={() => setNavigation({ view: "projects" })}
         />
         <StatCard
@@ -298,10 +305,10 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
           icon={ChartBarIcon}
           color={
             metrics.complianceRate >= 80
-              ? "text-green-600"
+              ? "bg-green-600"
               : metrics.complianceRate >= 60
-                ? "text-amber-600"
-                : "text-red-600"
+                ? "bg-amber-600"
+                : "bg-red-600"
           }
           onClick={() => setNavigation({ view: "analyticsHub" })}
         />
@@ -309,14 +316,14 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
           title={t("activeUsers")}
           value={metrics.activeUsers}
           icon={UserGroupIcon}
-          color="text-blue-600"
+          color="bg-blue-600"
           onClick={() => setNavigation({ view: "settings" })}
         />
         <StatCard
           title={t("openCapaReports")}
           value={metrics.openRisks}
           icon={ExclamationTriangleIcon}
-          color={metrics.openRisks > 5 ? "text-red-600" : "text-amber-600"}
+          color={metrics.openRisks > 5 ? "bg-red-600" : "bg-amber-600"}
           onClick={() => setNavigation({ view: "riskHub" })}
         />
       </div>

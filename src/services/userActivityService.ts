@@ -28,7 +28,9 @@ export const logUserActivity = async (
         };
 
         await addDoc(collection(db, COLLECTION_NAME), {
-            ...activityLog,
+            ...Object.fromEntries(
+                Object.entries(activityLog).filter(([, value]) => value !== undefined),
+            ),
             createdAt: Timestamp.now(),
         });
     } catch (error) {

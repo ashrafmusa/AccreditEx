@@ -442,6 +442,9 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
       StarterKit.configure({
         heading: { levels: [1, 2, 3, 4, 5, 6] },
         code: { HTMLAttributes: { class: "not-prose" } },
+        // StarterKit v3 already bundles these; they are configured separately below.
+        link: false,
+        underline: false,
       }),
       Link.configure({
         openOnClick: false,

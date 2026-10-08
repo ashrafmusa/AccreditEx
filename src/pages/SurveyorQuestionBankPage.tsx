@@ -432,18 +432,16 @@ const SurveyorQuestionBankPage: React.FC<Props> = ({ setNavigation }) => {
   };
 
   const updatePractice = (qId: string, patch: Partial<PracticeState>) => {
-    setPracticeState((prev) => ({
-      ...prev,
-      [qId]: {
+    setPracticeState((prev) => {
+      const base: PracticeState = {
         questionId: qId,
         userAnswer: "",
         aiFeedback: null,
         evaluating: false,
         error: "",
-        ...(prev[qId] ?? {}),
-        ...patch,
-      },
-    }));
+      };
+      return { ...prev, [qId]: { ...base, ...(prev[qId] ?? {}), ...patch } };
+    });
   };
 
   const evaluateAnswer = async (q: Question) => {
@@ -470,7 +468,7 @@ Evaluate the answer in 3 parts:
 
 Keep your response concise (under 200 words). Be professional and constructive.`;
 
-      const feedback = await aiAgentService.chat(prompt, false);
+      const feedback = (await aiAgentService.chat(prompt, false)).response;
       updatePractice(q.id, { aiFeedback: feedback, evaluating: false });
       setAnsweredIds((prev) => new Set([...prev, q.id]));
     } catch {

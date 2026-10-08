@@ -15,7 +15,7 @@
  *      return (
  *        <>
  *          <TourController />
- *          {/* rest of app */}
+ *          ...application content...
  * </>
     *      );
  *    }

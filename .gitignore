@@ -115,3 +115,10 @@ ts_errors.txt
 # Exclude ALL agentica memory/reasoning (internal dev decisions — not for public)
 .agentica/
 .agent/
+
+# Sensitive / generated
+auth-users-list.json
+firestore-users-mapping.json
+.firebase/
+.env.local
+*.zip

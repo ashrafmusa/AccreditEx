@@ -307,7 +307,7 @@ const RiskRegisterTab: React.FC = () => {
         </TableContainer>
         {filteredRisks.length === 0 && (
           <EmptyState
-            icon={ExclamationTriangleIcon}
+            icon={<ExclamationTriangleIcon className="h-10 w-10" />}
             title={
               risks.length === 0
                 ? t("noRisks") || "No risks recorded"

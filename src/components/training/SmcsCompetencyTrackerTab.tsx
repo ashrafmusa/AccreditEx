@@ -275,7 +275,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
 
   const isAdmin =
     currentUser?.role === UserRole.Admin ||
-    currentUser?.role === UserRole.Manager;
+    currentUser?.role === UserRole.ProjectLead;
 
   const [selectedDept, setSelectedDept] = useState<string>("All Departments");
   const [search, setSearch] = useState("");

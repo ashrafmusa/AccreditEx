@@ -4,6 +4,7 @@
 
 import { useTranslation } from "@/hooks/useTranslation";
 import { useSupplierStore } from "@/stores/useSupplierStore";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { Supplier } from "@/types/supplier";
 import { Edit2, Trash2, X } from "lucide-react";

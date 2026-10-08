@@ -629,7 +629,7 @@ Format in clear Markdown.`;
             const wf = workflows.find((w) => w.id === id);
             toggleWorkflowStatus(id);
             if (wf) {
-              if (wf.status === "paused" || wf.status === "inactive") {
+              if (wf.status === "paused") {
                 toast.success(
                   `"${wf.name}" activated — will trigger automatically.`,
                 );

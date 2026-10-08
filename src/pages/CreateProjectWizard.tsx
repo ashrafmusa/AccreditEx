@@ -7,6 +7,7 @@
  */
 
 import { Step1TemplateBasics } from "@/components/projects/wizard/Step1TemplateBasics";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { Step2ProgramStandards } from "@/components/projects/wizard/Step2ProgramStandards";
 import { Step3TeamTimeline } from "@/components/projects/wizard/Step3TeamTimeline";
 import { Step4ReviewConfirm } from "@/components/projects/wizard/Step4ReviewConfirm";

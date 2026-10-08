@@ -34,12 +34,14 @@ const ViewerDashboard: React.FC<ViewerDashboardProps> = ({ setNavigation }) => {
   const { t } = useTranslation();
   const { currentUser } = useUserStore();
   const { projects } = useProjectStore();
-  const { accreditationPrograms } = useAppStore();
+  const { accreditationPrograms, risks } = useAppStore();
 
   const stats = useMemo(() => {
     const totalProjects = projects.length;
     const activeProjects = projects.filter(
-      (p) => p.status === ProjectStatus.InProgress,
+      (p) =>
+        p.status === ProjectStatus.InProgress ||
+        p.status === ProjectStatus.Open,
     ).length;
     const completedProjects = projects.filter(
       (p) => p.status === ProjectStatus.Completed,
@@ -86,16 +88,11 @@ const ViewerDashboard: React.FC<ViewerDashboardProps> = ({ setNavigation }) => {
           acc + (p.capaReports?.filter((c) => c.status === "Open").length ?? 0),
         0,
       ),
-      openRiskCount: projects.reduce(
-        (acc, p) =>
-          acc +
-          (p.risks?.filter(
-            (r) => r.status !== "Closed" && r.status !== "Mitigated",
-          ).length ?? 0),
-        0,
-      ),
+      openRiskCount: risks.filter(
+        (r) => r.status !== "Closed" && r.status !== "Mitigated",
+      ).length,
     };
-  }, [projects, accreditationPrograms]);
+  }, [projects, accreditationPrograms, risks]);
 
   const complianceTrendData = useMemo(() => {
     return [...projects]

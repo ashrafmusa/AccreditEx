@@ -13,9 +13,11 @@
 
 import {
     collection,
+    or,
     query,
     where,
     QueryConstraint,
+    QueryNonFilterConstraint,
     CollectionReference,
     Query,
 } from 'firebase/firestore';
@@ -46,6 +48,47 @@ export function getTenantQuery(
         return query(colRef, ...constraints);
     }
     return query(colRef);
+}
+
+/**
+ * Query shared reference records together with records owned by the active
+ * organization. Shared records must be explicitly marked with scope="global".
+ */
+export function getSharedTenantQuery(
+    collectionName: string,
+    ...constraints: QueryNonFilterConstraint[]
+): Query {
+    const orgId = useTenantStore.getState().organizationId;
+    const colRef = collection(db, collectionName);
+
+    if (orgId) {
+        return query(
+            colRef,
+            or(
+                where('scope', '==', 'global'),
+                where('organizationId', '==', orgId),
+            ),
+            ...constraints,
+        );
+    }
+
+    if (constraints.length > 0) {
+        return query(colRef, ...constraints);
+    }
+    return query(colRef);
+}
+
+/**
+ * Newest-first sort on an ISO-string or Date field. Used instead of a server
+ * orderBy so organization-scoped queries do not need composite indexes.
+ */
+export function sortByFieldDesc<T extends object>(items: T[], field: string): T[] {
+    const toKey = (item: T): string => {
+        const value = (item as Record<string, unknown>)[field];
+        if (value instanceof Date) return value.toISOString();
+        return typeof value === 'string' ? value : '';
+    };
+    return [...items].sort((a, b) => toKey(b).localeCompare(toKey(a)));
 }
 
 /**

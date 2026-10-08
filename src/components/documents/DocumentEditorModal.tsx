@@ -210,7 +210,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
       if (document.status === "Approved" && isEditMode && !isAutoSave) {
         const newVersionDoc = {
           ...document,
-          status: "Draft",
+          status: "Draft" as const,
           currentVersion: document.currentVersion + 1,
           versionHistory: [
             ...(document.versionHistory || []),
@@ -772,7 +772,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                             viewingVersion === "current" ? editorLang : "en"
                           ] || ""
                         }
-                        documentType={document.docType}
+                        documentType={document.type}
                       />
                     </div>
                   </div>
@@ -786,7 +786,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                         viewingVersion === "current" ? editorLang : "en"
                       ] || ""
                     }
-                    documentType={document.docType}
+                    documentType={document.type}
                   />
                 </div>
               </>

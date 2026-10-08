@@ -27,6 +27,8 @@ export default defineConfig(({ mode }) => {
       'process.env.VITE_MEASUREMENT_ID': JSON.stringify(getEnv('VITE_MEASUREMENT_ID')),
       'process.env.VITE_AI_AGENT_URL': JSON.stringify(getEnv('VITE_AI_AGENT_URL')),
       'process.env.VITE_AI_AGENT_BASE_URL': JSON.stringify(getEnv('VITE_AI_AGENT_BASE_URL')),
+      'process.env.VITE_CLOUDINARY_CLOUD_NAME': JSON.stringify(getEnv('VITE_CLOUDINARY_CLOUD_NAME')),
+      'process.env.VITE_CLOUDINARY_UPLOAD_PRESET': JSON.stringify(getEnv('VITE_CLOUDINARY_UPLOAD_PRESET')),
     },
     resolve: {
       alias: {

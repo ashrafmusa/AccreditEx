@@ -25,6 +25,7 @@ import {
   ShieldCheckIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import {
   checkIsSuperAdmin,
   listAllOrganizations,
@@ -163,7 +164,7 @@ const PlatformAdminPage: React.FC = () => {
     const trialEndsAt = new Date();
     trialEndsAt.setDate(trialEndsAt.getDate() + trialModal.days);
     try {
-      await setOrganizationTrial(trialModal.org.id, true, trialEndsAt);
+      await setOrganizationTrial(trialModal.org.id, true, trialEndsAt.toISOString());
       showToast(t("trialExtended") || "Trial extended.");
       setTrialModal(null);
       await loadOrgs();

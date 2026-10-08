@@ -78,7 +78,6 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
   const { t } = useTranslation();
 
   const getTitleAndIcon = () => {
-    let viewKey = navigation.view;
     let titleText = "";
 
     switch (navigation.view) {
@@ -113,11 +112,9 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
         switch (navigation.section) {
           case "users":
             titleText = t("userManagement");
-            viewKey = "users";
             break;
           case "accreditationHub":
             titleText = t("accreditationHubTitle");
-            viewKey = "accreditationHub";
             break;
           case "security":
             titleText = t("security");
@@ -127,7 +124,6 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
             break;
           case "competencies":
             titleText = t("competencies");
-            viewKey = "competencies";
             break;
           case "data":
             titleText = t("dataManagement");
@@ -157,18 +153,14 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({ navigation }) => {
       case "surveyReport":
         titleText = t("surveyReport");
         break;
-      case "analytics":
       case "analyticsHub":
         titleText = t("analyticsHub");
-        viewKey = "analyticsHub";
         break;
       case "calendar":
         titleText = t("complianceCalendar");
         break;
-      case "risk":
       case "riskHub":
         titleText = t("riskHubTitle");
-        viewKey = "riskHub";
         break;
       case "auditHub":
         titleText = t("auditHub");

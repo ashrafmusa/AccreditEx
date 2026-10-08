@@ -6,8 +6,8 @@ import {
 } from "@/services/documentImportService";
 import React, { useRef, useState } from "react";
 import {
+  ArrowUpTrayIcon,
   CheckCircleIcon,
-  DocumentArrowUpIcon,
   SpinnerIcon,
   XMarkIcon,
 } from "../icons";
@@ -125,7 +125,7 @@ const DocumentImportModal: React.FC<DocumentImportModalProps> = ({
                   : "border-gray-300 dark:border-gray-600"
               }`}
             >
-              <DocumentArrowUpIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <ArrowUpTrayIcon className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                 {t("dragDropDocx") || "Drag and drop your DOCX file here"}
               </h3>

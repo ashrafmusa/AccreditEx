@@ -363,7 +363,7 @@ Structure Analysis:
 Provide 3-5 specific recommendations to improve compliance and readiness for ${standard} accreditation review. Focus on high-impact changes that address the issues listed above. Output as HTML list with <ol> and <li> tags.`;
 
     try {
-        const result = await aiAgentService.callAgent(prompt);
+        const result = (await aiAgentService.chat(prompt, false)).response;
         return result || '<ol><li>Unable to generate suggestions. Please review the compliance issues manually.</li></ol>';
     } catch {
         return '<ol><li>Error generating AI suggestions. Please try again.</li></ol>';

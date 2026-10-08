@@ -245,10 +245,11 @@ const IncidentToCAPAWorkflow: FC<IncidentToCAPAWorkflowProps> = ({
           ...(linkedRiskId ? [linkedRiskId] : []),
         ],
         status: "Not Started",
-        pdcaStage: "plan",
+        pdcaStage: "Plan",
         pdcaHistory: [
           {
-            stage: "plan",
+            id: `pdca-plan-${Date.now()}`,
+            name: "Plan",
             completedAt: new Date().toISOString(),
             notes: "CAPA created from incident workflow",
           },
@@ -370,8 +371,8 @@ const IncidentToCAPAWorkflow: FC<IncidentToCAPAWorkflowProps> = ({
                     {t("incidentDate") || "Incident Date"} *
                   </label>
                   <DatePicker
-                    value={state.incidentDate}
-                    onChange={(date) =>
+                    date={state.incidentDate}
+                    setDate={(date) =>
                       handleUpdateState({ incidentDate: date || new Date() })
                     }
                   />
@@ -697,8 +698,8 @@ const IncidentToCAPAWorkflow: FC<IncidentToCAPAWorkflowProps> = ({
                     {t("dueDate") || "Due Date"}
                   </label>
                   <DatePicker
-                    value={state.dueDate}
-                    onChange={(date) => handleUpdateState({ dueDate: date })}
+                    date={state.dueDate}
+                    setDate={(date) => handleUpdateState({ dueDate: date })}
                   />
                 </div>
               </div>
@@ -789,7 +790,7 @@ const IncidentToCAPAWorkflow: FC<IncidentToCAPAWorkflowProps> = ({
               <Button
                 variant="primary"
                 onClick={handleSubmit}
-                isLoading={isLoading}
+                loading={isLoading}
                 className="bg-green-600 hover:bg-green-700"
               >
                 <CheckCircleIcon className="w-4 h-4 mr-2" />

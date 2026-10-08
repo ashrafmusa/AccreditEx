@@ -419,7 +419,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                       {selectedProject.name}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400">
-                      Program: {selectedProject.program} • ID:{" "}
+                      Program: {selectedProject.programId} • ID:{" "}
                       {selectedProject.id}
                     </div>
                   </div>
@@ -499,7 +499,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                               {project.name}
                             </div>
                             <div className="text-xs text-gray-600 dark:text-gray-400">
-                              {project.program} • {project.status}
+                              {project.programId} • {project.status}
                             </div>
                           </button>
                         ))}
@@ -612,8 +612,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                               {getName(dept.name)}
                             </div>
                             <div className="text-xs text-gray-600 dark:text-gray-400">
-                              {dept.head && `Head: ${dept.head}`} •{" "}
-                              {dept.staffCount || 0} staff
+                              {dept.head && `Head: ${dept.head}`}
                             </div>
                           </button>
                         ))}

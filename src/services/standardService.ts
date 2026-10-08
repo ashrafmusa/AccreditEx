@@ -1,12 +1,12 @@
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { Standard } from '@/types';
-import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+import { getSharedTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const standardsCollection = collection(db, 'standards');
 
 export const getStandards = async (): Promise<Standard[]> => {
-    const standardSnapshot = await getDocs(getTenantQuery('standards'));
+    const standardSnapshot = await getDocs(getSharedTenantQuery('standards'));
     return standardSnapshot.docs.map(docSnap => {
         const data = docSnap.data();
         return {

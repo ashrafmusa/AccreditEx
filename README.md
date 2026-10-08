@@ -181,22 +181,20 @@ capacitor.config.ts              # Capacitor native mobile configuration
 
 ## Backend & Data Persistence
 
-The application uses Google Firebase for authentication and Google Firestore for its database, ensuring all data is persisted in the cloud and updated in real-time.
+The application uses Firebase Authentication, Cloud Firestore, and Cloud Storage. Firestore access is implemented through domain services in `src/services/`; Zustand stores call those services and keep the active UI state. Firestore's IndexedDB persistence is enabled in `src/firebase/firebaseConfig.ts` where the browser supports it.
 
-### Initialization and Seeding
+`src/services/BackendService.ts` is a legacy localStorage implementation and is not the active persistence layer. It should not be used to initialize, seed, or reset a Firebase environment.
 
--   The `services/BackendService.ts` service manages all data operations.
--   On the application's first launch, the service checks for a metadata flag in Firestore.
--   If the flag is not present, it populates the Firestore database by writing the initial data from the JSON files located in the `/data` directory (e.g., `projects.json`, `users.json`).
--   On subsequent launches, the service loads all data directly from Firestore.
+### Data Initialization and Changes
 
-### Resetting the Database
+- The app fetches its settings and domain data from Firestore; it does not automatically seed all collections from `/data` on first launch.
+- Configure Firebase for local development with a separate project or the Firebase Emulator and non-sensitive test data.
+- Reference accreditation programs, standards, and competencies can be shared across organizations when their Firestore documents are explicitly marked with `scope: "global"`. Tenant-specific records carry `organizationId`.
+- Firestore rules are in `firestore.rules`; composite indexes are in `firestore.indexes.json`.
+- A read-only-by-default migration tool is available as `npm run db:classify-shared-data`. It reports eligible legacy reference records without modifying them. Applying it requires both `--apply` and a matching `--confirm-project=<projectId>` argument; review the dry-run and target a development/staging project before applying.
+- Firestore authorization tests run with `npm run test:firestore`; this starts the Firestore Emulator and requires Java 17 or later.
 
-To reset the application to its initial seed state, you must manually clear the data in your Firebase project's Firestore console.
-1.  Navigate to your project in the Firebase Console.
-2.  Go to the "Firestore Database" section.
-3.  Delete all collections (e.g., `projects`, `users`, `_metadata`, etc.).
-4.  Refresh the AccreditEx application in your browser. It will detect the empty database and re-seed it with the initial data.
+Do not reset a database by deleting collections in the Firebase Console. Use a disposable emulator or staging project for reset/reseed workflows; production data changes require a reviewed, backed-up migration.
 
 ## AI Integration
 

@@ -11,6 +11,10 @@ import {
     getTemplatesByStandard,
     searchTemplates,
 } from '@/data/complianceTemplates';
+import { db, getAuthInstance } from '@/firebase/firebaseConfig';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { getTenantStamp } from '@/utils/tenantQuery';
+import { logger } from '@/services/logger';
 
 export interface TemplateInsertOptions {
     replaceAll?: boolean; // Replace entire document content
@@ -187,14 +191,18 @@ export function logTemplateUsage(record: Omit<TemplateUsageRecord, 'usedAt'>): v
     const fullRecord: TemplateUsageRecord = { ...record, usedAt: new Date() };
     templateUsageLog.push(fullRecord);
 
-    // Persist to Firestore (fire-and-forget, non-blocking)
-    addDoc(collection(db, 'templateUsage'), {
+    const userId = record.userId ?? getAuthInstance().currentUser?.uid;
+    if (!userId) return;
+
+    // Keep analytics best-effort so an analytics outage does not block the user's action.
+    void addDoc(collection(db, 'templateUsage'), {
         templateId: record.templateId,
-        userId: record.userId ?? null,
+        userId,
         documentId: record.documentId ?? null,
+        ...getTenantStamp(),
         usedAt: serverTimestamp(),
-    }).catch(() => {
-        // Silently ignore — analytics failure must never block UX
+    }).catch((error: unknown) => {
+        logger.warn('Failed to persist template usage analytics', error);
     });
 }
 

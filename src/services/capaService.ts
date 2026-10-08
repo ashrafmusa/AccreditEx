@@ -1,5 +1,5 @@
 import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
-import { addDoc, collection, deleteDoc, doc, getDocs, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
 import { CAPAReport } from '../types';
 
@@ -28,10 +28,9 @@ export const getCAPAReports = async (): Promise<CAPAReport[]> => {
 export const getCAPAReportById = async (id: string): Promise<CAPAReport | null> => {
     try {
         const docRef = doc(db, 'capaReports', id);
-        const snap = await getDocs(getTenantQuery('capaReports', where('id', '==', id)));
-        if (snap.empty) return null;
-        const docData = snap.docs[0].data();
-        return { ...docData, id: snap.docs[0].id } as CAPAReport;
+        const snap = await getDoc(docRef);
+        if (!snap.exists()) return null;
+        return { ...snap.data(), id: snap.id } as CAPAReport;
     } catch (error) {
         console.error('[capaService] getCAPAReportById failed:', error);
         throw error;

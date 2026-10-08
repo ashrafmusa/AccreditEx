@@ -1,12 +1,20 @@
 import { SettingsPreset, AppSettings } from '@/types';
 import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp } from 'firebase/firestore';
-import { db } from '../firebase/firebaseConfig';
+import { db, getAuthInstance } from '../firebase/firebaseConfig';
+import { getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'settings_presets';
 
 export const createPreset = async (preset: Omit<SettingsPreset, 'id' | 'createdAt' | 'usageCount'>): Promise<string> => {
+    const user = getAuthInstance().currentUser;
+    if (!user) {
+        throw new Error('Authentication is required to create a settings preset.');
+    }
+
     const presetData = {
         ...preset,
+        createdBy: user.uid,
+        ...getTenantStamp(),
         createdAt: new Date().toISOString(),
         usageCount: 0,
     };
@@ -20,23 +28,43 @@ export const createPreset = async (preset: Omit<SettingsPreset, 'id' | 'createdA
 };
 
 export const getPresets = async (category?: string): Promise<SettingsPreset[]> => {
-    let q = query(collection(db, COLLECTION_NAME), orderBy('usageCount', 'desc'));
+    const presets = collection(db, COLLECTION_NAME);
+    const publicConstraints = [
+        where('isPublic', '==', true),
+        ...(category ? [where('category', '==', category)] : []),
+        orderBy('usageCount', 'desc'),
+    ];
+    const snapshots = [getDocs(query(presets, ...publicConstraints))];
+    const userId = getAuthInstance().currentUser?.uid;
 
-    if (category) {
-        q = query(collection(db, COLLECTION_NAME), where('category', '==', category), orderBy('usageCount', 'desc'));
+    if (userId) {
+        snapshots.push(getDocs(query(
+            presets,
+            where('createdBy', '==', userId),
+            orderBy('usageCount', 'desc'),
+        )));
     }
 
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-    })) as SettingsPreset[];
+    const results = await Promise.all(snapshots);
+    const byId = new Map<string, SettingsPreset>();
+    for (const snapshot of results) {
+        for (const presetDoc of snapshot.docs) {
+            const preset = { id: presetDoc.id, ...presetDoc.data() } as SettingsPreset;
+            if (!category || preset.category === category) byId.set(preset.id, preset);
+        }
+    }
+    return [...byId.values()].sort((a, b) => b.usageCount - a.usageCount);
 };
 
 export const getUserPresets = async (userId: string): Promise<SettingsPreset[]> => {
+    const authenticatedUserId = getAuthInstance().currentUser?.uid;
+    if (!authenticatedUserId || authenticatedUserId !== userId) {
+        throw new Error('Users may only load their own settings presets.');
+    }
+
     const q = query(
         collection(db, COLLECTION_NAME),
-        where('createdBy', '==', userId),
+        where('createdBy', '==', authenticatedUserId),
         orderBy('createdAt', 'desc')
     );
 

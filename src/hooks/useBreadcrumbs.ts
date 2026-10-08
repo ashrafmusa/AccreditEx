@@ -38,6 +38,15 @@ const VIEW_LABELS: Partial<Record<NavigationView, string>> = {
     surveyReport: 'Survey Report',
     certificate: 'Certificate',
     pricing: 'Plans & Pricing',
+    myTasks: 'My Tasks',
+    multiFacility: 'Multi-Facility',
+    workflowAutomation: 'Workflow Automation',
+    reportBuilder: 'Report Builder',
+    supplierHub: 'Suppliers',
+    changeControlHub: 'Change Control',
+    templateLibrary: 'Template Library',
+    qualityRounding: 'Quality Rounding',
+    qualityTools: 'Quality Tools',
 };
 
 // ── Parent view mapping (for generating breadcrumb trails) ──

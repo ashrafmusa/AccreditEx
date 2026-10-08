@@ -20,7 +20,6 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
-  orderBy,
   Timestamp,
   updateDoc,
   where,
@@ -52,13 +51,17 @@ const deepCleanUndefined = (obj: any): any => {
 // CRUD Operations
 // ========================================
 
+// Sorted client-side so the organization-scoped query needs no composite index.
+const byCreatedAtDesc = (a: Project, b: Project): number =>
+  String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''));
+
 export const getProjects = async (): Promise<Project[]> => {
-  const projectSnapshot = await getDocs(getTenantQuery('projects', orderBy('createdAt', 'desc')));
+  const projectSnapshot = await getDocs(getTenantQuery('projects'));
   freeTierMonitor.recordRead(1);
   return projectSnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
-  } as Project));
+  } as Project)).sort(byCreatedAtDesc);
 };
 
 export const getProjectById = async (projectId: string): Promise<Project | null> => {
@@ -147,13 +150,13 @@ export const updateProject = async (projectId: string, updates: Partial<Project>
 // ========================================
 
 export const subscribeToProjects = (callback: (projects: Project[]) => void): (() => void) => {
-  const q = getTenantQuery('projects', orderBy('createdAt', 'desc'));
+  const q = getTenantQuery('projects');
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
     const projects = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
-    } as Project));
+    } as Project)).sort(byCreatedAtDesc);
     callback(projects);
   });
 

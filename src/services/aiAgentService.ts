@@ -200,6 +200,24 @@ export class AIAgentService {
                 })),
                 active_projects_count: userProjects.filter(p => p.status === 'In Progress').length,
 
+                // Compact tenant-scoped snapshot of every project (capped to protect prompt size)
+                workspace_projects: safeProjects.filter(p => !p.archived).slice(0, 25).map(p => {
+                    const items = p.checklist || [];
+                    const count = (s: string) => items.filter((c: any) => c.status === s).length;
+                    return {
+                        name: p.name,
+                        status: p.status,
+                        progress: p.progress ?? 0,
+                        lead: p.projectLead?.name,
+                        checklist_total: items.length,
+                        compliant: count('Compliant'),
+                        partial: count('Partially Compliant'),
+                        non_compliant: count('Non-Compliant'),
+                        not_started: count('Not Started'),
+                    };
+                }),
+                open_risks_count: (appState as any).risks?.filter((r: any) => r.status !== 'Closed' && r.status !== 'Mitigated').length ?? 0,
+
                 // Workspace overview
                 total_projects: safeProjects.length,
                 total_departments: safeDepartments.length,
