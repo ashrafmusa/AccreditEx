@@ -271,3 +271,37 @@ class AgentLogger:
 
     def error(self, event: str, **fields: Any) -> None:
         self._logger.error(self._format(event, fields))
+
+
+def build_workspace_snapshot(context: Optional[Mapping[str, Any]]) -> str:
+    """Render the caller's live workspace data (sent by their own session) as a prompt block."""
+    if not isinstance(context, Mapping):
+        return ""
+    data = context.get("current_data") or {}
+    if not isinstance(data, Mapping):
+        return ""
+    projects = data.get("workspace_projects") or []
+    if not projects and data.get("total_projects") is None:
+        return ""
+
+    def _n(value: Any) -> int:
+        return value if isinstance(value, int) else 0
+
+    lines = [
+        "\n\nLIVE WORKSPACE SNAPSHOT (authoritative; answer from this data and never claim you lack access to it):",
+        f"- Projects: {_n(data.get('total_projects')) or len(projects)} | Documents: {_n(data.get('total_documents'))} | "
+        f"Departments: {_n(data.get('total_departments'))} | Users: {_n(data.get('total_users'))} | "
+        f"Open risks: {_n(data.get('open_risks_count'))}",
+    ]
+    for p in list(projects)[:25]:
+        if not isinstance(p, Mapping):
+            continue
+        total, done = _n(p.get("checklist_total")), _n(p.get("compliant"))
+        pct = round(100 * done / total) if total else 0
+        lead = f", lead: {str(p['lead'])[:60]}" if p.get("lead") else ", no lead assigned"
+        lines.append(
+            f"- {str(p.get('name', 'Unnamed'))[:80]} [{str(p.get('status', '?'))[:30]}]: {pct}% compliant "
+            f"({done}/{total} items; partial {_n(p.get('partial'))}, non-compliant {_n(p.get('non_compliant'))}, "
+            f"not started {_n(p.get('not_started'))}){lead}"
+        )
+    return "\n".join(lines)
