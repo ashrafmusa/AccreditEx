@@ -3,6 +3,7 @@ import json
 import asyncio
 import time
 import hashlib
+import re
 from typing import List, Dict, Any, Optional, AsyncGenerator
 from datetime import datetime
 import logging
@@ -328,8 +329,16 @@ class UnifiedAccreditexAgent:
         Returns: 'compliance', 'risk', 'training', or 'general'
         """
         message_lower = message.lower()
-        
-        # Count keyword matches for each type
+
+        # Explicit "log/create a risk or CAPA" requests need the conversational path,
+        # which carries the action-card instructions; specialists return JSON reports.
+        if re.search(
+            r"\b(log|add|register|create|raise|open|propose)\b[^.?!]{0,40}\b(risk|capa)\b",
+            message_lower,
+        ):
+            logger.info("🎯 Task type detected: general (action request)")
+            return 'general'
+
         type_scores = {}
         for task_type, keywords in TASK_ROUTING_MAP.items():
             score = sum(1 for keyword in keywords if keyword in message_lower)
