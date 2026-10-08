@@ -11,6 +11,7 @@
 import { getAuthInstance } from '@/firebase/firebaseConfig';
 import { useAppStore } from '@/stores/useAppStore';
 import { useTenantStore } from '@/stores/useTenantStore';
+import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
 
 export interface ChatMessage {
@@ -137,7 +138,7 @@ export class AIAgentService {
         const { organizationId } = useTenantStore.getState();
         const appState = useAppStore.getState();
         const { appSettings, departments, documents } = appState;
-        const projects = (appState as any).projects || [];
+        const projects = useProjectStore.getState().projects || [];
 
         const safeUsers = users || [];
         const safeProjects: any[] = projects || [];
