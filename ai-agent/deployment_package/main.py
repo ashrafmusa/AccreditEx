@@ -475,7 +475,7 @@ async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(
         performance_monitor.track_response_time("chat", duration)
         performance_monitor.track_error(type(e).__name__, str(e), {"endpoint": "chat"})
         logger.error(f"❌ Chat error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Document compliance endpoint
 @app.post("/check-compliance", dependencies=[Depends(verify_api_key)])
@@ -498,7 +498,7 @@ async def check_compliance(
         return JSONResponse(content=result)
     except Exception as e:
         logger.error(f"Compliance check error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Risk assessment endpoint
 @app.post("/assess-risk", dependencies=[Depends(verify_api_key)])
@@ -521,7 +521,7 @@ async def assess_risk(
         return JSONResponse(content=result)
     except Exception as e:
         logger.error(f"Risk assessment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Training recommendations endpoint
 @app.post("/training-recommendations", dependencies=[Depends(verify_api_key)])
@@ -553,7 +553,7 @@ async def get_training_recommendations(
         return JSONResponse(content=result)
     except Exception as e:
         logger.error(f"Training recommendations error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # ─────────────────────────────────────────────────────────────
 # Week 3: Dedicated AI Workflow Endpoints
@@ -577,7 +577,7 @@ async def generate_action_plan(request: Request, payload: ActionPlanRequest):
         return JSONResponse(content=ensure_workflow_response(result, "action_plan"))
     except Exception as e:
         logger.error(f"Action plan generation error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Root Cause Analysis endpoint
 @app.post("/analyze-root-cause", dependencies=[Depends(verify_api_key)], tags=["workflows"])
@@ -597,7 +597,7 @@ async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest
         return JSONResponse(content=ensure_workflow_response(result, "root_cause_analysis"))
     except Exception as e:
         logger.error(f"Root cause analysis error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # PDCA Improvement Suggestions endpoint
 @app.post("/suggest-pdca-improvements", dependencies=[Depends(verify_api_key)], tags=["workflows"])
@@ -617,7 +617,7 @@ async def suggest_pdca_improvements(request: Request, payload: PDCARequest):
         return JSONResponse(content=ensure_workflow_response(result, "pdca_improvements"))
     except Exception as e:
         logger.error(f"PDCA improvement error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Survey Risk Assessment endpoint
 @app.post("/assess-survey-risk", dependencies=[Depends(verify_api_key)], tags=["workflows"])
@@ -638,7 +638,7 @@ async def assess_survey_risk(request: Request, payload: SurveyRiskRequest):
         return JSONResponse(content=ensure_workflow_response(result, "survey_risk_assessment"))
     except Exception as e:
         logger.error(f"Survey risk assessment error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Design Control Compliance endpoint
 @app.post("/check-design-compliance", dependencies=[Depends(verify_api_key)], tags=["workflows"])
@@ -658,7 +658,7 @@ async def check_design_compliance(request: Request, payload: DesignComplianceReq
         return JSONResponse(content=ensure_workflow_response(result, "design_compliance_assessment"))
     except Exception as e:
         logger.error(f"Design compliance error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # NEW: Project Insights endpoint
 @app.post("/api/ai/insights", dependencies=[Depends(verify_api_key)])
@@ -693,7 +693,7 @@ async def get_project_insights(
         raise
     except Exception as e:
         logger.error(f"Project insights error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # NEW: AI-powered document search endpoint
 @app.get("/api/ai/search", dependencies=[Depends(verify_api_key)])
@@ -724,7 +724,7 @@ async def search_documents_ai(
         return JSONResponse(content=result)
     except Exception as e:
         logger.error(f"Document search error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # NEW: User context endpoint (for debugging)
 @app.get("/api/ai/context/{user_id}", dependencies=[Depends(verify_api_key)])
@@ -756,7 +756,7 @@ async def get_user_context_endpoint(
         raise
     except Exception as e:
         logger.error(f"Context retrieval error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # NEW: Workspace analytics endpoint
 @app.get("/api/ai/analytics", dependencies=[Depends(verify_api_key)])
@@ -778,7 +778,7 @@ async def get_workspace_analytics_endpoint(
         return JSONResponse(content=analytics)
     except Exception as e:
         logger.error(f"Analytics retrieval error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # AI routing telemetry endpoint
 @app.get("/api/ai/routing-metrics", dependencies=[Depends(verify_api_key)])
@@ -794,7 +794,7 @@ async def get_ai_routing_metrics():
         })
     except Exception as e:
         logger.error(f"Routing metrics error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # NEW: Training status with AI recommendations
 @app.get("/api/ai/training/{user_id}", dependencies=[Depends(verify_api_key)])
@@ -825,7 +825,7 @@ async def get_training_status_ai(
         raise
     except Exception as e:
         logger.error(f"Training status error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Upload report to Firebase Storage (bypasses browser CORS)
 @app.post("/upload-report", dependencies=[Depends(verify_api_key)])
@@ -895,7 +895,7 @@ async def upload_report(
         
     except Exception as e:
         logger.error(f"Report upload error: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Root endpoint
 @app.get("/")
