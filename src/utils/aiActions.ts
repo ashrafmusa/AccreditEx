@@ -10,7 +10,7 @@ export interface CreateRiskAction {
 
 export type AIAction = CreateRiskAction;
 
-const ACTION_BLOCK = /`{1,3}accreditex-action\s*([\s\S]*?)`{1,3}/g;
+const ACTION_BLOCK = /`{1,3}accreditex-action\s*(\{[\s\S]*?\})\s*`{1,3}/g;
 const MAX_TEXT = 2000;
 
 const clampScore = (value: unknown): number | null => {
