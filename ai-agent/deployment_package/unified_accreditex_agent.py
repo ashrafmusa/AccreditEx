@@ -188,7 +188,7 @@ class UnifiedAccreditexAgent:
             del self._response_cache[oldest]
 
     # ── Rate-limit-aware API call ────────────────────────────────────
-    async def _create_completion(self, messages, stream=True, max_tokens=None, temperature=None):
+    async def _create_completion(self, messages, stream=False, max_tokens=None, temperature=None):
         """Call Groq with automatic fallback to lighter model on 429."""
         kwargs = {
             'model': self.model,
@@ -785,12 +785,12 @@ Always be specific and actionable, using real data from their workspace.
         3. Recommendations
         """
         
-        response = await self.client.chat.completions.create(
-            model=self.model,
+        response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a compliance auditor."},
+                {"role": "system", "content": "You are a compliance auditor. Never invent statistics or scores that are not supported by the provided content."},
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            max_tokens=1500
         )
         
         return {
@@ -810,12 +810,12 @@ Always be specific and actionable, using real data from their workspace.
         Provide a risk assessment (Low/Medium/High) and immediate actions needed.
         """
         
-        response = await self.client.chat.completions.create(
-            model=self.model,
+        response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a risk management expert."},
+                {"role": "system", "content": "You are a risk management expert. Never invent statistics that are not supported by the provided information."},
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            max_tokens=1500
         )
         
         return {
@@ -835,12 +835,12 @@ Always be specific and actionable, using real data from their workspace.
         Suggest 3 specific training modules or activities.
         """
         
-        response = await self.client.chat.completions.create(
-            model=self.model,
+        response = await self._create_completion(
             messages=[
                 {"role": "system", "content": "You are a healthcare training coordinator."},
                 {"role": "user", "content": prompt}
-            ]
+            ],
+            max_tokens=1500
         )
         
         return {
