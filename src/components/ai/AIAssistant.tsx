@@ -24,6 +24,8 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import DOMPurify from "dompurify";
+import { extractActions } from "@/utils/aiActions";
+import AIActionCard from "@/components/ai/AIActionCard";
 import React, { useEffect, useRef, useState } from "react";
 
 interface AIAssistantProps {
@@ -294,7 +296,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
               </div>
             )}
 
-            {messages.map((message, index) => (
+            {messages.map((message, index) => {
+              const { text: displayText, actions } =
+                message.role === "assistant"
+                  ? extractActions(message.content)
+                  : { text: message.content, actions: [] };
+              return (
               <div
                 key={index}
                 className={`flex ${
@@ -313,17 +320,21 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                     dangerouslySetInnerHTML={{
                       __html: DOMPurify.sanitize(
                         message.role === "assistant"
-                          ? formatMessage(message.content)
-                          : message.content,
+                          ? formatMessage(displayText)
+                          : displayText,
                       ),
                     }}
                   />
+                  {actions.map((action, i) => (
+                    <AIActionCard key={i} action={action} />
+                  ))}
                   <span className="text-xs opacity-70 mt-1.5 block">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </span>
                 </div>
               </div>
-            ))}
+              );
+            })}
 
             {isLoading && (
               <div className="flex justify-start">

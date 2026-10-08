@@ -46,6 +46,33 @@ export function validateAction(raw: unknown): AIAction | null {
   return null;
 }
 
+const parseLenient = (body: string): unknown => {
+  const trimmed = body.trim();
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    // Models often emit raw line breaks inside string values
+    try {
+      return JSON.parse(trimmed.replace(/\r?\n/g, "\\n"));
+    } catch {
+      const str = (key: string) =>
+        trimmed.match(new RegExp(`"${key}"\\s*:\\s*"([\\s\\S]*?)"\\s*(?:,\\s*"|\\}\\s*$)`))?.[1];
+      const num = (key: string) =>
+        trimmed.match(new RegExp(`"${key}"\\s*:\\s*"?(\\d+)`))?.[1];
+      const unescape = (s?: string) =>
+        s?.replace(/\\\\n|\\n/g, "\n").replace(/\\"/g, '"');
+      return {
+        type: trimmed.match(/"type"\s*:\s*"([^"]+)"/)?.[1],
+        title: unescape(str("title")),
+        description: unescape(str("description")),
+        likelihood: num("likelihood"),
+        impact: num("impact"),
+        mitigationPlan: unescape(str("mitigationPlan")),
+      };
+    }
+  }
+};
+
 /** Split an AI reply into display text and validated proposed actions. */
 export function extractActions(content: string): {
   text: string;
@@ -54,12 +81,8 @@ export function extractActions(content: string): {
   const actions: AIAction[] = [];
   const text = content
     .replace(ACTION_BLOCK, (_match, body: string) => {
-      try {
-        const action = validateAction(JSON.parse(body));
-        if (action && actions.length < 3) actions.push(action);
-      } catch {
-        // Malformed JSON: drop the block silently
-      }
+      const action = validateAction(parseLenient(body));
+      if (action && actions.length < 3) actions.push(action);
       return "";
     })
     .trim();

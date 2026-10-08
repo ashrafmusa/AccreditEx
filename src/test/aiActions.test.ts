@@ -46,6 +46,14 @@ describe("aiActions", () => {
     expect(text).toBe("Ready.");
   });
 
+  it("repairs JSON with raw line breaks inside strings", () => {
+    const reply =
+      'ok `accreditex-action {"type":"create_risk","title":"Fridge","likelihood":3,"impact":4,"mitigationPlan":"## Controls\n- alarm\n\n## Timeline\n- 30 days"}`';
+    const { actions } = extractActions(reply);
+    expect(actions).toHaveLength(1);
+    expect(actions[0].mitigationPlan).toContain("Timeline");
+  });
+
   it("rejects actions missing a title or scores", () => {
     // Arrange / Act / Assert
     expect(validateAction({ type: "create_risk", likelihood: 3, impact: 3 })).toBeNull();
