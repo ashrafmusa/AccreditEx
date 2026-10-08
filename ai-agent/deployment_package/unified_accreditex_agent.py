@@ -25,6 +25,7 @@ from dotenv import load_dotenv
 from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
+from agent_utils import build_workspace_snapshot
 
 # Import specialist prompts (Quick Win 1)
 from specialist_prompts import (
@@ -451,8 +452,7 @@ class UnifiedAccreditexAgent:
             Response chunks
         """
         # Get general agent prompt
-        system_prompt = get_general_agent_prompt()
-        
+        system_prompt = get_general_agent_prompt() + build_workspace_snapshot(context)
         # Add context if available
         if context:
             org_context = context.get('organization', {})
