@@ -1,10 +1,20 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import React from "react";
 import DashboardPage from "../DashboardPage";
 
 const mockUseUserStore = jest.fn();
 const mockUseProjectStore = jest.fn();
 const mockUseAppStore = jest.fn();
+const mockUseTenantStore = jest.fn();
+
+jest.mock("@/stores/useTenantStore", () => ({
+  useTenantStore: () => mockUseTenantStore(),
+}));
+
+jest.mock("@/components/dashboard/AIDailyBriefingWidget", () => () => null);
+jest.mock("@/components/dashboard/ClinicDashboard", () => () => (
+  <div data-testid="clinic-dashboard">Clinic Dashboard</div>
+));
 
 jest.mock("@/stores/useUserStore", () => ({
   useUserStore: () => mockUseUserStore(),
@@ -23,6 +33,7 @@ jest.mock("@/hooks/useTranslation", () => ({
     t: (key: string) => {
       if (key === "welcomeBack") return "Welcome back, {name}";
       if (key === "dashboard") return "Dashboard";
+      if (key === "viewerDashboardTitle") return "Organisation Overview";
       if (key === "dashboardNotAvailable") return "Dashboard not available";
       if (key === "loading") return "Loading";
       return key;
@@ -53,15 +64,16 @@ jest.mock("@/components/common/ErrorBoundary", () => ({
 
 describe("DashboardPage role rendering", () => {
   beforeEach(() => {
+    mockUseTenantStore.mockReturnValue({ currentOrganization: null, organizationId: "org-a" });
     mockUseProjectStore.mockReturnValue({ projects: [] });
-    mockUseAppStore.mockReturnValue({ accreditationPrograms: [] });
+    mockUseAppStore.mockReturnValue({ accreditationPrograms: [], documents: [], auditPlans: [], risks: [] });
   });
 
   it("renders dedicated Viewer branch", () => {
     const setNavigation = jest.fn();
 
     mockUseUserStore.mockReturnValue({
-      currentUser: { id: "u1", role: "Viewer", name: "Alya" },
+      currentUser: { id: "u1", organizationId: "org-a", role: "Viewer", name: "Alya" },
     });
 
     render(<DashboardPage setNavigation={setNavigation} />);
@@ -69,7 +81,7 @@ describe("DashboardPage role rendering", () => {
     expect(
       screen.getByRole("heading", {
         level: 1,
-        name: "Dashboard",
+        name: "Welcome back, Alya!",
       }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Alya/)).toBeInTheDocument();
@@ -77,11 +89,10 @@ describe("DashboardPage role rendering", () => {
       screen.queryByText("Dashboard not available"),
     ).not.toBeInTheDocument();
     expect(screen.getByTestId("my-tasks-widget")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /projects/i }),
-    ).toBeInTheDocument();
+    const quickNavigation = within(screen.getByRole("region", { name: "quickNavigation" }));
+    expect(quickNavigation.getByRole("button", { name: /projects/i })).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: /projects/i }));
+    fireEvent.click(quickNavigation.getByRole("button", { name: /projects/i }));
     expect(setNavigation).toHaveBeenCalledWith({ view: "projects" });
 
     fireEvent.keyDown(window, { key: "8", altKey: true });
@@ -90,11 +101,28 @@ describe("DashboardPage role rendering", () => {
 
   it("still renders admin dashboard for Admin role", () => {
     mockUseUserStore.mockReturnValue({
-      currentUser: { id: "u2", role: "Admin", name: "Omar" },
+      currentUser: { id: "u2", organizationId: "org-a", role: "Admin", name: "Omar" },
     });
 
     render(<DashboardPage setNavigation={jest.fn()} />);
 
     expect(screen.getByTestId("admin-dashboard")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "journeyTitle" })).toBeInTheDocument();
+  });
+
+  it("places the journey before the clinic overview without replacing it", () => {
+    // Arrange
+    mockUseTenantStore.mockReturnValue({ currentOrganization: { type: "clinic" }, organizationId: "org-a" });
+    mockUseUserStore.mockReturnValue({ currentUser: { id: "u2", organizationId: "org-a", role: "Admin", name: "Omar" } });
+    const setNavigation = jest.fn();
+    // Act
+    render(<DashboardPage setNavigation={setNavigation} />);
+    // Assert
+    const journey = screen.getByRole("region", { name: "journeyTitle" });
+    const clinic = screen.getByTestId("clinic-dashboard");
+    expect(journey.compareDocumentPosition(clinic) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(clinic.closest("#dashboard-overview")).not.toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /journeyStartProject/ }));
+    expect(setNavigation).toHaveBeenCalledWith({ view: "createProject" });
   });
 });

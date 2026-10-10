@@ -7,6 +7,7 @@ import MyTasksWidget from "@/components/dashboard/MyTasksWidget";
 import ProjectLeadDashboard from "@/components/dashboard/ProjectLeadDashboard";
 import TeamMemberDashboard from "@/components/dashboard/TeamMemberDashboard";
 import ViewerDashboard from "@/components/dashboard/ViewerDashboard";
+import DashboardJourney from "@/components/dashboard/DashboardJourney";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
@@ -28,9 +29,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
 }) => {
   const { currentUser } = useUserStore();
   const { projects } = useProjectStore();
-  const { accreditationPrograms } = useAppStore();
+  const { accreditationPrograms, documents, auditPlans } = useAppStore();
   const { t } = useTranslation();
-  const { currentOrganization } = useTenantStore();
+  const { currentOrganization, organizationId } = useTenantStore();
   const normalizedRole = currentUser
     ? (normalizeUserRole(currentUser.role) as UserRole)
     : null;
@@ -39,12 +40,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
     [currentUser?.id],
   );
 
-  const discoverabilityActions = React.useMemo(() => {
-    if (!normalizedRole)
-      return [] as Array<{
-        label: string;
-        navigation: NavigationState;
-      }>;
+  const discoverabilityActions = React.useMemo<Array<{
+    label: string;
+    navigation: NavigationState;
+  }>>(() => {
+    if (!normalizedRole) return [];
 
     switch (normalizedRole) {
       case UserRole.TeamMember:
@@ -180,7 +180,12 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   return (
     <ErrorBoundary>
       <div className="space-y-6">
-        {renderDashboard()}
+        <DashboardJourney user={currentUser} organizationId={organizationId}
+          projects={projects} documents={documents || []} auditPlans={auditPlans || []}
+          setNavigation={setNavigation} />
+        <div id="dashboard-overview" tabIndex={-1} className="scroll-mt-6">
+          {renderDashboard()}
+        </div>
         {showAIDailyBriefing && (
           <AIDailyBriefingWidget setNavigation={setNavigation} />
         )}
