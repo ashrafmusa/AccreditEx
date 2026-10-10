@@ -11,6 +11,32 @@ from skills.response_standard import TRUNCATED_RESPONSE_MARKER, FAILED_RESPONSE_
 
 
 class TestDocumentCompletion(unittest.IsolatedAsyncioTestCase):
+    async def test_specialist_preserves_long_document_and_trailing_schema(self):
+        # Arrange: execute the real specialist chat method.
+        source = Path(__file__).resolve().parents[1] / "agents" / "base_agent.py"
+        tree = ast.parse(source.read_text(encoding="utf-8"))
+        agent_class = next(node for node in tree.body if isinstance(node, ast.ClassDef) and node.name == "BaseSpecialistAgent")
+        method = next(node for node in agent_class.body if isinstance(node, ast.AsyncFunctionDef) and node.name == "chat")
+        namespace = {
+            **vars(typing), "STANDARD_RESPONSE_RULES": "", "RateLimitExceeded": RuntimeError,
+            "apply_response_language": apply_response_language, "response_token_budget": response_token_budget,
+            "TRUNCATED_RESPONSE_MARKER": TRUNCATED_RESPONSE_MARKER, "FAILED_RESPONSE_MARKER": FAILED_RESPONSE_MARKER,
+        }
+        exec(compile(ast.Module(body=[method], type_ignores=[]), str(source), "exec"), namespace)
+        async def chunks():
+            yield Mock(choices=[Mock(finish_reason="stop", delta=Mock(content='{"complianceIssues":[]}'))])
+        agent = Mock()
+        message = "x" * 11000 + "\nReturn JSON with complianceIssues and improvementSuggestions."
+        agent.validator.sanitize.side_effect = lambda value, **kwargs: value[:kwargs["max_length"]]
+        agent.get_full_prompt.return_value = "System"
+        agent.client.chat.completions.create = AsyncMock(side_effect=lambda **kwargs: chunks())
+        # Act
+        result = "".join([chunk async for chunk in namespace["chat"](agent, message)])
+        # Assert
+        self.assertEqual(result, '{"complianceIssues":[]}')
+        self.assertEqual(agent.validator.sanitize.call_args.kwargs["max_length"], len(message))
+        self.assertEqual(agent.client.chat.completions.create.call_args.kwargs["messages"][-1]["content"], message)
+
     async def test_document_budget_and_truncation_are_used_by_chat(self):
         # Arrange: execute the actual method with mocked infrastructure.
         source = Path(__file__).resolve().parents[1] / "unified_accreditex_agent.py"

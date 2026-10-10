@@ -48,3 +48,12 @@ Token-limit termination is marked as incomplete and is not cached as a successfu
 answer; the frontend rejects this marker instead of presenting a complete draft.
 Provider failures emit a separate failure marker, not a successful document or
 analysis. The frontend also rejects legacy plain-text `Error:` responses.
+
+Document Control analysis sends numbered source passages and requires findings
+to cite an integer `evidenceId`. The frontend resolves each id to the original
+document passage; model-generated quotations are not used. Invalid ids reject
+the analysis. Exact source membership establishes citation provenance only,
+not the correctness of a finding or clinical/accreditation compliance.
+Specialist chat preserves the full input so trailing output-schema instructions
+are not silently removed by the generic 10,000-character sanitizer limit.
+The shared token budget still rejects requests that cannot fit.

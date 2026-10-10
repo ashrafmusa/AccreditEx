@@ -176,7 +176,7 @@ class BaseSpecialistAgent(ABC):
         """
         try:
             self.rate_limiter.check(self._resolve_user_id(user_id, context))
-            message = self.validator.sanitize(message, field_name="message", allow_empty=False)
+            message = self.validator.sanitize(message, max_length=len(message), field_name="message", allow_empty=False)
 
             # Use the combined prompt with the Markdown skill injected; chat replies
             # follow the shared AccreditEx response standard.

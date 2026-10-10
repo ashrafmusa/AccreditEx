@@ -1,4 +1,4 @@
-import { parseDocumentAnalysis } from "@/utils/aiDocumentAnalysis";
+import { documentEvidencePassages, parseDocumentAnalysis } from "@/utils/aiDocumentAnalysis";
 import { aiDocumentToHtml, documentDownload } from "@/utils/aiDocumentFormat";
 import { aiAgentService } from "@/services/aiAgentService";
 import { AIDocumentGeneratorService } from "@/services/aiDocumentGeneratorService";
@@ -15,6 +15,32 @@ const payload = () => ({
 });
 
 describe("Trustworthy document analysis", () => {
+  it("resolves indexed evidence from original HTML without trusting generated quotes", () => {
+    // Arrange
+    const document = "<h2>Labels</h2><p>Verify two identifiers &amp; labels.</p>";
+    const issue = { type: "warning", section: "Labels", issue: "Clarify", recommendation: "Review", evidenceId: 2, evidence: "Invented paraphrase" };
+    // Act
+    const result = parseDocumentAnalysis(JSON.stringify({ ...payload(), complianceIssues: [issue] }), document, true);
+    // Assert
+    expect(result.complianceIssues[0].evidence).toBe("Verify two identifiers &amp; labels.");
+    expect(document).toContain(result.complianceIssues[0].evidence);
+  });
+
+  it.each([0, -1, 1.5, 3, "1", null, undefined])("rejects invalid source passage id %s", evidenceId => {
+    // Arrange
+    const issue = { type: "warning", section: "Labels", issue: "Clarify", recommendation: "Review", evidenceId };
+    // Act / Assert
+    expect(() => parseDocumentAnalysis(JSON.stringify({ ...payload(), complianceIssues: [issue] }), "One\nTwo", true))
+      .toThrow("unverifiable document evidence");
+  });
+
+  it("preserves Arabic, Unicode punctuation, and Markdown passages exactly", () => {
+    // Arrange
+    const document = "# الهوية\r\n\r\nعينة واحدة — تحقق.\nLabel’s identifier.";
+    // Act / Assert
+    expect(documentEvidencePassages(document)).toEqual(["# الهوية", "عينة واحدة — تحقق.", "Label’s identifier."]);
+  });
+
   it("preserves zero and null scores without fabricated defaults", () => {
     // Arrange
     const raw = JSON.stringify(payload());
@@ -114,5 +140,19 @@ describe("Document formats and service reliability", () => {
     jest.mocked(aiAgentService.chat).mockRejectedValueOnce(new Error("offline"));
     // Act / Assert
     await expect(new AIDocumentGeneratorService().analyzeDocument("Policy")).rejects.toThrow("offline");
+  });
+
+  it("requests source ids and resolves them end-to-end in the analysis service", async () => {
+    // Arrange
+    const issue = { type: "warning", section: "Labels", issue: "Clarify", recommendation: "Review", evidenceId: 2 };
+    const chat = jest.mocked(aiAgentService.chat);
+    chat.mockResolvedValueOnce({ response: JSON.stringify({ ...payload(), complianceIssues: [issue] }), thread_id: "", timestamp: "" });
+    // Act
+    const result = await new AIDocumentGeneratorService().analyzeDocument("<h2>Labels</h2><p>Verify identifiers.</p>", "ar");
+    // Assert
+    expect(result.complianceIssues[0].evidence).toBe("Verify identifiers.");
+    expect(chat.mock.calls[0][0]).toContain('"id":2,"text":"Verify identifiers."');
+    expect(chat.mock.calls[0][0]).toContain("evidenceId");
+    expect(chat.mock.calls[0][0]).toContain("Arabic");
   });
 });

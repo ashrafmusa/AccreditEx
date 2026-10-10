@@ -16,7 +16,12 @@ export interface DocumentAnalysis {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-export function parseDocumentAnalysis(raw: string, document: string): DocumentAnalysis {
+export function documentEvidencePassages(document: string): string[] {
+  return document.split(/<[^>]*>|\r?\n/).map(part => part.trim()).filter(Boolean);
+}
+
+export function parseDocumentAnalysis(raw: string, document: string, indexedEvidence = false): DocumentAnalysis {
+  const passages = indexedEvidence ? documentEvidencePassages(document) : [];
   let payload: unknown;
   try {
     payload = JSON.parse(raw.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, ""));
@@ -37,15 +42,23 @@ export function parseDocumentAnalysis(raw: string, document: string): DocumentAn
   }
   const text = (value: unknown): value is string => typeof value === "string" && !!value.trim();
   const complianceIssues = payload.complianceIssues.map((item): DocumentAnalysis["complianceIssues"][number] => {
-    if (!isRecord(item) ||
-      (item.type !== "error" && item.type !== "warning" && item.type !== "info") ||
+    if (!isRecord(item)) throw new Error("AI finding has invalid or unverifiable document evidence");
+    let evidence = item.evidence;
+    if (indexedEvidence) {
+      if (typeof item.evidenceId !== "number" || !Number.isInteger(item.evidenceId) ||
+        item.evidenceId < 1 || item.evidenceId > passages.length) {
+        throw new Error("AI finding has invalid or unverifiable document evidence");
+      }
+      evidence = passages[item.evidenceId - 1];
+    }
+    if ((item.type !== "error" && item.type !== "warning" && item.type !== "info") ||
       !text(item.section) || !text(item.issue) || !text(item.recommendation) ||
-      !text(item.evidence) || !document.includes(item.evidence)) {
+      !text(evidence) || !document.includes(evidence)) {
       throw new Error("AI finding has invalid or unverifiable document evidence");
     }
     return {
       type: item.type, section: item.section, issue: item.issue,
-      recommendation: item.recommendation, evidence: item.evidence,
+      recommendation: item.recommendation, evidence,
     };
   });
   if (!payload.improvementSuggestions.every(text)) throw new Error("Invalid AI recommendations");
