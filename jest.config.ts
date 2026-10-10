@@ -13,6 +13,7 @@ const config: Config = {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^react-markdown$': '<rootDir>/src/test/mocks/reactMarkdown.tsx',
     '^remark-gfm$': '<rootDir>/src/test/mocks/remarkGfm.ts',
+    '^marked$': '<rootDir>/node_modules/marked/lib/marked.umd.js',
     '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
   },
 

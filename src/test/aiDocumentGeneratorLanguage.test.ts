@@ -19,6 +19,7 @@ describe("Document generator output language", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    chat.mockReset();
     chat.mockResolvedValue({
       response: "No gaps identified.",
       thread_id: "test",

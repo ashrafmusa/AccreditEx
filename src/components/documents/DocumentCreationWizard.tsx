@@ -15,6 +15,7 @@
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import type { DocumentGenerationResponse } from "@/services/aiDocumentGeneratorService";
+import { aiDocumentToHtml } from "@/utils/aiDocumentFormat";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { AppDocument } from "@/types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
@@ -160,7 +161,9 @@ const DocumentCreationWizard: React.FC<DocumentCreationWizardProps> = ({
           },
           type: "Policy" as AppDocument["type"],
           category: "Quality Management",
-          content: response.content || "",
+          content: response.language === "ar"
+            ? { en: "", ar: aiDocumentToHtml(response.content, response.format) }
+            : { en: aiDocumentToHtml(response.content, response.format), ar: "" },
           departmentId: currentUser?.departmentId || "",
           projectId: projects[0]?.id || "",
         };
@@ -173,6 +176,7 @@ const DocumentCreationWizard: React.FC<DocumentCreationWizardProps> = ({
       } catch (error) {
         console.error("Failed to create AI document:", error);
         toast.error(t("failedToCreateDocument") || "Failed to create document");
+        throw error;
       }
     },
     [onCreateDocument, onClose, toast, t, currentUser, projects],

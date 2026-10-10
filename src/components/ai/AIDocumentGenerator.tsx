@@ -29,6 +29,7 @@ import {
   aiDocumentGeneratorService,
   DocumentGenerationRequest,
   DocumentGenerationResponse,
+  DocumentAnalysisResponse,
 } from "@/services/aiDocumentGeneratorService";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
@@ -36,10 +37,11 @@ import React, { useEffect, useRef, useState } from "react";
 import DOMPurify from "dompurify";
 import AIResponseView from "@/components/ai/AIResponseView";
 import type { Language } from "@/types";
+import { documentDownload, type AIDocumentFormat } from "@/utils/aiDocumentFormat";
 
 interface AIDocumentGeneratorProps {
   templateId?: string;
-  onDocumentGenerated?: (response: DocumentGenerationResponse) => void;
+  onDocumentGenerated?: (response: DocumentGenerationResponse) => void | Promise<void>;
   onClose?: () => void;
   context?: any;
   preferences?: {
@@ -59,6 +61,13 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   const { t, lang } = useTranslation();
   const [documentLanguage, setDocumentLanguage] = useState<Language>(lang);
   const [generatedLanguage, setGeneratedLanguage] = useState<Language>(lang);
+  const [generatedFormat, setGeneratedFormat] = useState<AIDocumentFormat>("html");
+  const [draft, setDraft] = useState<DocumentGenerationResponse | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [aiError, setAIError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const toast = useToast();
 
   const [selectedTemplate, setSelectedTemplate] =
@@ -72,7 +81,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   const [readingTime, setReadingTime] = useState(0);
   const [generationTime, setGenerationTime] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<DocumentAnalysisResponse | null>(null);
   const [showProjectSelector, setShowProjectSelector] = useState(false);
   const [showDepartmentSelector, setShowDepartmentSelector] = useState(false);
   const [projectSearch, setProjectSearch] = useState("");
@@ -141,6 +150,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
     }
 
     setIsGenerating(true);
+    setAIError(null);
     try {
       const request: DocumentGenerationRequest = {
         templateId: selectedTemplate.id,
@@ -154,20 +164,23 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
 
       setGeneratedContent(response.content);
       setGeneratedLanguage(response.language ?? documentLanguage);
+      setGeneratedFormat(response.format ?? preferences.format ?? "html");
+      setDraft(response);
+      setSaved(false);
+      setSaveError(null);
+      setAnalysis(null);
+      setAnalysisError(null);
       setSuggestions(response.suggestions);
       setComplianceIssues(response.complianceIssues);
       setWordCount(response.wordCount);
       setReadingTime(response.estimatedReadingTime);
       setGenerationTime(response.generationTime);
 
-      if (onDocumentGenerated) {
-        onDocumentGenerated(response);
-      }
-
-      toast.success("Document generated successfully!");
+      toast.success(t("aiDraftReady"));
     } catch (error) {
       console.error("Document generation error:", error);
-      toast.error("Failed to generate document");
+      setAIError(t("aiGenerationFailed"));
+      toast.error(t("aiGenerationFailed"));
     } finally {
       setIsGenerating(false);
     }
@@ -180,14 +193,17 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
     }
 
     setIsAnalyzing(true);
+    setAnalysisError(null);
+    setAnalysis(null);
     try {
       const result =
-        await aiDocumentGeneratorService.analyzeDocument(generatedContent);
+        await aiDocumentGeneratorService.analyzeDocument(generatedContent, generatedLanguage);
       setAnalysis(result);
       toast.success("Document analyzed successfully!");
     } catch (error) {
       console.error("Analysis error:", error);
-      toast.error("Failed to analyze document");
+      setAnalysisError(t("aiAnalysisFailed"));
+      toast.error(t("aiAnalysisFailed"));
     } finally {
       setIsAnalyzing(false);
     }
@@ -200,10 +216,12 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
     }
 
     setIsGenerating(true);
+    setAIError(null);
     try {
       const result = await aiDocumentGeneratorService.improveContent({
         content: generatedContent,
         language: generatedLanguage,
+        format: generatedFormat,
         suggestions: {
           improveClarity: true,
           enhanceStructure: true,
@@ -214,15 +232,38 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
       });
 
       setGeneratedContent(result.improvedContent);
+      setDraft((previous) => previous ? { ...previous, content: result.improvedContent } : null);
+      setSaved(false);
+      setSaveError(null);
+      setAnalysis(null);
+      setAnalysisError(null);
+      setComplianceIssues([]);
       setWordCount(result.improvedContent.split(" ").length);
       setReadingTime(Math.ceil(result.improvedContent.split(" ").length / 200));
 
       toast.success("Content improved successfully!");
     } catch (error) {
       console.error("Content improvement error:", error);
-      toast.error("Failed to improve content");
+      setAIError(t("aiImprovementFailed"));
+      toast.error(t("aiImprovementFailed"));
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleSaveDraft = async () => {
+    if (!draft || !onDocumentGenerated || isSaving) return;
+    setIsSaving(true);
+    setSaveError(null);
+    try {
+      await onDocumentGenerated({ ...draft, content: generatedContent, language: generatedLanguage, format: generatedFormat, wordCount, estimatedReadingTime: readingTime });
+      setSaved(true);
+    } catch (error) {
+      console.error("Failed to save AI draft:", error);
+      setSaveError(t("aiDraftSaveFailed"));
+      toast.error(t("aiDraftSaveFailed"));
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -237,11 +278,12 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   };
 
   const handleDownloadContent = () => {
-    const blob = new Blob([generatedContent], { type: "text/markdown" });
+    const download = documentDownload[generatedFormat];
+    const blob = new Blob([generatedContent], { type: download.mime });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `${selectedTemplate?.name || "document"}.md`;
+    a.download = `${selectedTemplate?.name || "document"}.${download.extension}`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -803,7 +845,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
           <div className="space-y-3">
             <button
               onClick={handleGenerateDocument}
-              disabled={!selectedTemplate || isGenerating}
+              disabled={!selectedTemplate || isGenerating || isAnalyzing || isSaving}
               className="w-full px-4 py-3 bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg font-semibold hover:from-pink-600 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
               aria-label={
                 isGenerating ? "Generating document..." : "Generate document"
@@ -832,7 +874,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
               <>
                 <button
                   onClick={handleAnalyzeDocument}
-                  disabled={isAnalyzing}
+                  disabled={isAnalyzing || isGenerating || isSaving}
                   className="w-full px-4 py-2 border border-rose-600 text-rose-600 rounded-lg font-semibold hover:bg-rose-50 dark:hover:bg-pink-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   aria-label={
                     isAnalyzing ? "Analyzing document..." : "Analyze document"
@@ -846,7 +888,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
 
                 <button
                   onClick={handleImproveContent}
-                  disabled={isGenerating}
+                  disabled={isGenerating || isAnalyzing || isSaving}
                   className="w-full px-4 py-2 border border-green-600 text-green-600 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   aria-label={
                     isGenerating ? "Improving content..." : "Improve content"
@@ -864,6 +906,15 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
 
         {/* Content Panel */}
         <div className="lg:col-span-2 space-y-6">
+          {aiError && <div role="alert" className="text-brand-danger">{aiError}</div>}
+          {analysisError && (
+            <div role="alert" className="text-brand-danger">
+              {analysisError}
+              <button type="button" onClick={handleAnalyzeDocument} disabled={isGenerating || isAnalyzing || isSaving} className="ms-2 underline">
+                {t("aiResponseRetry")}
+              </button>
+            </div>
+          )}
           {/* Generated Content */}
           {generatedContent && (
             <div className="space-y-4">
@@ -895,12 +946,22 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                 </div>
               </div>
 
+              <p className="text-sm text-brand-warning">{t("aiDraftReviewNotice")}</p>
+              {!analysis && <p className="text-sm text-brand-text-secondary">{t("aiNotAssessed")}</p>}
+              {onDocumentGenerated && (
+                <button type="button" onClick={handleSaveDraft} disabled={isSaving || isGenerating || isAnalyzing || saved}
+                  className="px-4 py-2 rounded-lg bg-brand-primary text-white disabled:opacity-50">
+                  {t(isSaving ? "aiDraftSaving" : saved ? "aiDraftSaved" : "aiDraftSave")}
+                </button>
+              )}
+              {saveError && <p role="alert" className="text-brand-danger">{saveError}</p>}
+
               <div
                 ref={contentRef}
                 dir={generatedLanguage === "ar" ? "rtl" : "ltr"}
                 className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 max-h-96 overflow-y-auto"
               >
-                {/^\s*<[a-z!]/i.test(generatedContent) ? (
+                {generatedFormat === "html" ? (
                   <div
                     className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300"
                     dir="auto"
@@ -908,6 +969,8 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                       __html: DOMPurify.sanitize(generatedContent),
                     }}
                   />
+                ) : generatedFormat === "text" ? (
+                  <p className="whitespace-pre-wrap">{generatedContent}</p>
                 ) : (
                   <AIResponseView content={generatedContent} showToolbar={false} />
                 )}
@@ -982,6 +1045,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
           {/* Document Analysis */}
           {analysis && (
             <div className="space-y-4">
+              <p className="text-sm text-brand-warning">{t("aiAnalysisEstimateNotice")}</p>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center space-x-2">
                 <DocumentIcon className="w-5 h-5" aria-hidden="true" />
                 <span>Document Analysis</span>
@@ -990,7 +1054,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {analysis.contentScore}
+                      {analysis.contentScore ?? t("aiNotAssessed")}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Content Score
@@ -998,7 +1062,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {analysis.readabilityScore}
+                      {analysis.readabilityScore ?? t("aiNotAssessed")}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Readability
@@ -1006,7 +1070,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {analysis.grammarScore}
+                      {analysis.grammarScore ?? t("aiNotAssessed")}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Grammar
@@ -1014,7 +1078,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
-                      {analysis.structureScore}
+                      {analysis.structureScore ?? t("aiNotAssessed")}
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
                       Structure
@@ -1029,7 +1093,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                     </h4>
                     <div className="space-y-2">
                       {analysis.complianceIssues.map(
-                        (issue: any, index: number) => (
+                        (issue, index: number) => (
                           <div
                             key={index}
                             className="text-sm text-gray-600 dark:text-gray-400"
@@ -1038,6 +1102,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                               {issue.section}:
                             </span>{" "}
                             {issue.issue}
+                            <blockquote className="border-s-2 border-brand-border ps-2 mt-1">{issue.evidence}</blockquote>
                             <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                               Recommendation: {issue.recommendation}
                             </div>

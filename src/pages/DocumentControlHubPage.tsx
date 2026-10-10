@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui";
+import { aiDocumentToHtml } from "@/utils/aiDocumentFormat";
 import { getComplianceDashboard } from "@/services/complianceDashboardService";
 import {
   Action,
@@ -1411,7 +1412,9 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                 /* ===== List/Table View — using ControlledDocumentsTable ===== */
                 <ControlledDocumentsTable
                   documents={paginatedDocuments}
-                  canModify={canModify}
+                  canUpdate={permissionService.can(currentUser, Action.Update, Resource.Document)}
+                  canDelete={canModify}
+                  canApprove={canApprove}
                   onApprove={(doc) => setSigningDoc(doc)}
                   onDelete={(docId) => handleDeleteDocument(docId)}
                   onView={handleViewDoc}
@@ -1775,30 +1778,32 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               <AIDocumentGenerator
                 onDocumentGenerated={async (response) => {
                   try {
+                    const content = aiDocumentToHtml(response.content, response.format);
                     // Create a real document from AI-generated content
                     const docName =
-                      response.content
+                      content
                         .match(/<h[12][^>]*>([^<]+)<\/h[12]>/i)?.[1]
                         ?.trim() || "AI Generated Document";
                     await onCreateDocument({
                       name: { en: docName, ar: docName },
                       type: "Policy",
                       content: response.language === "ar"
-                        ? { en: "", ar: response.content }
-                        : { en: response.content, ar: "" },
+                        ? { en: "", ar: content }
+                        : { en: content, ar: "" },
                       tags: ["ai-generated"],
                     });
                     toast.success(
                       t("aiDocumentSaved") ||
                         "AI-generated document saved to Document Control.",
                     );
-                  } catch {
+                    setShowAIGenerator(false);
+                  } catch (error) {
                     toast.error(
                       t("failedToSaveAiDoc") ||
                         "Failed to save AI-generated document.",
                     );
+                    throw error;
                   }
-                  setShowAIGenerator(false);
                 }}
                 context={{
                   userRole: currentUser.role,

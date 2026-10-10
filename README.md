@@ -27,6 +27,9 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **Role-Based Dashboards**: Admin, Project Lead, Team Member, and Auditor views with real-time compliance KPIs.
 -   **Project Management**: Full accreditation project lifecycle with pre-built templates for 7+ accreditation programs (JCI, CBAHI, DNV, CAP, ISO 15189, NABH, ISO 9001).
 -   **Document Control Hub**: Version-controlled document management with AI-powered document generation, automatic document numbering, and approval workflows. The AI generator includes an English/Arabic document-language selector (initially matching the interface language); generated content and SOP headers follow this selection, improvements preserve the generated language, and saved documents use the corresponding localized content field.
+    - AI generation produces a preview, not an automatically saved document. Use **Save reviewed draft** after reviewing facts and references; failed saves keep the preview available for retry.
+    - HTML, Markdown, and text output retain their respective download formats. Content is converted to sanitized HTML when saved to the rich-text document editor.
+    - Analysis is explicitly requested with **Analyze Document**. Missing metrics show **Not assessed**, invalid responses fail visibly, and findings must include exact quotes from the supplied document. Quality estimates are not verified accreditation scores; no default scores are fabricated.
 -   **Risk Management Hub**: ISO 31000-compliant risk register with risk matrices, CAPA integration, and root cause analysis (Fishbone + Five-Why).
 -   **Audit Management Hub**: Internal/external audit planning, tracer worksheets, findings management, and corrective action tracking.
 -   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis.
