@@ -296,7 +296,7 @@ describe("ProjectListPage", () => {
     test("should show filters panel when filter button is clicked", () => {
       render(<ProjectListPage setNavigation={mockSetNavigation} />);
 
-      const filterButton = screen.getByText("filterByStatus").closest("button");
+      const filterButton = screen.getByText("projectFilters").closest("button");
       fireEvent.click(filterButton!);
 
       // Check if filter controls are visible (select for program filter)
@@ -307,7 +307,7 @@ describe("ProjectListPage", () => {
       render(<ProjectListPage setNavigation={mockSetNavigation} />);
 
       // Open filters
-      const filterButton = screen.getByText("filterByStatus").closest("button");
+      const filterButton = screen.getByText("projectFilters").closest("button");
       fireEvent.click(filterButton!);
 
       // Find the status select by its "allStatuses" option text

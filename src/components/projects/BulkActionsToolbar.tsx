@@ -7,6 +7,7 @@ import {
   XMarkIcon,
 } from "@/components/icons";
 import { ProjectStatus } from "@/types";
+import { PROJECT_STATUS_KEYS } from "@/utils/projectJourney";
 
 interface BulkActionsToolbarProps {
   selectedCount: number;
@@ -47,7 +48,7 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
   if (selectedCount === 0) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-slideUp">
+    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-slideUp w-[calc(100%_-_2rem)] max-w-3xl">
       <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 px-6 py-4">
         <div className="flex items-center gap-6 flex-wrap">
           {/* Selected Count */}
@@ -71,7 +72,7 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
               <button
                 onClick={handleRestore}
                 title={t("restore") || "Restore"}
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                className="min-h-11 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <ArchiveBoxIcon className="w-4 h-4" />
                 {t("restore")}
@@ -80,49 +81,51 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
               <button
                 onClick={handleArchive}
                 title={t("archive") || "Archive"}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                className="min-h-11 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <ArchiveBoxIcon className="w-4 h-4" />
                 {t("archive")}
               </button>
             ) : null}
 
-            <div className="relative">
-              <button
-                onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-                title={t("updateStatus") || "Update Status"}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
-              >
-                <CheckIcon className="w-4 h-4" />
-                {t("updateStatus")}
-              </button>
+            {handleUpdateStatus && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                  aria-expanded={showStatusDropdown}
+                  title={t("updateStatus") || "Update Status"}
+                  className="min-h-11 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                >
+                  <CheckIcon className="w-4 h-4" />
+                  {t("updateStatus")}
+                </button>
 
-              {showStatusDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-slate-200 dark:border-slate-600 z-10">
-                  {Object.values(ProjectStatus).map((status) => (
-                    <button
-                      key={status}
-                      onClick={() => {
-                        if (handleUpdateStatus) {
-                          handleUpdateStatus(status);
-                        }
-                        setShowStatusDropdown(false);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 text-sm text-slate-700 dark:text-slate-300 first:rounded-t-lg last:rounded-b-lg transition-colors"
-                    >
-                      {t(status.replace(/\s/g, "").toLowerCase() as any) ||
-                        status}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+                {showStatusDropdown && (
+                  <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-slate-700 rounded-lg shadow-lg border border-slate-200 dark:border-slate-600 z-10">
+                    {Object.values(ProjectStatus).map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => {
+                          if (handleUpdateStatus) {
+                            handleUpdateStatus(status);
+                          }
+                          setShowStatusDropdown(false);
+                        }}
+                        className="min-h-11 w-full text-start px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-600 text-sm text-slate-700 dark:text-slate-300 first:rounded-t-lg last:rounded-b-lg transition-colors"
+                      >
+                        {t(PROJECT_STATUS_KEYS[status])}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {handleDelete && (
               <button
                 onClick={handleDelete}
                 title={t("delete") || "Delete"}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
+                className="min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
               >
                 <TrashIcon className="w-4 h-4" />
                 {t("delete")}
@@ -136,8 +139,9 @@ const BulkActionsToolbar: React.FC<BulkActionsToolbarProps> = ({
           {/* Clear Selection */}
           <button
             onClick={onClearSelection}
-            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+            className="min-h-11 min-w-11 p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
             title={t("clearSelection")}
+            aria-label={t("clearSelection")}
           >
             <XMarkIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
           </button>

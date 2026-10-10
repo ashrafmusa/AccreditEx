@@ -4,23 +4,26 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { useAppStore } from '@/stores/useAppStore';
 import AnalyticsCard from './AnalyticsCard';
 import { FolderIcon, CheckIcon, ClockIcon, ChartBarSquareIcon } from '@/components/icons';
+import { PROJECT_STATUS_KEYS, projectCalendarDate } from '@/utils/projectJourney';
 
 interface ProjectAnalyticsProps {
   projects: Project[];
 }
 
 const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const accreditationPrograms = useAppStore(state => state.accreditationPrograms);
 
   // Calculate statistics
   const stats = useMemo(() => {
     const total = projects.length;
-    const active = projects.filter(p => !p.archived && p.status !== ProjectStatus.Finalized).length;
-    const completed = projects.filter(p => p.status === ProjectStatus.Finalized).length;
-    const avgCompletion = projects.length > 0
-      ? Math.round(projects.reduce((sum, p) => sum + (p.progress || 0), 0) / projects.length)
-      : 0;
+    const isComplete = (p: Project) => p.status === ProjectStatus.Finalized || p.status === ProjectStatus.Completed || p.status === ProjectStatus.Closed;
+    const active = projects.filter(p => !p.archived && !isComplete(p)).length;
+    const completed = projects.filter(isComplete).length;
+    const assessed = projects.filter(p => Number.isFinite(p.progress) && p.progress >= 0 && p.progress <= 100);
+    const avgCompletion = assessed.length > 0
+      ? Math.round(assessed.reduce((sum, p) => sum + p.progress, 0) / assessed.length)
+      : null;
 
     return { total, active, completed, avgCompletion };
   }, [projects]);
@@ -40,27 +43,30 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
     const distribution: Record<string, number> = {};
     projects.forEach(p => {
       const program = accreditationPrograms.find(prog => prog.id === p.programId);
-      const programName = program?.name || 'Unknown';
+      const programName = program?.name || t('projectUnknownProgram');
       distribution[programName] = (distribution[programName] || 0) + 1;
     });
     return distribution;
-  }, [projects, accreditationPrograms]);
+  }, [projects, accreditationPrograms, lang]);
 
   // Upcoming deadlines
   const upcomingDeadlines = useMemo(() => {
     const now = new Date();
-    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+    now.setHours(0, 0, 0, 0);
+    const thirtyDaysFromNow = new Date(now);
+    thirtyDaysFromNow.setDate(now.getDate() + 30);
     
     return projects
       .filter(p => {
-        if (!p.endDate || p.archived || p.status === ProjectStatus.Finalized) return false;
-        const endDate = new Date(p.endDate);
-        return endDate >= now && endDate <= thirtyDaysFromNow;
+        if (!p.endDate || p.archived || p.status === ProjectStatus.Finalized || p.status === ProjectStatus.Completed || p.status === ProjectStatus.Closed) return false;
+        const endDate = projectCalendarDate(p.endDate);
+        return !!endDate && endDate >= now && endDate <= thirtyDaysFromNow;
       })
-      .map(p => {
-        const endDate = new Date(p.endDate!);
+      .flatMap(p => {
+        const endDate = projectCalendarDate(p.endDate);
+        if (!endDate) return [];
         const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        return { ...p, daysRemaining };
+        return [{ ...p, daysRemaining }];
       })
       .sort((a, b) => a.daysRemaining - b.daysRemaining)
       .slice(0, 5);
@@ -90,7 +96,7 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
           icon={<ClockIcon className="w-6 h-6" />}
           value={stats.active}
           label={t('activeProjects')}
-          color="purple"
+          color="blue"
         />
         <AnalyticsCard
           icon={<CheckIcon className="w-6 h-6" />}
@@ -100,8 +106,8 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
         />
         <AnalyticsCard
           icon={<ChartBarSquareIcon className="w-6 h-6" />}
-          value={`${stats.avgCompletion}%`}
-          label={t('averageCompletion')}
+          value={stats.avgCompletion === null ? t('projectNotAssessed') : `${stats.avgCompletion}%`}
+          label={t('projectAverageChecklist')}
           color="orange"
         />
       </div>
@@ -128,7 +134,7 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
               return (
                 <div key={status}>
                   <div className="flex justify-between text-sm mb-1">
-                    <span className="text-gray-700 dark:text-gray-300">{status}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{t(PROJECT_STATUS_KEYS[status as ProjectStatus] || status)}</span>
                     <span className="text-gray-600 dark:text-gray-400">{count} ({percentage.toFixed(0)}%)</span>
                   </div>
                   <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
@@ -188,7 +194,7 @@ const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({ projects }) => {
                     {project.name}
                   </p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    {new Date(project.endDate!).toLocaleDateString()}
+                    {projectCalendarDate(project.endDate)?.toLocaleDateString(lang === 'ar' ? 'ar' : 'en')}
                   </p>
                 </div>
                 <div className={`text-sm font-semibold ml-4 ${getUrgencyColor(project.daysRemaining)}`}>

@@ -22,19 +22,24 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState, ProjectStatus, User } from "@/types";
 import React, { useMemo, useState } from "react";
+import {
+  PROJECT_STATUS_KEYS,
+  projectCalendarDate,
+  projectWorkSummary,
+} from "@/utils/projectJourney";
 
 interface ProjectListPageProps {
   setNavigation: (state: NavigationState) => void;
 }
 
 const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const {
     projects,
     deleteProject,
     loading,
-    subscribeToProjects,
-    unsubscribeFromProjects,
+    error,
+    fetchAllProjects,
     bulkArchiveProjects,
     bulkRestoreProjects,
     bulkDeleteProjects,
@@ -61,6 +66,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const [showArchived, setShowArchived] = useState(false);
   const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [sortOrder, setSortOrder] = useState<
+    "default" | "name" | "deadline" | "remaining"
+  >("default");
   const [showOnlyMyProjects, setShowOnlyMyProjects] = useState(
     !currentUser || currentUser.role !== "Admin",
   );
@@ -73,7 +81,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     f: () => setShowFilters((prev) => !prev),
     a: () => setShowAnalytics((prev) => !prev),
     "/": () => {
-      document.querySelector<HTMLInputElement>('input[type="text"]')?.focus();
+      document.getElementById("project-search")?.focus();
     },
   });
 
@@ -85,10 +93,18 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
       // Role-based access: Filter by team assignment
+      if (
+        currentUser?.organizationId &&
+        p.organizationId !== currentUser.organizationId
+      )
+        return false;
       if (showOnlyMyProjects && currentUser) {
         const isProjectLead = p.projectLead?.id === currentUser.id;
         const isTeamMember = p.teamMembers?.includes(currentUser.id);
-        if (!isProjectLead && !isTeamMember) return false;
+        const hasAssignedTasks = p.checklist?.some(
+          (item) => item.assignedTo === currentUser.id,
+        );
+        if (!isProjectLead && !isTeamMember && !hasAssignedTasks) return false;
       }
 
       // Archive filter
@@ -97,9 +113,22 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         : p.archived !== true;
       if (!matchesArchived) return false;
 
-      const matchesSearch =
-        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      const projectDepartmentIds = [p.departmentId, ...(p.departmentIds || [])];
+      const searchText = [
+        p.name,
+        p.description,
+        programMap.get(p.programId),
+        p.projectLead?.name,
+        ...departments
+          .filter((d) => projectDepartmentIds.includes(d.id))
+          .map((d) => d.name?.[lang] || d.name?.en || d.id),
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const matchesSearch = searchText.includes(
+        searchTerm.trim().toLowerCase(),
+      );
 
       const matchesStatus = statusFilter === "all" || p.status === statusFilter;
 
@@ -114,13 +143,15 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       const matchesAssignee =
         assigneeFilter === "all" ||
         p.projectLead?.id === assigneeFilter ||
+        p.teamMembers?.includes(assigneeFilter) ||
         p.checklist?.some((item) => item.assignedTo === assigneeFilter);
 
+      const start = projectCalendarDate(p.startDate);
+      const end = projectCalendarDate(p.endDate);
+      const from = projectCalendarDate(dateFilter.start);
+      const to = projectCalendarDate(dateFilter.end);
       const matchesDate =
-        (!dateFilter.start ||
-          new Date(p.startDate) >= new Date(dateFilter.start)) &&
-        (!dateFilter.end ||
-          (p.endDate && new Date(p.endDate) <= new Date(dateFilter.end)));
+        (!from || (!!start && start >= from)) && (!to || (!!end && end <= to));
 
       return (
         matchesSearch &&
@@ -142,20 +173,55 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
     showArchived,
     showOnlyMyProjects,
     currentUser,
+    departments,
+    programMap,
+    lang,
   ]);
+
+  const visibleProjects = useMemo(
+    () =>
+      [...filteredProjects].sort((a, b) => {
+        if (sortOrder === "name") return a.name.localeCompare(b.name, lang);
+        if (sortOrder === "deadline")
+          return (
+            (projectCalendarDate(a.endDate)?.getTime() ?? Infinity) -
+            (projectCalendarDate(b.endDate)?.getTime() ?? Infinity)
+          );
+        if (sortOrder === "remaining")
+          return (
+            projectWorkSummary(b).remaining - projectWorkSummary(a).remaining
+          );
+        return 0;
+      }),
+    [filteredProjects, sortOrder, lang],
+  );
+  const visibleSelection = selectedProjects.filter((id) =>
+    filteredProjects.some((p) => p.id === id),
+  );
+  const hasFilters =
+    !!searchTerm ||
+    statusFilter !== "all" ||
+    programFilter !== "all" ||
+    departmentFilter !== "all" ||
+    assigneeFilter !== "all" ||
+    !!dateFilter.start ||
+    !!dateFilter.end;
 
   const handleSelectProject = (projectId: string) => {
     setSelectedProjects((prev) => {
       if (prev.includes(projectId)) {
         return prev.filter((id) => id !== projectId);
       } else {
-        return [...prev, projectId];
+        return [
+          ...prev.filter((id) => filteredProjects.some((p) => p.id === id)),
+          projectId,
+        ];
       }
     });
   };
 
   const handleSelectAll = () => {
-    if (selectedProjects.length === filteredProjects.length) {
+    if (visibleSelection.length === filteredProjects.length) {
       setSelectedProjects([]);
     } else {
       setSelectedProjects(filteredProjects.map((p) => p.id));
@@ -167,8 +233,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       !(await useConfirmStore
         .getState()
         .confirm(
-          `${t("areYouSureArchive")} ${selectedProjects.length} ${t(
-            "project" + (selectedProjects.length > 1 ? "s" : ""),
+          `${t("areYouSureArchive")} ${visibleSelection.length} ${t(
+            "project" + (visibleSelection.length > 1 ? "s" : ""),
           )}?`,
           t("archiveProjects") || "Archive Projects",
           t("archive") || "Archive",
@@ -177,7 +243,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       return;
     }
     try {
-      await bulkArchiveProjects(selectedProjects);
+      await bulkArchiveProjects(visibleSelection);
       setSelectedProjects([]);
       toast.success(t("projectsArchivedSuccessfully"));
     } catch (error) {
@@ -193,8 +259,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       !(await useConfirmStore
         .getState()
         .confirm(
-          `${t("areYouSureRestore")} ${selectedProjects.length} ${t(
-            "project" + (selectedProjects.length > 1 ? "s" : ""),
+          `${t("areYouSureRestore")} ${visibleSelection.length} ${t(
+            "project" + (visibleSelection.length > 1 ? "s" : ""),
           )}?`,
           t("restoreProjects") || "Restore Projects",
           t("restore") || "Restore",
@@ -203,7 +269,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       return;
     }
     try {
-      await bulkRestoreProjects(selectedProjects);
+      await bulkRestoreProjects(visibleSelection);
       setSelectedProjects([]);
       toast.success(t("projectsRestoredSuccessfully"));
     } catch (error) {
@@ -219,8 +285,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       !(await useConfirmStore
         .getState()
         .confirm(
-          `${t("areYouSurePermanentlyDelete")} ${selectedProjects.length} ${t(
-            "project" + (selectedProjects.length > 1 ? "s" : ""),
+          `${t("areYouSurePermanentlyDelete")} ${visibleSelection.length} ${t(
+            "project" + (visibleSelection.length > 1 ? "s" : ""),
           )}? ${t("thisActionCannotBeUndone")}`,
           t("deleteProjects") || "Delete Projects",
           t("delete") || "Delete",
@@ -229,7 +295,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       return;
     }
     try {
-      await bulkDeleteProjects(selectedProjects);
+      await bulkDeleteProjects(visibleSelection);
       setSelectedProjects([]);
       toast.success(t("projectsDeletedSuccessfully"));
     } catch (error) {
@@ -245,9 +311,9 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       !(await useConfirmStore
         .getState()
         .confirm(
-          `${t("updateStatusTo")} ${
-            t(status.replace(/\s/g, "").toLowerCase() as any) || status
-          } ${t("forProjects")} ${selectedProjects.length}?`,
+          `${t("updateStatusTo")} ${t(
+            PROJECT_STATUS_KEYS[status],
+          )} ${t("forProjects")} ${visibleSelection.length}?`,
           t("updateStatus") || "Update Status",
           t("update") || "Update",
         ))
@@ -255,7 +321,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       return;
     }
     try {
-      await bulkUpdateStatus(selectedProjects, status);
+      await bulkUpdateStatus(visibleSelection, status);
       setSelectedProjects([]);
       toast.success(t("projectsUpdatedSuccessfully"));
     } catch (error) {
@@ -277,7 +343,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         )
     ) {
       try {
-        deleteProject(projectId);
+        await deleteProject(projectId);
         toast.success(t("projectDeletedSuccessfully"));
       } catch (error) {
         const errorMsg =
@@ -299,14 +365,30 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
 
   return (
     <div className="space-y-6">
-      {selectedProjects.length > 0 && isAdmin && (
+      {visibleSelection.length > 0 && isAdmin && !error && !loading && (
         <div className="sticky top-4 z-40 animate-fadeIn">
           <BulkActionsToolbar
-            selectedCount={selectedProjects.length}
-            onArchive={handleBulkArchive}
-            onRestore={handleBulkRestore}
-            onDelete={handleBulkDelete}
-            onUpdateStatus={handleBulkUpdateStatus}
+            selectedCount={visibleSelection.length}
+            onArchive={
+              can(Action.Update, Resource.Project)
+                ? handleBulkArchive
+                : undefined
+            }
+            onRestore={
+              can(Action.Update, Resource.Project)
+                ? handleBulkRestore
+                : undefined
+            }
+            onDelete={
+              can(Action.Delete, Resource.Project)
+                ? handleBulkDelete
+                : undefined
+            }
+            onUpdateStatus={
+              can(Action.Update, Resource.Project)
+                ? handleBulkUpdateStatus
+                : undefined
+            }
             onClearSelection={() => setSelectedProjects([])}
             showRestore={showArchived}
           />
@@ -320,12 +402,16 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
               {t("accreditationProjects")}
             </h1>
+            <p className="mt-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+              {t("projectListHelp")}
+            </p>
           </div>
         </div>
         <div className="flex gap-3 w-full md:w-auto flex-wrap">
           {currentUser?.role === "Admin" && (
             <Button
               onClick={() => setShowOnlyMyProjects(!showOnlyMyProjects)}
+              aria-pressed={showOnlyMyProjects}
               variant={showOnlyMyProjects ? "secondary" : "primary"}
               className="w-full sm:w-auto"
             >
@@ -335,6 +421,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
           )}
           <Button
             onClick={() => setShowAnalytics(!showAnalytics)}
+            aria-expanded={showAnalytics}
             variant={showAnalytics ? "primary" : "secondary"}
             className="w-full sm:w-auto"
           >
@@ -343,6 +430,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
           </Button>
           <Button
             onClick={() => setShowArchived(!showArchived)}
+            aria-pressed={showArchived}
             variant={showArchived ? "primary" : "secondary"}
             className="w-full sm:w-auto"
           >
@@ -366,6 +454,8 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
           <div className="flex-1">
             <Input
               type="text"
+              id="project-search"
+              aria-label={t("searchProjects")}
               placeholder={t("searchProjects")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -374,17 +464,14 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
           </div>
           <Button
             onClick={() => setShowFilters(!showFilters)}
+            aria-expanded={showFilters}
+            aria-controls="project-filters"
             variant={showFilters ? "primary" : "secondary"}
           >
             <FunnelIcon className="w-5 h-5 ltr:mr-2 rtl:ml-2" />
-            {t("filterByStatus")}
+            {t("projectFilters")}
           </Button>
-          {(statusFilter !== "all" ||
-            programFilter !== "all" ||
-            departmentFilter !== "all" ||
-            assigneeFilter !== "all" ||
-            dateFilter.start ||
-            dateFilter.end) && (
+          {hasFilters && (
             <Button
               onClick={clearFilters}
               variant="ghost"
@@ -397,12 +484,16 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
         </div>
 
         {showFilters && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-fadeIn">
+          <div
+            id="project-filters"
+            className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200 dark:border-slate-700 animate-fadeIn"
+          >
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                 {t("program")}
               </label>
               <select
+                aria-label={t("program")}
                 value={programFilter}
                 onChange={(e) => setProgramFilter(e.target.value)}
                 className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
@@ -420,6 +511,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 {t("filterByStatus")}
               </label>
               <select
+                aria-label={t("filterByStatus")}
                 value={statusFilter}
                 onChange={(e) =>
                   setStatusFilter(e.target.value as ProjectStatus | "all")
@@ -429,8 +521,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 <option value="all">{t("allStatuses")}</option>
                 {Object.values(ProjectStatus).map((status) => (
                   <option key={status} value={status}>
-                    {t(status.replace(/\s/g, "").toLowerCase() as any) ||
-                      status}
+                    {t(PROJECT_STATUS_KEYS[status])}
                   </option>
                 ))}
               </select>
@@ -440,6 +531,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 {t("department") || "Department"}
               </label>
               <select
+                aria-label={t("department")}
                 value={departmentFilter}
                 onChange={(e) => setDepartmentFilter(e.target.value)}
                 className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
@@ -449,7 +541,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 </option>
                 {departments.map((d) => (
                   <option key={d.id} value={d.id}>
-                    {d.name.en || d.name.ar}
+                    {d.name?.[lang] || d.name?.en || d.id}
                   </option>
                 ))}
               </select>
@@ -459,6 +551,7 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 {t("filterByAssignee")}
               </label>
               <select
+                aria-label={t("filterByAssignee")}
                 value={assigneeFilter}
                 onChange={(e) => setAssigneeFilter(e.target.value)}
                 className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
@@ -473,11 +566,12 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
             </div>
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                {t("dateRange")}
+                {t("projectStartFrom")}
               </label>
               <div className="flex gap-2">
                 <input
                   type="date"
+                  aria-label={t("projectStartFrom")}
                   value={dateFilter.start}
                   onChange={(e) =>
                     setDateFilter((prev) => ({
@@ -489,30 +583,94 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                   placeholder={t("startDate")}
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t("projectEndBy")}
+                </label>
+                <input
+                  type="date"
+                  aria-label={t("projectEndBy")}
+                  value={dateFilter.end}
+                  onChange={(e) =>
+                    setDateFilter((prev) => ({ ...prev, end: e.target.value }))
+                  }
+                  className="w-full p-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-sm"
+                />
+              </div>
             </div>
           </div>
         )}
       </div>
 
       {/* Analytics Section */}
-      {showAnalytics && (
+      {showAnalytics && !error && !loading && (
         <div className="animate-fadeIn">
           <ProjectAnalytics projects={filteredProjects} />
         </div>
       )}
 
-      {loading ? (
+      {!loading && !error && (
+        <div className="flex flex-wrap gap-3 justify-between items-center">
+          <p
+            role="status"
+            className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary"
+          >
+            {t(
+              showArchived ? "projectArchivedResults" : "projectActiveResults",
+              { count: filteredProjects.length },
+            )}{" "}
+            {showOnlyMyProjects && t("projectMyScope")}
+          </p>
+          <div className="flex flex-wrap gap-3 items-center">
+            {isAdmin && filteredProjects.length > 0 && (
+              <Button variant="secondary" onClick={handleSelectAll}>
+                {t(
+                  visibleSelection.length === filteredProjects.length
+                    ? "projectDeselectVisible"
+                    : "projectSelectVisible",
+                )}
+              </Button>
+            )}
+            <select
+              aria-label={t("projectSort")}
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value as typeof sortOrder)}
+              className="min-h-11 rounded-lg border border-brand-border dark:border-dark-brand-border bg-brand-surface dark:bg-dark-brand-surface px-3 text-sm"
+            >
+              <option value="default">{t("projectSortDefault")}</option>
+              <option value="name">{t("projectSortName")}</option>
+              <option value="deadline">{t("projectSortDeadline")}</option>
+              <option value="remaining">{t("projectSortRemaining")}</option>
+            </select>
+          </div>
+        </div>
+      )}
+      {error ? (
+        <div role="alert" className="rounded-xl border border-red-300 p-5">
+          <p>{t("projectLoadError")}</p>
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setSelectedProjects([]);
+              void fetchAllProjects();
+            }}
+          >
+            {t("projectRetry")}
+          </Button>
+        </div>
+      ) : loading ? (
         <div className="flex justify-center items-center py-12">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-brand-primary"></div>
         </div>
       ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filteredProjects.map((p) => {
-            const assignedUserIds = new Set(
-              (p.checklist || [])
+          {visibleProjects.map((p) => {
+            const assignedUserIds = new Set([
+              ...(p.teamMembers || []),
+              ...(p.checklist || [])
                 .map((item) => item.assignedTo)
                 .filter(Boolean),
-            );
+            ]);
             if (p.projectLead?.id) {
               assignedUserIds.add(p.projectLead.id);
             }
@@ -525,10 +683,11 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                 key={p.id}
                 project={{
                   ...p,
-                  programName: programMap.get(p.programId) || "?",
-                  teamMembers: teamMembers as any,
+                  programName:
+                    programMap.get(p.programId) || t("projectUnknownProgram"),
                 }}
-                currentUser={currentUser!}
+                teamUsers={teamMembers}
+                currentUser={currentUser}
                 onSelect={() =>
                   setNavigation({ view: "projectDetail", projectId: p.id })
                 }
@@ -536,8 +695,10 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
                   setNavigation({ view: "editProject", projectId: p.id })
                 }
                 onDelete={() => handleDelete(p.id)}
-                selected={selectedProjects.includes(p.id)}
-                onToggleSelect={() => handleSelectProject(p.id)}
+                selected={visibleSelection.includes(p.id)}
+                onToggleSelect={
+                  isAdmin ? () => handleSelectProject(p.id) : undefined
+                }
               />
             );
           })}
@@ -545,23 +706,29 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
       ) : (
         <EmptyState
           icon={FolderIcon}
-          title={
-            searchTerm ||
-            statusFilter !== "all" ||
-            programFilter !== "all" ||
-            departmentFilter !== "all" ||
-            assigneeFilter !== "all"
-              ? t("noProjectsFound")
-              : t("noProjects")
-          }
+          title={hasFilters ? t("noProjectsFound") : t("noProjects")}
           message={
-            searchTerm ||
-            statusFilter !== "all" ||
-            programFilter !== "all" ||
-            departmentFilter !== "all" ||
-            assigneeFilter !== "all"
+            hasFilters
               ? t("tryAdjustingSearch")
-              : t("createFirstProject")
+              : t(
+                  showArchived
+                    ? "projectNoArchived"
+                    : showOnlyMyProjects
+                      ? "projectNoAssigned"
+                      : canCreateProject
+                        ? "createFirstProject"
+                        : "projectNoVisible",
+                )
+          }
+          action={
+            hasFilters
+              ? { label: t("clearFilters"), onClick: clearFilters }
+              : !showArchived && !showOnlyMyProjects && canCreateProject
+                ? {
+                    label: t("createNewProject"),
+                    onClick: () => setNavigation({ view: "createProject" }),
+                  }
+                : undefined
           }
         />
       )}

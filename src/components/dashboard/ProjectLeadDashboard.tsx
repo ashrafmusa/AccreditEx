@@ -333,9 +333,9 @@ const ProjectLeadDashboard: React.FC<DashboardPageProps> = ({
                         key={p.id}
                         project={{
                           ...p,
-                          teamMembers: teamMembers as any,
                           programName: programMap.get(p.programId) || "?",
                         }}
+                        teamUsers={teamMembers}
                         currentUser={currentUser}
                         onSelect={() =>
                           setNavigation({
