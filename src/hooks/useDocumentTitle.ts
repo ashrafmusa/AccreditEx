@@ -7,6 +7,7 @@
 
 import { useEffect } from 'react';
 import { NavigationState } from '@/types';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const getTitleForView = (navigation: NavigationState): string => {
     const { view, section } = navigation;
@@ -75,8 +76,12 @@ const getTitleForView = (navigation: NavigationState): string => {
 };
 
 export const useDocumentTitle = (navigation: NavigationState) => {
+    const { t } = useTranslation();
+    const qualityToolsTitle = t('qualityAidTools');
+    const qualityToolsDescription = t('qualityAidToolsDescription');
     useEffect(() => {
-        const title = getTitleForView(navigation);
+        const title = navigation.view === 'qualityTools'
+            ? `${qualityToolsTitle} | AccreditEx` : getTitleForView(navigation);
         document.title = title;
 
         // Update meta description for better SEO
@@ -88,6 +93,7 @@ export const useDocumentTitle = (navigation: NavigationState) => {
         }
 
         const descriptions: Record<string, string> = {
+            qualityTools: qualityToolsDescription,
             dashboard: 'AccreditEx Dashboard - Real-time overview of accreditation compliance, project progress, and key quality metrics.',
             analytics: 'Analytics and reporting for accreditation compliance trends and performance insights.',
             analyticsHub: 'Deep-dive analytics hub with compliance dashboards, gap analysis, and trend visualizations.',
@@ -115,5 +121,5 @@ export const useDocumentTitle = (navigation: NavigationState) => {
         return () => {
             document.title = 'AccreditEx — Healthcare Accreditation Management Platform';
         };
-    }, [navigation]);
+    }, [navigation, qualityToolsTitle, qualityToolsDescription]);
 };
