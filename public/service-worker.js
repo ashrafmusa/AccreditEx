@@ -39,7 +39,7 @@ self.addEventListener('fetch', event => {
 
   // Network-first for everything: try network, fallback to cache
   event.respondWith(
-    fetch(request)
+    fetch(request, request.mode === 'navigate' ? { cache: 'no-store' } : {})
       .then(response => {
         // Cache successful responses (status 200)
         if (response && response.status === 200) {
