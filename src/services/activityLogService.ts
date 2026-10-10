@@ -5,7 +5,7 @@ import {
   query,
   orderBy,
   limit,
-  getDocs,
+  getDocsFromServer,
   where,
   Timestamp,
 } from "firebase/firestore";
@@ -85,7 +85,7 @@ export const getActivityLogs = async (options?: {
       q = query(q, limit(options.limitCount));
     }
 
-    const snapshot = await getDocs(q);
+    const snapshot = await getDocsFromServer(q);
     return snapshot.docs.map((doc) => {
       const data = doc.data();
       return {

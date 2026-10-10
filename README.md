@@ -37,7 +37,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
     - Analysis is explicitly requested with **Analyze Document**. Missing metrics show **Not assessed**, invalid responses fail visibly, and findings must include exact quotes from the supplied document. Quality estimates are not verified accreditation scores; no default scores are fabricated.
 -   **Risk Management Hub**: ISO 31000-compliant risk register with risk matrices, CAPA integration, and root cause analysis (Fishbone + Five-Why).
 -   **Audit Management Hub**: Internal/external audit planning, tracer worksheets, findings management, and corrective action tracking.
-    - Activity-log reads require the `activity_logs` organization/timestamp composite indexes declared in `firestore.indexes.json`. Read failures display an error and retry action instead of claiming the log is empty.
+    - Activity-log reads require the `activity_logs` organization/timestamp composite indexes declared in `firestore.indexes.json`. Reads require server confirmation rather than silently falling back to stale offline rows. Read failures display an error and retry action instead of claiming the log is empty.
     - SMCS seeding resolves a single active program from complete standard coverage, never the dataset's legacy `prog-ohap` identifier, and checks for existing legacy or repaired projects before writing.
 
 -   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis.

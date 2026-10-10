@@ -1,5 +1,5 @@
 import { getActivityLogs } from "@/services/activityLogService";
-import { getDocs, query, where, orderBy, limit } from "firebase/firestore";
+import { getDocsFromServer, query, where, orderBy, limit } from "firebase/firestore";
 import { getTenantQuery } from "@/utils/tenantQuery";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -7,7 +7,7 @@ import { join } from "node:path";
 jest.mock("firebase/firestore", () => ({
   collection: jest.fn(),
   addDoc: jest.fn(),
-  getDocs: jest.fn(),
+  getDocsFromServer: jest.fn(),
   query: jest.fn(),
   where: jest.fn(),
   orderBy: jest.fn(),
@@ -25,7 +25,7 @@ describe("Activity log queries", () => {
   it("uses tenant-scoped newest-first filtering and returns stored activity", async () => {
     // Arrange
     jest
-      .mocked(getDocs)
+      .mocked(getDocsFromServer)
       .mockResolvedValue({
         docs: [
           {
@@ -37,7 +37,7 @@ describe("Activity log queries", () => {
             }),
           },
         ],
-      } as Awaited<ReturnType<typeof getDocs>>);
+      } as Awaited<ReturnType<typeof getDocsFromServer>>);
     // Act
     const logs = await getActivityLogs({
       userId: "u1",
@@ -57,7 +57,7 @@ describe("Activity log queries", () => {
   it("propagates missing-index errors rather than returning a false empty log", async () => {
     // Arrange
     const error = new Error("The query requires an index");
-    jest.mocked(getDocs).mockRejectedValue(error);
+    jest.mocked(getDocsFromServer).mockRejectedValue(error);
     const consoleError = jest
       .spyOn(console, "error")
       .mockImplementation(() => {});
