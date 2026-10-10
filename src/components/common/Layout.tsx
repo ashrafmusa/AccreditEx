@@ -18,6 +18,7 @@ import {
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { logger } from "@/services/logger";
 
 // Lazy-load TourController — manages all tours via centralized registry
 const TourController = lazy(() =>
@@ -42,7 +43,21 @@ const Layout: React.FC<LayoutProps> = ({
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isNavExpanded, setIsNavExpanded] = useState(false);
+  const [isNavExpanded, setIsNavExpanded] = useState(() => {
+    try {
+      return localStorage.getItem("accreditex-sidebar-expanded") !== "false";
+    } catch (error) {
+      logger.warn("Unable to read sidebar preference", error);
+      return true;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem("accreditex-sidebar-expanded", String(isNavExpanded));
+    } catch (error) {
+      logger.warn("Unable to save sidebar preference", error);
+    }
+  }, [isNavExpanded]);
 
   const currentUser = useUserStore((state) => state.currentUser)!;
   const projects = useProjectStore((state) => state.projects);

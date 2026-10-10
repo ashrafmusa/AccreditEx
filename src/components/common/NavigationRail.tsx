@@ -10,6 +10,7 @@ import {
   ChartBarIcon,
   ChartBarSquareIcon,
   ChartPieIcon,
+  ChevronLeftIcon,
   ChatBubbleLeftEllipsisIcon,
   CircleStackIcon,
   ClipboardDocumentListIcon,
@@ -33,6 +34,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
 import { isAdminUser } from "@/utils/roleAccess";
 import React, { useRef } from "react";
+import SidebarNavigation from "./SidebarNavigation";
 
 interface NavigationRailProps {
   setNavigation: (state: NavigationState) => void;
@@ -58,19 +60,20 @@ const NavItem: React.FC<{
 }> = ({ item, isActive, isExpanded, onClick }) => (
   <li>
     <button
+      type="button"
       onClick={onClick}
       onPointerEnter={() => prefetchRoute(item.nav.view)}
       id={`nav-item-${item.key}`}
       aria-label={item.label}
       aria-current={isActive ? "page" : undefined}
       title={!isExpanded ? item.label : undefined}
-      className={`w-full flex items-center h-12 px-4 rounded-lg transition-colors duration-200 group ${
+      className={`w-full flex items-center min-h-12 px-3 py-2 rounded-lg transition-colors duration-200 group focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary ${
         isActive
           ? "bg-brand-primary text-white"
-          : "text-slate-500 dark:text-slate-400 hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 hover:text-brand-primary"
+          : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-brand-primary/10 dark:hover:bg-brand-primary/20 hover:text-brand-primary"
       }`}
     >
-      <item.icon className="h-6 w-6 shrink-0" />
+      <item.icon className="h-5 w-5 shrink-0" aria-hidden="true" />
       <span
         className={`transition-opacity duration-200 font-semibold whitespace-nowrap ${
           isExpanded
@@ -97,7 +100,8 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
   const isProjectsActive =
     navigation.view === "projects" ||
     navigation.view === "projectDetail" ||
-    navigation.view === "createProject";
+    navigation.view === "createProject" ||
+    navigation.view === "editProject";
 
   const navRef = useRef<HTMLElement>(null);
   useArrowNavigation(navRef);
@@ -275,18 +279,16 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
     if (key === "projects") return isProjectsActive;
     if (navigation.view === "settings") return key === "settings";
     if (navigation.view === "messaging") return key === "messaging";
+    if (key === "accreditationHub" && currentView === "standards") return true;
     return currentView === key;
   };
 
   return (
     <aside
-      className={`fixed top-0 ltr:left-0 rtl:right-0 h-full bg-brand-surface dark:bg-dark-brand-surface border-r border-brand-border dark:border-dark-brand-border flex flex-col py-4 transition-all duration-300 z-20 ${
+      className={`fixed top-0 ltr:left-0 rtl:right-0 h-full bg-brand-surface dark:bg-dark-brand-surface border-e border-brand-border dark:border-dark-brand-border flex flex-col py-4 transition-all duration-300 z-20 ${
         isExpanded ? "w-64" : "w-20"
       }`}
-      onMouseEnter={() => setIsExpanded(true)}
-      onMouseLeave={() => setIsExpanded(false)}
-      aria-expanded={isExpanded}
-      aria-label="Main Navigation Rail"
+      aria-label={t("navigation")}
       ref={navRef}
     >
       <div
@@ -303,36 +305,34 @@ const NavigationRail: React.FC<NavigationRailProps> = ({
         ) : (
           <LogoIcon className="h-8 w-8 shrink-0" />
         )}
-        <h1
-          className={`text-2xl font-bold transition-opacity duration-200 whitespace-nowrap ${
-            isExpanded ? "opacity-100 ltr:ml-3 rtl:mr-3" : "opacity-0"
-          }`}
-        >
+        {isExpanded && <h1 className="text-2xl font-bold whitespace-nowrap ltr:ml-3 rtl:mr-3">
           <span className="text-brand-text-primary dark:text-dark-brand-text-primary">
             Accredit
           </span>
           <span className="text-brand-primary">Ex</span>
-        </h1>
+        </h1>}
+      </div>
+      <div className="px-3 mb-2">
+        <button type="button" aria-label={t(isExpanded ? "navCollapse" : "navExpand")}
+          aria-expanded={isExpanded} aria-controls="desktop-sidebar-navigation"
+          title={t(isExpanded ? "navCollapse" : "navExpand")}
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex min-h-11 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-brand-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary">
+          <ChevronLeftIcon className={`h-5 w-5 shrink-0 rtl:rotate-180 ${!isExpanded ? "ltr:rotate-180 rtl:rotate-0" : ""}`} aria-hidden="true" />
+          {isExpanded && <span>{t("navCollapse")}</span>}
+        </button>
       </div>
       <nav
+        id="desktop-sidebar-navigation"
         className="flex-1 px-3 overflow-y-auto min-h-0 scrollbar-thin"
         role="navigation"
-        aria-label="Primary Navigation"
+        aria-label={t("navPrimary")}
       >
-        <ul className="space-y-1" role="list">
-          {visibleNavItems.map((item) => (
-            <NavItem
-              key={item.key}
-              item={item}
-              isActive={isActive(item.key)}
-              isExpanded={isExpanded}
-              onClick={() => setNavigation(item.nav)}
-            />
-          ))}
-        </ul>
+        <SidebarNavigation items={visibleNavItems} isActive={isActive}
+          expanded={isExpanded} onExpand={() => setIsExpanded(true)} onNavigate={setNavigation} />
       </nav>
       <div className="px-3 pt-3 border-t border-brand-border dark:border-dark-brand-border">
-        <ul className="space-y-2" role="list" aria-label="Secondary Navigation">
+        <ul className="space-y-2" role="list" aria-label={t("navSecondary")}>
           {visibleBottomNavItems.map((item) => (
             <NavItem
               key={item.key}

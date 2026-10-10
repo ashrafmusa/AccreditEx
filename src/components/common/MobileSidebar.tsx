@@ -34,6 +34,7 @@ import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
 import React, { useEffect, useRef } from "react";
 import UserAvatar from "./UserAvatar";
+import SidebarNavigation from "./SidebarNavigation";
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -72,25 +73,27 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   // Focus Trap
   useEffect(() => {
     if (isOpen && sidebarRef.current) {
-      const focusableElements = sidebarRef.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      const firstElement = focusableElements[0] as HTMLElement;
-      const lastElement = focusableElements[
-        focusableElements.length - 1
-      ] as HTMLElement;
+      const previousFocus = document.activeElement;
+      const getFocusableElements = () => Array.from(
+        sidebarRef.current?.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+        ) || [],
+      ).filter(element => !element.closest("[hidden]") && !element.hasAttribute("disabled"));
 
       const handleTabKey = (e: KeyboardEvent) => {
         if (e.key === "Tab") {
+          const focusableElements = getFocusableElements();
+          const firstElement = focusableElements[0];
+          const lastElement = focusableElements[focusableElements.length - 1];
           if (e.shiftKey) {
             if (document.activeElement === firstElement) {
               e.preventDefault();
-              lastElement.focus();
+              lastElement?.focus();
             }
           } else {
             if (document.activeElement === lastElement) {
               e.preventDefault();
-              firstElement.focus();
+              firstElement?.focus();
             }
           }
         }
@@ -104,11 +107,12 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
 
       document.addEventListener("keydown", handleTabKey);
       document.addEventListener("keydown", handleEscapeKey);
-      firstElement?.focus();
+      getFocusableElements()[0]?.focus();
 
       return () => {
         document.removeEventListener("keydown", handleTabKey);
         document.removeEventListener("keydown", handleEscapeKey);
+        if (previousFocus instanceof HTMLElement && previousFocus.isConnected) previousFocus.focus();
       };
     }
   }, [isOpen, setIsOpen]);
@@ -293,6 +297,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   const isActive = (key: string) => {
     if (key === "projects") return isProjectsActive;
     if (key === "messaging") return navigation.view === "messaging";
+    if (key === "accreditationHub" && currentView === "standards") return true;
 
     if (navigation.view === "settings") {
       const section = navigation.section;
@@ -325,10 +330,12 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
         ref={sidebarRef}
         role="dialog"
         aria-modal="true"
-        aria-label="Mobile Navigation"
-        className={`fixed inset-y-0 ${dir === "ltr" ? "left-0" : "right-0"} w-72 bg-slate-900 text-white transform transition-transform z-40 sm:hidden ${isOpen ? "translate-x-0" : dir === "ltr" ? "-translate-x-full" : "translate-x-full"}`}
+        aria-label={t("navMobile")}
+        inert={!isOpen}
+        aria-hidden={!isOpen}
+        className={`fixed inset-y-0 ${dir === "ltr" ? "left-0" : "right-0"} w-72 max-w-[calc(100vw-2rem)] h-dvh flex flex-col bg-brand-surface dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary transform transition-transform z-40 sm:hidden ${isOpen ? "translate-x-0" : dir === "ltr" ? "-translate-x-full" : "translate-x-full"}`}
       >
-        <div className="flex items-center justify-between h-20 px-4 border-b border-white/10">
+        <div className="flex shrink-0 items-center justify-between h-20 px-4 border-b border-brand-border dark:border-dark-brand-border">
           <div className="flex items-center">
             {appSettings?.logoUrl ? (
               <img
@@ -340,13 +347,13 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
               <LogoIcon className="h-8 w-8" />
             )}
             <h1 className="text-2xl font-bold mx-3">
-              <span className="text-gray-100">Accredit</span>
+              <span>Accredit</span>
               <span className="text-brand-primary">Ex</span>
             </h1>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-1 rounded-lg hover:bg-white/10 transition-colors"
+            className="min-h-11 min-w-11 flex items-center justify-center rounded-lg hover:bg-brand-primary/10 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
             aria-label={t("closeMenu")}
           >
             <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -354,43 +361,32 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
         </div>
         {/* User identity */}
         {currentUser && (
-          <div className="px-4 py-3 border-b border-white/10 flex items-center gap-3">
+          <div className="shrink-0 px-4 py-3 border-b border-brand-border dark:border-dark-brand-border flex items-center gap-3">
             <UserAvatar user={currentUser} size="sm" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate">
+              <p className="text-sm font-semibold truncate">
                 {currentUser.name}
               </p>
-              <p className="text-xs text-gray-400 truncate">
+              <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary truncate">
                 {currentUser.role}
               </p>
             </div>
           </div>
         )}
         <nav
-          className="flex-1 px-4 py-6 flex flex-col justify-between h-[calc(100%-5rem)]"
-          aria-label="Main Navigation"
+          className="min-h-0 flex-1 overflow-y-auto px-3 py-3"
+          aria-label={t("navPrimary")}
         >
-          <ul role="list">
-            {mainItems.map((item) => (
-              <li key={item.key}>
-                <button
-                  onClick={() => handleNavigate(item.nav)}
-                  onPointerEnter={() => prefetchRoute(item.nav.view)}
-                  className={`w-full text-left flex items-center px-4 py-3 my-1 rounded-lg transition-colors duration-200 ${isActive(item.key) ? "bg-brand-primary text-white" : "text-gray-300 hover:bg-white/10 hover:text-white"}`}
-                >
-                  <item.icon className="h-6 w-6 ltr:mr-3 rtl:ml-3" />
-                  <span className="font-medium">{item.label}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-          <ul role="list" aria-label="Secondary Navigation">
+          <SidebarNavigation items={mainItems} isActive={isActive} onNavigate={handleNavigate} itemIdPrefix="mobile-nav-item" />
+        </nav>
+          <ul className="shrink-0 border-t border-brand-border dark:border-dark-brand-border px-3 py-2" role="list" aria-label={t("navSecondary")}>
             {bottomItems.map((item) => (
               <li key={item.key}>
                 <button
                   onClick={() => handleNavigate(item.nav)}
                   onPointerEnter={() => prefetchRoute(item.nav.view)}
-                  className={`w-full text-left flex items-center px-4 py-3 my-1 rounded-lg transition-colors duration-200 ${isActive(item.key) ? "bg-brand-primary text-white" : "text-gray-300 hover:bg-white/10 hover:text-white"}`}
+                  aria-current={isActive(item.key) ? "page" : undefined}
+                  className={`w-full text-start flex items-center min-h-12 px-3 py-3 my-1 rounded-lg transition-colors duration-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary ${isActive(item.key) ? "bg-brand-primary text-white" : "text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-brand-primary/10"}`}
                 >
                   <item.icon className="h-6 w-6 ltr:mr-3 rtl:ml-3" />
                   <span className="font-medium">{item.label}</span>
@@ -398,7 +394,6 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
               </li>
             ))}
           </ul>
-        </nav>
       </div>
     </>
   );

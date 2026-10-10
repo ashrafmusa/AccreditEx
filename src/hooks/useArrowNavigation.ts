@@ -36,8 +36,8 @@ export const useArrowNavigation = (
     const handleKeyDown = (e: KeyboardEvent) => {
       // Get all focusable items
       const items = Array.from(
-        container.querySelectorAll(itemSelector)
-      ) as HTMLElement[];
+        container.querySelectorAll<HTMLElement>(itemSelector)
+      ).filter(item => !item.closest("[hidden], [inert]") && !item.hasAttribute("disabled"));
 
       if (items.length === 0) return;
 

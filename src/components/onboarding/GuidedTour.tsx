@@ -159,7 +159,13 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
 
   useEffect(() => {
     if (!isActive || isCompleted) return;
-    positionTooltip();
+    const targetSelector = steps[currentStep]?.target;
+    const target = targetSelector ? document.querySelector(targetSelector) : null;
+    const hiddenPanel = target?.closest("ul[hidden]");
+    const groupToggle = hiddenPanel?.previousElementSibling;
+    if (groupToggle instanceof HTMLButtonElement) groupToggle.click();
+    const revealTimer = hiddenPanel ? window.setTimeout(positionTooltip, 350) : undefined;
+    if (!hiddenPanel) positionTooltip();
 
     // Reposition on resize/scroll
     const handleReposition = () => positionTooltip();
@@ -167,10 +173,11 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({
     window.addEventListener("scroll", handleReposition, true);
 
     return () => {
+      if (revealTimer !== undefined) window.clearTimeout(revealTimer);
       window.removeEventListener("resize", handleReposition);
       window.removeEventListener("scroll", handleReposition, true);
     };
-  }, [isActive, isCompleted, positionTooltip]);
+  }, [isActive, isCompleted, positionTooltip, steps, currentStep]);
 
   // Keyboard navigation
   useEffect(() => {
