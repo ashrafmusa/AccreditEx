@@ -18,13 +18,17 @@ import PDFViewerModal from "../documents/PDFViewerModal";
 import DocumentEditorModal from "../documents/DocumentEditorModal";
 import { cloudinaryService } from "@/services/cloudinaryService";
 import { getDocumentViewAction } from "@/utils/documentViewingHelper";
+import { useToast } from "@/hooks/useToast";
 
 interface PDCACycleDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   cycle: PDCACycle | CAPAReport;
   type: "cycle" | "capa";
-  onUpdate: (updatedCycle: PDCACycle | CAPAReport) => void;
+  onUpdate: (updatedCycle: PDCACycle | CAPAReport) => Promise<void> | void;
+  readOnly?: boolean;
+  projectId?: string;
+  organizationId?: string;
 }
 
 const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
@@ -33,6 +37,9 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
   cycle,
   type,
   onUpdate,
+  readOnly = false,
+  projectId,
+  organizationId,
 }) => {
   const { t, lang } = useTranslation();
   const {
@@ -40,7 +47,8 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
     generateSuggestions,
     isLoading: isLoadingSuggestions,
   } = usePDCASuggestions();
-  const { documents } = useAppStore();
+  const { documents, addControlledDocument } = useAppStore();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<PDCAStage | "History">("Plan");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
@@ -83,31 +91,49 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
     return tab.toLowerCase() + "Stage";
   };
 
-  const linkedDocs = documents.filter((doc) =>
-    (cycle.linkedDocumentIds || []).includes(doc.id),
+  const linkedDocs = documents.filter(
+    (doc) =>
+      (!organizationId || doc.organizationId === organizationId) &&
+      (cycle.linkedDocumentIds || []).includes(doc.id),
   );
 
-  const handleDocumentsSelected = (documentIds: string[]) => {
+  const handleDocumentsSelected = async (documentIds: string[]) => {
+    if (readOnly) return;
     const currentIds = cycle.linkedDocumentIds || [];
     const uniqueIds = documentIds.filter((id) => !currentIds.includes(id));
-    onUpdate({ ...cycle, linkedDocumentIds: [...currentIds, ...uniqueIds] });
-    setIsPickerOpen(false);
+    try {
+      await onUpdate({
+        ...cycle,
+        linkedDocumentIds: [...currentIds, ...uniqueIds],
+      });
+      setIsPickerOpen(false);
+    } catch (error) {
+      console.error("PDCA document linkage failed:", error);
+      toast.error(t("projectWriteFailed"));
+    }
   };
 
-  const handleRemoveDocument = (docId: string) => {
+  const handleRemoveDocument = async (docId: string) => {
+    if (readOnly) return;
     const currentIds = cycle.linkedDocumentIds || [];
-    onUpdate({
-      ...cycle,
-      linkedDocumentIds: currentIds.filter((id) => id !== docId),
-    });
+    try {
+      await onUpdate({
+        ...cycle,
+        linkedDocumentIds: currentIds.filter((id) => id !== docId),
+      });
+    } catch (error) {
+      console.error("PDCA document removal failed:", error);
+      toast.error(t("projectWriteFailed"));
+    }
   };
 
   const handleUploadDocument = () => {
+    if (readOnly) return;
     setShowUploader(true);
   };
 
   const handleFilesSelected = async (files: File[]) => {
-    if (files.length === 0) return;
+    if (readOnly || isUploading || files.length === 0) return;
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -122,29 +148,25 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
         (progress) => setUploadProgress(progress.progress),
       );
 
-      const newDoc: AppDocument = {
-        id: documentId,
+      const newDoc = await addControlledDocument({
         name: { en: file.name, ar: file.name },
         type: "Evidence",
-        isControlled: false,
-        status: "Approved",
         content: { en: "", ar: "" },
         fileUrl,
-        currentVersion: 1,
-        versionHistory: [],
-        uploadedAt: new Date().toISOString(),
-      };
-
-      // Note: In a real app we would add this to the global store via addDocument
-      // For now we'll simulate it by updating the cycle's linked docs
-      // addDocument(newDoc);
+        projectId,
+        tags: ["pdca-evidence", cycle.id],
+      });
 
       const currentIds = cycle.linkedDocumentIds || [];
-      onUpdate({ ...cycle, linkedDocumentIds: [...currentIds, documentId] });
+      await onUpdate({
+        ...cycle,
+        linkedDocumentIds: [...currentIds, newDoc.id],
+      });
 
       setShowUploader(false);
     } catch (error) {
-      alert("Upload failed. Please try again.");
+      console.error("PDCA evidence upload or linking failed:", error);
+      toast.error(t("projectWriteFailed"));
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -409,34 +431,30 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                 </div>
               )}
 
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                <h4 className="font-medium mb-3 flex items-center gap-2">
-                  <ClipboardDocumentCheckIcon className="w-5 h-5 text-gray-500" />
-                  {t("quickActions") || "Quick Actions"}
-                </h4>
-                <div className="space-y-2">
-                  <button
-                    onClick={handleUploadDocument}
-                    className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-                  >
-                    <PaperClipIcon className="w-4 h-4" />
-                    {t("uploadDocument") || "Upload Document"}
-                  </button>
-                  <button
-                    onClick={() => setIsPickerOpen(true)}
-                    className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-                  >
-                    <PaperClipIcon className="w-4 h-4" />
-                    {t("linkDocument") || "Link Document"}
-                  </button>
-                  <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                    {t("assignTask") || "Assign Task"}
-                  </button>
-                  <button className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-red-600 hover:text-red-700">
-                    {t("deleteCycle") || "Delete Cycle"}
-                  </button>
+              {!readOnly && (
+                <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <ClipboardDocumentCheckIcon className="w-5 h-5 text-gray-500" />
+                    {t("quickActions") || "Quick Actions"}
+                  </h4>
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleUploadDocument}
+                      className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    >
+                      <PaperClipIcon className="w-4 h-4" />
+                      {t("uploadDocument") || "Upload Document"}
+                    </button>
+                    <button
+                      onClick={() => setIsPickerOpen(true)}
+                      className="w-full text-left px-3 py-2 text-sm rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    >
+                      <PaperClipIcon className="w-4 h-4" />
+                      {t("linkDocument") || "Link Document"}
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Linked Documents Section */}
               {linkedDocs.length > 0 && (
@@ -453,7 +471,7 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
                         compact={true}
                         showActions={true}
                         onView={handleViewDocument}
-                        onRemove={handleRemoveDocument}
+                        onRemove={readOnly ? undefined : handleRemoveDocument}
                       />
                     ))}
                   </div>
@@ -471,9 +489,6 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
           >
             {t("close") || "Close"}
           </button>
-          <button className="px-4 py-2 bg-brand-primary text-white rounded-md hover:bg-brand-primary-dark">
-            {t("saveChanges") || "Save Changes"}
-          </button>
         </div>
       </div>
 
@@ -481,7 +496,9 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
         onSelect={handleDocumentsSelected}
-        documents={documents}
+        documents={documents.filter(
+          (doc) => !organizationId || doc.organizationId === organizationId,
+        )}
         selectedIds={cycle.linkedDocumentIds || []}
         multiSelect={true}
       />

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useToast } from "@/hooks/useToast";
 import { ChecklistItem, Project, AppDocument } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -25,7 +26,7 @@ interface ChecklistEvidenceProps {
   isFinalized: boolean;
   onUpload: (projectId: string, checklistItemId: string, fileData: any) => void;
   onLinkData: () => void;
-  onUpdate: (updates: Partial<ChecklistItem>) => void;
+  onUpdate: (updates: Partial<ChecklistItem>) => Promise<void> | void;
 }
 
 const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
@@ -37,6 +38,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   onUpdate,
 }) => {
   const { t } = useTranslation();
+  const toast = useToast();
   const { documents, addControlledDocument } = useAppStore();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
@@ -47,8 +49,11 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
   const [viewingDOCX, setViewingDOCX] = useState<AppDocument | null>(null);
 
-  const evidenceDocs = documents.filter((doc) =>
-    item.evidenceFiles.includes(doc.id),
+  const evidenceDocs = documents.filter(
+    (doc) =>
+      (!project.organizationId ||
+        doc.organizationId === project.organizationId) &&
+      item.evidenceFiles.includes(doc.id),
   );
 
   const handleFilesSelected = async (files: File[]) => {
@@ -89,7 +94,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
       console.log("✅ Firebase document created:", createdDoc.id);
 
       // Link to checklist item
-      onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
+      await onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
 
       console.log("✅ Checklist item updated");
 
@@ -143,7 +148,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
       } as any);
 
       // Link to checklist item
-      onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
+      await onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
     } catch (error) {
       console.error("Camera capture error:", error);
       const errorMessage =
@@ -156,18 +161,30 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
     }
   };
 
-  const handleDocumentsSelected = (documentIds: string[]) => {
+  const handleDocumentsSelected = async (documentIds: string[]) => {
+    if (isFinalized) return;
     const uniqueIds = documentIds.filter(
       (id) => !item.evidenceFiles.includes(id),
     );
-    onUpdate({ evidenceFiles: [...item.evidenceFiles, ...uniqueIds] });
-    setIsPickerOpen(false);
+    try {
+      await onUpdate({ evidenceFiles: [...item.evidenceFiles, ...uniqueIds] });
+      setIsPickerOpen(false);
+    } catch (error) {
+      console.error("Checklist evidence linkage failed:", error);
+      toast.error(t("projectWriteFailed"));
+    }
   };
 
-  const handleRemoveDocument = (docId: string) => {
-    onUpdate({
-      evidenceFiles: item.evidenceFiles.filter((id) => id !== docId),
-    });
+  const handleRemoveDocument = async (docId: string) => {
+    if (isFinalized) return;
+    try {
+      await onUpdate({
+        evidenceFiles: item.evidenceFiles.filter((id) => id !== docId),
+      });
+    } catch (error) {
+      console.error("Checklist evidence removal failed:", error);
+      toast.error(t("projectWriteFailed"));
+    }
   };
 
   const handleViewDocument = (doc: AppDocument) => {
@@ -314,7 +331,11 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         isOpen={isPickerOpen}
         onClose={() => setIsPickerOpen(false)}
         onSelect={handleDocumentsSelected}
-        documents={documents}
+        documents={documents.filter(
+          (doc) =>
+            !project.organizationId ||
+            doc.organizationId === project.organizationId,
+        )}
         selectedIds={item.evidenceFiles}
         multiSelect={true}
         filterType={["Evidence", "Report"]}

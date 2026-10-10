@@ -1,5 +1,74 @@
 export const en = {
-    // Project List
+  projectEvidenceLinked: "Linked {count} document(s) as evidence.",
+  projectOwnerUnresolved: "Owner reference needs review",
+  viewAllInDocControl: "Open in Document Control",
+  noProjectDocuments: "No documents linked to this project yet.",
+  uploadEvidenceHint: "Upload or link evidence from requirements, design controls or improvement records.",
+  mockSurveys: "Mock surveys",
+  projectDepartmentProgress: "Recorded checklist progress by department",
+  projectBriefingTitle: "AI project health briefing",
+  projectBriefingGenerate: "Generate briefing",
+  projectBriefingRefresh: "Refresh briefing",
+  projectBriefingHint:
+    "Generate an advisory executive summary of project work, risks and next steps. Review the source records before acting.",
+  projectBriefingFailed:
+    "Unable to generate the project briefing. Please retry.",
+  projectTeamAdd: "Add team member",
+  projectTeamRemove: "Remove {name} from the explicit team",
+  projectTeamNoAvailable: "No available workspace members to add.",
+  projectTeamAlreadyAdded: "This user is already on the team.",
+  projectTeamAdded: "Team member added.",
+  projectTeamRemoved:
+    "Team member removed. Requirement assignments are unchanged.",
+  projectTeamLeadRequired: "The project lead cannot be removed from the team.",
+  projectActivityBy: "by {name}",
+  projectDetailLoadError:
+    "Unable to load this project. Retry to restore live updates.",
+  projectDetailUnavailable: "This project is unavailable in your workspace.",
+  projectBackToList: "Back to projects",
+  projectBackToWorkspace: "Back to project",
+  projectDocumentScope:
+    "Showing documents linked to {name}. Other filters still apply.",
+  projectClearDocumentScope: "Show all controlled documents",
+  projectAuditScope:
+    "Recent events recorded with this project ID, plus its embedded activity. Older unlinked organization events are not attributed to this project.",
+  projectWorkspaceSections: "Project workspace sections",
+  projectNextActions: "Project next actions",
+  projectWorkspaceHint:
+    "Assign owners, resolve requirements, link and review evidence, then test improvements with PDCA and mock surveys. Recorded progress is not accreditation certification.",
+  projectReadOnlyNotice:
+    "This project is read-only. Finalized and archived records cannot be changed here.",
+  projectRequirementsAction: "Review {count} outstanding requirements",
+  projectEvidenceAction: "Review {count} linked documents",
+  projectImprovementAction: "PDCA and {count} active CAPA",
+  projectUnresolvedEvidence:
+    "{count} evidence references could not be resolved in this workspace. Review the checklist links.",
+  projectReadinessLoading: "AI is preparing an advisory project review...",
+  projectReadinessTitle: "Advisory finalization review",
+  projectReadinessFailed:
+    "The AI review failed. The project has not been finalized. Retry the review.",
+  projectReadinessAdvisory:
+    "AI advice does not verify evidence or certify accreditation. Review linked documents and unresolved work before signing; the authorized reviewer remains responsible.",
+  projectReviewIssues: "Return to review",
+  projectProceedSignature: "Proceed to reviewer signature",
+  projectFinalizeNamed: "Finalize project: {name}",
+  projectSignatureStatement:
+    "By signing, I attest that I have reviewed this project, its linked evidence and unresolved work. Finalization records my review; it is not accreditation certification.",
+  projectFinalizedSuccess: "Project finalized successfully.",
+  projectFinalizationFailed:
+    "Finalization failed. Check your password, permissions and connection, then retry. No successful signature has been confirmed.",
+  projectAssessorExported:
+    "Assessor pack exported as JSON and evidence-matrix CSV.",
+  projectReportGenerating:
+    "Generating the project PDF report. This may take 30-60 seconds.",
+  projectReportGenerated:
+    "Project PDF report generated. View it in Document Control.",
+  projectReportFailed: "Unable to generate the project report. Please retry.",
+  projectWriteFailed: "Unable to save the project change. Please retry.",
+  projectSurveyFailed: "Unable to start the mock survey. Please retry.",
+  projectSurveyApplied: "Survey findings saved to the project checklist.",
+  projectSurveyApplyFailed: "Unable to apply survey findings. Check permissions and checklist links, then retry.",
+  // Project List
     searchProjects: 'Search projects, programs, departments or leads...',
     projectListHelp: 'Open a project to assign owners, address outstanding requirements and review evidence. Checklist progress is recorded work, not verified accreditation readiness.',
     projectChecklistProgress: 'Checklist progress',

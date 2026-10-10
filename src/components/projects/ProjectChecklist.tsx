@@ -31,10 +31,12 @@ interface DeptAssignmentProposal {
 interface ProjectChecklistProps {
   project: Project;
   onUpdateProject: (project: Project) => void;
+  readOnly?: boolean;
 }
 
 const ProjectChecklist: React.FC<ProjectChecklistProps> = ({
   project: _project,
+  readOnly = false,
 }) => {
   // Normalize: checklist may be absent on newly-created projects from Firestore
   const project = { ..._project, checklist: _project.checklist ?? [] };
@@ -89,7 +91,7 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({
   const clearSelection = () => setSelectedItemIds(new Set());
 
   const handleBulkAssign = async () => {
-    if (!bulkAssignUserId || selectedItemIds.size === 0) return;
+    if (readOnly || !bulkAssignUserId || selectedItemIds.size === 0) return;
     setIsBulkAssigning(true);
     try {
       for (const id of selectedItemIds) {
@@ -257,7 +259,7 @@ Please provide:
   const [isFlaggingRisks, setIsFlaggingRisks] = useState(false);
 
   const handleAIFlagRisks = async () => {
-    if (isFlaggingRisks || project.checklist.length === 0) return;
+    if (readOnly || isFlaggingRisks || project.checklist.length === 0) return;
     setIsFlaggingRisks(true);
     try {
       // Build a compact list of non-compliant / partial / no-evidence items
@@ -616,6 +618,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
 
   // Apply reviewed department proposals to checklist items — single batch write
   const handleApplyDeptProposals = async () => {
+    if (readOnly) return;
     setIsApplyingDepts(true);
     try {
       // Build a standardId → departmentId lookup
@@ -813,7 +816,9 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           </button>
           <button
             onClick={handleAIFlagRisks}
-            disabled={isFlaggingRisks || project.checklist.length === 0}
+            disabled={
+              readOnly || isFlaggingRisks || project.checklist.length === 0
+            }
             className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-amber-600 to-red-600 text-white rounded-lg hover:from-amber-700 hover:to-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
           >
             {isFlaggingRisks ? (
@@ -843,7 +848,9 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           {departments.length > 0 && (
             <button
               onClick={handleAIAssignDepartments}
-              disabled={isAssigningDepts || project.checklist.length === 0}
+              disabled={
+                readOnly || isAssigningDepts || project.checklist.length === 0
+              }
               className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium bg-linear-to-r from-brand-primary to-brand-primary/80 text-white rounded-lg hover:from-brand-primary hover:to-brand-primary/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
             >
               {isAssigningDepts ? (
@@ -874,6 +881,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           {/* Bulk Assign button */}
           <button
             onClick={toggleBulkSelectMode}
+            disabled={readOnly}
             className={`flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition-colors whitespace-nowrap ${
               bulkSelectMode
                 ? "bg-brand-primary text-white border-brand-primary"
@@ -1143,6 +1151,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
               <ChecklistItemComponent
                 item={item}
                 project={project}
+                isFinalized={readOnly}
                 onUpdate={(updates) =>
                   handleChecklistItemUpdate(item.id, updates)
                 }

@@ -1,10 +1,10 @@
-import React, { useState, FC } from "react";
+import React, { useState, useEffect, useRef, FC } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 
 interface SignatureModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: (password: string) => void;
+  onConfirm: (password: string) => Promise<void> | void;
   actionTitle: string;
   signatureStatement: string;
   confirmActionText: string;
@@ -20,11 +20,23 @@ const SignatureModal: FC<SignatureModalProps> = ({
 }) => {
   const { t, dir } = useTranslation();
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitting = useRef(false);
+  useEffect(() => {
+    if (!isOpen) setPassword("");
+  }, [isOpen]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password) {
-      onConfirm(password);
+    if (password && !submitting.current) {
+      submitting.current = true;
+      setIsSubmitting(true);
+      try {
+        await onConfirm(password);
+      } finally {
+        submitting.current = false;
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -33,9 +45,13 @@ const SignatureModal: FC<SignatureModalProps> = ({
   return (
     <div
       className="fixed inset-0 bg-black/60 z-50 flex justify-center items-center backdrop-blur-sm modal-enter"
-      onClick={onClose}
+      onClick={() => {
+        if (!submitting.current) onClose();
+      }}
       role="dialog"
       aria-modal="true"
+      aria-label={actionTitle}
+      aria-busy={isSubmitting}
     >
       <div
         className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-xl w-full max-w-md m-4 modal-content-enter border border-brand-border dark:border-dark-brand-border"
@@ -72,6 +88,7 @@ const SignatureModal: FC<SignatureModalProps> = ({
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-1 block w-full border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-brand-primary focus:border-brand-primary sm:text-sm bg-white dark:bg-gray-800 dark:text-white"
                 required
+                disabled={isSubmitting}
                 autoFocus
               />
             </div>
@@ -80,13 +97,14 @@ const SignatureModal: FC<SignatureModalProps> = ({
             <button
               type="button"
               onClick={onClose}
+              disabled={isSubmitting}
               className="bg-white dark:bg-gray-600 py-2 px-4 border border-gray-300 dark:border-gray-500 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-500"
             >
               {t("cancel")}
             </button>
             <button
               type="submit"
-              disabled={!password}
+              disabled={!password || isSubmitting}
               className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-brand-primary hover:bg-sky-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
               {confirmActionText}

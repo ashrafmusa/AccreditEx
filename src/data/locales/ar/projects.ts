@@ -1,5 +1,72 @@
 export const ar = {
-    // Project List
+  projectEvidenceLinked: "تم ربط {count} مستند كدليل.",
+  projectOwnerUnresolved: "مرجع المسؤول يتطلب المراجعة",
+  viewAllInDocControl: "فتح في ضبط المستندات",
+  noProjectDocuments: "لا توجد مستندات مرتبطة بهذا المشروع بعد.",
+  uploadEvidenceHint: "ارفع الأدلة أو اربطها من المتطلبات أو ضوابط التصميم أو سجلات التحسين.",
+  mockSurveys: "محاكاة التقييم",
+  projectDepartmentProgress: "تقدم قائمة التحقق المسجل حسب القسم",
+  projectBriefingTitle: "ملخص استشاري لحالة المشروع بالذكاء الاصطناعي",
+  projectBriefingGenerate: "إنشاء ملخص",
+  projectBriefingRefresh: "تحديث الملخص",
+  projectBriefingHint:
+    "أنشئ ملخصاً استشارياً للعمل والمخاطر والخطوات التالية. راجع السجلات المصدرية قبل التنفيذ.",
+  projectBriefingFailed: "تعذر إنشاء ملخص المشروع. أعد المحاولة.",
+  projectTeamAdd: "إضافة عضو للفريق",
+  projectTeamRemove: "إزالة {name} من الفريق المحدد",
+  projectTeamNoAvailable: "لا يوجد أعضاء متاحون للإضافة في مساحة العمل.",
+  projectTeamAlreadyAdded: "هذا المستخدم عضو في الفريق بالفعل.",
+  projectTeamAdded: "تمت إضافة عضو الفريق.",
+  projectTeamRemoved: "تمت إزالة عضو الفريق. لم تتغير تعيينات المتطلبات.",
+  projectTeamLeadRequired: "لا يمكن إزالة مسؤول المشروع من الفريق.",
+  projectActivityBy: "بواسطة {name}",
+  projectDetailLoadError:
+    "تعذر تحميل المشروع. أعد المحاولة لاستعادة التحديثات المباشرة.",
+  projectDetailUnavailable: "هذا المشروع غير متاح في مساحة عملك.",
+  projectBackToList: "العودة إلى المشاريع",
+  projectBackToWorkspace: "العودة إلى المشروع",
+  projectDocumentScope:
+    "عرض المستندات المرتبطة بـ {name}. تبقى عوامل التصفية الأخرى مطبقة.",
+  projectClearDocumentScope: "عرض جميع المستندات المضبوطة",
+  projectAuditScope:
+    "الأحداث الحديثة المسجلة بمعرف هذا المشروع مع سجل نشاطه الداخلي. لا تنسب أحداث المؤسسة القديمة غير المرتبطة إلى هذا المشروع.",
+  projectWorkspaceSections: "أقسام مساحة عمل المشروع",
+  projectNextActions: "الخطوات التالية للمشروع",
+  projectWorkspaceHint:
+    "عين المسؤولين وعالج المتطلبات واربط الأدلة وراجعها ثم اختبر التحسينات بدورات التحسين والمحاكاة. التقدم المسجل ليس شهادة اعتماد.",
+  projectReadOnlyNotice:
+    "هذا المشروع للقراءة فقط. لا يمكن تعديل السجلات المعتمدة نهائياً أو المؤرشفة هنا.",
+  projectRequirementsAction: "مراجعة {count} متطلب متبقٍ",
+  projectEvidenceAction: "مراجعة {count} مستند مرتبط",
+  projectImprovementAction: "دورات التحسين و{count} إجراء تصحيحي ووقائي نشط",
+  projectUnresolvedEvidence:
+    "تعذر العثور على {count} مرجع دليل في مساحة العمل. راجع روابط قائمة التحقق.",
+  projectReadinessLoading: "يعد الذكاء الاصطناعي مراجعة استشارية للمشروع...",
+  projectReadinessTitle: "مراجعة استشارية قبل الاعتماد النهائي",
+  projectReadinessFailed:
+    "فشلت مراجعة الذكاء الاصطناعي. لم يعتمد المشروع نهائياً. أعد المحاولة.",
+  projectReadinessAdvisory:
+    "لا تتحقق مشورة الذكاء الاصطناعي من الأدلة ولا تمنح شهادة اعتماد. راجع المستندات المرتبطة والعمل المتبقي قبل التوقيع؛ يبقى المراجع المخول مسؤولاً.",
+  projectReviewIssues: "العودة للمراجعة",
+  projectProceedSignature: "المتابعة إلى توقيع المراجع",
+  projectFinalizeNamed: "اعتماد المشروع نهائياً: {name}",
+  projectSignatureStatement:
+    "بتوقيعي أقر بأنني راجعت المشروع وأدلته المرتبطة والعمل المتبقي. يسجل الاعتماد النهائي مراجعتي ولا يمثل شهادة اعتماد.",
+  projectFinalizedSuccess: "تم اعتماد المشروع نهائياً بنجاح.",
+  projectFinalizationFailed:
+    "فشل الاعتماد النهائي. تحقق من كلمة المرور والصلاحيات والاتصال ثم أعد المحاولة. لم يتم تأكيد توقيع ناجح.",
+  projectAssessorExported:
+    "تم تصدير حزمة المقيم بصيغة JSON ومصفوفة الأدلة بصيغة CSV.",
+  projectReportGenerating:
+    "جار إنشاء تقرير المشروع بصيغة PDF. قد يستغرق ذلك 30 إلى 60 ثانية.",
+  projectReportGenerated:
+    "تم إنشاء تقرير المشروع. يمكنك عرضه في ضبط المستندات.",
+  projectReportFailed: "تعذر إنشاء تقرير المشروع. أعد المحاولة.",
+  projectWriteFailed: "تعذر حفظ تغيير المشروع. أعد المحاولة.",
+  projectSurveyFailed: "تعذر بدء محاكاة التقييم. أعد المحاولة.",
+  projectSurveyApplied: "تم حفظ نتائج الجولة التفقدية في قائمة مراجعة المشروع.",
+  projectSurveyApplyFailed: "تعذر تطبيق نتائج الجولة التفقدية. تحقق من الصلاحيات وروابط قائمة المراجعة ثم أعد المحاولة.",
+  // Project List
     searchProjects: 'ابحث عن المشاريع أو البرامج أو الأقسام أو المسؤولين...',
     projectListHelp: 'افتح المشروع لتعيين المسؤولين ومعالجة المتطلبات المتبقية ومراجعة الأدلة. تقدم قائمة التحقق عمل مسجل وليس جاهزية اعتماد تم التحقق منها.',
     projectChecklistProgress: 'تقدم قائمة التحقق',

@@ -3,7 +3,6 @@ import { Project, CAPAReport, PDCACycle, PDCAStage } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
-import { useAppStore } from "@/stores/useAppStore";
 import { useToast } from "@/hooks/useToast";
 import { PlusIcon, FunnelIcon } from "../icons";
 import PDCACycleCard from "./PDCACycleCard";
@@ -14,15 +13,18 @@ import { aiAgentService } from "@/services/aiAgentService";
 interface PDCACycleManagerProps {
   project: Project;
   onUpdate?: (project: Project) => void; // Optional now, store handles updates
+  readOnly?: boolean;
 }
 
-const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({ project }) => {
+const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({
+  project,
+  readOnly = false,
+}) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const { currentUser } = useUserStore();
-  const { users } = useAppStore() as any;
-  const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle } =
-    useProjectStore() as any;
+  const { currentUser, users } = useUserStore();
+  const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle, updateCapa } =
+    useProjectStore();
   const [selectedItem, setSelectedItem] = useState<{
     item: CAPAReport | PDCACycle;
     type: "capa" | "cycle";
@@ -129,8 +131,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
 
   // Combine Cycles and CAPAs
   type PDCAItem =
-    | { item: CAPAReport; type: "capa" }
-    | { item: PDCACycle; type: "cycle" };
+    { item: CAPAReport; type: "capa" } | { item: PDCACycle; type: "cycle" };
 
   const allItems: PDCAItem[] = useMemo(() => {
     const capaItems: PDCAItem[] = (project.capaReports || []).map((capa) => ({
@@ -209,6 +210,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
     item: CAPAReport | PDCACycle,
     type: "capa" | "cycle",
   ) => {
+    if (readOnly) return;
     setTransitioningItem({ item, type });
     setShowTransitionForm(true);
   };
@@ -217,7 +219,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
     notes: string,
     attachments: string[],
   ) => {
-    if (!transitioningItem) return;
+    if (readOnly || !transitioningItem) return;
 
     const { item, type } = transitioningItem;
     const currentStage =
@@ -244,9 +246,6 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
         );
       } else {
         // Update PDCA cycle
-        const user = useProjectStore
-          .getState()
-          .projects.find((p) => p.id === project.id);
         const currentCycle = item as PDCACycle;
 
         const historyEntry = {
@@ -255,7 +254,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
             currentCycle.stageHistory?.[currentCycle.stageHistory.length - 1]
               ?.completedAt || currentCycle.createdAt,
           completedAt: new Date().toISOString(),
-          completedBy: user?.id,
+          completedBy: currentUser?.id,
           notes,
           attachments,
         };
@@ -263,7 +262,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
         const updatedCycle: PDCACycle = {
           ...currentCycle,
           currentStage: nextStage,
-          stageHistory: [...currentCycle.stageHistory, historyEntry],
+          stageHistory: [...(currentCycle.stageHistory || []), historyEntry],
         };
 
         await updatePDCACycle(project.id, updatedCycle);
@@ -306,6 +305,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
           </p>
         </div>
         <button
+          disabled={readOnly}
           className="flex items-center gap-2 px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-dark transition-colors"
           onClick={() => setShowNewCycleModal(true)}
         >
@@ -411,8 +411,17 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
                       item={item}
                       type={type}
                       projectId={project.id}
+                      readOnly={readOnly}
+                      ownerName={users.find(user =>
+                        user.id === (type === "capa" ? (item as CAPAReport).assignedTo : (item as PDCACycle).owner) &&
+                        (!project.organizationId || user.organizationId === project.organizationId),
+                      )?.name || t("projectOwnerUnresolved")}
                       onView={() => setSelectedItem({ item, type })}
-                      onAdvanceStage={() => handleAdvanceStage(item, type)}
+                      onAdvanceStage={
+                        readOnly
+                          ? undefined
+                          : () => handleAdvanceStage(item, type)
+                      }
                     />
                   ))}
                   {itemsByStage[stage].length === 0 && (
@@ -434,9 +443,17 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
           onClose={() => setSelectedItem(null)}
           cycle={selectedItem.item}
           type={selectedItem.type}
-          onUpdate={(updatedItem) => {
-            // Item updated successfully
-            setSelectedItem(null);
+          readOnly={readOnly}
+          projectId={project.id}
+          organizationId={project.organizationId}
+          onUpdate={async (updatedItem) => {
+            if (readOnly) return;
+            if (selectedItem.type === "cycle") {
+              await updatePDCACycle(project.id, updatedItem as PDCACycle);
+            } else {
+              await updateCapa(project.id, updatedItem as CAPAReport);
+            }
+            setSelectedItem({ ...selectedItem, item: updatedItem });
           }}
         />
       )}
@@ -511,6 +528,7 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
+                if (readOnly) return;
                 const formData = new FormData(e.currentTarget);
 
                 // Validate form
@@ -568,15 +586,9 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
                     title,
                     description,
                     category: formData.get("category") as
-                      | "Process"
-                      | "Quality"
-                      | "Safety"
-                      | "Efficiency"
-                      | "Other",
+                      "Process" | "Quality" | "Safety" | "Efficiency" | "Other",
                     priority: formData.get("priority") as
-                      | "High"
-                      | "Medium"
-                      | "Low",
+                      "High" | "Medium" | "Low",
                     owner,
                     team: [],
                     currentStage: "Plan",
@@ -687,11 +699,17 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
                       <option value="" disabled>
                         Select owner...
                       </option>
-                      {(users || []).map((user: any) => (
-                        <option key={user.id} value={user.id}>
-                          {user.name}
-                        </option>
-                      ))}
+                      {(users || [])
+                        .filter(
+                          (user) =>
+                            !project.organizationId ||
+                            user.organizationId === project.organizationId,
+                        )
+                        .map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.name}
+                          </option>
+                        ))}
                     </select>
                     {formErrors.owner && (
                       <p className="text-sm text-red-600 dark:text-red-400 mt-1">

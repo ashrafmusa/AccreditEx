@@ -14,6 +14,8 @@ interface PDCACycleCardProps {
   onAdvanceStage?: () => void;
   projectId?: string;
   onAISuggestion?: (suggestions: string) => void;
+  readOnly?: boolean;
+  ownerName?: string;
 }
 
 const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
@@ -23,6 +25,8 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
   onAdvanceStage,
   projectId,
   onAISuggestion,
+  readOnly = false,
+  ownerName,
 }) => {
   const { t } = useTranslation();
   const { createPDCACycle } = useProjectStore();
@@ -43,7 +47,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
 
   const handleConvertToPDCA = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!projectId) return;
+    if (!projectId || readOnly) return;
 
     const capa = item as CAPAReport;
     try {
@@ -234,7 +238,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
         <div className="flex items-center">
           <UserIcon className="h-3 w-3 mr-1" />
           <span className="truncate max-w-[100px]">
-            {owner || t("unassigned")}
+            {ownerName || (owner ? t("projectOwnerUnresolved") : t("unassigned"))}
           </span>
         </div>
         <div
@@ -282,7 +286,7 @@ const PDCACycleCard: React.FC<PDCACycleCardProps> = ({
         )}
 
       {/* CAPA to PDCA Conversion Button */}
-      {type === "capa" && projectId && (
+      {type === "capa" && projectId && !readOnly && (
         <div className="mt-3 space-y-2">
           <button
             onClick={handleAIRootCause}

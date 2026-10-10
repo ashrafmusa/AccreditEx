@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { Project, MockSurvey, User, NavigationState } from "../types";
+import {
+  Project,
+  MockSurvey,
+  User,
+  NavigationState,
+  ProjectStatus,
+} from "../types";
 import { useTranslation } from "../hooks/useTranslation";
 import { Button } from "@/components/ui";
 import { useProjectStore } from "@/stores/useProjectStore";
@@ -8,13 +14,14 @@ import { useToast } from "@/hooks/useToast";
 import { PlusIcon } from "@/components/icons";
 import { aiAgentService } from "@/services/aiAgentService";
 import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
 
 interface SurveyReportPageProps {
   project: Project;
   survey: MockSurvey;
   users: User[];
   surveyor?: User;
-  onApplyFindings: (projectId: string, surveyId: string) => void;
+  onApplyFindings: (projectId: string, surveyId: string) => Promise<void>;
   setNavigation: (state: NavigationState) => void;
 }
 
@@ -27,6 +34,11 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
   setNavigation,
 }) => {
   const { t } = useTranslation();
+  const { can } = usePermission();
+  const readOnly =
+    project.archived ||
+    project.status === ProjectStatus.Finalized ||
+    !can(Action.Update, Resource.Project);
   const { createPDCACycle, createCAPA } = useProjectStore();
   const { addRisk } = useAppStore();
   const toast = useToast();
@@ -34,10 +46,26 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
   const [aiAssessing, setAiAssessing] = useState(false);
   const [aiModalOpen, setAiModalOpen] = useState(false);
   const [aiModalContent, setAiModalContent] = useState("");
+  const [applying, setApplying] = useState(false);
 
   const failedItems = survey.results.filter((r) => r.result === "Fail");
 
+  const handleApplyFindings = async () => {
+    if (readOnly || applying) return;
+    setApplying(true);
+    try {
+      await onApplyFindings(project.id, survey.id);
+      toast.success(t("projectSurveyApplied"));
+    } catch (error) {
+      console.error("Survey findings could not be applied:", error);
+      toast.error(t("projectSurveyApplyFailed"));
+    } finally {
+      setApplying(false);
+    }
+  };
+
   const handleAutoCreateFromSurvey = async () => {
+    if (readOnly || autoCreating || !can(Action.Create, Resource.Risk)) return;
     setAutoCreating(true);
     let risksCreated = 0;
     let capasCreated = 0;
@@ -45,7 +73,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
     try {
       for (const result of failedItems) {
         const item = project.checklist.find(
-          (c) => c.id === result.checklistItemId,
+          (c) => c.id === (result.checklistItemId || result.itemId),
         );
         if (!item) continue;
 
@@ -102,7 +130,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
     try {
       const failedData = failedItems.map((result) => {
         const item = project.checklist.find(
-          (c) => c.id === result.checklistItemId,
+          (c) => c.id === (result.checklistItemId || result.itemId),
         );
         return {
           question: item?.item || "Unknown",
@@ -138,12 +166,15 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
           {surveyor?.name}
         </p>
         <div className="flex gap-3 mt-4">
-          <Button
-            onClick={() => onApplyFindings(project.id, survey.id)}
-            size="sm"
-          >
-            {t("applyFindings")}
-          </Button>
+          {!readOnly && (
+            <Button
+              onClick={handleApplyFindings}
+              disabled={applying || survey.status !== ProjectStatus.Completed}
+              size="sm"
+            >
+              {t("applyFindings")}
+            </Button>
+          )}
           <Button
             onClick={handleAIRiskAssessment}
             disabled={aiAssessing || failedItems.length === 0}
@@ -175,18 +206,20 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
               <>🤖 AI Risk Assessment</>
             )}
           </Button>
-          <Button
-            onClick={handleAutoCreateFromSurvey}
-            disabled={autoCreating || failedItems.length === 0}
-            variant="primary"
-            size="sm"
-            className="bg-rose-600 hover:bg-pink-600"
-          >
-            <PlusIcon className="w-4 h-4 mr-2" />
-            {autoCreating
-              ? "Creating..."
-              : `Auto-Create ${failedItems.length} Risks & CAPAs`}
-          </Button>
+          {!readOnly && can(Action.Create, Resource.Risk) && (
+            <Button
+              onClick={handleAutoCreateFromSurvey}
+              disabled={autoCreating || failedItems.length === 0}
+              variant="primary"
+              size="sm"
+              className="bg-rose-600 hover:bg-pink-600"
+            >
+              <PlusIcon className="w-4 h-4 mr-2" />
+              {autoCreating
+                ? "Creating..."
+                : `Auto-Create ${failedItems.length} Risks & CAPAs`}
+            </Button>
+          )}
         </div>
         {failedItems.length > 0 && (
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
@@ -203,7 +236,7 @@ const SurveyReportPage: React.FC<SurveyReportPageProps> = ({
         <div className="space-y-4">
           {failedItems.map((result) => {
             const item = project.checklist.find(
-              (c) => c.id === result.checklistItemId,
+              (c) => c.id === (result.checklistItemId || result.itemId),
             );
             if (!item) return null;
             return (

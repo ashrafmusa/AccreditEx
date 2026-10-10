@@ -739,6 +739,7 @@ export interface Project {
   updatedAt: string;
   archived?: boolean;
   finalizedBy?: string;
+  finalizedById?: string;
   finalizationDate?: string;
   pdcaCycles?: PDCACycle[];
   teamMembers?: string[];
@@ -1298,6 +1299,7 @@ export interface ActivityLogItem {
   action: string | LocalizedString;
   details?: string;
   type?: string;
+  resourceId?: string;
 }
 
 // Keyboard shortcut map type (for useKeyboardShortcuts hook)

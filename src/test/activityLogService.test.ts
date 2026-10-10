@@ -1,5 +1,14 @@
-import { getActivityLogs } from "@/services/activityLogService";
-import { getDocsFromServer, query, where, orderBy, limit } from "firebase/firestore";
+import {
+  getActivityLogs,
+  getProjectActivityLogs,
+} from "@/services/activityLogService";
+import {
+  getDocsFromServer,
+  query,
+  where,
+  orderBy,
+  limit,
+} from "firebase/firestore";
 import { getTenantQuery } from "@/utils/tenantQuery";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -22,22 +31,58 @@ jest.mock("@/utils/tenantQuery", () => ({
 describe("Activity log queries", () => {
   beforeEach(() => jest.clearAllMocks());
 
+  it("queries project IDs within the tenant without ordering indexes and sorts latest first", async () => {
+    // Arrange
+    jest.mocked(where).mockReturnValue({ type: "where" } as ReturnType<typeof where>);
+    jest.mocked(getDocsFromServer).mockResolvedValue({
+      docs: [
+        {
+          id: "older",
+          data: () => ({
+            timestamp: "2026-10-01",
+            user: "Alya",
+            action: "Updated",
+            resourceId: "p1",
+          }),
+        },
+        {
+          id: "newer",
+          data: () => ({
+            timestamp: "2026-10-10",
+            user: "Alya",
+            action: "Signed",
+            resourceId: "p1",
+          }),
+        },
+      ],
+    } as Awaited<ReturnType<typeof getDocsFromServer>>);
+    // Act
+    const logs = await getProjectActivityLogs("p1");
+    // Assert
+    expect(where).toHaveBeenCalledWith("resourceId", "==", "p1");
+    expect(getTenantQuery).toHaveBeenCalledWith(
+      "activity_logs",
+      expect.anything(),
+    );
+    expect(orderBy).not.toHaveBeenCalled();
+    expect(logs.map((log) => log.id)).toEqual(["newer", "older"]);
+    expect(logs[0].resourceId).toBe("p1");
+  });
+
   it("uses tenant-scoped newest-first filtering and returns stored activity", async () => {
     // Arrange
-    jest
-      .mocked(getDocsFromServer)
-      .mockResolvedValue({
-        docs: [
-          {
-            id: "log1",
-            data: () => ({
-              timestamp: "2026-10-10",
-              user: "Alya",
-              action: { en: "Updated checklist" },
-            }),
-          },
-        ],
-      } as Awaited<ReturnType<typeof getDocsFromServer>>);
+    jest.mocked(getDocsFromServer).mockResolvedValue({
+      docs: [
+        {
+          id: "log1",
+          data: () => ({
+            timestamp: "2026-10-10",
+            user: "Alya",
+            action: { en: "Updated checklist" },
+          }),
+        },
+      ],
+    } as Awaited<ReturnType<typeof getDocsFromServer>>);
     // Act
     const logs = await getActivityLogs({
       userId: "u1",

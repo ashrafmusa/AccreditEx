@@ -4,6 +4,8 @@ import { useTranslation } from "../../hooks/useTranslation";
 import { programColorMap } from "../ui/constants";
 import { ContextualHelp } from "../common/ContextualHelp";
 import { getHelpContent } from "../../data/helpContent";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import { PROJECT_STATUS_KEYS } from "@/utils/projectJourney";
 
 interface Props {
   project: Project;
@@ -11,6 +13,7 @@ interface Props {
   currentUser: User;
   onFinalize: () => void;
   onGenerateReport: () => void;
+  isBusy?: boolean;
 }
 
 const ProjectDetailHeader: React.FC<Props> = ({
@@ -19,19 +22,26 @@ const ProjectDetailHeader: React.FC<Props> = ({
   currentUser,
   onFinalize,
   onGenerateReport,
+  isBusy = false,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const { can } = usePermission();
+  const progress = Number.isFinite(project.progress)
+    ? Math.max(0, Math.min(100, project.progress))
+    : 0;
 
   const isFinalized = project.status === ProjectStatus.Finalized;
   const canModify =
-    currentUser.role === UserRole.Admin ||
-    currentUser.id === project.projectLead?.id ||
-    (currentUser.role === UserRole.ProjectLead &&
-      project.teamMembers?.includes(currentUser.id));
+    can(Action.Update, Resource.Project) &&
+    !project.archived &&
+    (currentUser.role === UserRole.Admin ||
+      currentUser.id === project.projectLead?.id ||
+      (currentUser.role === UserRole.ProjectLead &&
+        project.teamMembers?.includes(currentUser.id)));
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">
-      <div className="flex justify-between items-start">
+      <div className="flex flex-wrap gap-2 justify-between items-start">
         <span
           className={`px-2 py-1 text-xs font-semibold rounded-full ${programColorMap[programName] || "bg-gray-100 text-gray-700"}`}
         >
@@ -43,7 +53,9 @@ const ProjectDetailHeader: React.FC<Props> = ({
               .replace("{name}", project.finalizedBy)
               .replace(
                 "{date}",
-                new Date(project.finalizationDate).toLocaleDateString(),
+                new Date(project.finalizationDate).toLocaleDateString(
+                  lang === "ar" ? "ar" : "en",
+                ),
               )}
           </div>
         )}
@@ -51,20 +63,23 @@ const ProjectDetailHeader: React.FC<Props> = ({
 
       <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2">
         <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-2">
+          <h1 className="text-3xl break-words min-w-0 font-bold text-brand-text-primary dark:text-dark-brand-text-primary mt-2">
             {project.name}
           </h1>
           <ContextualHelp content={getHelpContent("projectDetail")!} />
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-          <button
-            onClick={onGenerateReport}
-            className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-brand-text-primary dark:text-dark-brand-text-primary px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold shadow-sm w-full sm:w-auto text-sm"
-          >
-            {t("generateReport")}
-          </button>
+          {can(Action.Read, Resource.Report) && (
+            <button
+              onClick={onGenerateReport}
+              className="bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-brand-text-primary dark:text-dark-brand-text-primary px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold shadow-sm w-full sm:w-auto text-sm"
+            >
+              {t("generateReport")}
+            </button>
+          )}
           {canModify && !isFinalized && (
             <button
+              disabled={isBusy}
               onClick={onFinalize}
               className="bg-brand-primary text-white px-4 py-2 rounded-lg hover:bg-sky-700 font-semibold shadow-sm w-full sm:w-auto text-sm"
             >
@@ -75,27 +90,21 @@ const ProjectDetailHeader: React.FC<Props> = ({
       </div>
 
       <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-        {t("status")}:{" "}
-        {project.status
-          ? t(
-              (project.status.charAt(0).toLowerCase() +
-                project.status.slice(1).replace(/\s/g, "")) as any,
-            )
-          : "N/A"}
+        {t("status")}: {t(PROJECT_STATUS_KEYS[project.status])}
       </p>
       <div className="mt-4">
         <div className="flex justify-between items-center mb-1">
           <span className="text-sm font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            {t("overallCompliance")}
+            {t("projectChecklistProgress")}
           </span>
           <span className="text-sm font-bold text-brand-primary">
-            {Math.round(project.progress)}%
+            {Math.round(progress)}%
           </span>
         </div>
         <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
           <div
             className="bg-brand-primary h-2.5 rounded-full"
-            style={{ width: `${project.progress}%` }}
+            style={{ width: `${progress}%` }}
           ></div>
         </div>
       </div>

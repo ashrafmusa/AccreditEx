@@ -1,9 +1,15 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useCallback,
+  useRef,
+} from "react";
 import { Project, ActivityLogItem } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SearchIcon, ClipboardDocumentListIcon } from "@/components/icons";
 import { TableContainer, EmptyState, Button } from "@/components/ui";
-import { getRecentActivityLogs } from "@/services/activityLogService";
+import { getProjectActivityLogs } from "@/services/activityLogService";
 
 interface AuditLogComponentProps {
   project: Project;
@@ -15,24 +21,39 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
   const [activityLogData, setActivityLogData] = useState<ActivityLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const requestId = useRef(0);
 
   const fetchLogs = useCallback(async () => {
+    const request = ++requestId.current;
     setIsLoading(true);
+    setActivityLogData([]);
     setLoadError(false);
     try {
-      const logs = await getRecentActivityLogs(100);
-      setActivityLogData(logs);
+      const logs = await getProjectActivityLogs(project.id);
+      if (request !== requestId.current) return;
+      const merged = new Map(
+        [...(project.activityLog || []), ...logs].map((log) => [log.id, log]),
+      );
+      setActivityLogData(
+        [...merged.values()]
+          .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+          .slice(0, 100),
+      );
     } catch (error) {
+      if (request !== requestId.current) return;
       console.error("Failed to fetch activity logs:", error);
       setActivityLogData([]);
       setLoadError(true);
     } finally {
-      setIsLoading(false);
+      if (request === requestId.current) setIsLoading(false);
     }
-  }, []);
+  }, [project.id, project.activityLog]);
 
   useEffect(() => {
     fetchLogs();
+    return () => {
+      requestId.current++;
+    };
   }, [fetchLogs]);
 
   const filteredLog = useMemo(() => {
@@ -54,11 +75,15 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
           <h2 className="text-xl font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
             {t("auditLog")}
           </h2>
+          <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("projectAuditScope")}
+          </p>
         </div>
         <div className="relative w-full sm:w-auto sm:max-w-xs">
           <SearchIcon className="absolute ltr:left-3 rtl:right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
+            aria-label={t("searchActivity")}
             placeholder={t("searchActivity")}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -67,7 +92,10 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
         </div>
       </div>
       {loadError && (
-        <div role="alert" className="p-4 text-sm text-red-700 dark:text-red-300">
+        <div
+          role="alert"
+          className="p-4 text-sm text-red-700 dark:text-red-300"
+        >
           <p>{t("auditLogLoadFailed")}</p>
           <Button variant="secondary" onClick={fetchLogs} className="mt-3">
             {t("auditLogRetry")}

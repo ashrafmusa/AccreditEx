@@ -1,43 +1,59 @@
-import React from 'react';
-import { Project, NavigationState, MockSurvey } from '@/types';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useProjectStore } from '@/stores/useProjectStore';
-import { ClipboardDocumentSearchIcon, PlusIcon } from '@/components/icons';
+import React, { useState } from "react";
+import { Project, NavigationState, MockSurvey } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { ClipboardDocumentSearchIcon, PlusIcon } from "@/components/icons";
 import { Button } from "@/components/ui/Button";
 import { TableContainer } from "@/components/ui/ScrollableContainer";
 import { EmptyState } from "@/components/ui/FeedbackStates";
+import { useToast } from "@/hooks/useToast";
 
 interface SurveyListComponentProps {
   project: Project;
   setNavigation: (state: NavigationState) => void;
+  readOnly?: boolean;
 }
 
 const SurveyListComponent: React.FC<SurveyListComponentProps> = ({
   project,
   setNavigation,
+  readOnly = false,
 }) => {
   const { t } = useTranslation();
   const { startMockSurvey } = useProjectStore();
+  const toast = useToast();
+  const [starting, setStarting] = useState(false);
 
   const surveys = project.mockSurveys || [];
 
   const handleStartSurvey = async () => {
-    const { newSurvey } = await startMockSurvey(project.id);
-    setNavigation({
-      view: "mockSurvey",
-      projectId: project.id,
-      surveyId: newSurvey.id,
-    });
+    if (readOnly || starting) return;
+    setStarting(true);
+    try {
+      const { newSurvey } = await startMockSurvey(project.id);
+      setNavigation({
+        view: "mockSurvey",
+        projectId: project.id,
+        surveyId: newSurvey.id,
+      });
+    } catch (error) {
+      console.error("Mock survey creation failed:", error);
+      toast.error(t("projectSurveyFailed"));
+    } finally {
+      setStarting(false);
+    }
   };
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">{t("mockSurveys")}</h2>
-        <Button onClick={handleStartSurvey} size="sm">
-          <PlusIcon className="w-4 h-4 mr-2" aria-hidden="true" />
-          {t("startNewSurvey")}
-        </Button>
+        {!readOnly && (
+          <Button onClick={handleStartSurvey} size="sm" disabled={starting}>
+            <PlusIcon className="w-4 h-4 mr-2" aria-hidden="true" />
+            {t("startNewSurvey")}
+          </Button>
+        )}
       </div>
 
       {surveys.length === 0 ? (
@@ -48,10 +64,14 @@ const SurveyListComponent: React.FC<SurveyListComponentProps> = ({
             t("noMockSurveysDescription") ||
             "Start your first mock survey to begin the assessment process."
           }
-          action={{
-            label: t("startNewSurvey"),
-            onClick: handleStartSurvey,
-          }}
+          action={
+            readOnly
+              ? undefined
+              : {
+                  label: t("startNewSurvey"),
+                  onClick: handleStartSurvey,
+                }
+          }
         />
       ) : (
         <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border border-gray-200 dark:border-dark-brand-border">
@@ -101,7 +121,7 @@ const SurveyListComponent: React.FC<SurveyListComponentProps> = ({
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      {survey.status === "In Progress" ? (
+                      {survey.status === "In Progress" && !readOnly ? (
                         <Button
                           onClick={() =>
                             setNavigation({
@@ -113,7 +133,7 @@ const SurveyListComponent: React.FC<SurveyListComponentProps> = ({
                           variant="ghost"
                           size="sm"
                           aria-label={`${t("continueSurvey")} ${new Date(
-                            survey.date
+                            survey.date,
                           ).toLocaleDateString()}`}
                         >
                           {t("continueSurvey")}
@@ -130,7 +150,7 @@ const SurveyListComponent: React.FC<SurveyListComponentProps> = ({
                           variant="ghost"
                           size="sm"
                           aria-label={`${t("viewReport")} ${new Date(
-                            survey.date
+                            survey.date,
                           ).toLocaleDateString()}`}
                         >
                           {t("viewReport")}

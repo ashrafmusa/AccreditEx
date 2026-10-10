@@ -30,7 +30,7 @@ interface DesignControlsComponentProps {
   project: Project;
   documents: AppDocument[];
   isFinalized: boolean;
-  onSave: (designControls: DesignControlItem[]) => void;
+  onSave: (designControls: DesignControlItem[]) => Promise<void> | void;
 }
 
 const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
@@ -40,9 +40,10 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   onSave,
 }) => {
   const { t, lang } = useTranslation();
-  const { addDocument } = useAppStore();
+  const { addControlledDocument } = useAppStore();
   const toast = useToast();
   const [controls, setControls] = useState<DesignControlItem[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [currentRowIndex, setCurrentRowIndex] = useState<number | null>(null);
   const [showUploader, setShowUploader] = useState(false);
@@ -94,9 +95,18 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
     setControls(controls.filter((_, i) => i !== index));
   };
 
-  const handleSave = () => {
-    onSave(controls);
-    alert(t("changesSaved"));
+  const handleSave = async () => {
+    if (isFinalized || isSaving) return;
+    setIsSaving(true);
+    try {
+      await onSave(controls);
+      toast.success(t("changesSaved"));
+    } catch (error) {
+      console.error("Design control save failed:", error);
+      toast.error(t("projectWriteFailed"));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleAIComplianceCheck = async () => {
@@ -348,7 +358,13 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
     setShowUploader(true);
   };
   const handleFilesSelected = async (files: File[]) => {
-    if (files.length === 0 || currentRowIndex === null) return;
+    if (
+      isFinalized ||
+      isUploading ||
+      files.length === 0 ||
+      currentRowIndex === null
+    )
+      return;
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -360,29 +376,25 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
         documentId,
         (progress) => setUploadProgress(progress.progress),
       );
-      const newDoc: AppDocument = {
-        id: documentId,
+      const newDoc = await addControlledDocument({
         name: { en: file.name, ar: file.name },
         type: "Evidence",
-        isControlled: false,
-        status: "Approved",
         content: { en: "", ar: "" },
         fileUrl,
-        currentVersion: 1,
-        versionHistory: [],
-        uploadedAt: new Date().toISOString(),
-      };
-      addDocument(newDoc);
+        projectId: project.id,
+        tags: ["design-control-evidence", controls[currentRowIndex].id],
+      });
       const newControls = [...controls];
       newControls[currentRowIndex].linkedDocumentIds = [
         ...newControls[currentRowIndex].linkedDocumentIds,
-        documentId,
+        newDoc.id,
       ];
       setControls(newControls);
       setShowUploader(false);
       setCurrentRowIndex(null);
     } catch (error) {
-      alert("Upload failed. Please try again.");
+      console.error("Design control evidence upload failed:", error);
+      toast.error(t("projectWriteFailed"));
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -459,6 +471,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
               </button>
               <button
                 onClick={handleSave}
+                disabled={isSaving}
                 className="bg-brand-primary text-white px-5 py-2.5 rounded-lg hover:bg-sky-700 font-semibold shadow-sm w-full sm:w-auto"
               >
                 {t("saveChanges")}

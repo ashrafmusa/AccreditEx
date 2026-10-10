@@ -36,10 +36,14 @@ export const useNavigation = (
     // Update navigation based on current URL
     const getNavigationFromUrl = useCallback((): NavigationState => {
         const navState = pathToNavigationState(location.pathname, params);
-        // Add templateId from query params if present
-        const templateId = new URLSearchParams(location.search).get('templateId');
-        if (templateId) {
-            return { ...navState, templateId };
+        const search = new URLSearchParams(location.search);
+        const templateId = search.get('templateId');
+        if (templateId) navState.templateId = templateId;
+        if (navState.view === 'documentControl') {
+            const documentId = search.get('documentId');
+            const filter = search.get('filter');
+            if (documentId) navState.documentId = documentId;
+            if (filter) navState.filter = filter;
         }
         return navState;
     }, [location.pathname, params, location.search]);

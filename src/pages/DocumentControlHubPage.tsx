@@ -88,13 +88,11 @@ const BatchAuditModal = lazy(
   () => import("../components/documents/BatchAuditModal"),
 );
 
+import { projectDocuments } from "@/utils/projectEvidence";
+
 // --- Quick Filter Types ---
 type QuickFilterKey =
-  | "all"
-  | "needsReview"
-  | "drafts"
-  | "recentlyUpdated"
-  | "overdue";
+  "all" | "needsReview" | "drafts" | "recentlyUpdated" | "overdue";
 
 interface DocumentControlHubPageProps {
   documents: AppDocument[];
@@ -277,8 +275,9 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     "documents",
   );
   const [dashboardProjectId, setDashboardProjectId] = useState<string>("");
-  const [dashboardData, setDashboardData] =
-    useState<Awaited<ReturnType<typeof getComplianceDashboard>> | null>(null);
+  const [dashboardData, setDashboardData] = useState<Awaited<
+    ReturnType<typeof getComplianceDashboard>
+  > | null>(null);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [isBatchAuditOpen, setIsBatchAuditOpen] = useState(false);
 
@@ -299,6 +298,15 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   const [selectedDocIds, setSelectedDocIds] = useState<Set<string>>(new Set());
   const [activeQuickFilter, setActiveQuickFilter] =
     useState<QuickFilterKey>("all");
+  const projectFilterId = navigation?.filter?.startsWith("project:")
+    ? navigation.filter.slice(8)
+    : "";
+  const scopedProject = projects.find(
+    (project) =>
+      project.id === projectFilterId &&
+      (!currentUser.organizationId ||
+        project.organizationId === currentUser.organizationId),
+  );
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 20;
@@ -502,7 +510,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
   // --- Quick filter pre-filter logic ---
   const quickFilteredDocuments = useMemo(() => {
-    const controlled = documents.filter((doc) => doc.isControlled);
+    const controlled = projectFilterId
+      ? scopedProject
+        ? projectDocuments(scopedProject, documents)
+        : []
+      : documents.filter((doc) => doc.isControlled);
     const now = new Date();
     switch (activeQuickFilter) {
       case "needsReview":
@@ -520,7 +532,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       default:
         return controlled;
     }
-  }, [documents, activeQuickFilter]);
+  }, [documents, activeQuickFilter, projectFilterId, scopedProject]);
 
   const controlledDocuments = useMemo(() => {
     let filtered = quickFilteredDocuments;
@@ -561,8 +573,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
         (doc) =>
-          doc.name.en.toLowerCase().includes(query) ||
-          doc.name.ar.toLowerCase().includes(query) ||
+          doc.name?.en?.toLowerCase().includes(query) ||
+          doc.name?.ar?.toLowerCase().includes(query) ||
           doc.tags?.some((tag) => tag.toLowerCase().includes(query)),
       );
     }
@@ -602,6 +614,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     searchQuery,
     activeFilters,
     showOnlyMyDocs,
+    projectFilterId,
     projects,
   ]);
 
@@ -614,6 +627,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     searchQuery,
     activeFilters,
     showOnlyMyDocs,
+    projectFilterId,
   ]);
 
   // --- Pagination ---
@@ -938,6 +952,37 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
               {t("documentControlHubDescription")}
             </p>
+            {projectFilterId && (
+              <div
+                role="status"
+                className="mt-3 rounded-lg border border-brand-border dark:border-dark-brand-border p-3 space-y-2"
+              >
+                <p>
+                  {t("projectDocumentScope", {
+                    name: scopedProject?.name || projectFilterId,
+                  })}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant="secondary"
+                    onClick={() =>
+                      setNavigation?.({
+                        view: "projectDetail",
+                        projectId: projectFilterId,
+                      })
+                    }
+                  >
+                    {t("projectBackToWorkspace")}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => setNavigation?.({ view: "documentControl" })}
+                  >
+                    {t("projectClearDocumentScope")}
+                  </Button>
+                </div>
+              </div>
+            )}
             {/* Dynamic Summary Line */}
             <p className="text-sm text-brand-primary dark:text-blue-400 mt-1 font-medium">
               {summaryLine}
@@ -1412,7 +1457,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                 /* ===== List/Table View — using ControlledDocumentsTable ===== */
                 <ControlledDocumentsTable
                   documents={paginatedDocuments}
-                  canUpdate={permissionService.can(currentUser, Action.Update, Resource.Document)}
+                  canUpdate={permissionService.can(
+                    currentUser,
+                    Action.Update,
+                    Resource.Document,
+                  )}
                   canDelete={canModify}
                   canApprove={canApprove}
                   onApprove={(doc) => setSigningDoc(doc)}
@@ -1778,7 +1827,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
               <AIDocumentGenerator
                 onDocumentGenerated={async (response) => {
                   try {
-                    const content = aiDocumentToHtml(response.content, response.format);
+                    const content = aiDocumentToHtml(
+                      response.content,
+                      response.format,
+                    );
                     // Create a real document from AI-generated content
                     const docName =
                       content
@@ -1787,9 +1839,10 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     await onCreateDocument({
                       name: { en: docName, ar: docName },
                       type: "Policy",
-                      content: response.language === "ar"
-                        ? { en: "", ar: content }
-                        : { en: content, ar: "" },
+                      content:
+                        response.language === "ar"
+                          ? { en: "", ar: content }
+                          : { en: content, ar: "" },
                       tags: ["ai-generated"],
                     });
                     toast.success(

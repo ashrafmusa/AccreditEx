@@ -1,10 +1,30 @@
-import { getAuthInstance } from '@/firebase/firebaseConfig';
-import { handleError } from '@/services/errorHandling';
-import * as projectService from '@/services/projectService';
-import { workflowEngine } from '@/services/workflowEngine';
-import { CAPAReport, ChecklistItem, ComplianceStatus, DesignControlItem, MockSurvey, PDCACycle, PDCAStage, Project, ProjectStatus } from '@/types';
-import { create } from 'zustand';
-import { useUserStore } from './useUserStore';
+import { getAuthInstance } from "@/firebase/firebaseConfig";
+import { handleError } from "@/services/errorHandling";
+import * as projectService from "@/services/projectService";
+import { workflowEngine } from "@/services/workflowEngine";
+import {
+  AppDocument,
+  CAPAReport,
+  ChecklistItem,
+  ComplianceStatus,
+  DesignControlItem,
+  MockSurvey,
+  PDCACycle,
+  PDCAStage,
+  PDCAStageHistory,
+  PDCAStageRecord,
+  Project,
+  ProjectStatus,
+  UserRole,
+} from "@/types";
+import { create } from "zustand";
+import { useUserStore } from "./useUserStore";
+import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import {
+  Action,
+  permissionService,
+  Resource,
+} from "@/services/permissionService";
 
 interface ProjectState {
   projects: Project[];
@@ -14,36 +34,81 @@ interface ProjectState {
   fetchAllProjects: () => Promise<void>;
   subscribeToProjects: () => void;
   unsubscribeFromProjects: () => void;
-  addProject: (newProjectData: Omit<Project, 'id'>) => Promise<void>;
+  addProject: (newProjectData: Omit<Project, "id">) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
+  applyProjectSnapshot: (projectId: string, project: Project | null) => void;
   deleteProject: (projectId: string) => Promise<void>;
-  finalizeProject: (projectId: string) => Promise<void>;
-  updateDesignControls: (projectId: string, designControls: DesignControlItem[]) => Promise<void>;
-  generateReport: (projectId: string, reportType: string) => Promise<any>;
-  updateChecklistItem: (projectId: string, checklistItemId: string, updates: Partial<ChecklistItem>) => Promise<void>;
-  addComment: (projectId: string, checklistItemId: string, commentText: string) => Promise<void>;
+  finalizeProject: (projectId: string, password: string) => Promise<void>;
+  updateDesignControls: (
+    projectId: string,
+    designControls: DesignControlItem[],
+  ) => Promise<void>;
+  generateReport: (
+    projectId: string,
+    reportType: string,
+  ) => Promise<AppDocument>;
+  updateChecklistItem: (
+    projectId: string,
+    checklistItemId: string,
+    updates: Partial<ChecklistItem>,
+  ) => Promise<void>;
+  addComment: (
+    projectId: string,
+    checklistItemId: string,
+    commentText: string,
+  ) => Promise<void>;
   addCapaReport: (projectId: string, checklistItemId: string) => Promise<void>;
-  uploadEvidence: (projectId: string, checklistItemId: string, fileData: File) => Promise<void>;
-  startMockSurvey: (projectId: string) => Promise<{ updatedProject: Project; newSurvey: MockSurvey }>;
+  uploadEvidence: (
+    projectId: string,
+    checklistItemId: string,
+    fileData: File,
+  ) => Promise<void>;
+  startMockSurvey: (
+    projectId: string,
+  ) => Promise<{ updatedProject: Project; newSurvey: MockSurvey }>;
   updateMockSurvey: (projectId: string, survey: MockSurvey) => Promise<void>;
-  applySurveyFindingsToProject: (projectId: string, surveyId: string) => Promise<void>;
+  applySurveyFindingsToProject: (
+    projectId: string,
+    surveyId: string,
+  ) => Promise<void>;
   bulkArchiveProjects: (projectIds: string[]) => Promise<boolean>;
   bulkRestoreProjects: (projectIds: string[]) => Promise<boolean>;
   bulkDeleteProjects: (projectIds: string[]) => Promise<boolean>;
-  bulkUpdateStatus: (projectIds: string[], status: ProjectStatus) => Promise<boolean>;
+  bulkUpdateStatus: (
+    projectIds: string[],
+    status: ProjectStatus,
+  ) => Promise<boolean>;
   updateCapa: (projectId: string, capa: CAPAReport) => Promise<void>;
+  updateCAPAPDCAStage: (
+    projectId: string,
+    capaId: string,
+    newStage: PDCAStage,
+    notes: string,
+    attachments: string[],
+  ) => Promise<void>;
   deleteCapa: (projectId: string, capaId: string) => Promise<void>;
-  createCAPA: (projectId: string, capaData: Omit<CAPAReport, 'id'>) => Promise<void>;
-  createPDCACycle: (projectId: string, cycleData: Omit<PDCACycle, 'id'>) => Promise<void>;
+  createCAPA: (
+    projectId: string,
+    capaData: Omit<CAPAReport, "id">,
+  ) => Promise<void>;
+  createPDCACycle: (
+    projectId: string,
+    cycleData: Omit<PDCACycle, "id">,
+  ) => Promise<void>;
   updatePDCACycle: (projectId: string, cycle: PDCACycle) => Promise<void>;
-  getPDCACyclesByStage: (projectId: string, stage: 'Plan' | 'Do' | 'Check' | 'Act') => PDCACycle[];
+  getPDCACyclesByStage: (
+    projectId: string,
+    stage: "Plan" | "Do" | "Check" | "Act",
+  ) => PDCACycle[];
 }
 
 const calculateProgress = (checklist: ChecklistItem[]): number => {
   if (!checklist || checklist.length === 0) {
     return 0;
   }
-  const applicableItems = checklist.filter(c => c.status !== ComplianceStatus.NotApplicable);
+  const applicableItems = checklist.filter(
+    (c) => c.status !== ComplianceStatus.NotApplicable,
+  );
   if (applicableItems.length === 0) {
     return 100;
   }
@@ -54,6 +119,22 @@ const calculateProgress = (checklist: ChecklistItem[]): number => {
   }, 0);
   return (score / applicableItems.length) * 100;
 };
+
+function assertProjectWritable(
+  project: Project | undefined,
+): asserts project is Project {
+  const user = useUserStore.getState().currentUser;
+  if (
+    !project ||
+    !user ||
+    !permissionService.can(user, Action.Update, Resource.Project) ||
+    (user.organizationId && project.organizationId !== user.organizationId) ||
+    project.archived ||
+    project.status === ProjectStatus.Finalized
+  ) {
+    throw new Error("Project is unavailable or read-only");
+  }
+}
 
 export const useProjectStore = create<ProjectState>((set, get) => ({
   projects: [],
@@ -71,22 +152,22 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
 
       set({ loading: true, error: null });
       const projectsFromBackend = await projectService.getProjects();
-      const projectsWithProgress = projectsFromBackend.map(p => ({
+      const projectsWithProgress = projectsFromBackend.map((p) => ({
         ...p,
-        progress: calculateProgress(p.checklist)
+        progress: calculateProgress(p.checklist),
       }));
       set({ projects: projectsWithProgress, loading: false });
     } catch (error) {
-      handleError(error, 'fetchAllProjects');
-      set({ error: 'Failed to fetch projects', loading: false });
+      handleError(error, "fetchAllProjects");
+      set({ error: "Failed to fetch projects", loading: false });
     }
   },
 
   subscribeToProjects: () => {
     const unsubscribeFn = projectService.subscribeToProjects((projects) => {
-      const projectsWithProgress = projects.map(p => ({
+      const projectsWithProgress = projects.map((p) => ({
         ...p,
-        progress: calculateProgress(p.checklist)
+        progress: calculateProgress(p.checklist),
       }));
       set({ projects: projectsWithProgress });
     });
@@ -100,57 +181,121 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       set({ unsubscribe: null });
     }
   },
-  addProject: async (newProjectData: Omit<Project, 'id'>) => {
+  addProject: async (newProjectData: Omit<Project, "id">) => {
     const newProject = await projectService.createProject(newProjectData);
-    set(state => ({ projects: [...state.projects, { ...newProject, progress: calculateProgress(newProject.checklist) }] }));
+    set((state) => ({
+      projects: [
+        ...state.projects,
+        { ...newProject, progress: calculateProgress(newProject.checklist) },
+      ],
+    }));
   },
   updateProject: async (updatedProject) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === updatedProject.id),
+    );
     const projectWithRecalculatedProgress = {
       ...updatedProject,
-      progress: calculateProgress(updatedProject.checklist)
+      progress: calculateProgress(updatedProject.checklist),
     };
-    await projectService.updateProject(updatedProject.id, projectWithRecalculatedProgress);
-    set(state => ({
-      projects: state.projects.map(p => p.id === updatedProject.id ? projectWithRecalculatedProgress : p)
+    await projectService.updateProject(
+      updatedProject.id,
+      projectWithRecalculatedProgress,
+    );
+    set((state) => ({
+      projects: state.projects.map((p) =>
+        p.id === updatedProject.id ? projectWithRecalculatedProgress : p,
+      ),
+    }));
+  },
+  applyProjectSnapshot: (projectId, project) => {
+    set((state) => ({
+      projects: project
+        ? state.projects.some((item) => item.id === projectId)
+          ? state.projects.map((item) =>
+              item.id === projectId
+                ? { ...project, progress: calculateProgress(project.checklist) }
+                : item,
+            )
+          : [
+              ...state.projects,
+              { ...project, progress: calculateProgress(project.checklist) },
+            ]
+        : state.projects.filter((item) => item.id !== projectId),
     }));
   },
   deleteProject: async (projectId) => {
     await projectService.deleteProject(projectId);
-    set(state => ({
-      projects: state.projects.filter(p => p.id !== projectId)
+    set((state) => ({
+      projects: state.projects.filter((p) => p.id !== projectId),
     }));
   },
-  finalizeProject: async (projectId) => {
+  finalizeProject: async (projectId, password) => {
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error("User not authenticated");
+    const project = get().projects.find((item) => item.id === projectId);
+    const authUser = getAuthInstance().currentUser;
+    if (
+      !project ||
+      !authUser ||
+      authUser.uid !== user.id ||
+      !authUser.email ||
+      !password ||
+      !permissionService.can(user, Action.Update, Resource.Project) ||
+      (user.organizationId && user.organizationId !== project.organizationId) ||
+      project.archived ||
+      project.status === ProjectStatus.Finalized ||
+      !(
+        permissionService.isAdmin(user) ||
+        project.projectLead?.id === user.id ||
+        (user.role === UserRole.ProjectLead &&
+          project.teamMembers?.includes(user.id))
+      )
+    ) {
+      throw new Error("Project finalization is not authorized");
+    }
+    await reauthenticateWithCredential(
+      authUser,
+      EmailAuthProvider.credential(authUser.email, password),
+    );
     await projectService.finalizeProject(projectId, user.id, user.name);
     await get().fetchAllProjects();
   },
   updateDesignControls: async (projectId, designControls) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     await projectService.updateDesignControls(projectId, designControls);
     await get().fetchAllProjects();
   },
   generateReport: async (projectId, reportType) => {
-    const project = get().projects.find(p => p.id === projectId);
+    const project = get().projects.find((p) => p.id === projectId);
     const user = useUserStore.getState().currentUser;
 
     if (!project) {
-      throw new Error('Project not found');
+      throw new Error("Project not found");
     }
 
     if (!user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
+    }
+    if (
+      !permissionService.can(user, Action.Read, Resource.Report) ||
+      (user.organizationId && user.organizationId !== project.organizationId)
+    ) {
+      throw new Error("Project reporting is not authorized");
     }
 
     // Import report service dynamically to avoid circular dependencies
-    const { generateAIComplianceReport } = await import('@/services/reportService');
+    const { generateAIComplianceReport } =
+      await import("@/services/reportService");
 
     // Generate AI-powered compliance report
     const reportDocument = await generateAIComplianceReport({
       projectId: project.id,
       reportType,
       project,
-      userName: user.name
+      userName: user.name,
     });
 
     // Report is automatically saved to Firebase by the service
@@ -158,21 +303,32 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     return reportDocument;
   },
   updateChecklistItem: async (projectId, checklistItemId, updates) => {
-    const project = get().projects.find(p => p.id === projectId);
+    const project = get().projects.find((p) => p.id === projectId);
+    assertProjectWritable(project);
     if (project) {
-      const newChecklist = project.checklist.map(item =>
-        item.id === checklistItemId ? { ...item, ...updates } : item
+      const newChecklist = project.checklist.map((item) =>
+        item.id === checklistItemId ? { ...item, ...updates } : item,
       );
       await get().updateProject({ ...project, checklist: newChecklist });
       // Trigger workflow engine for checklist item updates
-      const updatedItem = newChecklist.find(i => i.id === checklistItemId);
+      const updatedItem = newChecklist.find((i) => i.id === checklistItemId);
       if (updatedItem) {
-        const event = updates.status ? 'status_changed' as const : 'updated' as const;
-        workflowEngine.evaluate('checklist_item', event, { ...updatedItem, projectId } as unknown as Record<string, unknown>).catch(() => { });
+        const event = updates.status
+          ? ("status_changed" as const)
+          : ("updated" as const);
+        workflowEngine
+          .evaluate("checklist_item", event, {
+            ...updatedItem,
+            projectId,
+          } as unknown as Record<string, unknown>)
+          .catch(() => {});
       }
     }
   },
   addComment: async (projectId, checklistItemId, commentText) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     const user = useUserStore.getState().currentUser;
     if (user) {
       await projectService.addComment(projectId, checklistItemId, {
@@ -185,129 +341,250 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
   addCapaReport: async (projectId, checklistItemId) => {
-    const project = get().projects.find(p => p.id === projectId);
-    const item = project?.checklist.find(i => i.id === checklistItemId);
+    const project = get().projects.find((p) => p.id === projectId);
+    assertProjectWritable(project);
+    const item = project?.checklist.find((i) => i.id === checklistItemId);
     if (project && item) {
-      const capaData: Omit<CAPAReport, 'id'> = {
+      const capaData: Omit<CAPAReport, "id"> = {
         status: ProjectStatus.InProgress,
         checklistItemId: checklistItemId,
-        rootCause: '',
+        rootCause: "",
         correctiveAction: `CAPA for non-compliance in standard ${item.standardId}: ${item.item}`,
-        preventiveAction: '',
-        pdcaStage: 'Plan',
+        preventiveAction: "",
+        pdcaStage: "Plan",
         pdcaHistory: [],
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       await projectService.addCapaReport(projectId, capaData);
       await get().fetchAllProjects();
       // Trigger workflow engine for CAPA creation
-      workflowEngine.evaluate('capa', 'created', { ...capaData, projectId, checklistItemId } as unknown as Record<string, unknown>).catch(() => { });
+      workflowEngine
+        .evaluate("capa", "created", {
+          ...capaData,
+          projectId,
+          checklistItemId,
+        } as unknown as Record<string, unknown>)
+        .catch(() => {});
     }
   },
   uploadEvidence: async (projectId, checklistItemId, fileData) => {
-    const user = useUserStore.getState().currentUser;
-    if (user) {
-      // Upload file and get document ID
-      // This needs to be implemented with Firebase Storage
-      const fileId = `doc-${Date.now()}`;
-      await projectService.uploadEvidence(projectId, checklistItemId, fileId);
-      await get().fetchAllProjects();
+    const project = get().projects.find((item) => item.id === projectId);
+    assertProjectWritable(project);
+    if (!project.checklist.some((item) => item.id === checklistItemId)) {
+      throw new Error("Checklist item not found");
     }
+    const { cloudinaryService } = await import("@/services/cloudinaryService");
+    const { useAppStore } = await import("@/stores/useAppStore");
+    const fileUrl = await cloudinaryService.uploadDocument(
+      fileData,
+      `projects/${projectId}/checklist/${checklistItemId}`,
+    );
+    const document = await useAppStore.getState().addControlledDocument({
+      name: { en: fileData.name, ar: fileData.name },
+      type: "Evidence",
+      fileUrl,
+      projectId,
+      departmentIds: project.departmentIds,
+      tags: [`project:${projectId}`, `checklist:${checklistItemId}`],
+    });
+    const currentProject = get().projects.find((item) => item.id === projectId);
+    assertProjectWritable(currentProject);
+    const item = currentProject.checklist.find(
+      (entry) => entry.id === checklistItemId,
+    );
+    if (!item) throw new Error("Checklist item not found");
+    await get().updateChecklistItem(projectId, checklistItemId, {
+      evidenceFiles: [...new Set([...(item.evidenceFiles || []), document.id])],
+    });
   },
   startMockSurvey: async (projectId) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error("User not authenticated");
     const newSurvey = await projectService.startMockSurvey(projectId, user.id);
     await get().fetchAllProjects();
-    const updatedProject = get().projects.find(p => p.id === projectId)!;
+    const updatedProject = get().projects.find((p) => p.id === projectId)!;
     return { updatedProject, newSurvey };
   },
   updateMockSurvey: async (projectId, survey) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     await projectService.updateMockSurvey(projectId, survey.id, survey);
     await get().fetchAllProjects();
   },
   applySurveyFindingsToProject: async (projectId, surveyId) => {
+    const project = get().projects.find((item) => item.id === projectId);
+    assertProjectWritable(project);
     const user = useUserStore.getState().currentUser;
     if (!user) throw new Error("User not authenticated");
-    // This functionality needs to be implemented
-    // Survey findings applied
+    const survey = project.mockSurveys?.find((item) => item.id === surveyId);
+    if (!survey || survey.status !== ProjectStatus.Completed) {
+      throw new Error("Completed survey not found");
+    }
+    const failures = survey.results.filter(
+      (result) => result.result === "Fail",
+    );
+    if (
+      failures.some(
+        (result) =>
+          !project.checklist.some(
+            (item) => item.id === (result.checklistItemId || result.itemId),
+          ),
+      )
+    ) {
+      throw new Error("Survey findings reference missing checklist items");
+    }
+    const checklist = project.checklist.map((item) => {
+      const findings = failures.filter(
+        (result) => (result.checklistItemId || result.itemId) === item.id,
+      );
+      if (!findings.length) return item;
+      const marker = `[Survey ${survey.id}]`;
+      const note =
+        `${marker} ${findings.map((result) => result.notes || "").join("\n")}`.trim();
+      return {
+        ...item,
+        status: ComplianceStatus.NonCompliant,
+        notes: item.notes?.includes(marker)
+          ? item.notes
+          : [item.notes, note].filter(Boolean).join("\n"),
+      };
+    });
+    await get().updateProject({
+      ...project,
+      checklist,
+      activityLog: [
+        ...(project.activityLog || []),
+        {
+          id: `survey-findings-${surveyId}-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          user: user.name,
+          action: {
+            en: "Applied survey findings",
+            ar: "تم تطبيق نتائج الجولة التفقدية",
+          },
+        },
+      ],
+    });
   },
   updateCapa: async (projectId: string, capa: CAPAReport) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     await projectService.updateCapa(projectId, capa.id, capa);
     await get().fetchAllProjects();
   },
 
   // PDCA actions
-  updateCAPAPDCAStage: async (projectId: string, capaId: string, newStage: PDCAStage, notes: string, attachments: string[]) => {
-    const project = get().projects.find(p => p.id === projectId);
-    const capa = project?.capaReports?.find(c => c.id === capaId);
+  updateCAPAPDCAStage: async (
+    projectId: string,
+    capaId: string,
+    newStage: PDCAStage,
+    notes: string,
+    attachments: string[],
+  ) => {
+    const project = get().projects.find((p) => p.id === projectId);
+    assertProjectWritable(project);
+    const capa = project?.capaReports?.find((c) => c.id === capaId);
 
     if (!project || !capa) {
-      throw new Error('Project or CAPA not found');
+      throw new Error("Project or CAPA not found");
     }
 
     const user = useUserStore.getState().currentUser;
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error("User not authenticated");
 
     // Create history entry
-    const historyEntry = {
-      stage: capa.pdcaStage || 'Plan',
-      enteredAt: capa.pdcaHistory?.[capa.pdcaHistory.length - 1]?.completedAt || capa.createdAt,
+    const historyEntry: PDCAStageHistory & PDCAStageRecord = {
+      id: `pdca-history-${Date.now()}`,
+      name: capa.pdcaStage === "Completed" ? "Act" : capa.pdcaStage || "Plan",
+      stage: capa.pdcaStage || "Plan",
+      enteredAt:
+        capa.pdcaHistory?.[capa.pdcaHistory.length - 1]?.completedAt ||
+        capa.createdAt ||
+        new Date().toISOString(),
       completedAt: new Date().toISOString(),
       completedBy: user.id,
       notes,
-      attachments
-    } as any;
+      attachments,
+    };
 
     // Update CAPA with new stage and history
     const updatedCapa: CAPAReport = {
       ...capa,
       pdcaStage: newStage,
-      pdcaHistory: [...(capa.pdcaHistory || []), historyEntry]
+      pdcaHistory: [...(capa.pdcaHistory || []), historyEntry],
     };
 
     await get().updateCapa(projectId, updatedCapa);
   },
 
   deleteCapa: async (projectId: string, capaId: string) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     const user = useUserStore.getState().currentUser;
-    if (!user) throw new Error('User not authenticated');
-    if (user.role !== 'Admin') throw new Error('Only admins can delete CAPA reports');
+    if (!user) throw new Error("User not authenticated");
+    if (user.role !== "Admin")
+      throw new Error("Only admins can delete CAPA reports");
 
     await projectService.deleteCapa(projectId, capaId);
     await get().fetchAllProjects();
   },
 
-  createCAPA: async (projectId: string, capaData: Omit<CAPAReport, 'id'>) => {
+  createCAPA: async (projectId: string, capaData: Omit<CAPAReport, "id">) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     const user = useUserStore.getState().currentUser;
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error("User not authenticated");
 
     await projectService.addCapaReport(projectId, capaData);
     await get().fetchAllProjects();
   },
 
-  createPDCACycle: async (projectId: string, cycleData: Omit<PDCACycle, 'id'>) => {
+  createPDCACycle: async (
+    projectId: string,
+    cycleData: Omit<PDCACycle, "id">,
+  ) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     const user = useUserStore.getState().currentUser;
-    if (!user) throw new Error('User not authenticated');
+    if (!user) throw new Error("User not authenticated");
 
     await projectService.createPDCACycle(projectId, cycleData, user.id);
     await get().fetchAllProjects();
   },
 
   updatePDCACycle: async (projectId: string, cycle: PDCACycle) => {
+    assertProjectWritable(
+      get().projects.find((project) => project.id === projectId),
+    );
     await projectService.updatePDCACycle(projectId, cycle.id, cycle);
     await get().fetchAllProjects();
     // Trigger workflow engine for PDCA cycle stage changes
-    workflowEngine.evaluate('pdca_cycle', 'stage_changed', { ...cycle, projectId } as unknown as Record<string, unknown>).catch(() => { });
+    workflowEngine
+      .evaluate("pdca_cycle", "stage_changed", {
+        ...cycle,
+        projectId,
+      } as unknown as Record<string, unknown>)
+      .catch(() => {});
   },
 
-  getPDCACyclesByStage: (projectId: string, stage: 'Plan' | 'Do' | 'Check' | 'Act') => {
-    const project = get().projects.find(p => p.id === projectId);
+  getPDCACyclesByStage: (
+    projectId: string,
+    stage: "Plan" | "Do" | "Check" | "Act",
+  ) => {
+    const project = get().projects.find((p) => p.id === projectId);
     if (!project || !project.pdcaCycles) {
       return [];
     }
-    return project.pdcaCycles.filter(cycle => cycle.currentStage === stage);
+    return project.pdcaCycles.filter((cycle) => cycle.currentStage === stage);
   },
 
   // Bulk Operations

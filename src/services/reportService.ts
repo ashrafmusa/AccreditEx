@@ -7,11 +7,11 @@ import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { Project, AppDocument, ComplianceStatus } from '@/types';
 import { freeTierMonitor } from './freeTierMonitor';
-import { generatePDFReport, downloadPDF } from './pdfReportGenerator';
+import { generatePDFReport } from './pdfReportGenerator';
 import { cloudinaryService } from './cloudinaryService';
 import { getTenantStamp } from '@/utils/tenantQuery';
-
-const API_BASE_URL = 'https://accreditex.onrender.com';
+import { aiAgentService } from './aiAgentService';
+import { projectWorkSummary } from '@/utils/projectJourney';
 
 interface ReportGenerationOptions {
   projectId: string;
@@ -45,9 +45,9 @@ export const generateAIComplianceReport = async (
     nonCompliantStandards: project.checklist?.filter(item => item.status === ComplianceStatus.NonCompliant).length || 0,
     partiallyCompliantStandards: project.checklist?.filter(item => item.status === ComplianceStatus.PartiallyCompliant).length || 0,
     notApplicableStandards: project.checklist?.filter(item => item.status === ComplianceStatus.NotApplicable).length || 0,
-    openCAPAs: project.capaReports?.filter(capa => capa.status !== 'Finalized').length || 0,
-    completedCAPAs: project.capaReports?.filter(capa => capa.status === 'Finalized').length || 0,
-    mockSurveysCompleted: project.mockSurveys?.length || 0,
+    openCAPAs: projectWorkSummary(project).openCapa,
+    completedCAPAs: (project.capaReports?.length || 0) - projectWorkSummary(project).openCapa,
+    mockSurveysCompleted: project.mockSurveys?.filter(survey => survey.status === 'Completed').length || 0,
     criticalFindings: project.checklist?.filter(item =>
       item.status === ComplianceStatus.NonCompliant && item.item.toLowerCase().includes('critical')
     ).length || 0,
@@ -87,13 +87,15 @@ export const generateAIComplianceReport = async (
 
   // Create document object for Firebase
   const reportDocument: Omit<AppDocument, 'id'> = {
+    ...getTenantStamp(),
+    projectId: project.id,
     name: {
       en: `${reportType === 'complianceSummary' ? 'Compliance Summary Report' : 'Compliance Report'} - ${project.name}`,
       ar: `تقرير الامتثال - ${project.name}`
     },
     type: 'Report',
     isControlled: true,
-    status: 'Approved',
+    status: 'Draft',
     content: {
       en: aiResponse.content,
       ar: aiResponse.content // In production, translate to Arabic
@@ -112,7 +114,7 @@ export const generateAIComplianceReport = async (
     uploadedAt: new Date().toISOString(),
     tags: ['compliance', 'report', 'ai-generated', reportType, 'pdf'],
     category: 'Reports',
-    departmentIds: []
+    departmentIds: [...new Set([...(project.departmentIds || []), ...(project.departmentId ? [project.departmentId] : [])])]
   };
 
   // Save to Firebase
@@ -140,42 +142,13 @@ async function callAIAgent(
   projectData: any,
   reportType: string
 ): Promise<AIReportResponse> {
-  const prompt = buildReportPrompt(project, projectData, reportType);
+  const prompt = `${buildReportPrompt(project, projectData, reportType)}
+This report is advisory, not accreditation certification. Evidence reference counts do not verify document contents or approval. Clearly identify unresolved work and limits of the supplied records.`;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        message: prompt,
-        thread_id: `report_${Date.now()}`,
-        context: {
-          page_title: 'Compliance Report Generation',
-          user_role: 'Quality Manager',
-          project_id: project.id,
-          report_type: reportType
-        }
-      }),
-    });
-
-    if (!response.ok) {
-      throw new Error(`AI Agent API error: ${response.status}`);
-    }
-
-    // Read streaming response
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder();
-    let fullContent = '';
-
-    if (reader) {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        fullContent += decoder.decode(value);
-      }
-    }
+    const response = await aiAgentService.chat(prompt, true);
+    const fullContent = response.response?.trim();
+    if (!fullContent) throw new Error('AI report response is empty');
 
     // Parse AI response and extract sections
     const summary = extractSection(fullContent, 'Executive Summary', 'Key Findings') ||
@@ -189,8 +162,7 @@ async function callAIAgent(
     };
   } catch (error) {
     console.error('AI Agent error:', error);
-    // Fallback to template-based report
-    return generateFallbackReport(project, projectData, reportType);
+    throw error;
   }
 }
 

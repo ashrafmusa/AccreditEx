@@ -38,7 +38,7 @@ interface ChecklistItemComponentProps {
   item: ChecklistItem;
   project: Project;
   isFinalized?: boolean;
-  onUpdate?: (updates: Partial<ChecklistItem>) => void;
+  onUpdate?: (updates: Partial<ChecklistItem>) => Promise<void> | void;
   onDelete?: () => void;
 }
 
@@ -138,10 +138,14 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
 
   const statusColors = STATUS_COLORS;
 
-  const handleSave = () => {
-    if (onUpdate) {
-      onUpdate(editedItem);
+  const handleSave = async () => {
+    if (!onUpdate || isFinalized) return;
+    try {
+      await onUpdate(editedItem);
       setIsEditing(false);
+    } catch (error) {
+      console.error("Checklist update failed:", error);
+      toast.error(t("projectWriteFailed"));
     }
   };
 
@@ -150,8 +154,8 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
     setIsEditing(false);
   };
 
-  const handleAddComment = (commentText: string) => {
-    if (onUpdate && currentUser) {
+  const handleAddComment = async (commentText: string) => {
+    if (!isFinalized && onUpdate && currentUser) {
       const newComment: Comment = {
         id: `comment-${Date.now()}`,
         text: commentText,
@@ -159,20 +163,23 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
         userName: currentUser.name,
         timestamp: new Date().toISOString(),
       };
-      onUpdate({
-        comments: [...item.comments, newComment],
-      });
+      try {
+        await onUpdate({ comments: [...item.comments, newComment] });
+      } catch (error) {
+        console.error("Checklist comment failed:", error);
+        toast.error(t("projectWriteFailed"));
+      }
     }
   };
 
-  const handleEvidenceUpdate = (updates: Partial<ChecklistItem>) => {
-    if (onUpdate) {
-      onUpdate(updates);
+  const handleEvidenceUpdate = async (updates: Partial<ChecklistItem>) => {
+    if (!isFinalized && onUpdate) {
+      await onUpdate(updates);
     }
   };
 
   const handleCreatePDCA = async () => {
-    if (!currentUser) return;
+    if (!currentUser || isFinalized) return;
 
     // Use editedItem if in edit mode (unsaved changes), otherwise use item
     const currentData = isEditing ? editedItem : item;
@@ -209,7 +216,7 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
   };
 
   const handleCreateCAPA = async () => {
-    if (!currentUser || isGeneratingCAPA) return;
+    if (!currentUser || isFinalized || isGeneratingCAPA) return;
 
     // Use editedItem if in edit mode (unsaved changes), otherwise use item
     const currentData = isEditing ? editedItem : item;
@@ -539,8 +546,8 @@ Be specific and actionable. Reference real document names from the system when p
   }, [item, documents, aiActiveAction, aiBackendStatus, toast]);
 
   // Link all AI-suggested documents to this checklist item
-  const handleLinkSuggestedEvidence = useCallback(() => {
-    if (aiEvidenceSuggestions.length === 0 || !onUpdate) return;
+  const handleLinkSuggestedEvidence = useCallback(async () => {
+    if (isFinalized || aiEvidenceSuggestions.length === 0 || !onUpdate) return;
     const newIds = aiEvidenceSuggestions
       .map((d) => d.id)
       .filter((id) => !item.evidenceFiles.includes(id));
@@ -548,10 +555,15 @@ Be specific and actionable. Reference real document names from the system when p
       toast.info("All suggested documents are already linked.");
       return;
     }
-    onUpdate({ evidenceFiles: [...item.evidenceFiles, ...newIds] });
-    toast.success(`Linked ${newIds.length} document(s) as evidence.`);
-    setAiEvidenceSuggestions([]);
-  }, [aiEvidenceSuggestions, item.evidenceFiles, onUpdate, toast]);
+    try {
+      await onUpdate({ evidenceFiles: [...item.evidenceFiles, ...newIds] });
+      toast.success(t("projectEvidenceLinked", { count: newIds.length }));
+      setAiEvidenceSuggestions([]);
+    } catch (error) {
+      console.error("Suggested evidence linkage failed:", error);
+      toast.error(t("projectWriteFailed"));
+    }
+  }, [aiEvidenceSuggestions, item.evidenceFiles, onUpdate, toast, isFinalized, t]);
 
   const handleAIAuditNotes = useCallback(() => {
     const prompt = `You are a senior healthcare accreditation auditor. Generate professional audit observation notes for this checklist item.
@@ -1352,15 +1364,17 @@ Existing Notes: ${item.notes || "None"}`;
                     </div>
                     {!item.evidenceFiles.includes(doc.id) ? (
                       <button
-                        onClick={(e) => {
+                        disabled={isFinalized}
+                        onClick={async (e) => {
                           e.stopPropagation();
-                          if (onUpdate) {
-                            onUpdate({
-                              evidenceFiles: [...item.evidenceFiles, doc.id],
-                            });
-                            toast.success(
-                              `Linked "${doc.name.en}" as evidence.`,
-                            );
+                          if (!isFinalized && onUpdate) {
+                            try {
+                              await onUpdate({ evidenceFiles: [...item.evidenceFiles, doc.id] });
+                              toast.success(t("projectEvidenceLinked", { count: 1 }));
+                            } catch (error) {
+                              console.error("Suggested evidence linkage failed:", error);
+                              toast.error(t("projectWriteFailed"));
+                            }
                           }
                         }}
                         className="shrink-0 px-2.5 py-1 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors"

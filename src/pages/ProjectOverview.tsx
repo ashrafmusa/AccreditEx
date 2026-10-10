@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { Project, User, ComplianceStatus, UserRole } from "@/types";
+import {
+  Project,
+  User,
+  ComplianceStatus,
+  UserRole,
+  ProjectStatus,
+} from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import StatCard from "@/components/common/StatCard";
 import {
@@ -15,6 +21,8 @@ import { useAppStore } from "@/stores/useAppStore";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useToast } from "@/hooks/useToast";
 import AIResponseView from "@/components/ai/AIResponseView";
+import { usePermission, Action, Resource } from "@/hooks/usePermission";
+import { projectWorkSummary } from "@/utils/projectJourney";
 
 interface ProjectOverviewProps {
   project: Project;
@@ -24,14 +32,18 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project }) => {
   const { t, lang } = useTranslation();
   const { users, currentUser } = useUserStore();
   const { updateProject } = useProjectStore();
+  const { can } = usePermission();
   const toast = useToast();
   const [isBriefing, setIsBriefing] = useState(false);
   const [briefingContent, setBriefingContent] = useState<string | null>(null);
   const [showAddMember, setShowAddMember] = useState(false);
 
   const canManageTeam =
-    currentUser?.role === UserRole.Admin ||
-    currentUser?.id === project.projectLead?.id;
+    !project.archived &&
+    project.status !== ProjectStatus.Finalized &&
+    can(Action.Update, Resource.Project) &&
+    (currentUser?.role === UserRole.Admin ||
+      currentUser?.id === project.projectLead?.id);
 
   // Resolve departments (both legacy single and new multi)
   const { departments } = useAppStore();
@@ -50,9 +62,7 @@ const ProjectOverview: React.FC<ProjectOverviewProps> = ({ project }) => {
     const nonCompliant = project.checklist.filter(
       (i) => i.status === ComplianceStatus.NonCompliant,
     ).length;
-    const openCapa = (project.capaReports || []).filter(
-      (c) => c.status === "Open",
-    ).length;
+    const openCapa = projectWorkSummary(project).openCapa;
     return { total, compliant, nonCompliant, openCapa };
   }, [project]);
 
@@ -92,7 +102,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
       setBriefingContent(response.response);
     } catch (error) {
       console.error("AI briefing error:", error);
-      toast.error("Failed to generate AI health briefing.");
+      toast.error(t("projectBriefingFailed"));
     } finally {
       setIsBriefing(false);
     }
@@ -112,9 +122,10 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
     .filter((u): u is User => !!u);
 
   const handleAddTeamMember = async (userId: string) => {
+    if (!canManageTeam) return;
     const currentMembers = project.teamMembers || [];
     if (currentMembers.includes(userId)) {
-      toast.info("User is already a team member.");
+      toast.info(t("projectTeamAlreadyAdded"));
       return;
     }
     try {
@@ -122,16 +133,17 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
         ...project,
         teamMembers: [...currentMembers, userId],
       });
-      toast.success("Team member added.");
+      toast.success(t("projectTeamAdded"));
       setShowAddMember(false);
     } catch {
-      toast.error("Failed to add team member.");
+      toast.error(t("projectWriteFailed"));
     }
   };
 
   const handleRemoveTeamMember = async (userId: string) => {
+    if (!canManageTeam) return;
     if (userId === project.projectLead?.id) {
-      toast.error("Cannot remove the project lead from the team.");
+      toast.error(t("projectTeamLeadRequired"));
       return;
     }
     const currentMembers = project.teamMembers || [];
@@ -140,9 +152,9 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
         ...project,
         teamMembers: currentMembers.filter((id) => id !== userId),
       });
-      toast.success("Team member removed.");
+      toast.success(t("projectTeamRemoved"));
     } catch {
-      toast.error("Failed to remove team member.");
+      toast.error(t("projectWriteFailed"));
     }
   };
 
@@ -154,7 +166,10 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
           {projectDepartment &&
             !projectDepartments.some((d) => d?.id === projectDepartment.id) && (
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 dark:bg-brand-primary/90/30 text-brand-primary dark:text-brand-primary font-medium">
-                🏢 {projectDepartment.name.en || projectDepartment.name.ar}
+                🏢{" "}
+                {projectDepartment.name?.[lang] ||
+                  projectDepartment.name?.en ||
+                  projectDepartment.id}
               </span>
             )}
           {projectDepartments.map(
@@ -164,7 +179,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
                   key={d.id}
                   className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 dark:bg-brand-primary/90/30 text-brand-primary dark:text-brand-primary font-medium"
                 >
-                  🏢 {d.name.en || d.name.ar}
+                  🏢 {d.name?.[lang] || d.name?.en || d.id}
                 </span>
               ),
           )}
@@ -177,7 +192,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
           <details className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg shadow-sm border border-brand-border dark:border-dark-brand-border group">
             <summary className="p-4 cursor-pointer select-none flex items-center justify-between text-sm font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors">
               <span className="flex items-center gap-2">
-                🏢 Department Compliance Overview
+                {t("projectDepartmentProgress")}
               </span>
               <span className="text-[10px] font-normal text-gray-500 dark:text-gray-400 group-open:hidden">
                 {(() => {
@@ -211,7 +226,9 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
                   return (
                     <div key={deptId} className="flex items-center gap-3">
                       <span className="text-xs font-medium text-gray-900 dark:text-white w-36 truncate">
-                        {dept ? dept.name.en || dept.name.ar : deptId}
+                        {dept
+                          ? dept.name?.[lang] || dept.name?.en || deptId
+                          : deptId}
                       </span>
                       <div className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                         <div
@@ -260,7 +277,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
       <div className="bg-linear-to-r from-rose-50 to-cyan-50 dark:from-rose-900/10 dark:to-cyan-900/10 p-6 rounded-lg shadow-sm border border-cyan-200 dark:border-cyan-800">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-            🤖 AI Project Health Briefing
+            {t("projectBriefingTitle")}
           </h3>
           <button
             onClick={handleAIBriefing}
@@ -285,12 +302,12 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Analyzing...
+                {t("projectReadinessLoading")}
               </>
             ) : briefingContent ? (
-              <>🔄 Refresh Briefing</>
+              <>{t("projectBriefingRefresh")}</>
             ) : (
-              <>🤖 Generate Briefing</>
+              <>{t("projectBriefingGenerate")}</>
             )}
           </button>
         </div>
@@ -298,8 +315,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
           <AIResponseView content={briefingContent} />
         ) : (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Click "Generate Briefing" for an AI-powered executive summary of
-            your project health, risks, and recommended next steps.
+            {t("projectBriefingHint")}
           </p>
         )}
       </div>
@@ -311,8 +327,9 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
             {canManageTeam && (
               <button
                 onClick={() => setShowAddMember(!showAddMember)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-brand-primary"
-                title="Add team member"
+                className="min-h-11 min-w-11 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-brand-primary"
+                title={t("projectTeamAdd")}
+                aria-label={t("projectTeamAdd")}
               >
                 <PlusIcon className="w-5 h-5" />
               </button>
@@ -323,12 +340,16 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
           {showAddMember && canManageTeam && (
             <div className="mb-4 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
               <div className="px-3 py-2 bg-gray-50 dark:bg-gray-800 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                Add Team Member
+                {t("projectTeamAdd")}
               </div>
               <div className="max-h-40 overflow-y-auto">
                 {users
                   .filter(
-                    (u) => !teamMemberIds.has(u.id) && u.isActive !== false,
+                    (u) =>
+                      !teamMemberIds.has(u.id) &&
+                      u.isActive !== false &&
+                      (!project.organizationId ||
+                        u.organizationId === project.organizationId),
                   )
                   .map((u) => (
                     <button
@@ -354,10 +375,14 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
                     </button>
                   ))}
                 {users.filter(
-                  (u) => !teamMemberIds.has(u.id) && u.isActive !== false,
+                  (u) =>
+                    !teamMemberIds.has(u.id) &&
+                    u.isActive !== false &&
+                    (!project.organizationId ||
+                      u.organizationId === project.organizationId),
                 ).length === 0 && (
                   <p className="px-3 py-3 text-sm text-gray-500 dark:text-gray-400 text-center">
-                    All users are already on the team.
+                    {t("projectTeamNoAvailable")}
                   </p>
                 )}
               </div>
@@ -384,8 +409,9 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
                 {canManageTeam && user.id !== project.projectLead?.id && (
                   <button
                     onClick={() => handleRemoveTeamMember(user.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-500"
-                    title="Remove from team"
+                    className="min-h-11 min-w-11 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 transition-all text-red-500"
+                    title={t("projectTeamRemove", { name: user.name })}
+                    aria-label={t("projectTeamRemove", { name: user.name })}
                   >
                     <TrashIcon className="w-4 h-4" />
                   </button>
@@ -394,7 +420,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
             ))}
             {teamMembers.length === 0 && (
               <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-                No team members assigned yet.
+                {t("projectNoTeam")}
               </p>
             )}
           </div>
@@ -406,13 +432,17 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
             {(project.activityLog || []).slice(0, 10).map((log) => (
               <div key={log.id} className="text-sm">
                 <p className="font-semibold">
-                  {log.action[lang]}{" "}
+                  {typeof log.action === "string"
+                    ? log.action
+                    : log.action?.[lang] || log.action?.en}{" "}
                   <span className="font-normal text-gray-500">
-                    by {log.user}
+                    {t("projectActivityBy", { name: log.user })}
                   </span>
                 </p>
                 <p className="text-xs text-gray-400">
-                  {new Date(log.timestamp).toLocaleString()}
+                  {new Date(log.timestamp).toLocaleString(
+                    lang === "ar" ? "ar" : "en",
+                  )}
                 </p>
               </div>
             ))}

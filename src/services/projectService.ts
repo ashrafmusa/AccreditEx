@@ -1,4 +1,4 @@
-import { db } from '@/firebase/firebaseConfig';
+import { db } from "@/firebase/firebaseConfig";
 import {
   CAPAReport,
   ChecklistItem,
@@ -9,9 +9,11 @@ import {
   PDCAStage,
   PDCAStageRecord,
   Project,
-  ProjectStatus
-} from '@/types';
-import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
+  ProjectStatus,
+} from "@/types";
+import { getAuthInstance } from "@/firebase/firebaseConfig";
+import { logActivity } from "./activityLogService";
+import { getTenantQuery, getTenantStamp } from "@/utils/tenantQuery";
 import {
   addDoc,
   collection,
@@ -23,12 +25,12 @@ import {
   Timestamp,
   updateDoc,
   where,
-  writeBatch
-} from 'firebase/firestore';
-import { freeTierMonitor } from './freeTierMonitor';
-import { canCloseCapa } from './tqmReadinessService';
+  writeBatch,
+} from "firebase/firestore";
+import { freeTierMonitor } from "./freeTierMonitor";
+import { canCloseCapa } from "./tqmReadinessService";
 
-const projectsCollection = collection(db, 'projects');
+const projectsCollection = collection(db, "projects");
 
 /**
  * Recursively remove undefined values from an object before writing to Firestore.
@@ -37,11 +39,11 @@ const projectsCollection = collection(db, 'projects');
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const deepCleanUndefined = (obj: any): any => {
   if (Array.isArray(obj)) return obj.map(deepCleanUndefined);
-  if (obj !== null && typeof obj === 'object') {
+  if (obj !== null && typeof obj === "object") {
     return Object.fromEntries(
       Object.entries(obj)
         .filter(([, v]) => v !== undefined)
-        .map(([k, v]) => [k, deepCleanUndefined(v)])
+        .map(([k, v]) => [k, deepCleanUndefined(v)]),
     );
   }
   return obj;
@@ -53,19 +55,26 @@ const deepCleanUndefined = (obj: any): any => {
 
 // Sorted client-side so the organization-scoped query needs no composite index.
 const byCreatedAtDesc = (a: Project, b: Project): number =>
-  String(b.createdAt ?? '').localeCompare(String(a.createdAt ?? ''));
+  String(b.createdAt ?? "").localeCompare(String(a.createdAt ?? ""));
 
 export const getProjects = async (): Promise<Project[]> => {
-  const projectSnapshot = await getDocs(getTenantQuery('projects'));
+  const projectSnapshot = await getDocs(getTenantQuery("projects"));
   freeTierMonitor.recordRead(1);
-  return projectSnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Project)).sort(byCreatedAtDesc);
+  return projectSnapshot.docs
+    .map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        }) as Project,
+    )
+    .sort(byCreatedAtDesc);
 };
 
-export const getProjectById = async (projectId: string): Promise<Project | null> => {
-  const docRef = doc(db, 'projects', projectId);
+export const getProjectById = async (
+  projectId: string,
+): Promise<Project | null> => {
+  const docRef = doc(db, "projects", projectId);
   const docSnap = await getDoc(docRef);
   freeTierMonitor.recordRead(1);
 
@@ -75,27 +84,39 @@ export const getProjectById = async (projectId: string): Promise<Project | null>
   return null;
 };
 
-export const getProjectsByProgram = async (programId: string): Promise<Project[]> => {
-  const q = getTenantQuery('projects', where('programId', '==', programId));
+export const getProjectsByProgram = async (
+  programId: string,
+): Promise<Project[]> => {
+  const q = getTenantQuery("projects", where("programId", "==", programId));
   const querySnapshot = await getDocs(q);
   freeTierMonitor.recordRead(1);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Project));
+  return querySnapshot.docs.map(
+    (doc) =>
+      ({
+        id: doc.id,
+        ...doc.data(),
+      }) as Project,
+  );
 };
 
-export const getProjectsByStatus = async (status: ProjectStatus): Promise<Project[]> => {
-  const q = getTenantQuery('projects', where('status', '==', status));
+export const getProjectsByStatus = async (
+  status: ProjectStatus,
+): Promise<Project[]> => {
+  const q = getTenantQuery("projects", where("status", "==", status));
   const querySnapshot = await getDocs(q);
   freeTierMonitor.recordRead(1);
-  return querySnapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data()
-  } as Project));
+  return querySnapshot.docs.map(
+    (doc) =>
+      ({
+        id: doc.id,
+        ...doc.data(),
+      }) as Project,
+  );
 };
 
-export const createProject = async (projectData: Omit<Project, 'id'>): Promise<Project> => {
+export const createProject = async (
+  projectData: Omit<Project, "id">,
+): Promise<Project> => {
   const newProject = {
     ...projectData,
     ...getTenantStamp(),
@@ -107,15 +128,30 @@ export const createProject = async (projectData: Omit<Project, 'id'>): Promise<P
     pdcaCycles: projectData.pdcaCycles || [],
     mockSurveys: projectData.mockSurveys || [],
     designControls: projectData.designControls || [],
-    activityLog: projectData.activityLog || []
+    activityLog: projectData.activityLog || [],
   };
 
-  const docRef = await addDoc(projectsCollection, deepCleanUndefined(newProject));
+  const docRef = await addDoc(
+    projectsCollection,
+    deepCleanUndefined(newProject),
+  );
   freeTierMonitor.recordWrite(1);
+  const actor = getAuthInstance().currentUser;
+  if (actor) {
+    await logActivity(
+      actor.uid,
+      actor.displayName || actor.email || actor.uid,
+      { en: "Created project record", ar: "تم إنشاء سجل المشروع" },
+      { type: "project", resourceId: docRef.id },
+    );
+  }
   return { id: docRef.id, ...newProject } as Project;
 };
 
-export const updateProject = async (projectId: string, updates: Partial<Project>): Promise<void> => {
+export const updateProject = async (
+  projectId: string,
+  updates: Partial<Project>,
+): Promise<void> => {
   try {
     // Remove id field - Firestore doesn't allow updating document ID
     const { id, ...cleanUpdates } = updates;
@@ -128,19 +164,32 @@ export const updateProject = async (projectId: string, updates: Partial<Project>
       }
     }
 
-    const docRef = doc(db, 'projects', projectId);
-    await updateDoc(docRef, deepCleanUndefined({
-      ...sanitized,
-      updatedAt: Timestamp.now().toDate().toISOString()
-    }));
+    const docRef = doc(db, "projects", projectId);
+    await updateDoc(
+      docRef,
+      deepCleanUndefined({
+        ...sanitized,
+        updatedAt: Timestamp.now().toDate().toISOString(),
+      }),
+    );
 
     freeTierMonitor.recordWrite(1);
+    const actor = getAuthInstance().currentUser;
+    if (actor) {
+      await logActivity(
+        actor.uid,
+        actor.displayName || actor.email || actor.uid,
+        { en: "Updated project record", ar: "تم تحديث سجل المشروع" },
+        { type: "project", resourceId: projectId },
+      );
+    }
   } catch (error) {
-    console.error('Error updating project:', error);
+    console.error("Error updating project:", error);
     throw error;
   }
-}; export const deleteProject = async (projectId: string): Promise<void> => {
-  const docRef = doc(db, 'projects', projectId);
+};
+export const deleteProject = async (projectId: string): Promise<void> => {
+  const docRef = doc(db, "projects", projectId);
   await deleteDoc(docRef);
   freeTierMonitor.recordDelete(1);
 };
@@ -149,14 +198,21 @@ export const updateProject = async (projectId: string, updates: Partial<Project>
 // Real-time Listeners
 // ========================================
 
-export const subscribeToProjects = (callback: (projects: Project[]) => void): (() => void) => {
-  const q = getTenantQuery('projects');
+export const subscribeToProjects = (
+  callback: (projects: Project[]) => void,
+): (() => void) => {
+  const q = getTenantQuery("projects");
 
   const unsubscribe = onSnapshot(q, (snapshot) => {
-    const projects = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Project)).sort(byCreatedAtDesc);
+    const projects = snapshot.docs
+      .map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          }) as Project,
+      )
+      .sort(byCreatedAtDesc);
     callback(projects);
   });
 
@@ -165,17 +221,22 @@ export const subscribeToProjects = (callback: (projects: Project[]) => void): ((
 
 export const subscribeToProject = (
   projectId: string,
-  callback: (project: Project | null) => void
+  callback: (project: Project | null) => void,
+  onError?: (error: Error) => void,
 ): (() => void) => {
-  const docRef = doc(db, 'projects', projectId);
+  const docRef = doc(db, "projects", projectId);
 
-  const unsubscribe = onSnapshot(docRef, (doc) => {
-    if (doc.exists()) {
-      callback({ ...doc.data(), id: doc.id } as Project);
-    } else {
-      callback(null);
-    }
-  });
+  const unsubscribe = onSnapshot(
+    docRef,
+    (doc) => {
+      if (doc.exists()) {
+        callback({ ...doc.data(), id: doc.id } as Project);
+      } else {
+        callback(null);
+      }
+    },
+    onError,
+  );
 
   return unsubscribe;
 };
@@ -187,13 +248,13 @@ export const subscribeToProject = (
 export const updateChecklistItem = async (
   projectId: string,
   itemId: string,
-  updates: Partial<ChecklistItem>
+  updates: Partial<ChecklistItem>,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const updatedChecklist = project.checklist.map(item =>
-    item.id === itemId ? { ...item, ...updates } : item
+  const updatedChecklist = project.checklist.map((item) =>
+    item.id === itemId ? { ...item, ...updates } : item,
   );
 
   await updateProject(projectId, { checklist: updatedChecklist });
@@ -202,19 +263,19 @@ export const updateChecklistItem = async (
 export const addComment = async (
   projectId: string,
   itemId: string,
-  comment: Omit<Comment, 'id'>
+  comment: Omit<Comment, "id">,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const updatedChecklist = project.checklist.map(item => {
+  const updatedChecklist = project.checklist.map((item) => {
     if (item.id === itemId) {
       return {
         ...item,
         comments: [
           ...(item.comments || []),
-          { ...comment, id: `comment-${Date.now()}` }
-        ]
+          { ...comment, id: `comment-${Date.now()}` },
+        ],
       };
     }
     return item;
@@ -226,16 +287,16 @@ export const addComment = async (
 export const uploadEvidence = async (
   projectId: string,
   itemId: string,
-  fileId: string
+  fileId: string,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const updatedChecklist = project.checklist.map(item => {
+  const updatedChecklist = project.checklist.map((item) => {
     if (item.id === itemId) {
       return {
         ...item,
-        evidenceFiles: [...(item.evidenceFiles || []), fileId]
+        evidenceFiles: [...(item.evidenceFiles || []), fileId],
       };
     }
     return item;
@@ -250,49 +311,55 @@ export const uploadEvidence = async (
 
 export const addCapaReport = async (
   projectId: string,
-  capaData: Omit<CAPAReport, 'id'>
+  capaData: Omit<CAPAReport, "id">,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
   const newCapa: CAPAReport = {
     ...capaData,
     id: `capa-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     sourceProjectId: projectId,
-    pdcaStage: capaData.pdcaStage || 'Plan',
+    pdcaStage: capaData.pdcaStage || "Plan",
     pdcaHistory: capaData.pdcaHistory || [],
     createdAt: capaData.createdAt || new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 
   await updateProject(projectId, {
-    capaReports: [...(project.capaReports || []), newCapa]
+    capaReports: [...(project.capaReports || []), newCapa],
   });
 };
 
 export const updateCapa = async (
   projectId: string,
   capaId: string,
-  updates: Partial<CAPAReport>
+  updates: Partial<CAPAReport>,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
   const strictClosureValidationEnabled =
-    (process.env.VITE_STRICT_CAPA_CLOSURE_VALIDATION || 'false') === 'true';
+    (process.env.VITE_STRICT_CAPA_CLOSURE_VALIDATION || "false") === "true";
 
-  const updatedCapas = (project.capaReports || []).map(capa => {
+  const updatedCapas = (project.capaReports || []).map((capa) => {
     if (capa.id !== capaId) {
       return capa;
     }
 
     const nextCapa = { ...capa, ...updates };
 
-    if (strictClosureValidationEnabled && nextCapa.status === ProjectStatus.Finalized) {
-      const closureDecision = canCloseCapa(nextCapa, strictClosureValidationEnabled);
+    if (
+      strictClosureValidationEnabled &&
+      nextCapa.status === ProjectStatus.Finalized
+    ) {
+      const closureDecision = canCloseCapa(
+        nextCapa,
+        strictClosureValidationEnabled,
+      );
       if (!closureDecision.allowed) {
         throw new Error(
-          `CAPA closure blocked by strict validation. ${closureDecision.reason || 'Incomplete closure evidence.'}`,
+          `CAPA closure blocked by strict validation. ${closureDecision.reason || "Incomplete closure evidence."}`,
         );
       }
     }
@@ -305,12 +372,14 @@ export const updateCapa = async (
 
 export const deleteCapa = async (
   projectId: string,
-  capaId: string
+  capaId: string,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const updatedCapas = (project.capaReports || []).filter(capa => capa.id !== capaId);
+  const updatedCapas = (project.capaReports || []).filter(
+    (capa) => capa.id !== capaId,
+  );
 
   await updateProject(projectId, { capaReports: updatedCapas });
 };
@@ -318,32 +387,32 @@ export const deleteCapa = async (
 export const updateCapaPDCAStage = async (
   projectId: string,
   capaId: string,
-  newStage: 'Plan' | 'Do' | 'Check' | 'Act',
+  newStage: "Plan" | "Do" | "Check" | "Act",
   notes: string,
   completedBy: string,
-  attachments: string[] = []
+  attachments: string[] = [],
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const capa = project?.capaReports?.find(c => c.id === capaId);
-  if (!capa) throw new Error('CAPA not found');
+  const capa = project?.capaReports?.find((c) => c.id === capaId);
+  if (!capa) throw new Error("CAPA not found");
 
   const historyEntry: PDCAStageRecord = {
     id: `stage-${Date.now()}`,
     name: newStage,
     completedAt: new Date().toISOString(),
-    notes
+    notes,
   };
 
-  const updatedCapas = (project.capaReports || []).map(c =>
+  const updatedCapas = (project.capaReports || []).map((c) =>
     c.id === capaId
       ? {
-        ...c,
-        pdcaStage: newStage,
-        pdcaHistory: [...(c.pdcaHistory || []), historyEntry]
-      }
-      : c
+          ...c,
+          pdcaStage: newStage,
+          pdcaHistory: [...(c.pdcaHistory || []), historyEntry],
+        }
+      : c,
   ) as CAPAReport[];
 
   await updateProject(projectId, { capaReports: updatedCapas });
@@ -353,41 +422,43 @@ export const updateCapaPDCAStage = async (
 
 export const createPDCACycle = async (
   projectId: string,
-  cycleData: Omit<PDCACycle, 'id' | 'createdAt' | 'stageHistory'>,
-  userId: string
+  cycleData: Omit<PDCACycle, "id" | "createdAt" | "stageHistory">,
+  userId: string,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
   const newCycle: PDCACycle = {
     ...cycleData,
     id: `pdca-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     createdAt: new Date().toISOString(),
-    stageHistory: [{
-      stage: 'Plan',
-      enteredAt: new Date().toISOString(),
-      completedAt: undefined,
-      completedBy: userId,
-      notes: 'PDCA cycle created',
-      attachments: []
-    }]
+    stageHistory: [
+      {
+        stage: "Plan",
+        enteredAt: new Date().toISOString(),
+        completedAt: undefined,
+        completedBy: userId,
+        notes: "PDCA cycle created",
+        attachments: [],
+      },
+    ],
   };
 
   await updateProject(projectId, {
-    pdcaCycles: [...(project.pdcaCycles || []), newCycle]
+    pdcaCycles: [...(project.pdcaCycles || []), newCycle],
   });
 };
 
 export const updatePDCACycle = async (
   projectId: string,
   cycleId: string,
-  updates: Partial<PDCACycle>
+  updates: Partial<PDCACycle>,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const updatedCycles = (project.pdcaCycles || []).map(cycle =>
-    cycle.id === cycleId ? { ...cycle, ...updates } : cycle
+  const updatedCycles = (project.pdcaCycles || []).map((cycle) =>
+    cycle.id === cycleId ? { ...cycle, ...updates } : cycle,
   );
 
   await updateProject(projectId, { pdcaCycles: updatedCycles });
@@ -395,12 +466,12 @@ export const updatePDCACycle = async (
 
 export const getPDCACyclesByStage = async (
   projectId: string,
-  stage: PDCAStage
+  stage: PDCAStage,
 ): Promise<PDCACycle[]> => {
   const project = await getProjectById(projectId);
   if (!project || !project.pdcaCycles) return [];
 
-  return project.pdcaCycles.filter(cycle => cycle.status === stage);
+  return project.pdcaCycles.filter((cycle) => cycle.status === stage);
 };
 
 // ========================================
@@ -410,50 +481,63 @@ export const getPDCACyclesByStage = async (
 export const finalizeProject = async (
   projectId: string,
   userId: string,
-  userName: string
+  userName: string,
 ): Promise<void> => {
   await updateProject(projectId, {
     status: ProjectStatus.Finalized,
     finalizedBy: userName,
-    finalizationDate: new Date().toISOString()
+    finalizedById: userId,
+    finalizationDate: new Date().toISOString(),
   });
+  await logActivity(
+    userId,
+    userName,
+    {
+      en: "Signed and finalized project",
+      ar: "تم توقيع المشروع واعتماده نهائياً",
+    },
+    { type: "project", resourceId: projectId },
+  );
 };
 
 export const archiveProject = async (projectId: string): Promise<void> => {
   await updateProject(projectId, {
-    archived: true
+    archived: true,
   });
 };
 
 export const restoreProject = async (projectId: string): Promise<void> => {
   await updateProject(projectId, {
-    archived: false
+    archived: false,
   });
 };
 
 export const duplicateProject = async (
   projectId: string,
   newName: string,
-  userId: string
+  userId: string,
 ): Promise<Project> => {
   const originalProject = await getProjectById(projectId);
-  if (!originalProject) throw new Error('Project not found');
+  if (!originalProject) throw new Error("Project not found");
 
-  const { id, createdAt, updatedAt, activityLog, ...projectData } = originalProject;
+  const { id, createdAt, updatedAt, activityLog, ...projectData } =
+    originalProject;
 
-  const duplicatedProject: Omit<Project, 'id'> = {
+  const duplicatedProject: Omit<Project, "id"> = {
     ...projectData,
     name: newName,
     status: ProjectStatus.NotStarted,
     progress: 0,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
-    activityLog: [{
-      id: `log-${Date.now()}`,
-      timestamp: new Date().toISOString(),
-      user: userId,
-      action: { en: 'Project Duplicated', ar: 'تم تكرار المشروع' }
-    }]
+    activityLog: [
+      {
+        id: `log-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        user: userId,
+        action: { en: "Project Duplicated", ar: "تم تكرار المشروع" },
+      },
+    ],
   };
 
   return await createProject(duplicatedProject);
@@ -464,58 +548,64 @@ export const duplicateProject = async (
 // ========================================
 
 export const bulkUpdateProjects = async (
-  updates: { id: string; data: Partial<Project> }[]
+  updates: { id: string; data: Partial<Project> }[],
 ): Promise<void> => {
   const batch = writeBatch(db);
 
   updates.forEach(({ id, data }) => {
-    const docRef = doc(db, 'projects', id);
+    const docRef = doc(db, "projects", id);
     batch.update(docRef, {
       ...data,
-      updatedAt: Timestamp.now().toDate().toISOString()
+      updatedAt: Timestamp.now().toDate().toISOString(),
     });
   });
 
   await batch.commit();
 };
 
-export const bulkArchiveProjects = async (projectIds: string[]): Promise<void> => {
+export const bulkArchiveProjects = async (
+  projectIds: string[],
+): Promise<void> => {
   const batch = writeBatch(db);
   const timestamp = Timestamp.now().toDate().toISOString();
 
-  projectIds.forEach(id => {
-    const docRef = doc(db, 'projects', id);
+  projectIds.forEach((id) => {
+    const docRef = doc(db, "projects", id);
     batch.update(docRef, {
       archived: true,
       archivedAt: timestamp,
-      updatedAt: timestamp
+      updatedAt: timestamp,
     });
   });
 
   await batch.commit();
 };
 
-export const bulkRestoreProjects = async (projectIds: string[]): Promise<void> => {
+export const bulkRestoreProjects = async (
+  projectIds: string[],
+): Promise<void> => {
   const batch = writeBatch(db);
   const timestamp = Timestamp.now().toDate().toISOString();
 
-  projectIds.forEach(id => {
-    const docRef = doc(db, 'projects', id);
+  projectIds.forEach((id) => {
+    const docRef = doc(db, "projects", id);
     batch.update(docRef, {
       archived: false,
       archivedAt: null,
-      updatedAt: timestamp
+      updatedAt: timestamp,
     });
   });
 
   await batch.commit();
 };
 
-export const bulkDeleteProjects = async (projectIds: string[]): Promise<void> => {
+export const bulkDeleteProjects = async (
+  projectIds: string[],
+): Promise<void> => {
   const batch = writeBatch(db);
 
-  projectIds.forEach(id => {
-    const docRef = doc(db, 'projects', id);
+  projectIds.forEach((id) => {
+    const docRef = doc(db, "projects", id);
     batch.delete(docRef);
   });
 
@@ -524,16 +614,16 @@ export const bulkDeleteProjects = async (projectIds: string[]): Promise<void> =>
 
 export const bulkUpdateStatus = async (
   projectIds: string[],
-  status: ProjectStatus
+  status: ProjectStatus,
 ): Promise<void> => {
   const batch = writeBatch(db);
   const timestamp = Timestamp.now().toDate().toISOString();
 
-  projectIds.forEach(id => {
-    const docRef = doc(db, 'projects', id);
+  projectIds.forEach((id) => {
+    const docRef = doc(db, "projects", id);
     batch.update(docRef, {
       status,
-      updatedAt: timestamp
+      updatedAt: timestamp,
     });
   });
 
@@ -546,10 +636,10 @@ export const bulkUpdateStatus = async (
 
 export const startMockSurvey = async (
   projectId: string,
-  userId: string
+  userId: string,
 ): Promise<MockSurvey> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
   const newSurvey: MockSurvey = {
     id: `survey-${Date.now()}`,
@@ -558,11 +648,11 @@ export const startMockSurvey = async (
     status: ProjectStatus.InProgress,
     results: [],
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
 
   await updateProject(projectId, {
-    mockSurveys: [...(project.mockSurveys || []), newSurvey]
+    mockSurveys: [...(project.mockSurveys || []), newSurvey],
   });
 
   return newSurvey;
@@ -571,13 +661,13 @@ export const startMockSurvey = async (
 export const updateMockSurvey = async (
   projectId: string,
   surveyId: string,
-  updates: Partial<MockSurvey>
+  updates: Partial<MockSurvey>,
 ): Promise<void> => {
   const project = await getProjectById(projectId);
-  if (!project) throw new Error('Project not found');
+  if (!project) throw new Error("Project not found");
 
-  const updatedSurveys = (project.mockSurveys || []).map(survey =>
-    survey.id === surveyId ? { ...survey, ...updates } : survey
+  const updatedSurveys = (project.mockSurveys || []).map((survey) =>
+    survey.id === surveyId ? { ...survey, ...updates } : survey,
   );
 
   await updateProject(projectId, { mockSurveys: updatedSurveys });
@@ -589,7 +679,7 @@ export const updateMockSurvey = async (
 
 export const updateDesignControls = async (
   projectId: string,
-  designControls: DesignControlItem[]
+  designControls: DesignControlItem[],
 ): Promise<void> => {
   await updateProject(projectId, { designControls });
 };

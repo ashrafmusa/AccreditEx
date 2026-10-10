@@ -95,6 +95,7 @@ export const getActivityLogs = async (options?: {
         action: data.action,
         details: data.details,
         type: data.type,
+        resourceId: data.resourceId || undefined,
       } as ActivityLogItem;
     });
   } catch (error) {
@@ -110,6 +111,30 @@ export const getRecentActivityLogs = async (
   limitCount: number = 100,
 ): Promise<ActivityLogItem[]> => {
   return getActivityLogs({ limitCount });
+};
+
+export const getProjectActivityLogs = async (
+  projectId: string,
+): Promise<ActivityLogItem[]> => {
+  // Equality-only query avoids introducing a new timestamp composite index.
+  const snapshot = await getDocsFromServer(
+    getTenantQuery(COLLECTION_NAME, where("resourceId", "==", projectId)),
+  );
+  return snapshot.docs
+    .map((record) => {
+      const data = record.data();
+      return {
+        id: record.id,
+        timestamp: data.timestamp,
+        user: data.user,
+        action: data.action,
+        details: data.details,
+        type: data.type,
+        resourceId: data.resourceId,
+      };
+    })
+    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
+    .slice(0, 100);
 };
 
 /**

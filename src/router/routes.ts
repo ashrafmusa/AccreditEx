@@ -131,10 +131,11 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/audit";
         case "documentControl":
             const docPath = "/documents";
-            if (state.templateId) {
-                return docPath + "?templateId=" + encodeURIComponent(state.templateId);
-            }
-            return docPath;
+            const documentParams = new URLSearchParams();
+            if (state.templateId) documentParams.set("templateId", state.templateId);
+            if (state.documentId) documentParams.set("documentId", state.documentId);
+            if (state.filter) documentParams.set("filter", state.filter);
+            return documentParams.size ? `${docPath}?${documentParams.toString()}` : docPath;
         case "projects":
             return "/projects";
         case "projectDetail":

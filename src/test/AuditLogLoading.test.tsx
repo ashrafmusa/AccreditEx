@@ -2,7 +2,10 @@ import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import AuditLogComponent from "@/components/audits/AuditLogComponent";
 import AuditHubPage from "@/pages/AuditHubPage";
-import { getRecentActivityLogs } from "@/services/activityLogService";
+import {
+  getRecentActivityLogs,
+  getProjectActivityLogs,
+} from "@/services/activityLogService";
 import { en } from "@/data/locales/en/common";
 import { ar } from "@/data/locales/ar/common";
 import { Project, ProjectStatus } from "@/types";
@@ -19,6 +22,7 @@ jest.mock("@/hooks/useTranslation", () => ({
 }));
 jest.mock("@/services/activityLogService", () => ({
   getRecentActivityLogs: jest.fn(),
+  getProjectActivityLogs: jest.fn(),
 }));
 jest.mock("@/stores/useAppStore", () => ({
   useAppStore: () => ({ auditPlans: [] }),
@@ -56,7 +60,9 @@ describe("Audit log loading states", () => {
     async (surface) => {
       // Arrange
       jest
-        .mocked(getRecentActivityLogs)
+        .mocked(
+          surface === "hub" ? getRecentActivityLogs : getProjectActivityLogs,
+        )
         .mockRejectedValueOnce(new Error("Missing index"))
         .mockResolvedValueOnce([
           {
@@ -94,7 +100,7 @@ describe("Audit log loading states", () => {
     let finish: (
       logs: Awaited<ReturnType<typeof getRecentActivityLogs>>,
     ) => void = () => {};
-    jest.mocked(getRecentActivityLogs).mockReturnValue(
+    jest.mocked(getProjectActivityLogs).mockReturnValue(
       new Promise((resolve) => {
         finish = resolve;
       }),
@@ -114,7 +120,7 @@ describe("Audit log loading states", () => {
     // Arrange
     language = "ar";
     jest
-      .mocked(getRecentActivityLogs)
+      .mocked(getProjectActivityLogs)
       .mockRejectedValue(new Error("Missing index"));
     const errorLog = jest.spyOn(console, "error").mockImplementation(() => {});
     // Act
