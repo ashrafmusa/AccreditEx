@@ -6,6 +6,7 @@
  * with AI-evaluated practice mode so staff can rehearse surveyor interactions.
  */
 
+import AIResponseView from "@/components/ai/AIResponseView";
 import { useTranslation } from "@/hooks/useTranslation";
 import { NavigationState } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
@@ -703,9 +704,7 @@ Keep your response concise (under 200 words). Be professional and constructive.`
                           <p className="text-xs font-semibold text-brand-primary mb-1.5">
                             ✦ AI Surveyor Feedback
                           </p>
-                          <p className="text-sm text-brand-text-primary dark:text-dark-brand-text-primary whitespace-pre-wrap leading-relaxed">
-                            {pState.aiFeedback}
-                          </p>
+                          <AIResponseView content={pState.aiFeedback} />
                         </motion.div>
                       )}
                     </div>

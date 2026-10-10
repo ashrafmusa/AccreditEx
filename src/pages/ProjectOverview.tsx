@@ -14,7 +14,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useToast } from "@/hooks/useToast";
-import ReactMarkdown from "react-markdown";
+import AIResponseView from "@/components/ai/AIResponseView";
 
 interface ProjectOverviewProps {
   project: Project;
@@ -295,9 +295,7 @@ Keep it brief and actionable. Use healthcare accreditation context.`;
           </button>
         </div>
         {briefingContent ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{briefingContent}</ReactMarkdown>
-          </div>
+          <AIResponseView content={briefingContent} />
         ) : (
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Click "Generate Briefing" for an AI-powered executive summary of

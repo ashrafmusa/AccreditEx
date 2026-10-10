@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AIResponseView from "@/components/ai/AIResponseView";
 import {
   Project,
   MockSurvey,
@@ -178,9 +179,7 @@ Keep it actionable and concise.`;
               ✕ Dismiss
             </button>
           </div>
-          <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-            {surveyBriefing}
-          </div>
+          <AIResponseView content={surveyBriefing} />
         </div>
       )}
 
@@ -263,8 +262,8 @@ Keep it actionable and concise.`;
                   )}
                 </button>
                 {aiHints[item.id] && (
-                  <div className="text-xs text-gray-600 dark:text-gray-400 bg-cyan-50 dark:bg-cyan-900/20 p-2 rounded-md flex-1 whitespace-pre-wrap">
-                    {aiHints[item.id]}
+                  <div className="bg-cyan-50 dark:bg-cyan-900/20 p-2 rounded-md flex-1">
+                    <AIResponseView content={aiHints[item.id]} compact showToolbar={false} />
                   </div>
                 )}
               </div>

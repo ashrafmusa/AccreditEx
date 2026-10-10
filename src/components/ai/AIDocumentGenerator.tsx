@@ -33,6 +33,8 @@ import {
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import React, { useEffect, useRef, useState } from "react";
+import DOMPurify from "dompurify";
+import AIResponseView from "@/components/ai/AIResponseView";
 
 interface AIDocumentGeneratorProps {
   templateId?: string;
@@ -871,9 +873,17 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                 ref={contentRef}
                 className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 max-h-96 overflow-y-auto"
               >
-                <pre className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                  {generatedContent}
-                </pre>
+                {/^\s*<[a-z!]/i.test(generatedContent) ? (
+                  <div
+                    className="prose prose-sm dark:prose-invert max-w-none text-gray-700 dark:text-gray-300"
+                    dir="auto"
+                    dangerouslySetInnerHTML={{
+                      __html: DOMPurify.sanitize(generatedContent),
+                    }}
+                  />
+                ) : (
+                  <AIResponseView content={generatedContent} showToolbar={false} />
+                )}
               </div>
 
               {/* Content Statistics */}

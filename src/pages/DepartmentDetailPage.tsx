@@ -22,7 +22,7 @@ import DepartmentUserList from "../components/departments/DepartmentUserList";
 import DepartmentTaskTable from "../components/departments/DepartmentTaskTable";
 import { aiAgentService } from "../services/aiAgentService";
 import { useToast } from "../hooks/useToast";
-import ReactMarkdown from "react-markdown";
+import AIResponseView from "@/components/ai/AIResponseView";
 
 interface DepartmentDetailPageProps {
   department: Department;
@@ -337,9 +337,7 @@ Keep it brief, specific, and actionable for a department head.`;
           </button>
         </div>
         {aiInsight ? (
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown>{aiInsight}</ReactMarkdown>
-          </div>
+          <AIResponseView content={aiInsight} />
         ) : (
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Get AI-powered insights on this department's readiness, risks, and

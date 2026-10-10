@@ -1,3 +1,4 @@
+import { ar as aiAr } from './ar/ai';
 import { ar as analyticsAr } from './ar/analytics';
 import { ar as auditAr } from './ar/audit';
 import { ar as calendarAr } from './ar/calendar';
@@ -23,6 +24,7 @@ import { ar as tasksAr } from './ar/tasks';
 import { ar as templatesAr } from './ar/templates';
 import { ar as trainingAr } from './ar/training';
 import { ar as workflowAutomationAr } from './ar/workflowAutomation';
+import { en as aiEn } from './en/ai';
 import { en as analyticsEn } from './en/analytics';
 import { en as auditEn } from './en/audit';
 import { en as calendarEn } from './en/calendar';
@@ -76,6 +78,7 @@ export const locales = {
     ...templatesEn,
     ...landingEn,
     ...multiFacilityEn,
+    ...aiEn,
   },
   ar: {
     ...commonAr,
@@ -103,5 +106,6 @@ export const locales = {
     ...templatesAr,
     ...landingAr,
     ...multiFacilityAr,
+    ...aiAr,
   }
 };

@@ -23,9 +23,7 @@ import {
   PaperAirplaneIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import DOMPurify from "dompurify";
-import { extractActions } from "@/utils/aiActions";
-import AIActionCard from "@/components/ai/AIActionCard";
+import AIResponseView from "@/components/ai/AIResponseView";
 import React, { useEffect, useRef, useState } from "react";
 
 interface AIAssistantProps {
@@ -47,38 +45,6 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const toast = useToast();
   const { t } = useTranslation();
-
-  // Simple markdown-like formatting
-  const formatMessage = (text: string) => {
-    return (
-      text
-        // Bold: **text** or __text__
-        .replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold">$1</strong>')
-        .replace(/__(.+?)__/g, '<strong class="font-bold">$1</strong>')
-        // Headers: ## text or === underline
-        .replace(
-          /^##\s+(.+)$/gm,
-          '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>',
-        )
-        .replace(
-          /^(.+)\n=+$/gm,
-          '<h2 class="text-xl font-bold mt-4 mb-3">$1</h2>',
-        )
-        .replace(
-          /^(.+)\n-+$/gm,
-          '<h3 class="text-lg font-semibold mt-3 mb-2">$1</h3>',
-        )
-        // Lists: - item or * item
-        .replace(/^\s*[-*]\s+(.+)$/gm, '<li class="ml-4 mb-1">• $1</li>')
-        // Code blocks: `code`
-        .replace(
-          /`(.+?)`/g,
-          '<code class="bg-gray-100 dark:bg-slate-600 px-1 py-0.5 rounded text-sm">$1</code>',
-        )
-        // Line breaks
-        .replace(/\n\n/g, "<br/><br/>")
-    );
-  };
 
   // Check AI agent health on mount
   useEffect(() => {
@@ -296,12 +262,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
               </div>
             )}
 
-            {messages.map((message, index) => {
-              const { text: displayText, actions } =
-                message.role === "assistant"
-                  ? extractActions(message.content)
-                  : { text: message.content, actions: [] };
-              return (
+            {messages.map((message, index) => (
               <div
                 key={index}
                 className={`flex ${
@@ -315,26 +276,19 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                       : "bg-white dark:bg-slate-700 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-600"
                   }`}
                 >
-                  <div
-                    className="text-sm leading-relaxed prose prose-sm dark:prose-invert max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(
-                        message.role === "assistant"
-                          ? formatMessage(displayText)
-                          : displayText,
-                      ),
-                    }}
-                  />
-                  {actions.map((action, i) => (
-                    <AIActionCard key={i} action={action} />
-                  ))}
+                  {message.role === "assistant" ? (
+                    <AIResponseView content={message.content} compact />
+                  ) : (
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap break-words" dir="auto">
+                      {message.content}
+                    </div>
+                  )}
                   <span className="text-xs opacity-70 mt-1.5 block">
                     {new Date(message.timestamp).toLocaleTimeString()}
                   </span>
                 </div>
               </div>
-              );
-            })}
+            ))}
 
             {isLoading && (
               <div className="flex justify-start">

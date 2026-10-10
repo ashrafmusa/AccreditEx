@@ -1,0 +1,18 @@
+export const en = {
+    aiResponseCopy: 'Copy',
+    aiResponseCopied: 'Copied to clipboard',
+    aiResponseHelpful: 'Helpful',
+    aiResponseNotHelpful: 'Not helpful',
+    aiResponseFeedbackThanks: 'Thanks for your feedback',
+    aiResponseRetry: 'Try again',
+    aiResponseEmpty: 'The AI did not return any content. Please try again.',
+    aiResponseErrorTitle: 'AI request failed',
+    aiResponseLoading: 'AccreditEx AI is thinking…',
+    aiResponseConfidence: 'Confidence',
+    aiResponseConfidenceHigh: 'High',
+    aiResponseConfidenceMedium: 'Medium',
+    aiResponseConfidenceLow: 'Low',
+    aiResponseFallbackNotice: 'Generated with a fallback method – review carefully.',
+    aiResponseDisclaimer: 'AI-generated content. Verify against your standards before use.',
+    aiResponseSummary: 'Summary',
+};

@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import AIResponseView from "@/components/ai/AIResponseView";
 import {
   LearningPath,
   LearningPathStep,
@@ -549,9 +550,7 @@ const LearningPathsTab: React.FC = () => {
           {aiError ? (
             <p className="text-sm text-red-600 dark:text-red-400">{aiError}</p>
           ) : (
-            <div className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary whitespace-pre-wrap leading-relaxed">
-              {aiRecommendations}
-            </div>
+            <AIResponseView content={aiRecommendations} type="training_recommendations" />
           )}
         </Card>
       )}

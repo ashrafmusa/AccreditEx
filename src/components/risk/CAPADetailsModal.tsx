@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AIResponseView from "@/components/ai/AIResponseView";
 import { CAPAReport, Project } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { XMarkIcon, TrashIcon } from "@/components/icons";
@@ -458,9 +459,9 @@ Format your response clearly with headers.`;
               </button>
             </div>
             {aiReviewResult ? (
-              <div className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap max-h-48 overflow-y-auto bg-white/60 dark:bg-gray-800/60 p-3 rounded">
-                {aiReviewResult}
-              </div>
+              <div className="max-h-48 overflow-y-auto bg-white/60 dark:bg-gray-800/60 p-3 rounded">
+                  <AIResponseView content={aiReviewResult} compact />
+                </div>
             ) : (
               <p className="text-xs text-gray-500 dark:text-gray-400">
                 Run an AI review to assess CAPA completeness, root cause

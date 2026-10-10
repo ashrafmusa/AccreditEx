@@ -13,6 +13,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useTenantStore } from '@/stores/useTenantStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { normalizeAIResponse } from '@/utils/aiResponse';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -307,12 +308,15 @@ export class AIAgentService {
         source: WorkflowResponseMeta['source'] = 'dedicated',
     ): any {
         const value = data?.[expectedField] || fallbackFieldValue;
+        const merged = { ...data, [expectedField]: value };
         return {
             ...data,
             status: data?.status || 'completed',
             [expectedField]: value,
             timestamp: data?.timestamp || new Date().toISOString(),
+            ai: normalizeAIResponse(merged, { field: expectedField, source }),
             meta: {
+                ...(data?.meta && typeof data.meta === 'object' ? data.meta : {}),
                 source,
                 quality_confidence: source === 'dedicated' ? 0.85 : 0.6,
                 route_mode: source === 'dedicated' ? 'endpoint' : 'chat_fallback',

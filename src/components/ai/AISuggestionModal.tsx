@@ -1,7 +1,9 @@
+import AIResponseView from "@/components/ai/AIResponseView";
 import { ClipboardDocumentListIcon, XMarkIcon } from "@/components/icons";
 import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { aiResponseToPlainText } from "@/utils/aiResponse";
 import React from "react";
-import ReactMarkdown from "react-markdown";
 
 interface AISuggestionModalProps {
   isOpen: boolean;
@@ -27,12 +29,13 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
   footer,
 }) => {
   const toast = useToast();
+  const { t } = useTranslation();
 
   if (!isOpen) return null;
 
   const handleCopyToClipboard = () => {
-    navigator.clipboard.writeText(content);
-    toast.success("Copied to clipboard!");
+    navigator.clipboard.writeText(aiResponseToPlainText(content));
+    toast.success(t("aiResponseCopied"));
   };
 
   const getIcon = () => {
@@ -93,80 +96,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
 
           {/* Content */}
           <div className="px-6 py-4 max-h-[60vh] overflow-y-auto">
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown
-                components={{
-                  h1: ({ node, ...props }) => (
-                    <h1
-                      className="text-2xl font-bold mt-4 mb-2 text-gray-900 dark:text-white"
-                      {...props}
-                    />
-                  ),
-                  h2: ({ node, ...props }) => (
-                    <h2
-                      className="text-xl font-bold mt-3 mb-2 text-gray-900 dark:text-white"
-                      {...props}
-                    />
-                  ),
-                  h3: ({ node, ...props }) => (
-                    <h3
-                      className="text-lg font-semibold mt-2 mb-1 text-gray-900 dark:text-white"
-                      {...props}
-                    />
-                  ),
-                  p: ({ node, ...props }) => (
-                    <p
-                      className="mb-3 text-gray-700 dark:text-gray-300 leading-relaxed"
-                      {...props}
-                    />
-                  ),
-                  ul: ({ node, ...props }) => (
-                    <ul
-                      className="list-disc list-inside mb-3 space-y-1 text-gray-700 dark:text-gray-300"
-                      {...props}
-                    />
-                  ),
-                  ol: ({ node, ...props }) => (
-                    <ol
-                      className="list-decimal list-inside mb-3 space-y-1 text-gray-700 dark:text-gray-300"
-                      {...props}
-                    />
-                  ),
-                  li: ({ node, ...props }) => (
-                    <li
-                      className="ml-4 text-gray-700 dark:text-gray-300"
-                      {...props}
-                    />
-                  ),
-                  strong: ({ node, ...props }) => (
-                    <strong
-                      className="font-semibold text-gray-900 dark:text-white"
-                      {...props}
-                    />
-                  ),
-                  code: ({ node, ...props }) => (
-                    <code
-                      className="bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-sm font-mono text-rose-600 dark:text-rose-400"
-                      {...props}
-                    />
-                  ),
-                  pre: ({ node, ...props }) => (
-                    <pre
-                      className="bg-gray-100 dark:bg-gray-700 p-3 rounded-lg overflow-x-auto mb-3"
-                      {...props}
-                    />
-                  ),
-                  blockquote: ({ node, ...props }) => (
-                    <blockquote
-                      className="border-l-4 border-rose-500 pl-4 italic text-gray-700 dark:text-gray-300 my-3"
-                      {...props}
-                    />
-                  ),
-                }}
-              >
-                {content}
-              </ReactMarkdown>
-            </div>
+            <AIResponseView content={content} showDisclaimer />
           </div>
 
           {/* Footer */}
@@ -176,7 +106,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
               className="flex items-center gap-2 px-4 py-2 text-sm bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-gray-700 dark:text-gray-300"
             >
               <ClipboardDocumentListIcon className="w-4 h-4" />
-              Copy to Clipboard
+              {t("aiResponseCopy")}
             </button>
             {footer ? (
               footer
@@ -185,7 +115,7 @@ const AISuggestionModal: React.FC<AISuggestionModalProps> = ({
                 onClick={onClose}
                 className="px-6 py-2 text-sm bg-linear-to-r from-rose-600 to-cyan-600 text-white rounded-lg hover:from-pink-600 hover:to-cyan-700 transition-colors font-semibold"
               >
-                Close
+                {t("close")}
               </button>
             )}
           </div>

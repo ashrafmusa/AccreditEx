@@ -8,6 +8,7 @@
  * Rendered as a slide-over panel, triggered from DocumentControlHubPage.
  */
 
+import AIResponseView from "@/components/ai/AIResponseView";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
@@ -399,9 +400,7 @@ Format the output as a ready-to-use document with numbered sections, clear polic
                   {generated[gap.label] && (
                     <div className="mt-3">
                       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 max-h-48 overflow-y-auto">
-                        <pre className="text-xs text-brand-text-primary dark:text-dark-brand-text-primary whitespace-pre-wrap font-sans">
-                          {generated[gap.label]}
-                        </pre>
+                        <AIResponseView content={generated[gap.label]} compact showToolbar={false} />
                       </div>
                       <div className="flex gap-2 mt-2">
                         {!saved[gap.label] ? (

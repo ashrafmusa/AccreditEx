@@ -9,7 +9,7 @@ import {
   LightBulbIcon,
   ArrowPathIcon,
 } from "../icons";
-import ReactMarkdown from "react-markdown";
+import AIResponseView from "@/components/ai/AIResponseView";
 
 interface AIQualityBriefingProps {
   projects: Project[];
@@ -119,9 +119,7 @@ const AIQualityBriefing: React.FC<AIQualityBriefingProps> = ({
         {error && <p className="text-red-500 text-center">{error}</p>}
 
         {lastMessage?.role === "assistant" && (
-          <div className="prose prose-sm dark:prose-invert max-w-none animate-[fadeInUp_0.5s_ease-out]">
-            <ReactMarkdown>{lastMessage.content}</ReactMarkdown>
-          </div>
+          <AIResponseView content={lastMessage.content} className="animate-[fadeInUp_0.5s_ease-out]" />
         )}
 
         {!isLoading && !hasGenerated && (

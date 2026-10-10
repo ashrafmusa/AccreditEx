@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAIAgent } from '@/hooks/useAIAgent';
 import { SparklesIcon, ArrowPathIcon } from '@/components/icons';
-import ReactMarkdown from 'react-markdown';
+import AIResponseView from "@/components/ai/AIResponseView";
 
 interface AnalyticsAIWidgetProps {
   data: {
@@ -81,9 +81,7 @@ const AnalyticsAIWidget: React.FC<AnalyticsAIWidgetProps> = ({ data }) => {
               {error}
             </div>
           ) : lastMessage?.role === 'assistant' ? (
-            <div className="prose prose-sm dark:prose-invert max-w-none">
-              <ReactMarkdown>{lastMessage.content}</ReactMarkdown>
-            </div>
+            <AIResponseView content={lastMessage.content} />
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 dark:text-gray-400 text-center">
               <SparklesIcon className="w-8 h-8 mb-2 opacity-50" />

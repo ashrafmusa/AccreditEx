@@ -1,10 +1,7 @@
 import React, { useRef, useEffect, useMemo } from "react";
 import { useAIChatStore } from "@/stores/useAIChatStore";
 import { useTranslation } from "@/hooks/useTranslation";
-import DOMPurify from "dompurify";
-import { marked } from "marked";
-import { extractActions } from "@/utils/aiActions";
-import AIActionCard from "@/components/ai/AIActionCard";
+import AIResponseView from "@/components/ai/AIResponseView";
 import {
   XMarkIcon,
   PaperAirplaneIcon,
@@ -132,12 +129,7 @@ export default function AIChatPanel() {
           </div>
         )}
 
-        {messages.map((msg) => {
-          const { text: displayText, actions } =
-            msg.role === "assistant"
-              ? extractActions(msg.content)
-              : { text: msg.content, actions: [] };
-          return (
+        {messages.map((msg) => (
           <div
             key={msg.id}
             className={`flex ${
@@ -151,23 +143,13 @@ export default function AIChatPanel() {
                   : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
               }`}
             >
-              <p className="text-sm whitespace-pre-wrap wrap-break-word">
-                {msg.role === "assistant" ? (
-                  <span
-                    className="prose prose-sm dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0"
-                    dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(
-                        marked.parse(displayText, { async: false }) as string,
-                      ),
-                    }}
-                  />
-                ) : (
-                  msg.content
-                )}
-              </p>
-              {actions.map((action, i) => (
-                <AIActionCard key={i} action={action} />
-              ))}
+              {msg.role === "assistant" ? (
+                <AIResponseView content={msg.content} compact />
+              ) : (
+                <p className="text-sm whitespace-pre-wrap wrap-break-word" dir="auto">
+                  {msg.content}
+                </p>
+              )}
               <p
                 className={`text-xs mt-1 ${
                   msg.role === "user"
@@ -179,8 +161,7 @@ export default function AIChatPanel() {
               </p>
             </div>
           </div>
-          );
-        })}
+        ))}
 
         {isLoading && (
           <div className="flex justify-start">

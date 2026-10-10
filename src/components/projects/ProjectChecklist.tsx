@@ -1,4 +1,5 @@
 import AISuggestionModal from "@/components/ai/AISuggestionModal";
+import AIResponseView from "@/components/ai/AIResponseView";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
@@ -1309,9 +1310,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
                     📄 Show AI Response (reference for manual assignment)
                   </summary>
                   <div className="mt-2 p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700 max-h-48 overflow-y-auto">
-                    <pre className="text-xs text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono leading-relaxed">
-                      {aiModalContent}
-                    </pre>
+                    <AIResponseView content={aiModalContent} compact />
                   </div>
                 </details>
               )}

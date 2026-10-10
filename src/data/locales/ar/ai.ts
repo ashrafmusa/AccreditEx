@@ -1,0 +1,18 @@
+export const ar = {
+    aiResponseCopy: 'نسخ',
+    aiResponseCopied: 'تم النسخ إلى الحافظة',
+    aiResponseHelpful: 'مفيد',
+    aiResponseNotHelpful: 'غير مفيد',
+    aiResponseFeedbackThanks: 'شكراً لملاحظاتك',
+    aiResponseRetry: 'إعادة المحاولة',
+    aiResponseEmpty: 'لم يُرجع الذكاء الاصطناعي أي محتوى. يرجى المحاولة مرة أخرى.',
+    aiResponseErrorTitle: 'فشل طلب الذكاء الاصطناعي',
+    aiResponseLoading: 'ذكاء AccreditEx يفكر…',
+    aiResponseConfidence: 'مستوى الثقة',
+    aiResponseConfidenceHigh: 'مرتفع',
+    aiResponseConfidenceMedium: 'متوسط',
+    aiResponseConfidenceLow: 'منخفض',
+    aiResponseFallbackNotice: 'تم الإنشاء بطريقة بديلة – يرجى المراجعة بعناية.',
+    aiResponseDisclaimer: 'محتوى مُنشأ بالذكاء الاصطناعي. تحقق منه مقابل معاييرك قبل الاستخدام.',
+    aiResponseSummary: 'الملخص',
+};

@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import React, { useState, useMemo, useCallback } from "react";
 import { AppDocument, Standard } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
@@ -946,7 +947,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                 </div>
                 <div
                   className="text-xs text-gray-700 dark:text-gray-300 max-h-40 overflow-y-auto leading-relaxed prose prose-xs dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: summaryPreview }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(summaryPreview) }}
                 />
                 <div className="flex gap-2 mt-2">
                   <button
@@ -997,7 +998,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                 </div>
                 <div
                   className="text-xs text-gray-700 dark:text-gray-300 max-h-48 overflow-y-auto leading-relaxed prose prose-xs dark:prose-invert"
-                  dangerouslySetInnerHTML={{ __html: complianceFindings }}
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(complianceFindings) }}
                 />
               </div>
             )}
