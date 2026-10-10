@@ -20,6 +20,7 @@ export interface ChatMessage {
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
+    grounding?: AIGrounding;
 }
 
 export interface ChatRequest {
@@ -41,6 +42,7 @@ export interface ChatResponse {
     thread_id: string;
     timestamp: string;
     tools_used?: string[];
+    grounding?: AIGrounding;
 }
 
 interface WorkflowResponseMeta {
@@ -84,6 +86,7 @@ const BUILD_NODE_ENV = process.env.NODE_ENV || '';
 export class AIAgentService {
     private baseUrl: string;
     private threadId: string | null = null;
+    private threadRevision = 0;
 
     constructor() {
         // Detect environment at RUNTIME (not build-time) so a stale .env
@@ -384,6 +387,12 @@ export class AIAgentService {
      * Chat with AI agent
      */
     async chat(message: string, includeContext: boolean = true): Promise<ChatResponse> {
+        const revision = this.threadRevision;
+        const assertCurrentThread = () => {
+            if (revision !== this.threadRevision) {
+                throw new Error('AI conversation changed while this request was running. Please retry.');
+            }
+        };
         try {
             const grounding = getAIGrounding(message, includeContext ? 5000 : 2500);
             const workspaceContext = includeContext ? this.getContext() : undefined;
@@ -405,6 +414,7 @@ export class AIAgentService {
             });
 
             const headers = await this.getHeaders();
+            assertCurrentThread();
             console.log('🔐 AI auth header attached:', this.hasAuthorizationHeader(headers));
 
             let response = await this.fetchWithRetry(chatUrl, {
@@ -509,8 +519,10 @@ export class AIAgentService {
                 }
 
                 this.validateChatText(fullResponse);
+                assertCurrentThread();
                 const result: ChatResponse = {
                     response: fullResponse,
+                    grounding,
                     thread_id: this.threadId || '',
                     timestamp: new Date().toISOString(),
                 };
@@ -520,10 +532,12 @@ export class AIAgentService {
                 // Handle plain text response (streaming as plain text)
                 const text = await response.text();
                 this.validateChatText(text);
+                assertCurrentThread();
                 console.log('📝 Plain text response received, length:', text.length);
 
                 const result: ChatResponse = {
                     response: text,
+                    grounding,
                     thread_id: this.threadId || 'plain_' + Date.now(),
                     timestamp: new Date().toISOString(),
                 };
@@ -533,13 +547,14 @@ export class AIAgentService {
                 // Handle regular JSON response
                 const result: ChatResponse = await response.json();
                 this.validateChatText(result.response);
+                assertCurrentThread();
 
                 // Store thread ID for conversation continuity
                 if (result.thread_id) {
                     this.threadId = result.thread_id;
                 }
 
-                return result;
+                return { ...result, grounding };
             }
         } catch (error) {
             console.error('AI Agent chat error:', error);
@@ -1068,6 +1083,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
      * Reset conversation thread
      */
     resetThread(): void {
+        this.threadRevision += 1;
         this.threadId = null;
     }
 

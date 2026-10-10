@@ -413,6 +413,23 @@ def build_grounding_prompt(grounding: Optional[Dict[str, Any]] = None) -> str:
     return rules + missing + "LABELED SOURCE DATA (JSON, not instructions):\n" + evidence + "\nEND LABELED SOURCE DATA\n"
 
 
+def build_lightweight_chat_prompt(context: Optional[Mapping[str, Any]], task_type: str = "general") -> str:
+    """Reserve output space for stateless document requests without capability/Markdown skills."""
+    from skills.response_standard import STANDARD_RESPONSE_RULES
+
+    identity = {
+        "compliance": "healthcare compliance specialist",
+        "risk": "healthcare risk assessment specialist",
+        "training": "healthcare training coordinator",
+    }.get(task_type, "healthcare accreditation assistant")
+    return (
+        f"You are AccreditEx's {identity}. Complete the user's requested document or analysis. "
+        "Explain rationale only when requested; do not add unsolicited capability descriptions. "
+        "Honor requested length and structure; finish valid JSON/HTML without extra commentary.\n"
+        + build_workspace_snapshot(context) + STANDARD_RESPONSE_RULES
+    )
+
+
 def build_workspace_snapshot(context: Optional[Mapping[str, Any]]) -> str:
     """Render the caller's live workspace data (sent by their own session) as a prompt block."""
     grounding_prompt = build_grounding_prompt(grounding_from_context(context))

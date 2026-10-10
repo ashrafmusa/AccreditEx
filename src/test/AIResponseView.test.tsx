@@ -23,6 +23,32 @@ jest.mock("@/services/aiFeedbackService", () => ({
 }));
 
 import AIResponseView from "@/components/ai/AIResponseView";
+import type { AIGrounding } from "@/services/aiGroundingService";
+import { en } from "@/data/locales/en/ai";
+import { ar } from "@/data/locales/ar/ai";
+
+const groundingFixture = (): AIGrounding => ({
+  schema: "ai-grounding/1",
+  organizationId: "org-1",
+  sources: [{
+    ref: "document:policy-1@v3",
+    kind: "document",
+    id: "policy-1",
+    organizationId: "org-1",
+    title: "Hand hygiene policy",
+    status: "Draft",
+    version: 3,
+    excerpt: "Wash hands before each procedure.",
+    excerptTruncated: true,
+    links: [{ relation: "related", target: "document:policy-2" }],
+  }],
+  coverage: {
+    available: 7,
+    selected: 1,
+    omitted: 6,
+    limitations: ["Loaded records only; not an exhaustive database search."],
+  },
+});
 
 describe("AIResponseView", () => {
   beforeEach(() => jest.clearAllMocks());
@@ -90,5 +116,119 @@ describe("AIResponseView", () => {
 
     // Assert
     expect(screen.queryByLabelText("aiResponseCopy")).toBeNull();
+  });
+
+  it("preserves responses without supplied evidence", () => {
+    // Arrange / Act
+    const { container } = render(<AIResponseView content="Answer" />);
+
+    // Assert
+    expect(screen.getByTestId("md")).toHaveTextContent("Answer");
+    expect(container.querySelector("details")).toBeNull();
+    expect(screen.queryByText("aiEvidenceDisclaimer")).not.toBeInTheDocument();
+  });
+
+  it("shows an initially collapsed evidence section with bounded coverage and partial excerpts", () => {
+    // Arrange
+    const grounding = groundingFixture();
+    const { container } = render(<AIResponseView content="Answer" grounding={grounding} showDisclaimer={false} />);
+    const details = container.querySelector("details")!;
+
+    // Assert
+    expect(details).not.toHaveAttribute("open");
+    expect(details.querySelector("summary")).toHaveTextContent("aiEvidenceTitle (1)");
+    expect(details).toHaveTextContent("aiEvidenceAvailable: 7");
+    expect(details).toHaveTextContent("aiEvidenceSelected: 1");
+    expect(details).toHaveTextContent("aiEvidenceOmitted: 6");
+    expect(details).toHaveTextContent("aiEvidenceLimits");
+    expect(details).toHaveTextContent(grounding.coverage.limitations[0]);
+    expect(details).toHaveTextContent("Hand hygiene policy");
+    expect(details).toHaveTextContent("document:policy-1@v3");
+    expect(details).toHaveTextContent("aiEvidenceVersion: 3");
+    expect(details).toHaveTextContent("Wash hands before each procedure.");
+    expect(details).toHaveTextContent("aiEvidencePartialExcerpt");
+    expect(details).toHaveTextContent("aiEvidenceDisclaimer");
+    expect(details.querySelector("a")).toBeNull();
+  });
+
+  it.each(["Approved", "Draft", "Expired", "Archived", "catalog requirement"])(
+    "shows the recorded %s status without implying certification",
+    (status) => {
+      // Arrange
+      const grounding = groundingFixture();
+      grounding.sources[0].status = status;
+
+      // Act
+      render(<AIResponseView content="Answer" grounding={grounding} />);
+
+      // Assert
+      expect(screen.getByText(status)).toBeInTheDocument();
+      expect(screen.getByText("aiEvidenceDisclaimer")).toBeInTheDocument();
+    },
+  );
+
+  it("explains absent sources even when the answer body is missing", () => {
+    // Arrange
+    const grounding = groundingFixture();
+    grounding.sources = [];
+    grounding.coverage = { available: 0, selected: 0, omitted: 0, limitations: [] };
+
+    // Act
+    render(<AIResponseView grounding={grounding} />);
+
+    // Assert
+    expect(screen.getByText("aiEvidenceTitle", { exact: false })).toHaveTextContent("(0)");
+    expect(screen.getByText("aiEvidenceNoSources")).toBeInTheDocument();
+    expect(screen.getByText("aiEvidenceDisclaimer")).toBeInTheDocument();
+    expect(screen.queryByText("aiEvidenceLimits")).not.toBeInTheDocument();
+  });
+
+  it("keeps evidence visible for an empty response and handles missing metadata", () => {
+    // Arrange
+    const grounding = groundingFixture();
+    grounding.sources[0].status = undefined;
+    grounding.sources[0].version = undefined;
+    grounding.sources[0].excerpt = "";
+    grounding.sources[0].excerptTruncated = false;
+
+    // Act
+    render(<AIResponseView content={{ analysis: "" }} grounding={grounding} />);
+
+    // Assert
+    expect(screen.getByText("aiResponseEmpty")).toBeInTheDocument();
+    expect(screen.getByText("aiEvidenceStatusUnknown")).toBeInTheDocument();
+    expect(screen.getByText("aiEvidenceNoExcerpt")).toBeInTheDocument();
+    expect(screen.queryByText("aiEvidenceVersion", { exact: false })).not.toBeInTheDocument();
+    expect(screen.queryByText("aiEvidencePartialExcerpt")).not.toBeInTheDocument();
+  });
+
+  it("renders evidence as plain text, never invented destinations or markup", () => {
+    // Arrange
+    const grounding = groundingFixture();
+    grounding.sources[0].excerpt = '<a href="https://example.com">Untrusted source</a>';
+    grounding.sources[0].version = 0;
+
+    // Act
+    const { container } = render(<AIResponseView content="Answer" grounding={grounding} />);
+
+    // Assert
+    expect(screen.getByText(grounding.sources[0].excerpt)).toBeInTheDocument();
+    expect(container.querySelector("details a")).toBeNull();
+    expect(container.querySelector("details")).toHaveTextContent("aiEvidenceVersion: 0");
+  });
+
+  it("provides English and Arabic evidence labels and a non-certification disclaimer", () => {
+    // Arrange
+    const evidenceKeys = Object.keys(en).filter((key) => key.startsWith("aiEvidence")) as (keyof typeof en)[];
+
+    // Act / Assert
+    evidenceKeys.forEach((key) => {
+      expect(en[key]).toBeTruthy();
+      expect(ar[key as keyof typeof ar]).toBeTruthy();
+    });
+    expect(en.aiEvidenceDisclaimer).toContain("not proof of compliance");
+    expect(en.aiEvidenceDisclaimer).toContain("certification");
+    expect(ar.aiEvidenceDisclaimer).toContain("ليست إثباتاً للامتثال");
+    expect(ar.aiEvidenceDisclaimer).toContain("شهادة اعتماد");
   });
 });

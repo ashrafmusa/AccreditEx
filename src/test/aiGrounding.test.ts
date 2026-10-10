@@ -113,6 +113,38 @@ describe("Permission-aware AI evidence retrieval", () => {
     expect(result.sources.find(s => s.kind === "document")?.excerpt).toBe("تحقق من هوية العينة.");
   });
 
+  it("withholds ambiguous standard code links across editions", () => {
+    // Arrange
+    const records = snapshot();
+    records.standards.push({ ...records.standards[0], id: "other-edition", version: "2" });
+    records.projects = [{ id: "project", organizationId: "org-a", name: "Specimen project", programId: "program",
+      status: "In Progress", progress: 0, startDate: "", createdAt: "", updatedAt: "",
+      checklist: [], standardIds: ["LAB.1"] }];
+    // Act
+    const result = buildAIGrounding("project", "org-a", records, () => true);
+    // Assert
+    expect(result.sources.find(s => s.kind === "project")?.links.some(l => l.relation === "standard")).toBe(false);
+    expect(result.coverage.limitations.join(" ")).toContain("Ambiguous standard codes");
+  });
+
+  it("links checklist evidence without exposing attachment URLs", () => {
+    // Arrange
+    const records = snapshot();
+    records.documents[0].fileUrl = "https://example.invalid/private-attachment";
+    records.projects = [{ id: "project", organizationId: "org-a", name: "Specimen project", programId: "program",
+      status: "In Progress", progress: 0, startDate: "", createdAt: "", updatedAt: "",
+      checklist: [{ id: "item", standardId: "LAB.1", item: "Specimen labels", status: "Not Started",
+        assignedTo: "", dueDate: "", actionPlan: "", notes: "",
+        evidenceFiles: [records.documents[0].fileUrl], comments: [] }] }];
+    // Act
+    const result = buildAIGrounding("policy", "org-a", records, () => true);
+    // Assert
+    expect(result.sources.find(s => s.kind === "document")?.links).toContainEqual({
+      relation: "evidenceFor", target: "standard:std-id",
+    });
+    expect(JSON.stringify(result)).not.toContain("https://example.invalid");
+  });
+
   it("budgets Arabic evidence using escaped serialization without dropping all source content", () => {
     // Arrange
     const records = snapshot();
@@ -135,5 +167,25 @@ describe("Permission-aware AI evidence retrieval", () => {
     const result = buildAIGrounding("policy", "org-a", records, () => true);
     // Assert
     expect(result.sources.find(s => s.kind === "document")?.status).toBe("Expired");
+  });
+
+  it("bounds large project relationship lists and preserves distinct relationship types", () => {
+    // Arrange
+    const records = snapshot();
+    records.standards = Array.from({ length: 50 }, (_, index) => ({
+      id: `std-${index}`, organizationId: "org-a", standardId: `LAB.${index}`,
+      description: "Laboratory requirement", programId: "program", section: "Lab",
+    }));
+    records.projects = [{ id: "large-project", organizationId: "org-a", name: "Laboratory project", programId: "program",
+      status: "In Progress", progress: 0, startDate: "", createdAt: "", updatedAt: "", departmentId: "lab",
+      checklist: [], standardIds: records.standards.map(s => s.id || s.standardId) }];
+    // Act
+    const result = buildAIGrounding("large-project", "org-a", records, () => true);
+    const project = result.sources.find(s => s.kind === "project");
+    // Assert
+    expect(project?.links.length).toBeLessThanOrEqual(7);
+    expect(project?.links).toContainEqual({ relation: "program", target: "program:program" });
+    expect(project?.links).toContainEqual({ relation: "department", target: "department:lab" });
+    expect(result.coverage.limitations.join(" ")).toContain("relationship targets were omitted");
   });
 });

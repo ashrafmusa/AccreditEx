@@ -1,11 +1,21 @@
 import { create } from 'zustand';
 import { aiAgentService } from '@/services/aiAgentService';
+import type { AIGrounding } from '@/services/aiGroundingService';
+import { useUserStore } from '@/stores/useUserStore';
+import { useTenantStore } from '@/stores/useTenantStore';
+
+let conversationRevision = 0;
+const getChatScope = () => {
+    const user = useUserStore.getState().currentUser;
+    return JSON.stringify([user?.id, user?.email, user?.organizationId, useTenantStore.getState().organizationId]);
+};
 
 interface Message {
     id: string;
     role: 'user' | 'assistant';
     content: string;
     timestamp: string;
+    grounding?: AIGrounding;
 }
 
 interface AIChatState {
@@ -35,6 +45,7 @@ export const useAIChatStore = create<AIChatState>((set, get) => ({
     isServiceAvailable: true,
 
     sendMessage: async (content: string, context?: Record<string, any>) => {
+        const revision = conversationRevision;
         const userMessage: Message = {
             id: `msg-${Date.now()}`,
             role: 'user',
@@ -53,12 +64,14 @@ export const useAIChatStore = create<AIChatState>((set, get) => ({
                 content,
                 true
             );
+            if (revision !== conversationRevision) return;
 
             const assistantMessage: Message = {
                 id: `msg-${Date.now()}-ai`,
                 role: 'assistant',
                 content: response.response,
                 timestamp: response.timestamp,
+                grounding: response.grounding,
             };
 
             set({
@@ -68,6 +81,7 @@ export const useAIChatStore = create<AIChatState>((set, get) => ({
                 isServiceAvailable: true,
             });
         } catch (error) {
+            if (revision !== conversationRevision) return;
             const errorMessage = error instanceof Error ? error.message : 'Failed to send message. Please try again.';
 
             set({
@@ -82,11 +96,17 @@ export const useAIChatStore = create<AIChatState>((set, get) => ({
     openChat: () => set({ isOpen: true }),
     closeChat: () => set({ isOpen: false }),
 
-    clearChat: () => set({
-        messages: [],
-        threadId: null,
-        error: null
-    }),
+    clearChat: () => {
+        // In-flight replies must not restore evidence from a cleared scope.
+        conversationRevision += 1;
+        aiAgentService.resetThread();
+        set({
+            messages: [],
+            threadId: null,
+            error: null,
+            isLoading: false,
+        });
+    },
 
     setError: (error) => set({ error }),
 
@@ -99,3 +119,13 @@ export const useAIChatStore = create<AIChatState>((set, get) => ({
         }
     },
 }));
+
+let chatScope = getChatScope();
+const clearOnScopeChange = () => {
+    const nextScope = getChatScope();
+    if (nextScope === chatScope) return;
+    chatScope = nextScope;
+    useAIChatStore.getState().clearChat();
+};
+useUserStore.subscribe(clearOnScopeChange);
+useTenantStore.subscribe(clearOnScopeChange);

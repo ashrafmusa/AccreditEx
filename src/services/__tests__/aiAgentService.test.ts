@@ -86,19 +86,34 @@ describe('AIAgentService', () => {
     // ─────────────────────────────────────────────────────────────
 
     describe('Chat', () => {
+        it('discards late replies after a conversation reset without restoring an old thread', async () => {
+            // Arrange
+            const oldResponse: ChatResponse = { response: 'Old evidence', thread_id: 'old-thread', timestamp: '' };
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true, headers: new Headers({ 'content-type': 'application/json' }),
+                json: async () => {
+                    service.resetThread();
+                    return oldResponse;
+                },
+            });
+            // Act / Assert
+            await expect(service.chat('Old question', false)).rejects.toThrow('AI conversation changed');
+            expect(service.getThreadId()).toBeNull();
+        });
         it('keeps lightweight requests intact while attaching bounded grounding without workspace fetch context', async () => {
             // Arrange
             (global.fetch as jest.Mock).mockResolvedValueOnce({
                 ok: true, headers: new Headers({ 'content-type': 'text/plain' }), text: async () => 'Draft',
             });
             // Act
-            await service.chat('Generate an English draft', false);
+            const result = await service.chat('Generate an English draft', false);
             const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
             // Assert
             expect(body.message).toBe('Generate an English draft');
             expect(body.context.current_data).toBeUndefined();
             expect(body.context.ai_grounding.schema).toBe('ai-grounding/1');
             expect(body.context.ai_grounding.coverage.selected).toBe(body.context.ai_grounding.sources.length);
+            expect(result.grounding).toEqual(body.context.ai_grounding);
         });
         it.each(['[ACCREDITEX_RESPONSE_FAILED]', 'Error: provider rate_limit_exceeded'])(
             'rejects provider failure text: %s', async (text) => {
@@ -140,7 +155,9 @@ describe('AIAgentService', () => {
 
             const result = await service.chat('Hello AI', false);
 
-            expect(result).toEqual(mockChatResponse);
+            expect(result).toEqual(expect.objectContaining(mockChatResponse));
+            const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+            expect(result.grounding).toEqual(body.context.ai_grounding);
             expect(global.fetch).toHaveBeenCalledWith(
                 expect.stringContaining('/chat'),
                 expect.objectContaining({ method: 'POST' })
@@ -186,7 +203,7 @@ describe('AIAgentService', () => {
 
             const result = await service.chat('Test', false);
 
-            expect(result).toEqual(mockChatResponse);
+            expect(result).toEqual(expect.objectContaining(mockChatResponse));
             expect(global.fetch).toHaveBeenCalledTimes(2); // Failed attempt + retry
         });
 

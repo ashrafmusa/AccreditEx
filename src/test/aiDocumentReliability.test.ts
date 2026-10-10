@@ -142,6 +142,23 @@ describe("Document formats and service reliability", () => {
     await expect(new AIDocumentGeneratorService().analyzeDocument("Policy")).rejects.toThrow("offline");
   });
 
+  it.each([
+    ["concise", 350], ["detailed", 800], ["comprehensive", 1200],
+  ] as const)("bounds %s documents and applies the requested tone", async (length, limit) => {
+    // Arrange
+    const chat = jest.mocked(aiAgentService.chat);
+    chat.mockResolvedValue({ response: "<h2>Draft</h2>", thread_id: "", timestamp: "" });
+    // Act
+    await new AIDocumentGeneratorService().generateDocument({
+      templateId: "policy", context: {}, preferences: { length, tone: "technical" },
+    });
+    // Assert
+    expect(chat.mock.calls[1][0]).toContain(`under ${limit} words`);
+    expect(chat.mock.calls[1][0]).toContain("technical tone");
+    expect(chat.mock.calls[1][0]).not.toContain("minimum 3-4 sentences");
+    expect(chat.mock.calls[0][0]).toContain("not evidence of compliance");
+  });
+
   it("requests source ids and resolves them end-to-end in the analysis service", async () => {
     // Arrange
     const issue = { type: "warning", section: "Labels", issue: "Clarify", recommendation: "Review", evidenceId: 2 };

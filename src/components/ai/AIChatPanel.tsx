@@ -144,7 +144,7 @@ export default function AIChatPanel() {
               }`}
             >
               {msg.role === "assistant" ? (
-                <AIResponseView content={msg.content} compact />
+                <AIResponseView content={msg.content} grounding={msg.grounding} compact />
               ) : (
                 <p className="text-sm whitespace-pre-wrap wrap-break-word" dir="auto">
                   {msg.content}

@@ -62,13 +62,31 @@ export function buildAIGrounding(
     !!organizationId && (inScope(record) || record.scope === "global");
   const add = (kind: string, id: string, title: string, text: string, links: AIGroundingSource["links"] = [],
     status?: string, version?: string | number) => {
+    const ref = key(kind, id) + (version !== undefined ? `@v${version}` : "");
+    if (!id.trim() || id.length > 500 || ref.length > 500 || /[\[\]\r\n]/.test(ref)) {
+      const warning = "Records with unusable citation identifiers were excluded.";
+      if (!limits.includes(warning)) limits.push(warning);
+      return;
+    }
     const normalized = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
     const excerpt = normalized.slice(0, 650);
-    sources.push({ ref: key(kind, id) + (version !== undefined ? `@v${version}` : ""), kind, id,
-      organizationId, title, status, version, excerpt, excerptTruncated: normalized.length > excerpt.length, links });
+    sources.push({ ref, kind, id, organizationId, title: title.slice(0, 500),
+      status, version, excerpt, excerptTruncated: normalized.length > excerpt.length, links });
   };
   const link = (relation: string, kind: string, ids: string[] = []) =>
     ids.map(id => ({ relation, target: key(kind, id) }));
+  const resolveStandards = (ids: string[] = [], programId?: string): Standard[] => {
+    const catalog = records.standards.filter(referenceInScope);
+    return ids.flatMap(id => {
+      const exact = catalog.find(s => s.id === id);
+      if (exact) return [exact];
+      const matches = catalog.filter(s => s.standardId === id && (!programId || s.programId === programId));
+      if (matches.length <= 1) return matches;
+      const warning = "Ambiguous standard codes across programs or editions were not resolved automatically.";
+      if (!limits.includes(warning)) limits.push(warning);
+      return [];
+    });
+  };
   if (canRead(Resource.Document)) for (const d of records.documents.filter(inScope)) {
     add("document", d.id, localized(d.name) || d.id, localized(d.content),
       [...link("department", "department", d.departmentIds), ...link("related", "document", d.relatedDocumentIds),
@@ -90,13 +108,22 @@ export function buildAIGrounding(
   }
   if (canRead(Resource.Project)) for (const p of records.projects.filter(inScope)) {
     const standardKeys = (p.standardIds || []).concat((p.checklist || []).map(c => c.standardId));
-    const standardIds = records.standards.filter(referenceInScope)
-      .filter(s => standardKeys.includes(s.id || "") || standardKeys.includes(s.standardId)).map(s => s.id || s.standardId);
+    const standardIds = resolveStandards(standardKeys, p.programId).map(s => s.id || s.standardId);
     add("project", p.id, p.name, `${p.description || ""}\n${(p.checklist || []).map(c => `${c.standardId}: ${c.item}; status=${c.status}`).join("\n")}`,
       [...link("program", "program", [p.programId]), ...link("standard", "standard", standardIds),
         ...link("department", "department", [...(p.departmentIds || []), ...(p.departmentId ? [p.departmentId] : [])])], p.status);
+    for (const item of p.checklist || []) {
+      const standard = resolveStandards([item.standardId], p.programId)[0];
+      if (!standard) continue;
+      for (const document of records.documents.filter(inScope).filter(d =>
+        item.evidenceFiles?.includes(d.id) || (!!d.fileUrl && item.evidenceFiles?.includes(d.fileUrl)))) {
+        const source = sources.find(s => s.kind === "document" && s.id === document.id);
+        if (source) source.links.push(...link("evidenceFor", "standard", [standard.id || standard.standardId]),
+          ...link("project", "project", [p.id]));
+      }
+    }
     if (canRead(Resource.CAPA)) for (const c of p.capaReports || []) {
-      const standard = records.standards.filter(referenceInScope).find(s => s.id === c.sourceStandardId || s.standardId === c.sourceStandardId);
+      const standard = resolveStandards(c.sourceStandardId ? [c.sourceStandardId] : [], p.programId)[0];
       add("capa", c.id, c.title || `CAPA ${c.id}`, `${c.description || ""}\nRoot cause: ${c.rootCause}\nCorrective action: ${c.correctiveAction}`,
         [...link("project", "project", [p.id]), ...link("document", "document", c.linkedDocumentIds),
           ...link("standard", "standard", standard ? [standard.id || standard.standardId] : [])], c.status);
@@ -108,8 +135,7 @@ export function buildAIGrounding(
     }
   }
   if (canRead(Resource.Risk)) for (const r of records.risks.filter(inScope)) {
-    const standards = records.standards.filter(referenceInScope).filter(s =>
-      r.affectedStandardIds?.includes(s.id || "") || r.affectedStandardIds?.includes(s.standardId));
+    const standards = resolveStandards(r.affectedStandardIds);
     add("risk", r.id, r.title, `${r.description}\nMitigation: ${r.mitigationPlan}`,
       [...link("standard", "standard", standards.map(s => s.id || s.standardId)),
         ...link("department", "department", records.departments.filter(inScope).filter(d =>
@@ -120,8 +146,7 @@ export function buildAIGrounding(
       add("training", t.id, localized(t.title) || t.id, localized(t.description), [], t.isActive === false ? "inactive" : "active");
     }
     for (const c of records.competencies.filter(inScope)) {
-      const standards = records.standards.filter(referenceInScope).filter(s =>
-        c.relatedStandardIds?.includes(s.id || "") || c.relatedStandardIds?.includes(s.standardId));
+      const standards = resolveStandards(c.relatedStandardIds);
       add("competency", c.id, localized(c.name) || c.id, localized(c.description),
         [...link("training", "training", c.relatedTrainingIds), ...link("standard", "standard", standards.map(s => s.id || s.standardId))]);
     }
@@ -132,7 +157,15 @@ export function buildAIGrounding(
   }
   const known = new Set(sources.map(s => key(s.kind, s.id)));
   // Never disclose a relationship target whose record is not authorized/in scope.
-  for (const source of sources) source.links = source.links.filter(l => known.has(l.target));
+  let relationshipsOmitted = false;
+  for (const source of sources) {
+    const unique = [...new Map(source.links.filter(l => known.has(l.target)).map(l => [`${l.relation}:${l.target}`, l])).values()];
+    const firstByRelation = [...new Map(unique.map(l => [l.relation, l])).values()];
+    const ordered = [...firstByRelation, ...unique.filter(l => !firstByRelation.includes(l))];
+    source.links = ordered.slice(0, 7);
+    relationshipsOmitted ||= ordered.length > source.links.length;
+  }
+  if (relationshipsOmitted) limits.push("Some recorded relationship targets were omitted to fit the evidence budget.");
   const stopWords = new Set(["the", "and", "for", "with", "this", "that", "only", "return", "document", "source", "content", "shall", "must", "from", "following"]);
   const tokens = [...new Set(query.toLowerCase().match(/[\p{L}\p{N}_-]{3,}/gu) || [])].filter(t => !stopWords.has(t));
   const ranked = sources.map(source => {

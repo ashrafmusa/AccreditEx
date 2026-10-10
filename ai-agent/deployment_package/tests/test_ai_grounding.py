@@ -13,6 +13,7 @@ from unittest.mock import AsyncMock, Mock, patch
 from agent_utils import (
     build_grounding_prompt, build_workspace_snapshot,
     grounding_from_context, validate_ai_grounding,
+    build_lightweight_chat_prompt,
 )
 from skills.response_standard import (
     FAILED_RESPONSE_MARKER, STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER,
@@ -304,6 +305,7 @@ class TestGroundedModelPrompts(unittest.IsolatedAsyncioTestCase):
         ns = production_functions("unified_accreditex_agent.py", {"chat", "_get_base_system_prompt"}, {
             **vars(typing), "datetime": datetime, "time": time, "logger": Mock(),
             "build_grounding_prompt": build_grounding_prompt, "grounding_from_context": grounding_from_context,
+            "build_lightweight_chat_prompt": build_lightweight_chat_prompt,
             "STANDARD_RESPONSE_RULES": STANDARD_RESPONSE_RULES,
             "get_general_agent_prompt": lambda: "System", "get_compliance_specialist_prompt": lambda: "System",
             "get_risk_assessment_specialist_prompt": lambda: "System", "get_training_specialist_prompt": lambda: "System",
@@ -332,16 +334,88 @@ class TestGroundedModelPrompts(unittest.IsolatedAsyncioTestCase):
                 result = "".join([chunk async for chunk in ns["chat"](agent, "Check compliance. Return JSON.", context=context)])
                 # Assert
                 self.assertEqual(result, '{"answer":"ok"}')
-                self.assertIn("document:ID@v1", next(iter(agent.conversations.values()))[0]["content"])
+                system_prompt = (
+                    agent._create_completion.call_args.kwargs["messages"][0]["content"] if lightweight
+                    else next(iter(agent.conversations.values()))[0]["content"]
+                )
+                self.assertIn("document:ID@v1", system_prompt)
                 agent.detect_task_type.assert_called_once_with("Check compliance. Return JSON.")
                 agent._cache_get.assert_not_called()
                 agent._cache_set.assert_not_called()
                 if lightweight:
                     agent.context_manager.get_context.assert_not_called()
                     agent._get_organization_context.assert_not_called()
-                if strict:
+                if strict and not lightweight:
                     specialist_context = agent.route_to_specialist.call_args.kwargs["context"]
                     self.assertIn("document:ID@v1", build_workspace_snapshot(specialist_context))
+                if lightweight:
+                    agent.route_to_specialist.assert_not_called()
+                    self.assertEqual(agent.conversations, {})
+
+    async def test_lightweight_reserves_document_output_without_inheriting_or_retaining_history(self):
+        # Arrange: production prompts and actual budget estimator, with only the provider mocked.
+        from specialist_prompts import (
+            get_general_agent_prompt, get_compliance_specialist_prompt,
+            get_risk_assessment_specialist_prompt, get_training_specialist_prompt,
+        )
+        ns = production_functions("unified_accreditex_agent.py", {"chat", "_get_base_system_prompt"}, {
+            **vars(typing), "datetime": datetime, "time": time, "logger": Mock(),
+            "build_lightweight_chat_prompt": build_lightweight_chat_prompt,
+            "build_grounding_prompt": build_grounding_prompt, "grounding_from_context": grounding_from_context,
+            "STANDARD_RESPONSE_RULES": STANDARD_RESPONSE_RULES,
+            "get_general_agent_prompt": get_general_agent_prompt,
+            "get_compliance_specialist_prompt": get_compliance_specialist_prompt,
+            "get_risk_assessment_specialist_prompt": get_risk_assessment_specialist_prompt,
+            "get_training_specialist_prompt": get_training_specialist_prompt,
+            "response_token_budget": response_token_budget, "apply_response_language": apply_response_language,
+            "TRUNCATED_RESPONSE_MARKER": TRUNCATED_RESPONSE_MARKER, "FAILED_RESPONSE_MARKER": FAILED_RESPONSE_MARKER,
+        }, "UnifiedAccreditexAgent")
+        data = envelope()
+        data["sources"] = [{**data["sources"][0], "ref": f"document:{index}@v1", "excerpt": "x" * 500}
+                           for index in range(3)]
+        data["coverage"] = {"available": 3, "selected": 3, "omitted": 0, "limitations": []}
+        self.assertLessEqual(len(json.dumps(data)), 2500)
+        message = "Generate a safety SOP. " + "x" * 4000 + " Return complete HTML only."
+        context = {"organization_id": "org-a", "user_id": "user-a", "ai_grounding": data}
+        async def chunks():
+            yield Mock(choices=[Mock(finish_reason="stop", delta=Mock(content="<article>Complete</article>"))])
+        for task in ("compliance", "risk", "training", "general"):
+            with self.subTest(task=task):
+                agent = Mock()
+                old_history = [{"role": "system", "content": "old system"},
+                               {"role": "user", "content": "old user " * 5000},
+                               {"role": "assistant", "content": "old assistant " * 5000}]
+                agent.conversations = {"org-a:user-a:shared-thread": copy.deepcopy(old_history)}
+                agent.strict_specialist_routing = True
+                agent.detect_task_type.return_value = task
+                agent._get_base_system_prompt.side_effect = lambda **kwargs: ns["_get_base_system_prompt"](agent, **kwargs)
+                agent._create_completion = AsyncMock(side_effect=lambda **kwargs: chunks())
+                # Act: repeated global frontend thread must still make independent document requests.
+                for _ in range(2):
+                    result = "".join([chunk async for chunk in ns["chat"](
+                        agent, message, thread_id="shared-thread", context=context)])
+                    # Assert
+                    self.assertEqual(result, "<article>Complete</article>")
+                    request = agent._create_completion.call_args.kwargs
+                    self.assertGreaterEqual(request["max_tokens"], 3000)
+                    self.assertEqual(len(request["messages"]), 2)
+                    self.assertEqual(request["messages"][-1]["content"], message)
+                    system = request["messages"][0]["content"]
+                    self.assertIn("document:0@v1", system)
+                    self.assertIn("JSON or HTML", system)
+                    self.assertIn(STANDARD_RESPONSE_RULES, system)
+                    self.assertNotIn("AVAILABLE CONTENT & CAPABILITIES", system)
+                    self.assertLess(len(system), 6500)
+                    self.assertEqual(agent.conversations["org-a:user-a:shared-thread"], old_history)
+                agent.route_to_specialist.assert_not_called()
+                agent.context_manager.get_context.assert_not_called()
+                agent._cache_get.assert_not_called()
+                agent._cache_set.assert_not_called()
+        interactive = {"current_data": {"ai_grounding": data}}
+        full_prompt = ns["_get_base_system_prompt"](Mock(), context=interactive, task_type="compliance")
+        self.assertIn(get_compliance_specialist_prompt(), full_prompt)
+        self.assertIn("CURRENT ORGANIZATION CONTEXT", full_prompt)
+        self.assertIn("document:0@v1", full_prompt)
 
 
 if __name__ == "__main__":

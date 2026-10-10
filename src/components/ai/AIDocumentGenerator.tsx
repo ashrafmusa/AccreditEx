@@ -2,7 +2,7 @@
  * AI Document Generator Component - AccreditEx
  *
  * Advanced AI-powered document generation interface that helps users
- * create comprehensive, compliant documents with AI assistance.
+ * create review-ready drafts with AI assistance.
  *
  * @author AccreditEx Team
  * @version 1.0.0
@@ -1143,12 +1143,10 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
                 <LightBulbIcon className="w-8 h-8" />
               </div>
               <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                Ready to Generate
+                {t("aiGeneratorReady")}
               </h3>
               <p className="max-w-md mx-auto">
-                Configure your document requirements on the left and click
-                "Generate Document" to create comprehensive, compliant content
-                with AI assistance.
+                {t("aiGeneratorReadyDescription")}
               </p>
             </div>
           )}

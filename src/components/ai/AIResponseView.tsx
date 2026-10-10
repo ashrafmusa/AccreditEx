@@ -2,6 +2,7 @@ import AIActionCard from "@/components/ai/AIActionCard";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { submitAIFeedback } from "@/services/aiFeedbackService";
+import type { AIGrounding } from "@/services/aiGroundingService";
 import type { AIResponse, AIResponseType } from "@/types/aiResponse";
 import { normalizeAIResponse } from "@/utils/aiResponse";
 import {
@@ -23,6 +24,7 @@ export interface AIResponseViewProps {
   response?: AIResponse | null;
   /** Raw AI text or payload; normalised automatically when `response` is not given. */
   content?: unknown;
+  grounding?: AIGrounding;
   type?: AIResponseType;
   title?: string;
   loading?: boolean;
@@ -101,10 +103,56 @@ const confidenceClass: Record<"High" | "Medium" | "Low", string> = {
   Low: "bg-brand-danger/10 text-brand-danger",
 };
 
+const EvidenceProvenance: React.FC<{ grounding: AIGrounding }> = ({ grounding }) => {
+  const { t } = useTranslation();
+
+  return (
+    <details className="mt-3 rounded-lg border border-brand-border dark:border-dark-brand-border p-3 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+      <summary className="cursor-pointer font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+        {t("aiEvidenceTitle")} ({grounding.sources.length})
+      </summary>
+      <p className="mt-2">{t("aiEvidenceDisclaimer")}</p>
+      <dl className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+        <div><dt className="inline">{t("aiEvidenceAvailable")}: </dt><dd className="inline">{grounding.coverage.available}</dd></div>
+        <div><dt className="inline">{t("aiEvidenceSelected")}: </dt><dd className="inline">{grounding.coverage.selected}</dd></div>
+        <div><dt className="inline">{t("aiEvidenceOmitted")}: </dt><dd className="inline">{grounding.coverage.omitted}</dd></div>
+      </dl>
+      {grounding.coverage.limitations.length > 0 && (
+        <div className="mt-2">
+          <h4 className="font-semibold">{t("aiEvidenceLimits")}</h4>
+          <ul className="list-disc ps-5">
+            {grounding.coverage.limitations.map((limit, index) => <li key={index} dir="auto">{limit}</li>)}
+          </ul>
+        </div>
+      )}
+      {grounding.sources.length === 0 ? (
+        <p className="mt-2">{t("aiEvidenceNoSources")}</p>
+      ) : (
+        <ul className="mt-3 space-y-3">
+          {grounding.sources.map((source) => (
+            <li key={source.ref} className="rounded-md bg-brand-background dark:bg-dark-brand-background p-2 break-words">
+              <h4 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary" dir="auto">{source.title || source.ref}</h4>
+              <dl className="mt-1 space-y-1">
+                <div><dt className="inline">{t("aiEvidenceReference")}: </dt><dd className="inline" dir="auto">{source.ref}</dd></div>
+                {source.version !== undefined && <div><dt className="inline">{t("aiEvidenceVersion")}: </dt><dd className="inline">{source.version}</dd></div>}
+                <div><dt className="inline">{t("aiEvidenceStatus")}: </dt><dd className="inline" dir="auto">{source.status || t("aiEvidenceStatusUnknown")}</dd></div>
+              </dl>
+              <p className="mt-2 font-semibold">{t("aiEvidenceExcerpt")}</p>
+              <p className="whitespace-pre-wrap" dir="auto">{source.excerpt || t("aiEvidenceNoExcerpt")}</p>
+              {source.excerptTruncated && <p className="mt-1 text-brand-warning">{t("aiEvidencePartialExcerpt")}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </details>
+  );
+};
+
 /** Single, standard renderer for every AI-generated answer in AccreditEx. */
 const AIResponseView: React.FC<AIResponseViewProps> = ({
   response,
   content,
+  grounding,
   type,
   title,
   loading = false,
@@ -132,6 +180,7 @@ const AIResponseView: React.FC<AIResponseViewProps> = ({
 
   const components = useMemo(() => markdownComponents(compact), [compact]);
   const textSize = compact ? "text-xs" : "text-sm";
+  const evidence = grounding ? <EvidenceProvenance grounding={grounding} /> : null;
 
   if (loading) {
     return (
@@ -159,7 +208,7 @@ const AIResponseView: React.FC<AIResponseViewProps> = ({
     );
   }
 
-  if (!data) return null;
+  if (!data) return evidence;
 
   if (data.status === "empty" && !data.actions.length) {
     return (
@@ -170,6 +219,7 @@ const AIResponseView: React.FC<AIResponseViewProps> = ({
             {t("aiResponseRetry")}
           </button>
         )}
+        {evidence}
       </div>
     );
   }
@@ -227,6 +277,8 @@ const AIResponseView: React.FC<AIResponseViewProps> = ({
       )}
 
       {showActions && data.actions.map((action, i) => <AIActionCard key={`${action.type}-${i}`} action={action} />)}
+
+      {evidence}
 
       {(showToolbar || showDisclaimer) && (
         <div className="mt-2 flex items-center justify-between gap-2 text-[11px] text-brand-text-secondary dark:text-dark-brand-text-secondary">

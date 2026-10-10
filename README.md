@@ -53,7 +53,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 ### AI-Assisted Workflows (8 Capabilities)
 
-AccreditEx integrates **AI-powered workflows** powered by **3 specialist domains** (Compliance, Risk Assessment, Training) and **Groq/Llama-3.3-70b** inference:
+AccreditEx integrates **AI-powered workflows** powered by **3 specialist domains** (Compliance, Risk Assessment, Training) and configurable **Groq-hosted inference**:
 
 **Specialist Routing**:
 -   **Compliance Specialist**: Analyzes documents against accreditation standards (CBAHI, JCI, ISO 9001). Detects gaps, assigns risk levels, recommends corrective actions.
@@ -69,7 +69,10 @@ AccreditEx integrates **AI-powered workflows** powered by **3 specialist domains
 
 **General Chat**: Context-aware conversational AI for questions about accreditation standards, best practices, compliance strategies, and platform guidance. Fallback for all workflow endpoints if specialists are unavailable.
 
-**Provider**: Groq API (Llama-3.3-70b-versatile, free tier) with Firebase authentication. Response caching reduces token usage by 60-80%.
+**Provider**: Groq API with Firebase authentication and configured primary/fallback
+models. Input-aware token budgets protect against oversized requests; actual
+usage and cost depend on the provider plan. Evidence-bearing chat requests
+bypass response caching to avoid stale source-backed answers.
 
 ### Workflow Automation
 -   **Trigger-Condition-Action Engine**: 10 entity types × 10 event types, 8 condition operators, 11 action types.
@@ -219,10 +222,19 @@ records are withheld rather than assumed to belong to the current organization.
 The retriever follows recorded document, standard, program, department, project,
 risk, CAPA, PDCA, training/competency, and audit-plan links. Sources carry stable
 references, document versions/statuses, bounded excerpts, and coverage limits.
+Both assistant chat interfaces expose a collapsible evidence-provenance panel
+with the exact supplied excerpts, recorded status/version, and retrieval limits.
+This panel does not validate source authenticity or certify the answer.
+Relationship lists are deduplicated and bounded; ambiguous standard codes across
+programs/editions are withheld rather than automatically linked.
 Backend handlers reject organization mismatches and malformed evidence. The
 model is instructed to cite source references, distinguish recorded links from
 proposals, and disclose missing, partial, draft, expired, or conflicting evidence.
 Document editing keeps its requested JSON/HTML/text output contract.
+Lightweight writing requests use compact grounded prompts and do not inherit or
+retain chat history. Document generation applies the selected tone and length
+as bounded draft-writing instructions. Chat evidence is cleared on user/logout
+or organization transitions; late replies cannot restore a reset conversation.
 
 AI remains advisory: existing changes require user review/approval. Provider
 failures do not create fabricated root causes, risk ratings, compliance statuses,

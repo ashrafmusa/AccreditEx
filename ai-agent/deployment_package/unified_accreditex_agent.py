@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
-from agent_utils import build_workspace_snapshot, build_grounding_prompt, grounding_from_context
+from agent_utils import build_workspace_snapshot, build_grounding_prompt, grounding_from_context, build_lightweight_chat_prompt
 from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, FAILED_RESPONSE_MARKER, apply_response_language, build_standard_response, response_token_budget
 
 # Import specialist prompts (Quick Win 1)
@@ -585,6 +585,8 @@ class UnifiedAccreditexAgent:
             context: Application context (user, page, data)
             task_type: Type of task (compliance, risk, training, general)
         """
+        if context is not None and not context.get("current_data"):
+            return build_lightweight_chat_prompt(context, task_type)
         
         # Select specialist prompt based on task type
         if task_type == 'compliance':
@@ -719,10 +721,11 @@ Always be specific and actionable, using real data from their workspace.
         try:
             scope_org = (context or {}).get('organization_id') or 'anon'
             scope_user = (context or {}).get('user_id') or 'anon'
+            lightweight = context is not None and not context.get("current_data")
 
             # Cache only context-free requests, and namespace by tenant+user so
             # one organization can never be served another's cached answer.
-            cacheable = not (context and (context.get('current_data') or grounding_from_context(context) is not None))
+            cacheable = not lightweight and not (context and (context.get('current_data') or grounding_from_context(context) is not None))
             cache_key = self._cache_key(f"{scope_org}|{scope_user}|{message}")
             if cacheable:
                 cached = self._cache_get(cache_key)
@@ -734,7 +737,7 @@ Always be specific and actionable, using real data from their workspace.
             if not thread_id:
                 thread_id = f"thread_{datetime.now().timestamp()}"
             thread_id = f"{scope_org}:{scope_user}:{thread_id}"
-            if len(self.conversations) > 500 and thread_id not in self.conversations:
+            if not lightweight and len(self.conversations) > 500 and thread_id not in self.conversations:
                 self.conversations.pop(next(iter(self.conversations)))
             
             # Detect task type from message (Quick Win 1)
@@ -770,26 +773,32 @@ Always be specific and actionable, using real data from their workspace.
                 enhanced_context = context or {}
                 logger.info("⚡ Lightweight request — skipping context fetch")
             
-            # Initialize conversation history if new thread
-            if thread_id not in self.conversations:
+            # Document commands are stateless, even when a frontend reuses a chat thread.
+            if lightweight:
+                messages = [
+                    {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)}
+                ]
+            elif thread_id not in self.conversations:
                 self.conversations[thread_id] = [
                     {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)}
                 ]
+                messages = self.conversations[thread_id]
             else:
                 self.conversations[thread_id][0] = {
                     "role": "system", 
                     "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)
                 }
+                messages = self.conversations[thread_id]
 
             # Append user message
-            self.conversations[thread_id].append({"role": "user", "content": message})
+            messages.append({"role": "user", "content": message})
 
             routing_start = time.perf_counter()
             route_mode = "legacy"
             full_response = ""
 
             # Strict specialist dispatch for specialist task types (safe fallback enabled)
-            if self.strict_specialist_routing and task_type in ("compliance", "risk", "training"):
+            if not lightweight and self.strict_specialist_routing and task_type in ("compliance", "risk", "training"):
                 route_mode = "specialist"
                 try:
                     async for chunk in self.route_to_specialist(
@@ -817,14 +826,15 @@ Always be specific and actionable, using real data from their workspace.
 
             
             # Keep history manageable (last 6 messages + system prompt — reduced from 10)
-            if len(self.conversations[thread_id]) > 7:
-                self.conversations[thread_id] = [self.conversations[thread_id][0]] + self.conversations[thread_id][-6:]
+            if len(messages) > 7:
+                messages = [messages[0]] + messages[-6:]
+                self.conversations[thread_id] = messages
 
             # Stream response with automatic fallback on rate limit
             stream = await self._create_completion(
-                messages=self.conversations[thread_id],
+                messages=messages,
                 stream=True,
-                max_tokens=response_token_budget(has_context, apply_response_language(self.conversations[thread_id])),
+                max_tokens=response_token_budget(has_context, apply_response_language(messages)),
                 temperature=0.7,
             )
 
@@ -839,7 +849,8 @@ Always be specific and actionable, using real data from their workspace.
                     yield content
             
             # Append to history + cache
-            self.conversations[thread_id].append({"role": "assistant", "content": full_response})
+            if not lightweight:
+                messages.append({"role": "assistant", "content": full_response})
             latency_ms = (time.perf_counter() - routing_start) * 1000
             self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
             if cacheable:

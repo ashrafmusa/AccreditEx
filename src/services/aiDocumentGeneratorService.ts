@@ -122,7 +122,7 @@ export class AIDocumentGeneratorService {
       const suggestions = await this.getContentSuggestions(template, request.context, language);
 
       // Generate document content based on template and context
-      const generatedContent = await this.generateContentFromTemplate(template, request.context, suggestions, language, format);
+      const generatedContent = await this.generateContentFromTemplate(template, request.context, suggestions, language, format, request.preferences);
 
       const endTime = Date.now();
 
@@ -151,12 +151,13 @@ export class AIDocumentGeneratorService {
     Template description: ${template.description}
     Expected sections: ${template.sections.join(', ')}
 
-    Suggest 3-5 key content sections or specific details that should be included to make this document comprehensive and compliant.
+    Suggest 3-5 review topics for a DRAFT. Template descriptions are guidance, not evidence of compliance.
     Focus on:
     - Required information based on the template type
     - Context-specific details
-    - Compliance requirements
-    - Best practices
+    - Missing approved evidence and applicable official requirements
+    - Proposed improvements requiring qualified local review
+    Do not invent standard identifiers, clinical parameters, or established local procedures.
 
     Return just the list of suggestions in ${language === 'ar' ? 'Arabic' : 'English'}.
     Use this output language regardless of the language of the template or context.`;
@@ -175,11 +176,14 @@ export class AIDocumentGeneratorService {
   /**
    * Generate content from template with AI assistance
    */
-  private async generateContentFromTemplate(template: LibraryTemplate, context: DocumentGenerationRequest['context'], suggestions: string[], language: Language, format: 'markdown' | 'html' | 'text'): Promise<string> {
+  private async generateContentFromTemplate(template: LibraryTemplate, context: DocumentGenerationRequest['context'], suggestions: string[], language: Language, format: 'markdown' | 'html' | 'text', preferences?: DocumentGenerationRequest['preferences']): Promise<string> {
+    const length = preferences?.length ?? 'comprehensive';
+    const wordLimit = { concise: 350, detailed: 800, comprehensive: 1200 }[length];
     const prompt = `You are a senior healthcare accreditation consultant. Generate a complete, review-ready DRAFT based on the following template, context, and supplied workspace evidence. Do not assert clinical accuracy, compliance, or approval.
 
 Template Name: ${template.name}
 Template Description: ${template.description}
+Template descriptions are structural guidance, not verified accreditation requirements or proof of compliance.
 Template Sections:
 ${template.sections.join('\n')}
 
@@ -208,8 +212,9 @@ OUTPUT FORMAT — follow strictly:
 
 WRITING STANDARDS:
 - Use "shall" for mandatory requirements, "should" for recommendations, "may" for optional.
-- Write in third person, present tense, formal professional tone.
-- Every section must have substantive, detailed content (minimum 3-4 sentences per section).
+- Write in third person, present tense, using a ${preferences?.tone ?? 'professional'} tone.
+- Requested length: ${length}. Keep the ENTIRE document under ${wordLimit} words, including tables. Cover all sections briefly rather than leaving unfinished content.
+- Use concise paragraphs and minimal tables within this limit. Do not add unrelated sections.
 - Only cite standard identifiers supplied in the context. Do not invent standard references, institution details, approval dates, or authors; leave unknown metadata blank.
 - Use approved local policies for factual procedures. Clearly identify unsupported procedures, thresholds, timelines, or roles as proposals requiring local validation; never present them as established clinical instructions.
 - Follow the template structure and include revision history even if not in the template.

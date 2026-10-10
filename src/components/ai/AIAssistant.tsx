@@ -24,6 +24,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import AIResponseView from "@/components/ai/AIResponseView";
+import { useAIChatStore } from "@/stores/useAIChatStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import React, { useEffect, useRef, useState } from "react";
 
 interface AIAssistantProps {
@@ -43,8 +46,33 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   const [isHealthy, setIsHealthy] = useState(true);
   const [showContext, setShowContext] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const conversationRevision = useRef(0);
   const toast = useToast();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    const getScope = () => {
+      const user = useUserStore.getState().currentUser;
+      return JSON.stringify([user?.id, user?.email, user?.organizationId, useTenantStore.getState().organizationId]);
+    };
+    let scope = getScope();
+    const clearOnScopeChange = () => {
+      const nextScope = getScope();
+      if (nextScope === scope) return;
+      scope = nextScope;
+      conversationRevision.current += 1;
+      setMessages([]);
+      setInput("");
+      setIsLoading(false);
+    };
+    const unsubscribeUser = useUserStore.subscribe(clearOnScopeChange);
+    const unsubscribeTenant = useTenantStore.subscribe(clearOnScopeChange);
+    return () => {
+      conversationRevision.current += 1;
+      unsubscribeUser();
+      unsubscribeTenant();
+    };
+  }, []);
 
   // Check AI agent health on mount
   useEffect(() => {
@@ -63,6 +91,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
+    const revision = conversationRevision.current;
 
     if (!isHealthy) {
       toast.error(
@@ -83,6 +112,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
     try {
       console.log("🤖 Sending message to AI:", input);
       const response: ChatResponse = await aiAgentService.chat(input);
+      if (revision !== conversationRevision.current) return;
       console.log("✅ AI response received:", response);
       setIsHealthy(true);
 
@@ -90,10 +120,12 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
         role: "assistant",
         content: response.response,
         timestamp: response.timestamp,
+        grounding: response.grounding,
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
+      if (revision !== conversationRevision.current) return;
       console.error("❌ AI chat error:", error);
       const errorMsg = error instanceof Error ? error.message : "Unknown error";
       toast.error(`AI error: ${errorMsg}`);
@@ -107,7 +139,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
 
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setIsLoading(false);
+      if (revision === conversationRevision.current) setIsLoading(false);
     }
   };
 
@@ -119,8 +151,10 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
   };
 
   const resetConversation = () => {
+    conversationRevision.current += 1;
     setMessages([]);
-    aiAgentService.resetThread();
+    setIsLoading(false);
+    useAIChatStore.getState().clearChat();
     toast.success("Conversation reset");
   };
 
@@ -277,7 +311,7 @@ export const AIAssistant: React.FC<AIAssistantProps> = ({
                   }`}
                 >
                   {message.role === "assistant" ? (
-                    <AIResponseView content={message.content} compact />
+                    <AIResponseView content={message.content} grounding={message.grounding} compact />
                   ) : (
                     <div className="text-sm leading-relaxed whitespace-pre-wrap break-words" dir="auto">
                       {message.content}
