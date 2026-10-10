@@ -4,12 +4,14 @@ import typing
 import unittest
 from unittest.mock import AsyncMock, Mock
 
-from tests.test_ai_grounding import production_functions
+from tests.test_ai_grounding import production_functions, WORKFLOWS
 from skills.response_standard import (
     STANDARD_RESPONSE_RULES, FAILED_RESPONSE_MARKER, TRUNCATED_RESPONSE_MARKER,
     apply_response_language, response_token_budget,
+    build_standard_response,
 )
 from agent_utils import build_workspace_snapshot
+from agent_utils import build_grounding_prompt
 
 
 class ProviderError(RuntimeError):
@@ -45,6 +47,32 @@ def configured_agent(responses):
 
 
 class TestModelFallback(unittest.IsolatedAsyncioTestCase):
+    async def test_all_workflow_metadata_reports_provider_fallback_model_not_configured_primary(self):
+        # Arrange: actual workflow methods and response builder, with real fallback transport.
+        namespace = production_functions("unified_accreditex_agent.py", {
+            "_build_workflow_response", *(method for _, method, _, _ in WORKFLOWS),
+        }, {**vars(typing), "build_standard_response": build_standard_response,
+            "build_grounding_prompt": build_grounding_prompt, "STANDARD_RESPONSE_RULES": STANDARD_RESPONSE_RULES},
+            "UnifiedAccreditexAgent")
+        for _, method, field, values in WORKFLOWS:
+            with self.subTest(method=method):
+                response = Mock(model="openai/gpt-oss-20b", choices=[Mock(message=Mock(content="Verified output"))])
+                agent, _ = configured_agent([ProviderError(429, "quota"), response])
+                agent._build_workflow_response = types.MethodType(namespace["_build_workflow_response"], agent)
+                args = dict(values)
+                if method == "get_training_recommendations":
+                    args = {key: args[key] for key in ("role", "competency_gaps", "accreditation_focus", "timeline")}
+                # Act
+                result = await namespace[method](agent, **args)
+                # Assert
+                self.assertEqual(result["model"], "openai/gpt-oss-20b")
+                self.assertEqual(result["meta"]["model"], "openai/gpt-oss-20b")
+                self.assertEqual(result[field], "Verified output")
+        agent, _ = configured_agent([])
+        result = namespace["_build_workflow_response"](agent, "analysis", "No model metadata")
+        self.assertEqual(result["model"], "")
+        self.assertEqual(result["meta"]["model"], "")
+
     async def test_primary_429_sends_distinct_explicit_fallback_despite_stale_alias(self):
         # Arrange
         agent, transport = configured_agent([ProviderError(429, "daily quota exhausted"), "success"])

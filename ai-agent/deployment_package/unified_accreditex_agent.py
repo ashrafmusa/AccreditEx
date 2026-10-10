@@ -330,13 +330,14 @@ class UnifiedAccreditexAgent:
         response_type: Optional[str] = None,
         title: Optional[str] = None,
         extra: Optional[Dict[str, Any]] = None,
+        model: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Build the standard AI response payload (keeps the legacy field for old clients)."""
         return build_standard_response(
             response_type or field_name,
             content,
             title=title,
-            model=self.model,
+            model=model,
             legacy_field=field_name,
             extra=extra,
         )
@@ -942,6 +943,7 @@ Always be specific and actionable, using real data from their workspace.
             "analysis",
             response.choices[0].message.content,
             response_type="compliance_check",
+            model=getattr(response, "model", None),
         )
 
     async def assess_risk(self, area: str, current_status: str, upcoming_review_date: str, critical_areas: Optional[List[str]] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -967,6 +969,7 @@ Always be specific and actionable, using real data from their workspace.
             "assessment",
             response.choices[0].message.content,
             response_type="risk_assessment",
+            model=getattr(response, "model", None),
             extra={"risk_level": "Calculated"},
         )
 
@@ -993,6 +996,7 @@ Always be specific and actionable, using real data from their workspace.
             "recommendations",
             response.choices[0].message.content,
             response_type="training_recommendations",
+            model=getattr(response, "model", None),
         )
 
     # ─────────────────────────────────────────────────────────────
@@ -1037,6 +1041,7 @@ Provide:
         return self._build_workflow_response(
             "action_plan",
             response.choices[0].message.content,
+            model=getattr(response, "model", None),
         )
 
     async def analyze_root_cause(self, issue_title: str, description: str, context: Optional[str] = None, affected_areas: Optional[List[str]] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -1076,6 +1081,7 @@ Use the 5 Whys methodology and provide:
         return self._build_workflow_response(
             "root_cause_analysis",
             response.choices[0].message.content,
+            model=getattr(response, "model", None),
         )
 
     async def suggest_pdca_improvements(self, process_name: str, current_state: str, problem_identified: str, previous_actions: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -1113,6 +1119,7 @@ Provide a PDCA cycle with:
         return self._build_workflow_response(
             "pdca_improvements",
             response.choices[0].message.content,
+            model=getattr(response, "model", None),
         )
 
     async def assess_survey_risk(self, standard: str, organization_area: str, readiness_level: str, critical_concerns: Optional[List[str]] = None, survey_date: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -1153,6 +1160,7 @@ Provide:
         return self._build_workflow_response(
             "survey_risk_assessment",
             response.choices[0].message.content,
+            model=getattr(response, "model", None),
         )
 
     async def check_design_compliance(self, design_element: str, requirement: str, current_implementation: str, design_phase: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -1193,6 +1201,7 @@ Provide:
         return self._build_workflow_response(
             "design_compliance_assessment",
             response.choices[0].message.content,
+            model=getattr(response, "model", None),
         )
 
     async def get_project_insights(self, project_id: str, user_id: str, organization_id: str) -> Dict[str, Any]:
