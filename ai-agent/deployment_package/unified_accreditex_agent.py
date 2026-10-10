@@ -211,7 +211,12 @@ class UnifiedAccreditexAgent:
             if isinstance(kwargs.get('messages'), list):
                 kwargs['messages'] = apply_response_language(kwargs['messages'])
             requested = kwargs.get('model')
-            if requested in self._model_substitutions:
+            # Explicit fallback IDs must never resolve back to the exhausted primary.
+            fallback = getattr(self, "fallback_model", None)
+            is_fallback = requested == fallback
+            if is_fallback:
+                self._model_substitutions.pop(requested, None)
+            elif requested in self._model_substitutions:
                 kwargs['model'] = self._model_substitutions[requested]
             try:
                 return await original_create(*args, **kwargs)
@@ -219,6 +224,8 @@ class UnifiedAccreditexAgent:
                 text = str(e).lower()
                 is_missing = getattr(e, 'status_code', None) == 404 or 'model_not_found' in text
                 if not (is_missing and requested):
+                    raise
+                if is_fallback:
                     raise
                 replacement = await self._discover_model(exclude=kwargs.get('model'))
                 if not replacement:
@@ -261,7 +268,10 @@ class UnifiedAccreditexAgent:
         except Exception as e:
             self.last_llm_error = f"{type(e).__name__} status={getattr(e, 'status_code', None)}"
             error_str = str(e)
-            if '429' in error_str or 'rate_limit' in error_str.lower():
+            if getattr(e, "status_code", None) == 429 or '429' in error_str or 'rate_limit' in error_str.lower():
+                if self.fallback_model == self.model:
+                    self.last_llm_error = "All configured models exhausted: fallback duplicates primary"
+                    raise RuntimeError("All configured AI models are unavailable; please retry later.") from e
                 logger.warning(f"⚠️ Rate-limited on {self.model}, falling back to {self.fallback_model}")
                 kwargs['model'] = self.fallback_model
                 try:
@@ -269,8 +279,8 @@ class UnifiedAccreditexAgent:
                     self.last_llm_error = None
                     return result
                 except Exception as e2:
-                    self.last_llm_error = f"fallback {type(e2).__name__} status={getattr(e2, 'status_code', None)}"
-                    raise
+                    self.last_llm_error = f"All configured models exhausted: fallback {type(e2).__name__} status={getattr(e2, 'status_code', None)}"
+                    raise RuntimeError("All configured AI models are unavailable; please retry later.") from e2
             raise
 
     def _estimate_quality_confidence(self, text: str) -> float:
@@ -546,8 +556,7 @@ class UnifiedAccreditexAgent:
         ]
         
         # Stream response
-        stream_response = await self.client.chat.completions.create(
-            model=self.model,
+        stream_response = await self._create_completion(
             messages=messages,
             temperature=self.temperature,
             max_tokens=self.max_tokens,

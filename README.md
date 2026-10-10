@@ -73,6 +73,9 @@ AccreditEx integrates **AI-powered workflows** powered by **3 specialist domains
 models. Input-aware token budgets protect against oversized requests; actual
 usage and cost depend on the provider plan. Evidence-bearing chat requests
 bypass response caching to avoid stale source-backed answers.
+Configured fallback model IDs are preserved during model resolution; a quota
+failure retries the distinct configured fallback rather than aliasing it back
+to the exhausted primary. If both models fail, the request reports failure.
 
 ### Workflow Automation
 -   **Trigger-Condition-Action Engine**: 10 entity types × 10 event types, 8 condition operators, 11 action types.

@@ -4,6 +4,24 @@
       "collectionGroup": "projects",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "assignedUsers", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "organizationId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "documents",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "organizationId", "order": "ASCENDING" },
+        { "fieldPath": "uploadedBy", "order": "ASCENDING" },
+        { "fieldPath": "uploadedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "projects",
+      "queryScope": "COLLECTION",
+      "fields": [
         {
           "fieldPath": "status",
           "order": "ASCENDING"
