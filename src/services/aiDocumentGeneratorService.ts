@@ -176,7 +176,7 @@ export class AIDocumentGeneratorService {
    * Generate content from template with AI assistance
    */
   private async generateContentFromTemplate(template: LibraryTemplate, context: DocumentGenerationRequest['context'], suggestions: string[], language: Language, format: 'markdown' | 'html' | 'text'): Promise<string> {
-    const prompt = `You are a senior healthcare accreditation consultant. Generate a complete, accreditation-ready document based on the following template and context.
+    const prompt = `You are a senior healthcare accreditation consultant. Generate a complete, review-ready DRAFT based on the following template, context, and supplied workspace evidence. Do not assert clinical accuracy, compliance, or approval.
 
 Template Name: ${template.name}
 Template Description: ${template.description}
@@ -211,7 +211,7 @@ WRITING STANDARDS:
 - Write in third person, present tense, formal professional tone.
 - Every section must have substantive, detailed content (minimum 3-4 sentences per section).
 - Only cite standard identifiers supplied in the context. Do not invent standard references, institution details, approval dates, or authors; leave unknown metadata blank.
-- Include realistic healthcare content appropriate for a hospital accreditation setting.
+- Use approved local policies for factual procedures. Clearly identify unsupported procedures, thresholds, timelines, or roles as proposals requiring local validation; never present them as established clinical instructions.
 - Follow the template structure and include revision history even if not in the template.
 
 Return ONLY the HTML content in ${language === 'ar' ? 'Arabic' : 'English'}.

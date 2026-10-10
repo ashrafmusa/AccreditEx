@@ -86,6 +86,20 @@ describe('AIAgentService', () => {
     // ─────────────────────────────────────────────────────────────
 
     describe('Chat', () => {
+        it('keeps lightweight requests intact while attaching bounded grounding without workspace fetch context', async () => {
+            // Arrange
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true, headers: new Headers({ 'content-type': 'text/plain' }), text: async () => 'Draft',
+            });
+            // Act
+            await service.chat('Generate an English draft', false);
+            const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+            // Assert
+            expect(body.message).toBe('Generate an English draft');
+            expect(body.context.current_data).toBeUndefined();
+            expect(body.context.ai_grounding.schema).toBe('ai-grounding/1');
+            expect(body.context.ai_grounding.coverage.selected).toBe(body.context.ai_grounding.sources.length);
+        });
         it.each(['[ACCREDITEX_RESPONSE_FAILED]', 'Error: provider rate_limit_exceeded'])(
             'rejects provider failure text: %s', async (text) => {
                 // Arrange
@@ -279,6 +293,16 @@ describe('AIAgentService', () => {
     // ─────────────────────────────────────────────────────────────
 
     describe('Action Plan Generation', () => {
+        it('rejects failed AI fallback instead of manufacturing a completed action plan', async () => {
+            // Arrange
+            (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 503 });
+            const chat = jest.spyOn(service, 'chat').mockRejectedValue(new Error('AI unavailable'));
+            // Act / Assert
+            await expect(service.generateActionPlanDedicated({ standardId: 'LAB.1', item: 'Labels', status: 'Non-compliant' }))
+                .rejects.toThrow('AI unavailable');
+            expect(chat).toHaveBeenCalledTimes(1);
+        });
+
         it('should generate action plan via dedicated endpoint', async () => {
             const mockResponse = {
                 status: 'completed',
@@ -305,6 +329,7 @@ describe('AIAgentService', () => {
         });
 
         it('should fallback to chat on endpoint failure', async () => {
+            jest.spyOn(service, 'chat').mockResolvedValueOnce({ response: 'Review the supplied evidence and propose corrective actions.', thread_id: '', timestamp: '' });
             (global.fetch as jest.Mock)
                 .mockResolvedValueOnce({
                     ok: false,
@@ -344,6 +369,7 @@ describe('AIAgentService', () => {
         });
 
         it('should fallback to chat on failure', async () => {
+            jest.spyOn(service, 'chat').mockResolvedValueOnce({ response: 'Investigate the documented causes; evidence is incomplete.', thread_id: '', timestamp: '' });
             (global.fetch as jest.Mock)
                 .mockRejectedValueOnce(new Error('Network error'));
 
@@ -402,6 +428,7 @@ describe('AIAgentService', () => {
         });
 
         it('should fallback to chat with formatted response', async () => {
+            jest.spyOn(service, 'chat').mockResolvedValueOnce({ response: 'Readiness requires review of supplied evidence.', thread_id: '', timestamp: '' });
             (global.fetch as jest.Mock)
                 .mockResolvedValueOnce({
                     ok: false,
@@ -442,6 +469,7 @@ describe('AIAgentService', () => {
         });
 
         it('should fallback to local method with formatted response', async () => {
+            jest.spyOn(service, 'chat').mockResolvedValueOnce({ response: 'Review design traceability; compliance is not certified.', thread_id: '', timestamp: '' });
             (global.fetch as jest.Mock)
                 .mockResolvedValueOnce({
                     ok: false,

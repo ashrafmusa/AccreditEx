@@ -206,7 +206,33 @@ AI-powered features (15+ tools) are provided by a custom Python FastAPI backend 
 -   The frontend AI facade (`services/ai.ts`) routes all requests through `services/aiAgentService.ts`.
 -   `aiAgentService.ts` communicates with the backend at the URL configured in `VITE_AI_AGENT_URL`.
 -   No third-party AI API keys are exposed in the browser — the backend manages all AI provider credentials server-side.
--   **Configuration**: Set `VITE_AI_AGENT_URL` and `VITE_AI_AGENT_API_KEY` in your `.env` file.
+-   **Configuration**: Set `VITE_AI_AGENT_URL` in your `.env` file. Browser requests authenticate with Firebase ID tokens; do not expose provider or backend API keys in frontend variables.
+
+### Cross-app evidence grounding
+
+All existing chat callers and eight dedicated workflow endpoints share the
+`ai-grounding/1` evidence envelope. Retrieval uses authorized loaded records,
+matching the active organization and the centralized read-permission service.
+Explicitly global standard/program catalogs are supported; unscoped legacy
+records are withheld rather than assumed to belong to the current organization.
+
+The retriever follows recorded document, standard, program, department, project,
+risk, CAPA, PDCA, training/competency, and audit-plan links. Sources carry stable
+references, document versions/statuses, bounded excerpts, and coverage limits.
+Backend handlers reject organization mismatches and malformed evidence. The
+model is instructed to cite source references, distinguish recorded links from
+proposals, and disclose missing, partial, draft, expired, or conflicting evidence.
+Document editing keeps its requested JSON/HTML/text output contract.
+
+AI remains advisory: existing changes require user review/approval. Provider
+failures do not create fabricated root causes, risk ratings, compliance statuses,
+or successful writing edits.
+
+**Boundaries:** this is retrieval from the loaded app snapshot, not an exhaustive
+server-side knowledge index. Uploaded binary attachments are not extracted by
+this layer, and catalog descriptions do not authenticate an official standard
+edition. A source citation establishes provenance, not clinical accuracy or
+accreditation certification. Missing links and absent sources require review.
 
 ## Lab Operations Module
 

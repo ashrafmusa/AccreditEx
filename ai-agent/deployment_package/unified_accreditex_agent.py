@@ -26,7 +26,7 @@ from dotenv import load_dotenv
 from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
-from agent_utils import build_workspace_snapshot
+from agent_utils import build_workspace_snapshot, build_grounding_prompt, grounding_from_context
 from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, FAILED_RESPONSE_MARKER, apply_response_language, build_standard_response, response_token_budget
 
 # Import specialist prompts (Quick Win 1)
@@ -709,7 +709,7 @@ class UnifiedAccreditexAgent:
 
 Always be specific and actionable, using real data from their workspace.
 """
-        return base_prompt + STANDARD_RESPONSE_RULES
+        return base_prompt + build_grounding_prompt(grounding_from_context(context)) + STANDARD_RESPONSE_RULES
 
     async def chat(self, message: str, thread_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
@@ -722,7 +722,7 @@ Always be specific and actionable, using real data from their workspace.
 
             # Cache only context-free requests, and namespace by tenant+user so
             # one organization can never be served another's cached answer.
-            cacheable = not (context and context.get('current_data'))
+            cacheable = not (context and (context.get('current_data') or grounding_from_context(context) is not None))
             cache_key = self._cache_key(f"{scope_org}|{scope_user}|{message}")
             if cacheable:
                 cached = self._cache_get(cache_key)
@@ -760,6 +760,11 @@ Always be specific and actionable, using real data from their workspace.
                     'organization': org_context,
                     'user_role': tiered_context.get('user_role', org_context.get('user_role', 'Unknown'))
                 }
+                # Tiered context must not replace the caller's selected source evidence.
+                enhanced_context["current_data"] = {
+                    **(tiered_context.get("current_data") or {}),
+                    **(context.get("current_data") or {}),
+                }
             else:
                 # Lightweight request (writing commands) — zero context overhead
                 enhanced_context = context or {}
@@ -768,12 +773,12 @@ Always be specific and actionable, using real data from their workspace.
             # Initialize conversation history if new thread
             if thread_id not in self.conversations:
                 self.conversations[thread_id] = [
-                    {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context if has_context else None, task_type=task_type)}
+                    {"role": "system", "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)}
                 ]
             else:
                 self.conversations[thread_id][0] = {
                     "role": "system", 
-                    "content": self._get_base_system_prompt(context=enhanced_context if has_context else None, task_type=task_type)
+                    "content": self._get_base_system_prompt(context=enhanced_context, task_type=task_type)
                 }
 
             # Append user message
@@ -845,7 +850,7 @@ Always be specific and actionable, using real data from their workspace.
             self._record_routing_metric('general', 'legacy', 0.0, success=False)
             yield FAILED_RESPONSE_MARKER
 
-    async def check_document_compliance(self, document_type: str, standard: str, content_summary: str, requirements: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def check_document_compliance(self, document_type: str, standard: str, content_summary: str, requirements: Optional[List[str]] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Check if a document meets specific standards"""
         prompt = f"""
         Analyze the compliance of this {document_type} against {standard}.
@@ -864,7 +869,7 @@ Always be specific and actionable, using real data from their workspace.
         
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a compliance auditor. Never invent statistics or scores that are not supported by the provided content." + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": "You are a compliance auditor. Never invent statistics or scores that are not supported by the provided content." + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500
@@ -876,7 +881,7 @@ Always be specific and actionable, using real data from their workspace.
             response_type="compliance_check",
         )
 
-    async def assess_risk(self, area: str, current_status: str, upcoming_review_date: str, critical_areas: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def assess_risk(self, area: str, current_status: str, upcoming_review_date: str, critical_areas: Optional[List[str]] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Assess compliance risk for a specific area"""
         prompt = f"""
         Assess the compliance risk for: {area}
@@ -889,7 +894,7 @@ Always be specific and actionable, using real data from their workspace.
         
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a risk management expert. Never invent statistics that are not supported by the provided information." + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": "You are a risk management expert. Never invent statistics that are not supported by the provided information." + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500
@@ -902,7 +907,7 @@ Always be specific and actionable, using real data from their workspace.
             extra={"risk_level": "Calculated"},
         )
 
-    async def get_training_recommendations(self, role: str, competency_gaps: List[str], accreditation_focus: str, timeline: str) -> Dict[str, Any]:
+    async def get_training_recommendations(self, role: str, competency_gaps: List[str], accreditation_focus: str, timeline: str, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Get training recommendations based on role and gaps"""
         prompt = f"""
         Recommend training for Role: {role}
@@ -915,7 +920,7 @@ Always be specific and actionable, using real data from their workspace.
         
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a healthcare training coordinator." + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": "You are a healthcare training coordinator." + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500
@@ -931,7 +936,7 @@ Always be specific and actionable, using real data from their workspace.
     # Week 3: Dedicated AI Workflow Methods
     # ─────────────────────────────────────────────────────────────
 
-    async def generate_action_plan(self, standard_id: str, item: str, status: str, findings: Optional[str] = None) -> Dict[str, Any]:
+    async def generate_action_plan(self, standard_id: str, item: str, status: str, findings: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Generate actionable compliance action plan"""
         system_prompt = f"""You are an expert compliance consultant helping create actionable action plans.
 
@@ -960,7 +965,7 @@ Provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": system_prompt + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -971,7 +976,7 @@ Provide:
             response.choices[0].message.content,
         )
 
-    async def analyze_root_cause(self, issue_title: str, description: str, context: Optional[str] = None, affected_areas: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def analyze_root_cause(self, issue_title: str, description: str, context: Optional[str] = None, affected_areas: Optional[List[str]] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Perform structured root cause analysis"""
         system_prompt = """You are a Root Cause Analysis expert using the "5 Whys" methodology and Fishbone Diagram thinking.
 
@@ -999,7 +1004,7 @@ Use the 5 Whys methodology and provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": system_prompt + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1010,7 +1015,7 @@ Use the 5 Whys methodology and provide:
             response.choices[0].message.content,
         )
 
-    async def suggest_pdca_improvements(self, process_name: str, current_state: str, problem_identified: str, previous_actions: Optional[str] = None) -> Dict[str, Any]:
+    async def suggest_pdca_improvements(self, process_name: str, current_state: str, problem_identified: str, previous_actions: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Suggest Plan-Do-Check-Act improvements"""
         system_prompt = """You are a Quality Improvement specialist trained in PDCA (Plan-Do-Check-Act) methodology.
 
@@ -1036,7 +1041,7 @@ Provide a PDCA cycle with:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": system_prompt + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1047,7 +1052,7 @@ Provide a PDCA cycle with:
             response.choices[0].message.content,
         )
 
-    async def assess_survey_risk(self, standard: str, organization_area: str, readiness_level: str, critical_concerns: Optional[List[str]] = None, survey_date: Optional[str] = None) -> Dict[str, Any]:
+    async def assess_survey_risk(self, standard: str, organization_area: str, readiness_level: str, critical_concerns: Optional[List[str]] = None, survey_date: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Assess readiness risk for upcoming accreditation survey"""
         system_prompt = f"""You are an accreditation survey readiness expert specializing in {standard} standards.
 
@@ -1076,7 +1081,7 @@ Provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": system_prompt + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1087,7 +1092,7 @@ Provide:
             response.choices[0].message.content,
         )
 
-    async def check_design_compliance(self, design_element: str, requirement: str, current_implementation: str, design_phase: Optional[str] = None) -> Dict[str, Any]:
+    async def check_design_compliance(self, design_element: str, requirement: str, current_implementation: str, design_phase: Optional[str] = None, ai_grounding: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         """Assess design control compliance"""
         system_prompt = """You are a Design Control and Quality Assurance expert in healthcare.
 
@@ -1116,7 +1121,7 @@ Provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
+                {"role": "system", "content": system_prompt + build_grounding_prompt(ai_grounding) + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048

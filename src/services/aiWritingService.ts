@@ -55,12 +55,12 @@ Best-practice standards:
 ${HTML_FORMAT_RULES}
 Return ONLY the simplified text.`,
 
-    expand: `You are a senior healthcare accreditation consultant. Expand the following text with comprehensive details, real-world examples, and supporting information appropriate for healthcare accreditation documentation.
+    expand: `You are a senior healthcare accreditation consultant. Expand the following text with proposed details and supporting information appropriate for healthcare accreditation documentation.
 
 Best-practice standards:
 - Add practical implementation steps and role-specific responsibilities.
-- Include relevant references to accreditation standards (CBAHI, JCI, ISO 9001, OSHA) where appropriate.
-- Add measurable outcomes, key performance indicators (KPIs), and timelines.
+- Cite standard identifiers only when supplied in verified workspace evidence or the source text.
+- Label new outcomes, KPIs, timelines, and procedures as proposals requiring local review.
 - Include exception handling, escalation pathways, and contingency procedures.
 - Add cross-references to related policies or procedures where relevant.
 ${HTML_FORMAT_RULES}
@@ -134,10 +134,11 @@ Best-practice standards to reference:
 - WHO Patient Safety guidelines where applicable.
 
 Enhancement rules:
-- Add specific standard references in parentheses (e.g., "per CBAHI ESR-12" or "JCI IPSG.3").
+- Use only standard identifiers and requirement text supplied in workspace evidence or the source text; never invent identifiers.
 - Ensure the document addresses: governance, accountability, monitoring, evidence-based practice, and continuous improvement.
-- Add measurable compliance indicators, frequency of reviews, and responsible roles.
-- Insert a "Compliance Cross-Reference" section at the end mapping requirements to standards.
+- Propose measurable indicators, review frequencies, and responsible roles for review, not as established facts.
+- Insert a "Compliance Cross-Reference" section using recorded requirements only. State when official requirements are unavailable.
+- Do not claim clinical accuracy, official compliance, or approval.
 ${HTML_FORMAT_RULES}
 Return ONLY the enhanced text.`,
 };
@@ -148,10 +149,11 @@ class AIWritingService {
         const prompt = `${promptPrefix}\n\nText:\n${params.text}`;
         try {
             const response = await aiAgentService.chat(prompt, false);
-            return this.cleanHtml(response.response || params.text);
+            if (!response.response?.trim()) throw new Error('AI returned an empty writing response');
+            return this.cleanHtml(response.response);
         } catch (error) {
             console.error('AI writing processText error:', error);
-            return params.text;
+            throw error;
         }
     }
 
@@ -162,23 +164,24 @@ class AIWritingService {
     async generateContent(prompt: string): Promise<string> {
         try {
             const response = await aiAgentService.chat(
-                `You are a senior healthcare accreditation documentation specialist. Generate professional, standards-compliant content based on the following instruction.
+                `You are a senior healthcare accreditation documentation specialist. Generate a review-ready draft based on the following instruction. Do not claim compliance or approval.
 
 Best-practice writing standards:
 - Structure the output with proper semantic headings (<h2>, <h3>, <h4>).
 - Use "shall" for mandatory items, "should" for recommended actions.
 - Write in third person, present tense, formal tone.
 - Include practical implementation details, roles, timelines, and KPIs where appropriate.
-- Reference relevant accreditation standards (CBAHI, JCI, ISO) when applicable.
+- Cite only supplied standard identifiers and source requirements. Label unsourced procedures as proposals requiring local validation.
 - Use numbered sections for procedures and bullet lists for requirements.
 ${HTML_FORMAT_RULES}
 Instruction: ${prompt}`,
                 false
             );
-            return this.cleanHtml(response.response || '');
+            if (!response.response?.trim()) throw new Error('AI returned an empty generated response');
+            return this.cleanHtml(response.response);
         } catch (error) {
             console.error('AI writing generateContent error:', error);
-            return '';
+            throw error;
         }
     }
 

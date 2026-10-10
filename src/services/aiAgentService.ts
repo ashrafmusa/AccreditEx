@@ -14,6 +14,7 @@ import { useTenantStore } from '@/stores/useTenantStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { normalizeAIResponse } from '@/utils/aiResponse';
+import { getAIGrounding, type AIGrounding } from '@/services/aiGroundingService';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -31,6 +32,7 @@ export interface ChatRequest {
         route?: string;
         user_role?: string;
         current_data?: any;
+        ai_grounding?: AIGrounding;
     };
 }
 
@@ -43,7 +45,7 @@ export interface ChatResponse {
 
 interface WorkflowResponseMeta {
     source: 'dedicated' | 'fallback';
-    quality_confidence: number;
+    quality_confidence: number | null;
     route_mode: 'endpoint' | 'chat_fallback';
 }
 
@@ -141,25 +143,25 @@ export class AIAgentService {
         const { appSettings, departments, documents } = appState;
         const projects = useProjectStore.getState().projects || [];
 
-        const safeUsers = users || [];
-        const safeProjects: any[] = projects || [];
-        const safeDepartments = departments || [];
-        const safeDocuments = documents || [];
+        const safeUsers = (users || []).filter(u => u.organizationId === organizationId);
+        const safeProjects = projects.filter(p => !!organizationId && p.organizationId === organizationId);
+        const safeDepartments = (departments || []).filter(d => !!organizationId && d.organizationId === organizationId);
+        const safeDocuments = (documents || []).filter(d => !!organizationId && d.organizationId === organizationId);
 
         const authUser = getAuthInstance().currentUser;
-        const resolvedUser = currentUser || (authUser?.email
+        const resolvedUser = (currentUser?.organizationId === organizationId && currentUser.email === authUser?.email ? currentUser : null) || (authUser?.email
             ? safeUsers.find(u => u.email === authUser.email) || null
             : null);
 
         // Get user's assigned projects
         const userProjects = safeProjects.filter(p =>
-            p.projectLeadId === resolvedUser?.id ||
+            p.projectLead?.id === resolvedUser?.id ||
             p.teamMembers?.includes(resolvedUser?.id)
         );
 
         // Get user's department info
         const userDepartment = safeDepartments.find(d =>
-            d.id === resolvedUser?.department ||
+            d.id === (resolvedUser?.departmentId || resolvedUser?.department) ||
             d.members?.some((m: any) => m === resolvedUser?.id)
         );
 
@@ -167,7 +169,7 @@ export class AIAgentService {
         const userDocuments = safeDocuments
             .filter(doc =>
                 doc.uploadedBy === resolvedUser?.name ||
-                doc.departmentIds?.includes(resolvedUser?.department || '')
+                doc.departmentIds?.includes(resolvedUser?.departmentId || resolvedUser?.department || '')
             )
             .slice(0, 10); // Limit to recent 10
 
@@ -218,7 +220,7 @@ export class AIAgentService {
                         not_started: count('Not Started'),
                     };
                 }),
-                open_risks_count: (appState as any).risks?.filter((r: any) => r.status !== 'Closed' && r.status !== 'Mitigated').length ?? 0,
+                open_risks_count: (appState.risks || []).filter(r => r.organizationId === organizationId && r.status === 'Open').length,
 
                 // Workspace overview
                 total_projects: safeProjects.length,
@@ -228,7 +230,7 @@ export class AIAgentService {
 
                 // Recent activity
                 recent_documents: userDocuments.map(d => ({
-                    name: d.name.en,
+                    name: d.name?.en || d.name?.ar || d.id,
                     type: d.type,
                     status: d.status
                 })),
@@ -318,28 +320,10 @@ export class AIAgentService {
             meta: {
                 ...(data?.meta && typeof data.meta === 'object' ? data.meta : {}),
                 source,
-                quality_confidence: source === 'dedicated' ? 0.85 : 0.6,
+                quality_confidence: typeof data?.quality_confidence === 'number' ? data.quality_confidence : null,
                 route_mode: source === 'dedicated' ? 'endpoint' : 'chat_fallback',
             } as WorkflowResponseMeta,
         };
-    }
-
-    private buildSafeFallbackText(
-        workflow: 'action_plan' | 'root_cause_analysis' | 'survey_risk_assessment' | 'design_compliance_assessment',
-        context?: Record<string, unknown>,
-    ): string {
-        switch (workflow) {
-            case 'action_plan':
-                return `1) Confirm the non-compliance scope and owner.\n2) Define corrective actions with due dates.\n3) Validate completion evidence and close the gap.\n4) Monitor recurrence with a short follow-up audit.`;
-            case 'root_cause_analysis':
-                return `Immediate cause: Process control gap.\nPotential root cause: Inconsistent procedure adherence and unclear ownership.\nCorrective action: Standardize workflow, assign accountability, and verify effectiveness.`;
-            case 'survey_risk_assessment':
-                return `Readiness: Medium Risk.\nPrimary concerns: Evidence completeness, process consistency, and owner accountability.\nPriority actions: close critical gaps first, run mock survey, and validate objective evidence.`;
-            case 'design_compliance_assessment':
-                return `Compliance status: Conditionally Compliant.\nGaps: Requirement traceability and validation evidence need strengthening.\nNext steps: update trace matrix, execute verification plan, and document residual risks.`;
-            default:
-                return `A fallback response was generated due to temporary AI service unavailability.`;
-        }
     }
 
     /**
@@ -401,11 +385,16 @@ export class AIAgentService {
      */
     async chat(message: string, includeContext: boolean = true): Promise<ChatResponse> {
         try {
+            const grounding = getAIGrounding(message, includeContext ? 5000 : 2500);
+            const workspaceContext = includeContext ? this.getContext() : undefined;
             const chatUrl = this.getApiUrl('/chat');
             const request: ChatRequest = {
                 message,
                 thread_id: this.threadId || undefined,
-                context: includeContext ? this.getContext() : undefined,
+                context: includeContext ? {
+                    ...workspaceContext,
+                    current_data: { ...workspaceContext?.current_data, ai_grounding: grounding },
+                } : { ai_grounding: grounding },
             };
 
             console.log('📤 Sending chat request:', {
@@ -575,7 +564,7 @@ export class AIAgentService {
             const response = await fetch(this.getApiUrl('/check-compliance'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
-                body: JSON.stringify(request),
+                body: JSON.stringify({ ...request, ai_grounding: getAIGrounding(JSON.stringify(request)) }),
             });
 
             if (!response.ok) {
@@ -598,7 +587,7 @@ export class AIAgentService {
             const response = await fetch(this.getApiUrl('/assess-risk'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
-                body: JSON.stringify(request),
+                body: JSON.stringify({ ...request, ai_grounding: getAIGrounding(JSON.stringify(request)) }),
             });
 
             if (!response.ok) {
@@ -621,7 +610,7 @@ export class AIAgentService {
             const response = await fetch(this.getApiUrl('/training-recommendations'), {
                 method: 'POST',
                 headers: await this.getHeaders(),
-                body: JSON.stringify(request),
+                body: JSON.stringify({ ...request, ai_grounding: getAIGrounding(JSON.stringify(request)) }),
             });
 
             if (!response.ok) {
@@ -795,6 +784,7 @@ Analyze compliance with the specified standard and provide:
         status: string;
         findings?: string;
     }): Promise<any> {
+        let fallbackAttempted = false;
         try {
             // Try dedicated endpoint first
             const response = await this.fetchWithRetry(this.getApiUrl('/generate-action-plan'), {
@@ -802,6 +792,7 @@ Analyze compliance with the specified standard and provide:
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
                     standard_id: context.standardId,
+                    ai_grounding: getAIGrounding(JSON.stringify(context)),
                     item: context.item,
                     status: context.status,
                     findings: context.findings,
@@ -811,8 +802,8 @@ Analyze compliance with the specified standard and provide:
             if (!response.ok) {
                 // Fallback to chat on endpoint failure
                 console.warn('Action plan endpoint failed, falling back to chat');
-                const fallback = await this.generateActionPlan(context)
-                    .catch(() => this.buildSafeFallbackText('action_plan', context as unknown as Record<string, unknown>));
+                fallbackAttempted = true;
+                const fallback = await this.generateActionPlan(context);
                 return this.normalizeWorkflowResponse(
                     {},
                     'action_plan',
@@ -823,9 +814,9 @@ Analyze compliance with the specified standard and provide:
 
             return this.normalizeWorkflowResponse(await response.json(), 'action_plan');
         } catch (error) {
+            if (fallbackAttempted) throw error;
             console.warn('Action plan endpoint error, falling back to chat:', error);
-            const fallback = await this.generateActionPlan(context)
-                .catch(() => this.buildSafeFallbackText('action_plan', context as unknown as Record<string, unknown>));
+            const fallback = await this.generateActionPlan(context);
             return this.normalizeWorkflowResponse(
                 {},
                 'action_plan',
@@ -844,6 +835,7 @@ Analyze compliance with the specified standard and provide:
         category?: string;
         findings?: string;
     }): Promise<any> {
+        let fallbackAttempted = false;
         try {
             // Try dedicated endpoint first
             const response = await this.fetchWithRetry(this.getApiUrl('/analyze-root-cause'), {
@@ -851,6 +843,7 @@ Analyze compliance with the specified standard and provide:
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
                     issue_title: context.title,
+                    ai_grounding: getAIGrounding(JSON.stringify(context)),
                     description: context.description,
                     context: context.category,
                     affected_areas: context.findings ? [context.findings] : undefined,
@@ -860,8 +853,8 @@ Analyze compliance with the specified standard and provide:
             if (!response.ok) {
                 // Fallback to chat on endpoint failure
                 console.warn('Root cause analysis endpoint failed, falling back to chat');
-                const fallback = await this.analyzeRootCause(context)
-                    .catch(() => this.buildSafeFallbackText('root_cause_analysis', context as unknown as Record<string, unknown>));
+                fallbackAttempted = true;
+                const fallback = await this.analyzeRootCause(context);
                 return this.normalizeWorkflowResponse(
                     {},
                     'root_cause_analysis',
@@ -872,9 +865,9 @@ Analyze compliance with the specified standard and provide:
 
             return this.normalizeWorkflowResponse(await response.json(), 'root_cause_analysis');
         } catch (error) {
+            if (fallbackAttempted) throw error;
             console.warn('Root cause analysis endpoint error, falling back to chat:', error);
-            const fallback = await this.analyzeRootCause(context)
-                .catch(() => this.buildSafeFallbackText('root_cause_analysis', context as unknown as Record<string, unknown>));
+            const fallback = await this.analyzeRootCause(context);
             return this.normalizeWorkflowResponse(
                 {},
                 'root_cause_analysis',
@@ -893,6 +886,7 @@ Analyze compliance with the specified standard and provide:
         description: string;
         actions?: string[];
     }): Promise<any> {
+        let fallbackAttempted = false;
         try {
             // Try dedicated endpoint first
             const response = await this.fetchWithRetry(this.getApiUrl('/suggest-pdca-improvements'), {
@@ -900,6 +894,7 @@ Analyze compliance with the specified standard and provide:
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
                     process_name: context.title,
+                    ai_grounding: getAIGrounding(JSON.stringify(context)),
                     current_state: context.description,
                     problem_identified: context.currentStage,
                     previous_actions: context.actions?.join(', '),
@@ -909,6 +904,7 @@ Analyze compliance with the specified standard and provide:
             if (!response.ok) {
                 // Fallback to chat on endpoint failure
                 console.warn('PDCA endpoint failed, falling back to chat');
+                fallbackAttempted = true;
                 const fallback = await this.suggestPDCAImprovements(context);
                 return this.normalizeWorkflowResponse(
                     {},
@@ -920,6 +916,7 @@ Analyze compliance with the specified standard and provide:
 
             return this.normalizeWorkflowResponse(await response.json(), 'pdca_improvements');
         } catch (error) {
+            if (fallbackAttempted) throw error;
             console.warn('PDCA endpoint error, falling back to chat:', error);
             const fallback = await this.suggestPDCAImprovements(context);
             return this.normalizeWorkflowResponse(
@@ -941,6 +938,7 @@ Analyze compliance with the specified standard and provide:
         criticalConcerns?: string[];
         surveyDate?: string;
     }): Promise<any> {
+        let fallbackAttempted = false;
         try {
             // Try dedicated endpoint first
             const response = await this.fetchWithRetry(this.getApiUrl('/assess-survey-risk'), {
@@ -948,6 +946,7 @@ Analyze compliance with the specified standard and provide:
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
                     standard: context.standard,
+                    ai_grounding: getAIGrounding(JSON.stringify(context)),
                     organization_area: context.organizationArea,
                     readiness_level: context.readinessLevel,
                     critical_concerns: context.criticalConcerns,
@@ -958,6 +957,7 @@ Analyze compliance with the specified standard and provide:
             if (!response.ok) {
                 // Fallback: use generic chat for survey risk discussion
                 console.warn('Survey risk endpoint failed, falling back to chat');
+                fallbackAttempted = true;
                 const prompt = `Assess survey readiness risk:
 
 Standard: ${context.standard}
@@ -968,9 +968,7 @@ ${context.surveyDate ? `Survey Date: ${context.surveyDate}` : ''}
 
 Provide high-risk areas, compliance gaps, and priority actions.`;
 
-                const chatResponse = await this.chat(prompt, true).catch(() => ({
-                    response: this.buildSafeFallbackText('survey_risk_assessment', context as unknown as Record<string, unknown>),
-                } as ChatResponse));
+                const chatResponse = await this.chat(prompt, true);
                 return this.normalizeWorkflowResponse(
                     {},
                     'survey_risk_assessment',
@@ -981,6 +979,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
 
             return this.normalizeWorkflowResponse(await response.json(), 'survey_risk_assessment');
         } catch (error) {
+            if (fallbackAttempted) throw error;
             console.warn('Survey risk endpoint error, falling back to chat:', error);
             const prompt = `Assess survey readiness risk:
 
@@ -992,9 +991,7 @@ ${context.surveyDate ? `Survey Date: ${context.surveyDate}` : ''}
 
 Provide high-risk areas, compliance gaps, and priority actions.`;
 
-            const chatResponse = await this.chat(prompt, true).catch(() => ({
-                response: this.buildSafeFallbackText('survey_risk_assessment', context as unknown as Record<string, unknown>),
-            } as ChatResponse));
+            const chatResponse = await this.chat(prompt, true);
             return this.normalizeWorkflowResponse(
                 {},
                 'survey_risk_assessment',
@@ -1013,6 +1010,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
         description?: string;
         requirements?: string[];
     }): Promise<any> {
+        let fallbackAttempted = false;
         try {
             // Try dedicated endpoint first
             const response = await this.fetchWithRetry(this.getApiUrl('/check-design-compliance'), {
@@ -1020,6 +1018,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
                 headers: await this.getHeaders(),
                 body: JSON.stringify({
                     design_element: context.standard,
+                    ai_grounding: getAIGrounding(JSON.stringify(context)),
                     requirement: context.requirements?.join(', ') || 'Design control compliance',
                     current_implementation: context.description || 'Under review',
                     design_phase: context.phase,
@@ -1029,13 +1028,14 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
             if (!response.ok) {
                 // Fallback: use existing checkDesignCompliance method
                 console.warn('Design compliance endpoint failed, falling back to local method');
+                fallbackAttempted = true;
                 const result = await this.checkDesignCompliance({
                     designTitle: context.standard,
                     standard: context.standard,
                     phase: context.phase || 'Implementation',
                     description: context.description,
                     requirements: context.requirements,
-                }).catch(() => this.buildSafeFallbackText('design_compliance_assessment', context as unknown as Record<string, unknown>));
+                });
                 return this.normalizeWorkflowResponse(
                     {},
                     'design_compliance_assessment',
@@ -1046,6 +1046,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
 
             return this.normalizeWorkflowResponse(await response.json(), 'design_compliance_assessment');
         } catch (error) {
+            if (fallbackAttempted) throw error;
             console.warn('Design compliance endpoint error, falling back to local method:', error);
             const result = await this.checkDesignCompliance({
                 designTitle: context.standard,
@@ -1053,7 +1054,7 @@ Provide high-risk areas, compliance gaps, and priority actions.`;
                 phase: context.phase || 'Implementation',
                 description: context.description,
                 requirements: context.requirements,
-            }).catch(() => this.buildSafeFallbackText('design_compliance_assessment', context as unknown as Record<string, unknown>));
+            });
             return this.normalizeWorkflowResponse(
                 {},
                 'design_compliance_assessment',

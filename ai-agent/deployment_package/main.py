@@ -33,6 +33,7 @@ from unified_accreditex_agent import UnifiedAccreditexAgent
 from monitoring import performance_monitor
 from cache import cache
 from skills.response_standard import standardize_payload
+from agent_utils import validate_ai_grounding, grounding_from_context
 
 # Configure logging
 logging.basicConfig(
@@ -275,7 +276,38 @@ class ChatResponse(BaseModel):
         }
 
 # Week 2: Specialist Request Models
-class ComplianceCheckRequest(BaseModel):
+class GroundedWorkflowRequest(BaseModel):
+    """Optional bounded evidence; legacy requests remain valid without it."""
+    ai_grounding: Optional[Dict[str, Any]] = None
+
+
+def validate_request_grounding(
+    grounding: Optional[Dict[str, Any]], auth_info: Dict[str, Any],
+    user_id: Optional[str] = None, organization_id: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Resolve authenticated scope and explicitly reject foreign source envelopes."""
+    if grounding is None:
+        return None
+    if not isinstance(grounding, dict):
+        raise HTTPException(status_code=422, detail="ai_grounding must be an object")
+    scope = resolve_request_scope(
+        auth_info, requested_user_id=user_id,
+        requested_org_id=organization_id or grounding.get("organizationId"),
+    )
+    try:
+        return validate_ai_grounding(grounding, scope["organization_id"])
+    except PermissionError as error:
+        raise HTTPException(status_code=403, detail=str(error)) from error
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
+def workflow_grounding_kwargs(payload: GroundedWorkflowRequest, auth_info: Dict[str, Any]) -> Dict[str, Any]:
+    grounding = validate_request_grounding(payload.ai_grounding, auth_info, getattr(payload, "user_id", None))
+    return {"ai_grounding": grounding} if grounding is not None else {}
+
+
+class ComplianceCheckRequest(GroundedWorkflowRequest):
     """Request for CBAHI/JCI compliance checking"""
     document_type: str = Field(..., description="Document type to check")
     standard: str = Field(..., description="Target standard or framework")
@@ -283,7 +315,7 @@ class ComplianceCheckRequest(BaseModel):
     requirements: Optional[list[str]] = Field(None, description="Optional specific requirements to verify")
     user_id: Optional[str] = None
 
-class RiskAssessmentRequest(BaseModel):
+class RiskAssessmentRequest(GroundedWorkflowRequest):
     """Request for risk assessment"""
     area: str = Field(..., description="Area or workflow being assessed")
     current_status: str = Field(..., description="Current state or findings summary")
@@ -291,7 +323,7 @@ class RiskAssessmentRequest(BaseModel):
     critical_areas: Optional[list[str]] = Field(None, description="Optional critical concerns to prioritize")
     user_id: Optional[str] = None
 
-class TrainingRequest(BaseModel):
+class TrainingRequest(GroundedWorkflowRequest):
     """Request for training recommendations"""
     role: str = Field(..., description="Staff role")
     department: Optional[str] = Field(None, description="Department or team")
@@ -304,7 +336,7 @@ class TrainingRequest(BaseModel):
     user_id: Optional[str] = None
 
 # Week 3: Dedicated AI Workflow Endpoints
-class ActionPlanRequest(BaseModel):
+class ActionPlanRequest(GroundedWorkflowRequest):
     """Request for AI-powered action plan generation"""
     standard_id: str = Field(..., description="Accreditation standard identifier", example="CBAHI-4.1")
     item: str = Field(..., description="Non-compliant item or requirement")
@@ -312,7 +344,7 @@ class ActionPlanRequest(BaseModel):
     findings: Optional[str] = Field(None, description="Additional findings or context")
     user_id: Optional[str] = None
 
-class RootCauseAnalysisRequest(BaseModel):
+class RootCauseAnalysisRequest(GroundedWorkflowRequest):
     """Request for root cause analysis"""
     issue_title: str = Field(..., description="Title of the issue or incident")
     description: str = Field(..., description="Detailed description of the issue")
@@ -320,7 +352,7 @@ class RootCauseAnalysisRequest(BaseModel):
     affected_areas: Optional[list[str]] = Field(None, description="Areas affected by the issue")
     user_id: Optional[str] = None
 
-class PDCARequest(BaseModel):
+class PDCARequest(GroundedWorkflowRequest):
     """Request for PDCA cycle improvement suggestions"""
     process_name: str = Field(..., description="Name of the process to improve")
     current_state: str = Field(..., description="Description of current state")
@@ -328,7 +360,7 @@ class PDCARequest(BaseModel):
     previous_actions: Optional[str] = Field(None, description="Previous corrective actions attempted")
     user_id: Optional[str] = None
 
-class SurveyRiskRequest(BaseModel):
+class SurveyRiskRequest(GroundedWorkflowRequest):
     """Request for survey risk assessment"""
     standard: str = Field(..., description="Accreditation standard (e.g., CBAHI, JCI)")
     organization_area: str = Field(..., description="Area or department being surveyed")
@@ -337,7 +369,7 @@ class SurveyRiskRequest(BaseModel):
     survey_date: Optional[str] = Field(None, description="Planned survey date")
     user_id: Optional[str] = None
 
-class DesignComplianceRequest(BaseModel):
+class DesignComplianceRequest(GroundedWorkflowRequest):
     """Request for design control compliance assessment"""
     design_element: str = Field(..., description="Design element or component being assessed")
     requirement: str = Field(..., description="Applicable compliance requirement")
@@ -414,14 +446,32 @@ async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(
 
         # Normalize auth scope into context so downstream queries stay tenant-scoped.
         context_payload = dict(chat_request.context or {})
+        raw_grounding = grounding_from_context(context_payload)
+        current_data = context_payload.get("current_data")
+        nested_grounding = current_data.get("ai_grounding") if isinstance(current_data, dict) else None
+        if context_payload.get("ai_grounding") is not None and nested_grounding is not None:
+            if context_payload["ai_grounding"] != nested_grounding:
+                raise HTTPException(status_code=422, detail="Conflicting top-level and nested ai_grounding")
+        validated_grounding = validate_request_grounding(
+            raw_grounding, auth_info,
+            context_payload.get("user_id") or chat_request.user_id,
+            context_payload.get("organization_id"),
+        )
         scope = resolve_request_scope(
             auth_info,
             requested_user_id=context_payload.get("user_id") or chat_request.user_id,
-            requested_org_id=context_payload.get("organization_id"),
+            requested_org_id=context_payload.get("organization_id") or (
+                validated_grounding.get("organizationId") if validated_grounding else None
+            ),
         )
         if scope.get("user_id"):
             context_payload["user_id"] = scope["user_id"]
         context_payload["organization_id"] = scope["organization_id"]
+        if validated_grounding is not None:
+            if context_payload.get("ai_grounding") is not None:
+                context_payload["ai_grounding"] = validated_grounding
+            if nested_grounding is not None:
+                context_payload["current_data"] = {**current_data, "ai_grounding": validated_grounding}
         chat_request.context = context_payload
         
         # Log enhanced context information
@@ -480,17 +530,20 @@ async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(
 async def check_compliance(
     request: Request,
     payload: ComplianceCheckRequest,
+    auth_info = Depends(verify_api_key),
 ):
     """Check document compliance against standards"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.check_document_compliance(
             document_type=payload.document_type,
             standard=payload.standard,
             content_summary=payload.content_summary,
             requirements=payload.requirements,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "analysis", "compliance_check"))
     except Exception as e:
@@ -503,17 +556,20 @@ async def check_compliance(
 async def assess_risk(
     request: Request,
     payload: RiskAssessmentRequest,
+    auth_info = Depends(verify_api_key),
 ):
     """Assess compliance risk"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.assess_risk(
             area=payload.area,
             current_status=payload.current_status,
             upcoming_review_date=payload.upcoming_review_date,
             critical_areas=payload.critical_areas,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "assessment", "risk_assessment"))
     except Exception as e:
@@ -526,11 +582,13 @@ async def assess_risk(
 async def get_training_recommendations(
     request: Request,
     payload: TrainingRequest,
+    auth_info = Depends(verify_api_key),
 ):
     """Get training recommendations"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         competency_gaps = payload.competency_gaps or payload.current_skills or []
         accreditation_focus = (
@@ -546,6 +604,7 @@ async def get_training_recommendations(
             competency_gaps=competency_gaps,
             accreditation_focus=accreditation_focus,
             timeline=timeline,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "recommendations", "training_recommendations"))
     except Exception as e:
@@ -559,17 +618,19 @@ async def get_training_recommendations(
 # Action Plan Generation endpoint
 @app.post("/generate-action-plan", dependencies=[Depends(verify_api_key)], tags=["workflows"])
 @limiter.limit("20/minute")
-async def generate_action_plan(request: Request, payload: ActionPlanRequest):
+async def generate_action_plan(request: Request, payload: ActionPlanRequest, auth_info = Depends(verify_api_key)):
     """Generate actionable compliance action plan"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.generate_action_plan(
             standard_id=payload.standard_id,
             item=payload.item,
             status=payload.status,
             findings=payload.findings,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "action_plan"))
     except Exception as e:
@@ -579,17 +640,19 @@ async def generate_action_plan(request: Request, payload: ActionPlanRequest):
 # Root Cause Analysis endpoint
 @app.post("/analyze-root-cause", dependencies=[Depends(verify_api_key)], tags=["workflows"])
 @limiter.limit("20/minute")
-async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest):
+async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest, auth_info = Depends(verify_api_key)):
     """Perform structured root cause analysis"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.analyze_root_cause(
             issue_title=payload.issue_title,
             description=payload.description,
             context=payload.context,
             affected_areas=payload.affected_areas,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "root_cause_analysis"))
     except Exception as e:
@@ -599,17 +662,19 @@ async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest
 # PDCA Improvement Suggestions endpoint
 @app.post("/suggest-pdca-improvements", dependencies=[Depends(verify_api_key)], tags=["workflows"])
 @limiter.limit("20/minute")
-async def suggest_pdca_improvements(request: Request, payload: PDCARequest):
+async def suggest_pdca_improvements(request: Request, payload: PDCARequest, auth_info = Depends(verify_api_key)):
     """Suggest Plan-Do-Check-Act improvements"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.suggest_pdca_improvements(
             process_name=payload.process_name,
             current_state=payload.current_state,
             problem_identified=payload.problem_identified,
             previous_actions=payload.previous_actions,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "pdca_improvements"))
     except Exception as e:
@@ -619,11 +684,12 @@ async def suggest_pdca_improvements(request: Request, payload: PDCARequest):
 # Survey Risk Assessment endpoint
 @app.post("/assess-survey-risk", dependencies=[Depends(verify_api_key)], tags=["workflows"])
 @limiter.limit("20/minute")
-async def assess_survey_risk(request: Request, payload: SurveyRiskRequest):
+async def assess_survey_risk(request: Request, payload: SurveyRiskRequest, auth_info = Depends(verify_api_key)):
     """Assess readiness risk for upcoming accreditation survey"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.assess_survey_risk(
             standard=payload.standard,
@@ -631,6 +697,7 @@ async def assess_survey_risk(request: Request, payload: SurveyRiskRequest):
             readiness_level=payload.readiness_level,
             critical_concerns=payload.critical_concerns,
             survey_date=payload.survey_date,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "survey_risk_assessment"))
     except Exception as e:
@@ -640,17 +707,19 @@ async def assess_survey_risk(request: Request, payload: SurveyRiskRequest):
 # Design Control Compliance endpoint
 @app.post("/check-design-compliance", dependencies=[Depends(verify_api_key)], tags=["workflows"])
 @limiter.limit("20/minute")
-async def check_design_compliance(request: Request, payload: DesignComplianceRequest):
+async def check_design_compliance(request: Request, payload: DesignComplianceRequest, auth_info = Depends(verify_api_key)):
     """Assess design control compliance"""
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
+    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
     try:
         result = await agent.check_design_compliance(
             design_element=payload.design_element,
             requirement=payload.requirement,
             current_implementation=payload.current_implementation,
             design_phase=payload.design_phase,
+            **grounding_kwargs,
         )
         return JSONResponse(content=ensure_workflow_response(result, "design_compliance_assessment"))
     except Exception as e:

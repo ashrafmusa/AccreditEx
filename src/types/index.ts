@@ -293,6 +293,7 @@ export interface StandardDocument {
 export interface Standard {
   id?: string;
   organizationId?: string;
+  scope?: 'global' | 'tenant';
   standardId: string;
   programId: string;
   section: string;
@@ -594,6 +595,7 @@ export const CAP_LAB_DISCIPLINES = [
 export interface AccreditationProgram {
   id: string;
   organizationId?: string;
+  scope?: 'global' | 'tenant';
   name: string;
   description: LocalizedString;
   documentIds?: string[];
