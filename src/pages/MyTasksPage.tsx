@@ -5,6 +5,7 @@ import {
   ClipboardDocumentCheckIcon,
   ExclamationTriangleIcon,
   SparklesIcon,
+  SearchIcon,
 } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
@@ -13,85 +14,106 @@ import {
   ComplianceStatus,
   Project,
   User,
+  NavigationState,
 } from "@/types";
-import React, { useMemo } from "react";
+import React, { useState } from "react";
+import { STATUS_COLORS, statusToTranslationKey } from "@/utils/complianceUtils";
 
 interface MyTasksPageProps {
   projects: Project[];
   currentUser: User;
   programs: AccreditationProgram[];
+  setNavigation: (state: NavigationState) => void;
 }
 
 type TaskWithMeta = ChecklistItem & {
   projectName: string;
+  projectId: string;
   programId: string;
   isOverdue: boolean;
   isDueSoon: boolean;
-};
-
-const statusConfig: Record<string, { label: string; className: string }> = {
-  [ComplianceStatus.NonCompliant]: {
-    label: "Non-Compliant",
-    className: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300",
-  },
-  [ComplianceStatus.PartiallyCompliant]: {
-    label: "In Progress",
-    className:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300",
-  },
-  [ComplianceStatus.NotApplicable]: {
-    label: "N/A",
-    className:
-      "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400",
-  },
+  dueDateValue: Date | null;
 };
 
 const MyTasksPage: React.FC<MyTasksPageProps> = ({
   projects,
   currentUser,
   programs,
+  setNavigation,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState<"all" | "overdue" | "dueSoon">("all");
   const now = new Date();
-  const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const nextWeek = new Date(today);
+  nextWeek.setDate(nextWeek.getDate() + 8);
 
   // All tasks assigned to the current user (including completed for stats)
-  const allMyTasks = useMemo<TaskWithMeta[]>(() => {
-    return projects.flatMap((project) =>
+  const allMyTasks: TaskWithMeta[] = projects
+    .filter(
+      (project) =>
+        !!currentUser.organizationId &&
+        project.organizationId === currentUser.organizationId &&
+        !project.archived,
+    )
+    .flatMap((project) =>
       (project.checklist ?? [])
         .filter((item) => item.assignedTo === currentUser.id)
         .map((item) => {
-          const dueDate = item.dueDate ? new Date(item.dueDate) : null;
+          const dueDate =
+            item.dueDate && Number.isFinite(Date.parse(item.dueDate))
+              ? new Date(
+                  /^\d{4}-\d{2}-\d{2}$/.test(item.dueDate)
+                    ? `${item.dueDate}T00:00:00`
+                    : item.dueDate,
+                )
+              : null;
+          const open =
+            item.status !== ComplianceStatus.Compliant &&
+            item.status !== ComplianceStatus.NotApplicable;
           return {
             ...item,
             projectName: project.name,
+            projectId: project.id,
             programId: project.programId,
-            isOverdue:
-              !!dueDate &&
-              dueDate < now &&
-              item.status !== ComplianceStatus.Compliant,
+            dueDateValue: dueDate,
+            isOverdue: !!dueDate && dueDate < today && open,
             isDueSoon:
-              !!dueDate &&
-              dueDate >= now &&
-              dueDate <= nextWeek &&
-              item.status !== ComplianceStatus.Compliant,
+              !!dueDate && dueDate >= today && dueDate < nextWeek && open,
           };
         }),
     );
-  }, [projects, currentUser]);
 
   // Open tasks only (not compliant, not N/A)
-  const openTasks = useMemo(
-    () =>
-      allMyTasks.filter(
-        (t) =>
-          t.status !== ComplianceStatus.Compliant &&
-          t.status !== ComplianceStatus.NotApplicable,
-      ),
-    [allMyTasks],
-  );
+  const openTasks = allMyTasks
+    .filter(
+      (t) =>
+        t.status !== ComplianceStatus.Compliant &&
+        t.status !== ComplianceStatus.NotApplicable,
+    )
+    .sort((a, b) => {
+      return (
+        (a.dueDateValue?.getTime() ?? Infinity) -
+          (b.dueDateValue?.getTime() ?? Infinity) ||
+        a.item.localeCompare(b.item)
+      );
+    });
+  const visibleTasks = openTasks.filter((task) => {
+    const matchesFilter =
+      filter === "all" ||
+      (filter === "overdue" ? task.isOverdue : task.isDueSoon);
+    const program = programs.find((p) => p.id === task.programId);
+    return (
+      matchesFilter &&
+      [task.item, task.standardId, task.projectName, program?.name || ""]
+        .join(" ")
+        .toLocaleLowerCase()
+        .includes(search.trim().toLocaleLowerCase())
+    );
+  });
 
-  const stats = useMemo(() => {
+  const stats = (() => {
     const total = allMyTasks.filter(
       (t) => t.status !== ComplianceStatus.NotApplicable,
     ).length;
@@ -102,22 +124,16 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
     const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0;
     const programCount = new Set(allMyTasks.map((t) => t.programId)).size;
     return { total, completed, overdue, completionPct, programCount };
-  }, [allMyTasks]);
+  })();
 
-  const groupedOpen = useMemo(() => {
-    return openTasks.reduce(
-      (acc, task) => {
-        const program = programs.find((p) => p.id === task.programId);
-        const programName = program?.name || t("uncategorized") || "Other";
-        if (!acc[programName]) acc[programName] = {};
-        if (!acc[programName][task.projectName])
-          acc[programName][task.projectName] = [];
-        acc[programName][task.projectName].push(task);
-        return acc;
-      },
-      {} as Record<string, Record<string, TaskWithMeta[]>>,
-    );
-  }, [openTasks, programs, t]);
+  const groupedOpen = new Map<string, Map<string, TaskWithMeta[]>>();
+  visibleTasks.forEach((task) => {
+    if (!groupedOpen.has(task.programId))
+      groupedOpen.set(task.programId, new Map());
+    const programGroup = groupedOpen.get(task.programId)!;
+    if (!programGroup.has(task.projectId)) programGroup.set(task.projectId, []);
+    programGroup.get(task.projectId)!.push(task);
+  });
 
   const allDone = stats.total > 0 && stats.completed === stats.total;
 
@@ -131,11 +147,73 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
             {t("myTasks")}
           </h1>
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-            {t("myTasksDescription") ||
-              "Tasks assigned to you across all accreditation projects"}
+            {t("myTasksDescription")}
           </p>
         </div>
       </div>
+      <section
+        aria-label={t("qualityTaskFilters")}
+        className="rounded-xl border border-brand-border dark:border-dark-brand-border bg-brand-surface dark:bg-dark-brand-surface p-4"
+      >
+        <label
+          htmlFor="assigned-task-search"
+          className="block text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary"
+        >
+          {t("qualityTaskSearch")}
+        </label>
+        <div className="relative mt-2">
+          <SearchIcon
+            className="absolute start-3 top-3 h-5 w-5 text-brand-text-secondary"
+            aria-hidden="true"
+          />
+          <input
+            id="assigned-task-search"
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t("qualityTaskSearchPlaceholder")}
+            className="min-h-11 w-full rounded-lg border border-brand-border dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background ps-10 pe-3 text-sm text-brand-text-primary dark:text-dark-brand-text-primary focus:outline-2 focus:outline-brand-primary"
+          />
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {(["all", "overdue", "dueSoon"] as const).map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={filter === value}
+              onClick={() => setFilter(value)}
+              className={`min-h-11 rounded-lg border px-3 py-2 text-sm font-semibold ${
+                filter === value
+                  ? "border-brand-primary bg-brand-primary/10 text-brand-primary"
+                  : "border-brand-border dark:border-dark-brand-border text-brand-text-secondary dark:text-dark-brand-text-secondary"
+              }`}
+            >
+              {t(
+                value === "all"
+                  ? "qualityTaskAll"
+                  : value === "overdue"
+                    ? "qualityTaskOverdue"
+                    : "qualityTaskDueSoon",
+              )}{" "}
+              (
+              {value === "all"
+                ? openTasks.length
+                : openTasks.filter((task) =>
+                    value === "overdue" ? task.isOverdue : task.isDueSoon,
+                  ).length}
+              )
+            </button>
+          ))}
+        </div>
+        <p
+          role="status"
+          className="mt-3 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary"
+        >
+          {t("qualityTaskResults")
+            .replace("{shown}", String(visibleTasks.length))
+            .replace("{total}", String(openTasks.length))}
+        </p>
+      </section>
 
       {/* Progress summary */}
       {stats.total > 0 && (
@@ -192,11 +270,14 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
           </div>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
             {stats.programCount > 0
-              ? (
-                  t("contributingToPrograms") ||
-                  `Contributing to ${stats.programCount} accreditation program(s)`
-                ).replace("{count}", String(stats.programCount))
+              ? t("qualityTaskPrograms").replace(
+                  "{count}",
+                  String(stats.programCount),
+                )
               : ""}
+          </p>
+          <p className="mt-2 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("qualityTaskProgressNotice")}
           </p>
         </div>
       )}
@@ -207,40 +288,53 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
           <CheckCircleIcon className="h-10 w-10 text-green-500 shrink-0" />
           <div>
             <p className="text-lg font-semibold text-green-700 dark:text-green-300">
-              {t("allTasksComplete") || "All tasks complete!"}
+              {t("allTasksComplete")}
             </p>
             <p className="text-sm text-green-600 dark:text-green-400 mt-0.5">
-              {t("allTasksCompleteMessage") ||
-                "Great work — you've completed all your assigned tasks."}
+              {t("qualityTaskProgressNotice")}
             </p>
           </div>
         </div>
       )}
 
       {/* Task list */}
-      {Object.keys(groupedOpen).length > 0 ? (
-        Object.entries(groupedOpen).map(([programName, projectTasks]) => (
-          <div key={programName}>
+      {groupedOpen.size > 0 ? (
+        Array.from(groupedOpen, ([programId, projectTasks]) => (
+          <div key={programId}>
             <h2 className="text-base font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-3 flex items-center gap-2">
               <SparklesIcon className="h-4 w-4 text-brand-primary" />
-              {programName}
+              {programs.find((program) => program.id === programId)?.name ||
+                t("qualityTaskUnknownProgram")}
             </h2>
             <div className="space-y-3">
-              {Object.entries(projectTasks).map(([projectName, tasks]) => (
+              {Array.from(projectTasks, ([projectId, tasks]) => (
                 <div
-                  key={projectName}
+                  key={projectId}
                   className="bg-brand-surface dark:bg-dark-brand-surface rounded-lg border border-brand-border dark:border-dark-brand-border shadow-sm overflow-hidden"
                 >
-                  <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-brand-border dark:border-dark-brand-border">
+                  <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-brand-border dark:border-dark-brand-border flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-                      {projectName}
+                      {tasks[0].projectName}
                     </h3>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNavigation({ view: "projectDetail", projectId })
+                      }
+                      aria-label={t("qualityTaskOpenProjectLabel").replace(
+                        "{name}",
+                        tasks[0].projectName,
+                      )}
+                      className="min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-brand-primary hover:bg-brand-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand-primary"
+                    >
+                      {t("qualityTaskOpenProject")}
+                    </button>
                   </div>
                   <div className="divide-y divide-brand-border dark:divide-dark-brand-border">
                     {tasks.map((task) => (
                       <div
-                        key={task.id}
-                        className={`px-4 py-3 flex items-start justify-between gap-3 ${
+                        key={`${task.projectId}-${task.id}`}
+                        className={`px-4 py-3 flex flex-wrap items-start justify-between gap-3 ${
                           task.isOverdue
                             ? "bg-red-50/50 dark:bg-red-900/10"
                             : task.isDueSoon
@@ -255,7 +349,7 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
                           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
                             {task.standardId}
                           </p>
-                          {task.dueDate && (
+                          {task.dueDateValue ? (
                             <p
                               className={`text-xs mt-1 flex items-center gap-1 ${
                                 task.isOverdue
@@ -271,22 +365,32 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
                                 <CalendarDaysIcon className="h-3 w-3" />
                               )}
                               {task.isOverdue
-                                ? t("overdue") || "Overdue"
+                                ? t("overdue")
                                 : task.isDueSoon
-                                  ? t("dueSoon") || "Due soon"
-                                  : t("dueDate") || "Due"}
+                                  ? t("dueSoon")
+                                  : t("dueDate")}
                               {" · "}
-                              {new Date(task.dueDate).toLocaleDateString()}
+                              {task.dueDateValue.toLocaleDateString(
+                                lang === "ar" ? "ar" : "en",
+                              )}
+                            </p>
+                          ) : (
+                            <p className="mt-1 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                              {t(
+                                task.dueDate
+                                  ? "qualityTaskInvalidDate"
+                                  : "qualityTaskNoDate",
+                              )}
                             </p>
                           )}
                         </div>
                         <span
                           className={`shrink-0 text-xs px-2 py-0.5 rounded-full font-medium ${
-                            statusConfig[task.status]?.className ||
+                            STATUS_COLORS[task.status] ||
                             "bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
                           }`}
                         >
-                          {statusConfig[task.status]?.label || task.status}
+                          {t(statusToTranslationKey(task.status))}
                         </span>
                       </div>
                     ))}
@@ -299,10 +403,28 @@ const MyTasksPage: React.FC<MyTasksPageProps> = ({
       ) : !allDone ? (
         <EmptyState
           icon={ClipboardDocumentCheckIcon}
-          title={t("noTasksAssigned") || "No open tasks"}
-          message=""
+          title={t(
+            openTasks.length ? "qualityTaskNoMatches" : "noTasksAssigned",
+          )}
+          message={t(
+            openTasks.length
+              ? "qualityTaskNoMatchesHelp"
+              : "qualityTaskEmptyHelp",
+          )}
         />
       ) : null}
+      {(search || filter !== "all") && (
+        <button
+          type="button"
+          onClick={() => {
+            setSearch("");
+            setFilter("all");
+          }}
+          className="min-h-11 rounded-lg px-3 py-2 text-sm font-semibold text-brand-primary hover:bg-brand-primary/10"
+        >
+          {t("qualityTaskReset")}
+        </button>
+      )}
     </div>
   );
 };

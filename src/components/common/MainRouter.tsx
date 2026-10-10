@@ -517,6 +517,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
             projects={projects}
             currentUser={currentUser}
             programs={accreditationPrograms}
+            setNavigation={setNavigation}
           />
         );
       case "workflowAutomation":

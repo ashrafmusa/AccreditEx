@@ -24,7 +24,7 @@ import { getRecentActivityLogs } from "../services/activityLogService";
 import { useAppStore } from "../stores/useAppStore";
 import { useProjectStore } from "../stores/useProjectStore";
 import { useUserStore } from "../stores/useUserStore";
-import { ActivityLogItem, AuditPlan } from "../types";
+import { ActivityLogItem, AuditPlan, NavigationState } from "../types";
 
 const QualityRoundingPage = lazy(() => import("@/pages/QualityRoundingPage"));
 const TracerWorksheetTab = lazy(
@@ -32,7 +32,7 @@ const TracerWorksheetTab = lazy(
 );
 
 interface AuditHubPageProps {
-  setNavigation: (state: any) => void;
+  setNavigation: (state: NavigationState) => void;
 }
 
 type AuditHubTab = "plans" | "log" | "rounding" | "tracers";
@@ -221,9 +221,10 @@ Format your response in clear Markdown with headers and bullet points.`;
       <div className="border-b border-gray-200 dark:border-dark-brand-border">
         <nav
           className="-mb-px flex space-x-4 rtl:space-x-reverse overflow-x-auto"
-          aria-label="Tabs"
+          aria-label={t("qualityAuditWorkspaces")}
         >
           <Button
+            aria-pressed={activeTab === "plans"}
             onClick={() => {
               setActiveTab("plans");
               setSearchTerm("");
@@ -234,6 +235,7 @@ Format your response in clear Markdown with headers and bullet points.`;
             {t("auditPlans")}
           </Button>
           <Button
+            aria-pressed={activeTab === "log"}
             onClick={() => {
               setActiveTab("log");
               setSearchTerm("");
@@ -244,6 +246,7 @@ Format your response in clear Markdown with headers and bullet points.`;
             {t("auditLog")}
           </Button>
           <Button
+            aria-pressed={activeTab === "rounding"}
             onClick={() => setActiveTab("rounding")}
             variant={activeTab === "rounding" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"
@@ -251,6 +254,7 @@ Format your response in clear Markdown with headers and bullet points.`;
             {t("qualityRounding")}
           </Button>
           <Button
+            aria-pressed={activeTab === "tracers"}
             onClick={() => setActiveTab("tracers")}
             variant={activeTab === "tracers" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2 whitespace-nowrap"

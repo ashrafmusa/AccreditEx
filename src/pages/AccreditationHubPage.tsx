@@ -161,6 +161,10 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
 
   return (
     <div className="space-y-6">
+      <header>
+        <h1 className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">{t("qualityProgramTitle")}</h1>
+        <p className="mt-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">{t("qualityProgramHelp")}</p>
+      </header>
       {canModify && (
         <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
           <div className="flex flex-col sm:flex-row gap-3 flex-1 flex-wrap">

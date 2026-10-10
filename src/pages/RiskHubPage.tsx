@@ -1,4 +1,5 @@
 import React, { lazy, Suspense, useState } from "react";
+import { NavigationState } from "@/types";
 import { ExclamationTriangleIcon, PlusIcon } from "../components/icons";
 import CapaReportsTab from "../components/risk/CapaReportsTab";
 import RiskRegisterTab from "../components/risk/RiskRegisterTab";
@@ -26,7 +27,7 @@ type RiskHubTab =
   | "rca"
   | "aiTools";
 
-const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
+const RiskHubPage: React.FC<{ setNavigation: (state: NavigationState) => void }> = ({
   setNavigation,
 }) => {
   const { t } = useTranslation();
@@ -59,7 +60,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center space-x-3 rtl:space-x-reverse">
           <ExclamationTriangleIcon className="h-8 w-8 text-brand-primary" />
           <div>
@@ -76,17 +77,18 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
           onClick={() => setIsWorkflowOpen(true)}
           className="whitespace-nowrap"
         >
-          <PlusIcon className="w-4 h-4 mr-2" />
+          <PlusIcon className="w-4 h-4 ltr:mr-2 rtl:ml-2" />
           {t("newIncident") || "New Incident"}
         </Button>
       </div>
 
       <div className="border-b border-gray-200 dark:border-dark-brand-border">
         <nav
-          className="-mb-px flex space-x-4 rtl:space-x-reverse"
-          aria-label="Tabs"
+          className="-mb-px flex gap-2 overflow-x-auto pb-1 [&>button]:shrink-0 [&>button]:whitespace-nowrap"
+          aria-label={t("qualityRiskWorkspaces")}
         >
           <Button
+            aria-pressed={activeTab === "register"}
             onClick={() => setActiveTab("register")}
             variant={activeTab === "register" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
@@ -95,6 +97,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("riskRegister")}
           </Button>
           <Button
+            aria-pressed={activeTab === "capa"}
             onClick={() => setActiveTab("capa")}
             variant={activeTab === "capa" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
@@ -102,6 +105,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("capaReports")}
           </Button>
           <Button
+            aria-pressed={activeTab === "incidents"}
             onClick={() => setActiveTab("incidents")}
             variant={activeTab === "incidents" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
@@ -109,6 +113,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("incidentReporting")}
           </Button>
           <Button
+            aria-pressed={activeTab === "trending"}
             onClick={() => setActiveTab("trending")}
             variant={activeTab === "trending" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
@@ -116,6 +121,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("incidentTrending")}
           </Button>
           <Button
+            aria-pressed={activeTab === "checks"}
             onClick={() => setActiveTab("checks")}
             variant={activeTab === "checks" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
@@ -123,6 +129,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("effectivenessChecks")}
           </Button>
           <Button
+            aria-pressed={activeTab === "rca"}
             onClick={() => setActiveTab("rca")}
             variant={activeTab === "rca" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"
@@ -130,6 +137,7 @@ const RiskHubPage: React.FC<{ setNavigation: (state: any) => void }> = ({
             {t("rcaToolTitle")}
           </Button>
           <Button
+            aria-pressed={activeTab === "aiTools"}
             onClick={() => setActiveTab("aiTools")}
             variant={activeTab === "aiTools" ? "primary" : "ghost"}
             className="rounded-t-lg border-b-2"

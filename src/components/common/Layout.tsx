@@ -19,6 +19,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { logger } from "@/services/logger";
+import AccreditationJourneyGuide from "./AccreditationJourneyGuide";
 
 // Lazy-load TourController — manages all tours via centralized registry
 const TourController = lazy(() =>
@@ -236,6 +237,7 @@ const Layout: React.FC<LayoutProps> = ({
                   setNavigation={setNavigation}
                 />
               )}
+              <AccreditationJourneyGuide navigation={navigation} setNavigation={setNavigation} />
               {children}
             </div>
           </main>
