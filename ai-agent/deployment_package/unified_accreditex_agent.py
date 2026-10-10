@@ -27,7 +27,7 @@ from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
 from agent_utils import build_workspace_snapshot
-from skills.response_standard import STANDARD_RESPONSE_RULES, apply_response_language, build_standard_response
+from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, apply_response_language, build_standard_response, response_token_budget
 
 # Import specialist prompts (Quick Win 1)
 from specialist_prompts import (
@@ -796,6 +796,8 @@ Always be specific and actionable, using real data from their workspace.
                         full_response += chunk
                         yield chunk
 
+                    if TRUNCATED_RESPONSE_MARKER in full_response:
+                        return
                     self.conversations[thread_id].append({"role": "assistant", "content": full_response})
                     latency_ms = (time.perf_counter() - routing_start) * 1000
                     self._record_routing_metric(task_type, route_mode, latency_ms, success=True)
@@ -817,11 +819,15 @@ Always be specific and actionable, using real data from their workspace.
             stream = await self._create_completion(
                 messages=self.conversations[thread_id],
                 stream=True,
-                max_tokens=1024,
+                max_tokens=response_token_budget(has_context),
                 temperature=0.7,
             )
 
             async for chunk in stream:
+                if chunk.choices[0].finish_reason == "length":
+                    logger.error("AI response exceeded its token budget; refusing to cache incomplete content")
+                    yield TRUNCATED_RESPONSE_MARKER
+                    return
                 if chunk.choices[0].delta.content:
                     content = chunk.choices[0].delta.content
                     full_response += content

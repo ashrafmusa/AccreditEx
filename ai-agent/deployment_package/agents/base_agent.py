@@ -28,7 +28,7 @@ from agent_utils import (
 # Import the markdown skill we just created. 
 # Adjust the import path depending on where you saved the Markdown Formatting Skill file.
 from skills.markdown_formatting import get_markdown_formatting_skill
-from skills.response_standard import STANDARD_RESPONSE_RULES, apply_response_language
+from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, apply_response_language, response_token_budget
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +195,7 @@ class BaseSpecialistAgent(ABC):
                     model=self.model,
                     messages=messages,
                     temperature=self.temperature,
-                    max_tokens=self.max_tokens,
+                    max_tokens=max(self.max_tokens, response_token_budget(bool(context and context.get("current_data")))),
                     stream=stream
                 )
             except Exception as rate_err:
@@ -206,7 +206,7 @@ class BaseSpecialistAgent(ABC):
                         model=self.fallback_model,
                         messages=messages,
                         temperature=self.temperature,
-                        max_tokens=self.max_tokens,
+                        max_tokens=max(self.max_tokens, response_token_budget(bool(context and context.get("current_data")))),
                         stream=stream
                     )
                 else:
@@ -214,9 +214,17 @@ class BaseSpecialistAgent(ABC):
             
             if stream:
                 async for chunk in stream_response:
+                    if chunk.choices[0].finish_reason == "length":
+                        self.log.warning("response_truncated")
+                        yield TRUNCATED_RESPONSE_MARKER
+                        return
                     if chunk.choices[0].delta.content:
                         yield chunk.choices[0].delta.content
             else:
+                if stream_response.choices[0].finish_reason == "length":
+                    self.log.warning("response_truncated")
+                    yield TRUNCATED_RESPONSE_MARKER
+                    return
                 response = stream_response.choices[0].message.content
                 yield response
                 

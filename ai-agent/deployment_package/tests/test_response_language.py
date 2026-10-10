@@ -1,10 +1,17 @@
 """Regression tests for per-turn AI response language selection."""
 import unittest
 
-from skills.response_standard import apply_response_language
+from skills.response_standard import STANDARD_RESPONSE_RULES, apply_response_language, response_token_budget
 
 
 class TestResponseLanguage(unittest.TestCase):
+    def test_document_requests_receive_larger_token_budget(self):
+        self.assertEqual(response_token_budget(False), 8192)
+        self.assertEqual(response_token_budget(True), 1024)
+
+    def test_explicit_structured_output_overrides_markdown(self):
+        self.assertIn("return only that format", STANDARD_RESPONSE_RULES)
+        self.assertIn("Do not add a summary", STANDARD_RESPONSE_RULES)
     def test_english_question_overrides_arabic_history_and_workspace(self):
         # Arrange
         messages = [

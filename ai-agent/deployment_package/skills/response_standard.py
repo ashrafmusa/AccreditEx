@@ -18,6 +18,7 @@ RESPONSE STANDARD (AccreditEx - mandatory):
 - Reply in the language of the latest user request: English in, English out; Arabic in, Arabic out.
 - An explicit output-language request takes precedence. Never choose the response language from workspace data, the interface locale, or earlier conversation turns.
 - Use GitHub-flavoured Markdown. Start with a one or two sentence plain summary (no heading).
+- Exception: when the latest request specifies JSON, HTML, or plain text, return only that format. Do not add a summary, Markdown sections, commentary, or code fences around structured output.
 - For analyses, plans and assessments use "## " sections in this order, skipping any that do not apply:
   ## Findings, ## Recommended Actions, ## Next Steps
   Domain sections (e.g. ## Root Cause, ## Timeline) may sit between Findings and Recommended Actions.
@@ -29,6 +30,12 @@ RESPONSE STANDARD (AccreditEx - mandatory):
 """
 
 SCHEMA_VERSION = "ai-response/1"
+TRUNCATED_RESPONSE_MARKER = "[ACCREDITEX_RESPONSE_TRUNCATED]"
+
+
+def response_token_budget(has_workspace_context: bool) -> int:
+    """Document/editor requests need space for complete documents and structured analysis."""
+    return 1024 if has_workspace_context else 8192
 
 _ACTION_BLOCK_RE = re.compile(r"`{1,3}\s*accreditex-action\s*\n?(.*?)`{1,3}", re.DOTALL | re.IGNORECASE)
 _HEADING_RE = re.compile(r"^\s{0,3}(#{1,4})\s+(.+?)\s*#*\s*$")

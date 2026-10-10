@@ -35,3 +35,9 @@ The shared completion client and specialist agents apply this rule on each reque
 
 Run the language regression tests from this directory:
 `python -B -m unittest discover -s tests -p test_response_language.py -v`
+
+Document/editor chat requests without workspace context receive an 8,192-token
+output budget rather than the 1,024-token conversational limit. Explicit JSON,
+HTML, and text requests override the default Markdown response structure.
+Token-limit termination is marked as incomplete and is not cached as a successful
+answer; the frontend rejects this marker instead of presenting a complete draft.

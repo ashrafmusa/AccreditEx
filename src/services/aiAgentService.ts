@@ -529,6 +529,9 @@ export class AIAgentService {
             } else if (contentType?.includes('text/plain')) {
                 // Handle plain text response (streaming as plain text)
                 const text = await response.text();
+                if (text.includes('[ACCREDITEX_RESPONSE_TRUNCATED]')) {
+                    throw new Error('AI response was cut off before completion. Please retry with a shorter document.');
+                }
                 console.log('📝 Plain text response received, length:', text.length);
 
                 const result: ChatResponse = {

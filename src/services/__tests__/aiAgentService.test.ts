@@ -86,6 +86,17 @@ describe('AIAgentService', () => {
     // ─────────────────────────────────────────────────────────────
 
     describe('Chat', () => {
+        it('rejects a token-truncated plain-text response instead of returning a partial document', async () => {
+            // Arrange
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                headers: new Headers({ 'content-type': 'text/plain' }),
+                text: async () => '<p>Partial policy[ACCREDITEX_RESPONSE_TRUNCATED]',
+            });
+            // Act / Assert
+            await expect(service.chat('Generate a full policy', false))
+                .rejects.toThrow('AI response was cut off before completion');
+        });
         const mockChatResponse: ChatResponse = {
             response: 'This is a test response from AI',
             thread_id: 'thread-123',
