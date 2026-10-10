@@ -333,6 +333,8 @@ class TestGroundedModelPrompts(unittest.IsolatedAsyncioTestCase):
                 agent = Mock()
                 agent.conversations = {}
                 agent.strict_specialist_routing = strict
+                agent.model = "openai/gpt-oss-120b"
+                agent.fast_model = "openai/gpt-oss-20b"
                 agent.detect_task_type.return_value = "compliance"
                 agent.context_manager.get_context.return_value = {"current_data": {"unrelated": True}}
                 agent._get_organization_context = AsyncMock(return_value={})
@@ -365,6 +367,9 @@ class TestGroundedModelPrompts(unittest.IsolatedAsyncioTestCase):
                 if lightweight:
                     agent.route_to_specialist.assert_not_called()
                     self.assertEqual(agent.conversations, {})
+                    self.assertEqual(agent._create_completion.call_args.kwargs["model"], agent.model)
+                elif not strict:
+                    self.assertEqual(agent._create_completion.call_args.kwargs["model"], agent.fast_model)
 
     async def test_lightweight_reserves_document_output_without_inheriting_or_retaining_history(self):
         # Arrange: production prompts and actual budget estimator, with only the provider mocked.
