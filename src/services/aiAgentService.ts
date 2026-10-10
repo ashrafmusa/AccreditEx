@@ -519,6 +519,7 @@ export class AIAgentService {
                     }
                 }
 
+                this.validateChatText(fullResponse);
                 const result: ChatResponse = {
                     response: fullResponse,
                     thread_id: this.threadId || '',
@@ -529,9 +530,7 @@ export class AIAgentService {
             } else if (contentType?.includes('text/plain')) {
                 // Handle plain text response (streaming as plain text)
                 const text = await response.text();
-                if (text.includes('[ACCREDITEX_RESPONSE_TRUNCATED]')) {
-                    throw new Error('AI response was cut off before completion. Please retry with a shorter document.');
-                }
+                this.validateChatText(text);
                 console.log('📝 Plain text response received, length:', text.length);
 
                 const result: ChatResponse = {
@@ -544,6 +543,7 @@ export class AIAgentService {
             } else {
                 // Handle regular JSON response
                 const result: ChatResponse = await response.json();
+                this.validateChatText(result.response);
 
                 // Store thread ID for conversation continuity
                 if (result.thread_id) {
@@ -555,6 +555,15 @@ export class AIAgentService {
         } catch (error) {
             console.error('AI Agent chat error:', error);
             throw error;
+        }
+    }
+
+    private validateChatText(text: string): void {
+        if (text.includes('[ACCREDITEX_RESPONSE_TRUNCATED]')) {
+            throw new Error('AI response was cut off before completion. Please retry with a shorter document.');
+        }
+        if (text.includes('[ACCREDITEX_RESPONSE_FAILED]') || /^Error:/i.test(text.trim())) {
+            throw new Error('AI could not complete this request. Please retry shortly or use a shorter document.');
         }
     }
 

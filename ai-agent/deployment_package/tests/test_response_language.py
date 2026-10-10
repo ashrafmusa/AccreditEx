@@ -6,8 +6,20 @@ from skills.response_standard import STANDARD_RESPONSE_RULES, apply_response_lan
 
 class TestResponseLanguage(unittest.TestCase):
     def test_document_requests_receive_larger_token_budget(self):
-        self.assertEqual(response_token_budget(False), 8192)
+        self.assertEqual(response_token_budget(False), 6144)
         self.assertEqual(response_token_budget(True), 1024)
+
+    def test_document_input_and_output_fit_provider_limit(self):
+        for text in ("x" * 18000, "\u0627" * 9000):
+            messages = [{"role": "user", "content": text}]
+            budget = response_token_budget(False, messages)
+            estimate = (len(text.encode("utf-8")) + 2) // 3 + 16
+            self.assertLessEqual(estimate + budget, 7500)
+            self.assertGreaterEqual(budget, 512)
+
+    def test_oversized_input_is_rejected_not_silently_cut(self):
+        with self.assertRaisesRegex(ValueError, "shorter section"):
+            response_token_budget(False, [{"role": "user", "content": "x" * 24000}])
 
     def test_explicit_structured_output_overrides_markdown(self):
         self.assertIn("return only that format", STANDARD_RESPONSE_RULES)

@@ -36,8 +36,15 @@ The shared completion client and specialist agents apply this rule on each reque
 Run the language regression tests from this directory:
 `python -B -m unittest discover -s tests -p test_response_language.py -v`
 
-Document/editor chat requests without workspace context receive an 8,192-token
-output budget rather than the 1,024-token conversational limit. Explicit JSON,
+Document/editor chat requests without workspace context receive up to 6,144
+output tokens rather than the 1,024-token conversational limit. Both paths reserve
+space for the complete input using a conservative UTF-8 estimate, keeping the
+estimated input plus output below 7,500 tokens for the observed 8,000-token
+provider limit. Oversized inputs are rejected rather than silently shortened.
+This does not eliminate rate limits from concurrent requests or guarantee exact
+tokenizer counts. Explicit JSON,
 HTML, and text requests override the default Markdown response structure.
 Token-limit termination is marked as incomplete and is not cached as a successful
 answer; the frontend rejects this marker instead of presenting a complete draft.
+Provider failures emit a separate failure marker, not a successful document or
+analysis. The frontend also rejects legacy plain-text `Error:` responses.

@@ -31,11 +31,18 @@ RESPONSE STANDARD (AccreditEx - mandatory):
 
 SCHEMA_VERSION = "ai-response/1"
 TRUNCATED_RESPONSE_MARKER = "[ACCREDITEX_RESPONSE_TRUNCATED]"
+FAILED_RESPONSE_MARKER = "[ACCREDITEX_RESPONSE_FAILED]"
 
 
-def response_token_budget(has_workspace_context: bool) -> int:
-    """Document/editor requests need space for complete documents and structured analysis."""
-    return 1024 if has_workspace_context else 8192
+def response_token_budget(has_workspace_context: bool, messages: Optional[List[Dict[str, Any]]] = None) -> int:
+    """Reserve input and output within the observed 8,000-token provider limit."""
+    requested = 1024 if has_workspace_context else 6144
+    # Conservative UTF-8 estimate, with headroom for tokenizer and message overhead.
+    input_tokens = sum((len(str(m.get("content", "")).encode("utf-8")) + 2) // 3 + 16 for m in (messages or []))
+    available = 7500 - input_tokens
+    if available < 512:
+        raise ValueError("Document exceeds the AI request budget. Please analyze a shorter section.")
+    return min(requested, available)
 
 _ACTION_BLOCK_RE = re.compile(r"`{1,3}\s*accreditex-action\s*\n?(.*?)`{1,3}", re.DOTALL | re.IGNORECASE)
 _HEADING_RE = re.compile(r"^\s{0,3}(#{1,4})\s+(.+?)\s*#*\s*$")

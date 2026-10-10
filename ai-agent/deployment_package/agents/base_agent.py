@@ -28,7 +28,7 @@ from agent_utils import (
 # Import the markdown skill we just created. 
 # Adjust the import path depending on where you saved the Markdown Formatting Skill file.
 from skills.markdown_formatting import get_markdown_formatting_skill
-from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, apply_response_language, response_token_budget
+from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, FAILED_RESPONSE_MARKER, apply_response_language, response_token_budget
 
 logger = logging.getLogger(__name__)
 
@@ -195,7 +195,7 @@ class BaseSpecialistAgent(ABC):
                     model=self.model,
                     messages=messages,
                     temperature=self.temperature,
-                    max_tokens=max(self.max_tokens, response_token_budget(bool(context and context.get("current_data")))),
+                    max_tokens=response_token_budget(bool(context and context.get("current_data")), messages),
                     stream=stream
                 )
             except Exception as rate_err:
@@ -206,7 +206,7 @@ class BaseSpecialistAgent(ABC):
                         model=self.fallback_model,
                         messages=messages,
                         temperature=self.temperature,
-                        max_tokens=max(self.max_tokens, response_token_budget(bool(context and context.get("current_data")))),
+                        max_tokens=response_token_budget(bool(context and context.get("current_data")), messages),
                         stream=stream
                     )
                 else:
@@ -230,10 +230,10 @@ class BaseSpecialistAgent(ABC):
                 
         except RateLimitExceeded as e:
             self.log.warning("rate_limited", user_id=e.user_id)
-            yield f"Error: {str(e)}"
+            yield FAILED_RESPONSE_MARKER
         except Exception as e:
             self.log.error("chat_failed", agent=self.get_specialist_name(), error=e)
-            yield f"Error: {str(e)}"
+            yield FAILED_RESPONSE_MARKER
     
     async def process_request(
         self, 

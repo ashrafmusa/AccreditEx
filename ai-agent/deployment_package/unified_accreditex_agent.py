@@ -27,7 +27,7 @@ from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
 from agent_utils import build_workspace_snapshot
-from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, apply_response_language, build_standard_response, response_token_budget
+from skills.response_standard import STANDARD_RESPONSE_RULES, TRUNCATED_RESPONSE_MARKER, FAILED_RESPONSE_MARKER, apply_response_language, build_standard_response, response_token_budget
 
 # Import specialist prompts (Quick Win 1)
 from specialist_prompts import (
@@ -796,7 +796,7 @@ Always be specific and actionable, using real data from their workspace.
                         full_response += chunk
                         yield chunk
 
-                    if TRUNCATED_RESPONSE_MARKER in full_response:
+                    if TRUNCATED_RESPONSE_MARKER in full_response or FAILED_RESPONSE_MARKER in full_response:
                         return
                     self.conversations[thread_id].append({"role": "assistant", "content": full_response})
                     latency_ms = (time.perf_counter() - routing_start) * 1000
@@ -819,7 +819,7 @@ Always be specific and actionable, using real data from their workspace.
             stream = await self._create_completion(
                 messages=self.conversations[thread_id],
                 stream=True,
-                max_tokens=response_token_budget(has_context),
+                max_tokens=response_token_budget(has_context, apply_response_language(self.conversations[thread_id])),
                 temperature=0.7,
             )
 
@@ -843,7 +843,7 @@ Always be specific and actionable, using real data from their workspace.
         except Exception as e:
             logger.error(f"Chat error: {e}")
             self._record_routing_metric('general', 'legacy', 0.0, success=False)
-            yield "I'm sorry, I hit a temporary problem generating a response. Please try again in a moment."
+            yield FAILED_RESPONSE_MARKER
 
     async def check_document_compliance(self, document_type: str, standard: str, content_summary: str, requirements: Optional[List[str]] = None) -> Dict[str, Any]:
         """Check if a document meets specific standards"""

@@ -86,6 +86,19 @@ describe('AIAgentService', () => {
     // ─────────────────────────────────────────────────────────────
 
     describe('Chat', () => {
+        it.each(['[ACCREDITEX_RESPONSE_FAILED]', 'Error: provider rate_limit_exceeded'])(
+            'rejects provider failure text: %s', async (text) => {
+                // Arrange
+                (global.fetch as jest.Mock).mockResolvedValueOnce({
+                    ok: true,
+                    headers: new Headers({ 'content-type': 'text/plain' }),
+                    text: async () => text,
+                });
+                // Act / Assert
+                await expect(service.chat('Analyze document', false))
+                    .rejects.toThrow('AI could not complete this request');
+            },
+        );
         it('rejects a token-truncated plain-text response instead of returning a partial document', async () => {
             // Arrange
             (global.fetch as jest.Mock).mockResolvedValueOnce({
