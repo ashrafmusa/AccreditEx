@@ -14,7 +14,7 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
 import { ProjectTemplate } from "@/types/templates";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { WizardData } from "./useProjectWizard";
 
 interface Step1TemplateBasicsProps {
@@ -36,9 +36,18 @@ export const Step1TemplateBasics: React.FC<Step1TemplateBasicsProps> = ({
   templates,
   applyTemplate,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const toast = useToast();
   const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
+  const latest = useRef(data);
+  latest.current = data;
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
   const [showTemplates, setShowTemplates] = useState(
     !data.templateId && !data.projectName,
   );
@@ -91,11 +100,22 @@ Write a clear, professional 2-3 sentence project description that:
 
 Return ONLY the description text, no headers or formatting.`;
 
-      const response = await aiAgentService.chat(prompt, true);
+      const response = await aiAgentService.chat(
+        `${prompt}\nRespond in ${lang === "ar" ? "Arabic" : "English"}. Do not claim verified compliance or invent selected standards.`,
+        true,
+      );
+      if (!active.current) return;
+      if (
+        latest.current.projectName !== data.projectName ||
+        latest.current.programId !== data.programId ||
+        latest.current.description !== data.description
+      )
+        throw new Error("Project changed during AI generation");
       const cleanDesc = (response.response || "")
         .replace(/^#+\s*/gm, "")
         .replace(/\*\*/g, "")
         .trim();
+      if (!cleanDesc) throw new Error("AI description is empty");
 
       updateData({ description: cleanDesc.slice(0, 1000) });
       touchField("description");
@@ -104,12 +124,13 @@ Return ONLY the description text, no headers or formatting.`;
       );
     } catch (error) {
       console.error("AI description generation error:", error);
-      toast.error(
-        t("failedToGenerateDescription") ||
-          "Failed to generate description. Please try again.",
-      );
+      if (active.current)
+        toast.error(
+          t("failedToGenerateDescription") ||
+            "Failed to generate description. Please try again.",
+        );
     } finally {
-      setIsGeneratingDesc(false);
+      if (active.current) setIsGeneratingDesc(false);
     }
   };
 
@@ -126,7 +147,7 @@ Return ONLY the description text, no headers or formatting.`;
    * Start from scratch
    */
   const handleStartFromScratch = () => {
-    // applyTemplate with null is not needed - just close templates view
+    updateData({ templateId: null, checklistItems: [], standardIds: [] });
     setShowTemplates(false);
   };
 
@@ -276,7 +297,7 @@ Return ONLY the description text, no headers or formatting.`;
           }
         />
         {validationErrors.projectName && touched.projectName && (
-          <ErrorMessage message={validationErrors.projectName} />
+          <ErrorMessage message={t(validationErrors.projectName)} />
         )}
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
           {data.projectName.length}/200 {t("characters")}
@@ -290,10 +311,7 @@ Return ONLY the description text, no headers or formatting.`;
             htmlFor="description"
             className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary"
           >
-            {t("projectDescription")}{" "}
-            <span className="text-xs text-brand-text-secondary">
-              ({t("optional")})
-            </span>
+            {t("projectDescription")}
           </label>
           <Button
             type="button"
@@ -331,7 +349,7 @@ Return ONLY the description text, no headers or formatting.`;
           }`}
         />
         {validationErrors.description && touched.description && (
-          <ErrorMessage message={validationErrors.description} />
+          <ErrorMessage message={t(validationErrors.description)} />
         )}
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
           {data.description.length}/1000 {t("characters")}

@@ -20,7 +20,13 @@ import {
 } from "@/components/icons";
 import { Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
-import { AccreditationProgram, Standard, User } from "@/types";
+import {
+  AccreditationProgram,
+  ChecklistItem,
+  Department,
+  Standard,
+  User,
+} from "@/types";
 import { ProjectTemplate } from "@/types/templates";
 import React, { useContext } from "react";
 import { WizardData } from "./useProjectWizard";
@@ -32,7 +38,8 @@ interface Step4ReviewConfirmProps {
   programs: AccreditationProgram[];
   allStandards: Standard[];
   templates: ProjectTemplate[];
-  departments: any[];
+  departments: Department[];
+  checklist: ChecklistItem[];
 }
 
 export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
@@ -43,6 +50,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
   allStandards,
   templates,
   departments,
+  checklist,
 }) => {
   const { t } = useTranslation();
   const { lang } = useContext(LanguageContext);
@@ -54,8 +62,9 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
   const selectedTeamMembers = users.filter((u) =>
     data.teamMemberIds.includes(u.id),
   );
-  const selectedStandards = allStandards.filter((s) =>
-    data.standardIds.includes(s.standardId),
+  const selectedStandards = allStandards.filter(
+    (s) =>
+      s.programId === data.programId && data.standardIds.includes(s.standardId),
   );
   const selectedDepartments = departments.filter((d) =>
     data.departmentIds.includes(d.id),
@@ -75,7 +84,8 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
    */
   const formatDate = (date: Date | undefined) => {
     if (!date) return t("notSet") || "Not set";
-    return date.toLocaleDateString("en-US", {
+    if (!Number.isFinite(date.getTime())) return t("setupDateInvalid");
+    return date.toLocaleDateString(lang === "ar" ? "ar" : "en", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -132,7 +142,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
                 {t("projectName")}
               </dt>
               <dd className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mt-1">
-                {data.projectName}
+                {data.projectName.trim()}
               </dd>
             </div>
             {data.description && (
@@ -261,7 +271,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
                       >
                         {typeof dept.name === "string"
                           ? dept.name
-                          : dept.name[lang as "en" | "ar"] || dept.name.en}
+                          : dept.name?.[lang] || dept.name?.en || dept.id}
                       </span>
                     ))}
                   </div>
@@ -310,34 +320,28 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
         </div>
 
         {/* Checklist Preview (if from template) */}
-        {data.checklistItems.length > 0 && (
+        {checklist.length > 0 && (
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-4">
-              📋 {t("checklistPreview")} ({data.checklistItems.length}{" "}
-              {t("items")})
+              📋 {t("checklistPreview")} ({checklist.length} {t("items")})
             </h3>
             <div className="max-h-[300px] overflow-y-auto space-y-2">
-              {data.checklistItems.slice(0, 10).map((item, index) => (
+              {checklist.slice(0, 10).map((item) => (
                 <div
-                  key={item.item || item.title || index}
+                  key={item.id}
                   className="flex items-start gap-2 p-2 rounded bg-brand-surface dark:bg-dark-brand-surface"
                 >
                   <CheckCircleIcon className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary truncate">
-                      {item.item || item.title}
+                      {item.item}
                     </p>
-                    {item.description && (
-                      <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1 line-clamp-2">
-                        {item.description}
-                      </p>
-                    )}
                   </div>
                 </div>
               ))}
-              {data.checklistItems.length > 10 && (
+              {checklist.length > 10 && (
                 <p className="text-xs text-center text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
-                  + {data.checklistItems.length - 10} {t("moreItems")}
+                  + {checklist.length - 10} {t("moreItems")}
                 </p>
               )}
             </div>
@@ -348,9 +352,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
       {/* Confirmation Message */}
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
         <p className="text-sm text-green-700 dark:text-green-300 text-center">
-          ✅{" "}
-          {t("readyToCreateProject") ||
-            'Everything looks good! Click "Create Project" to finalize.'}
+          ✅ {t("setupReviewNotice")}
         </p>
       </div>
     </div>

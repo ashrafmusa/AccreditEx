@@ -22,6 +22,8 @@ interface Step2ProgramStandardsProps {
   touchField: (field: string) => void;
   programs: AccreditationProgram[];
   allStandards: Standard[];
+  lockedProgram?: boolean;
+  conflictingIds?: string[];
 }
 
 export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
@@ -32,8 +34,10 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
   touchField,
   programs,
   allStandards,
+  lockedProgram = false,
+  conflictingIds = [],
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   // A3: local search state for filtering standards
   const [standardSearch, setStandardSearch] = useState("");
@@ -80,10 +84,13 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
    * Handle program selection — also clears search (A3)
    */
   const handleProgramChange = (programId: string) => {
+    if (lockedProgram || programId === data.programId) return;
     updateData({
       programId,
       // Clear standards when program changes
       standardIds: [],
+      templateId: null,
+      checklistItems: [],
     });
     setStandardSearch("");
     touchField("programId");
@@ -105,7 +112,14 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
    * Select all standards
    */
   const handleSelectAll = () => {
-    updateData({ standardIds: relevantStandards.map((std) => std.standardId) });
+    updateData({
+      standardIds: [
+        ...new Set([
+          ...data.standardIds,
+          ...relevantStandards.map((std) => std.standardId),
+        ]),
+      ],
+    });
     touchField("standardIds");
   };
 
@@ -143,6 +157,8 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
           {programs.map((program) => (
             <button
               key={program.id}
+              aria-pressed={data.programId === program.id}
+              disabled={lockedProgram && program.id !== data.programId}
               onClick={() => handleProgramChange(program.id)}
               type="button"
               className={`border-2 rounded-lg p-4 text-left transition-all ${
@@ -173,7 +189,8 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
                     <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
                       {typeof program.description === "string"
                         ? program.description
-                        : (program.description as any).en}
+                        : program.description?.[lang] ||
+                          program.description?.en}
                     </p>
                   )}
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-2">
@@ -190,11 +207,20 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
         </div>
 
         {validationErrors.programId && touched.programId && (
-          <ErrorMessage message={validationErrors.programId} />
+          <ErrorMessage message={t(validationErrors.programId)} />
         )}
       </div>
 
       {/* Standards Selection (Conditional) */}
+      {data.programId && conflictingIds.length > 0 && (
+        <div
+          role="alert"
+          className="rounded-lg border border-amber-300 dark:border-amber-700 p-3 text-sm"
+        >
+          <p>{t("setupStandardConflicts")}</p>
+          <p className="mt-1 break-words">{conflictingIds.join(", ")}</p>
+        </div>
+      )}
       {data.programId && (relevantStandards.length > 0 || standardSearch) && (
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <div className="flex items-center justify-between mb-3">
@@ -235,6 +261,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
           <div className="mb-3">
             <input
               type="text"
+              aria-label={t("searchStandards")}
               value={standardSearch}
               onChange={(e) => setStandardSearch(e.target.value)}
               placeholder={
@@ -299,7 +326,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
                                           : "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400"
                                     }`}
                                   >
-                                    {standard.criticality}
+                                    {t(standard.criticality.toLowerCase())}
                                   </span>
                                 )}
                               </div>
@@ -322,21 +349,22 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
           )}
 
           {validationErrors.standardIds && touched.standardIds && (
-            <ErrorMessage message={validationErrors.standardIds} />
+            <ErrorMessage message={t(validationErrors.standardIds)} />
           )}
         </div>
       )}
 
       {/* No standards message */}
-      {data.programId && relevantStandards.length === 0 && (
-        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-          <p className="text-sm text-yellow-700 dark:text-yellow-300">
-            ⚠️{" "}
-            {t("noStandardsAvailable") ||
-              "No standards are available for this program yet. You can continue and add standards later."}
-          </p>
-        </div>
-      )}
+      {data.programId &&
+        !allStandards.some(
+          (standard) => standard.programId === data.programId,
+        ) && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+            <p className="text-sm text-yellow-700 dark:text-yellow-300">
+              ⚠️ {t("setupNoStandards")}
+            </p>
+          </div>
+        )}
 
       {/* Helper Text */}
       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">

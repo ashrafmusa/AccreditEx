@@ -30,6 +30,7 @@ interface MultiStepWizardProps {
   isSubmitting?: boolean;
   children: React.ReactNode;
   className?: string;
+  completeLabel?: string;
 }
 
 export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
@@ -43,6 +44,7 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
   isSubmitting = false,
   children,
   className = "",
+  completeLabel,
 }) => {
   const { t } = useTranslation();
   const isFirstStep = currentStep === 0;
@@ -50,12 +52,19 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
   const progressPercent = Math.round(((currentStep + 1) / steps.length) * 100);
 
   const handleNext = useCallback(() => {
-    if (isLastStep) {
+    if (isLastStep && canGoNext && !isSubmitting) {
       onComplete();
     } else if (canGoNext) {
       onStepChange(currentStep + 1);
     }
-  }, [currentStep, isLastStep, canGoNext, onStepChange, onComplete]);
+  }, [
+    currentStep,
+    isLastStep,
+    canGoNext,
+    isSubmitting,
+    onStepChange,
+    onComplete,
+  ]);
 
   const handleBack = useCallback(() => {
     if (!isFirstStep && canGoBack) {
@@ -65,11 +74,11 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
 
   const handleStepClick = useCallback(
     (stepIndex: number) => {
-      if (stepIndex < currentStep) {
+      if (!isSubmitting && stepIndex < currentStep) {
         onStepChange(stepIndex);
       }
     },
-    [currentStep, onStepChange],
+    [currentStep, isSubmitting, onStepChange],
   );
 
   return (
@@ -100,7 +109,7 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
         </div>
 
         {/* Step bubbles */}
-        <nav aria-label="Progress">
+        <nav aria-label={t("progress")}>
           <ol className="flex items-start justify-between gap-1">
             {steps.map((step, index) => {
               const isCompleted = index < currentStep;
@@ -112,13 +121,14 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
                   <button
                     type="button"
                     onClick={() => handleStepClick(index)}
-                    disabled={!isClickable}
+                    disabled={!isClickable || isSubmitting}
                     className={`w-full flex flex-col items-center text-center transition-opacity ${
                       isClickable
                         ? "cursor-pointer hover:opacity-80"
                         : "cursor-default"
                     }`}
                     aria-current={isCurrent ? "step" : undefined}
+                    aria-label={step.title}
                   >
                     {/* Circle */}
                     <span
@@ -166,7 +176,7 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
       <div className="px-6 py-6 min-h-[420px]">{children}</div>
 
       {/* ── Navigation Footer ── */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-brand-border dark:border-dark-brand-border bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary rounded-b-lg">
+      <div className="flex flex-wrap gap-2 items-center justify-between px-4 sm:px-6 py-4 border-t border-brand-border dark:border-dark-brand-border bg-brand-surface-secondary dark:bg-dark-brand-surface-secondary rounded-b-lg">
         {/* Back */}
         <div>
           {!isFirstStep ? (
@@ -235,7 +245,7 @@ export const MultiStepWizard: React.FC<MultiStepWizardProps> = ({
             ) : isLastStep ? (
               <>
                 <CheckIcon className="h-4 w-4 mr-1.5" aria-hidden="true" />
-                {t("complete") || "Complete"}
+                {completeLabel || t("complete")}
               </>
             ) : (
               <>

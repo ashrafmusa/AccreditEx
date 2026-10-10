@@ -8,13 +8,18 @@ interface DatePickerProps {
   disabled?: boolean;
   fromDate?: Date;
   toDate?: Date;
+  id?: string;
+  ariaLabel?: string;
 }
 
-const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, disabled, fromDate, toDate }) => {
+const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, disabled, fromDate, toDate, id, ariaLabel }) => {
   const { t, lang } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const [displayDate, setDisplayDate] = useState(date || new Date());
   const wrapperRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (date && Number.isFinite(date.getTime())) setDisplayDate(date);
+  }, [date]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -44,6 +49,9 @@ const DatePicker: React.FC<DatePickerProps> = ({ date, setDate, disabled, fromDa
   return (
     <div className="relative w-full" ref={wrapperRef}>
       <button
+        id={id}
+        aria-label={ariaLabel}
+        aria-expanded={isOpen}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         disabled={disabled}

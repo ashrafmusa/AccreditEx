@@ -1,428 +1,485 @@
-/**
- * CreateProjectWizard - Main Controller
- * Phase 1: Forms & Wizards Enhancement
- * Phase 2: A1 Edit mode, A2 Team roles, A3 Conditional standards
- *
- * Multi-step wizard for project creation AND editing
- */
-
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Step1TemplateBasics } from "@/components/projects/wizard/Step1TemplateBasics";
-import { useConfirmStore } from "@/stores/useConfirmStore";
 import { Step2ProgramStandards } from "@/components/projects/wizard/Step2ProgramStandards";
 import { Step3TeamTimeline } from "@/components/projects/wizard/Step3TeamTimeline";
 import { Step4ReviewConfirm } from "@/components/projects/wizard/Step4ReviewConfirm";
 import {
-  WizardData,
   useProjectWizard,
+  WizardData,
 } from "@/components/projects/wizard/useProjectWizard";
-import { MultiStepWizard, WizardStep } from "@/components/ui/MultiStepWizard";
-import { useToast } from "@/hooks/useToast";
-import { useTranslation } from "@/hooks/useTranslation";
+import { MultiStepWizard } from "@/components/ui/MultiStepWizard";
+import { Button } from "@/components/ui";
+import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useTenantStore } from "@/stores/useTenantStore";
+import { useToast } from "@/hooks/useToast";
+import { useTranslation } from "@/hooks/useTranslation";
+import { Action, Resource, usePermission } from "@/hooks/usePermission";
+import { NavigationState, Project, ProjectStatus } from "@/types";
+import { isEligibleProjectLead } from "@/utils/roleAccess";
 import {
-  ChecklistItem,
-  ComplianceStatus,
-  NavigationState,
-  Project,
-  ProjectStatus,
-} from "@/types";
-import React, { useMemo, useState } from "react";
+  buildProjectChecklist,
+  resolveProjectStandards,
+} from "@/utils/projectSetup";
+import { validateAllSteps } from "@/components/projects/wizard/projectValidation";
 
-interface CreateProjectWizardProps {
+interface Props {
   setNavigation?: (state: NavigationState) => void;
-  /** Present to activate edit mode — pre-fills wizard from existing project */
   projectId?: string;
 }
 
-/**
- * CreateProjectWizard Component
- * 4-step guided project creation + editing
- */
-const CreateProjectWizard: React.FC<CreateProjectWizardProps> = ({
-  setNavigation,
-  projectId,
-}) => {
+const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const { can } = usePermission();
+  const { organizationId } = useTenantStore();
+  const { users: allUsers, currentUser } = useUserStore();
+  const { projects, addProject, updateProject } = useProjectStore();
+  const catalogue = useAppStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Global state
-  const { addProject, updateProject, projects } = useProjectStore();
-  const { users } = useUserStore();
-  const { projectTemplates, accreditationPrograms, standards, departments } =
-    useAppStore();
-  const { showToast } = useToast();
-
-  // A1: Derive edit mode and convert existing project → WizardData initial values
-  const isEditMode = Boolean(projectId);
-  const existingProject = useMemo(
-    () => projects.find((p) => p.id === projectId),
-    [projects, projectId],
-  );
-
-  const initialData = useMemo((): Partial<WizardData> | undefined => {
-    if (!existingProject) return undefined;
-    const leadUser = existingProject.projectLead;
-    return {
-      projectName: existingProject.name,
-      description: existingProject.description || "",
-      programId: existingProject.programId,
-      standardIds: existingProject.standardIds ?? [],
-      leadId: leadUser?.id ?? "",
-      teamMemberIds: existingProject.teamMembers ?? [],
-      teamMemberRoles: existingProject.teamMemberRoles ?? {},
-      departmentIds: existingProject.departmentIds ?? [],
-      startDate: existingProject.startDate
-        ? new Date(existingProject.startDate)
-        : new Date(),
-      endDate: existingProject.endDate
-        ? new Date(existingProject.endDate)
-        : undefined,
-      checklistItems: existingProject.checklist ?? [],
+  const submitting = useRef(false);
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
     };
-  }, [existingProject]);
-
-  // Wizard state management
+  }, []);
+  const isEditMode = Boolean(projectId);
+  const existingProject = projects.find(
+    (project) =>
+      project.id === projectId && project.organizationId === organizationId,
+  );
+  const users = useMemo(
+    () =>
+      allUsers.filter(
+        (user) =>
+          user.organizationId === organizationId && user.isActive !== false,
+      ),
+    [allUsers, organizationId],
+  );
+  const departments = useMemo(
+    () =>
+      catalogue.departments.filter(
+        (dept) =>
+          dept.organizationId === organizationId && dept.isActive !== false,
+      ),
+    [catalogue.departments, organizationId],
+  );
+  const programs = useMemo(
+    () =>
+      catalogue.accreditationPrograms.filter(
+        (program) =>
+          (program.scope === "global" ||
+            program.organizationId === organizationId) &&
+          (program.status === undefined || program.status === "active"),
+      ),
+    [catalogue.accreditationPrograms, organizationId],
+  );
+  const resolvedStandards = useMemo(
+    () =>
+      resolveProjectStandards(
+        catalogue.standards.filter(
+          (standard) =>
+            standard.scope === "global" ||
+            standard.organizationId === organizationId,
+        ),
+      ),
+    [catalogue.standards, organizationId],
+  );
+  const standards = resolvedStandards.standards;
+  const templates = useMemo(
+    () =>
+      catalogue.projectTemplates.filter((template) =>
+        programs.some((program) => program.id === template.programId),
+      ),
+    [catalogue.projectTemplates, programs],
+  );
+  const initialData = useMemo(
+    (): Partial<WizardData> | undefined =>
+      existingProject
+        ? {
+            projectName: existingProject.name,
+            description: existingProject.description || "",
+            programId: existingProject.programId,
+            standardIds: existingProject.standardIds?.length
+              ? existingProject.standardIds
+              : [
+                  ...new Set(
+                    existingProject.checklist
+                      .map((item) => item.standardId)
+                      .filter(Boolean),
+                  ),
+                ],
+            leadId: existingProject.projectLead?.id || "",
+            teamMemberIds: existingProject.teamMembers || [],
+            teamMemberRoles: existingProject.teamMemberRoles || {},
+            departmentIds:
+              existingProject.departmentIds ||
+              (existingProject.departmentId
+                ? [existingProject.departmentId]
+                : []),
+            startDate: new Date(existingProject.startDate),
+            endDate: existingProject.endDate
+              ? new Date(existingProject.endDate)
+              : undefined,
+            checklistItems: existingProject.checklist,
+          }
+        : undefined,
+    [existingProject],
+  );
+  const wizard = useProjectWizard({
+    initialData,
+    isEditMode,
+    draftKey:
+      currentUser && organizationId
+        ? `accreditex_project_setup:${organizationId}:${currentUser.id}`
+        : undefined,
+  });
   const {
-    currentStep,
     data,
-    validationErrors,
-    touched,
+    currentStep,
     updateData,
     touchField,
-    goToNextStep,
-    goToPreviousStep,
+    touched,
+    validationErrors,
     goToStep,
-    applyTemplate,
-    resetWizard,
-    clearDraft,
-    canProceedToNextStep,
-  } = useProjectWizard({ initialData, isEditMode, editProjectId: projectId });
-
-  /**
-   * Define wizard steps
-   */
-  const steps: WizardStep[] = [
-    {
-      id: "basics",
-      title: t("templateAndBasics") || "Template & Basics",
-      description:
-        t("chooseTemplateAndBasicInfo") ||
-        "Choose a template or start from scratch",
-    },
-    {
-      id: "program",
-      title: t("programAndStandards") || "Program & Standards",
-      description:
-        t("selectProgramAndStandards") ||
-        "Select accreditation program and standards",
-    },
-    {
-      id: "team",
-      title: t("teamAndTimeline") || "Team & Timeline",
-      description:
-        t("assignTeamAndSetTimeline") || "Assign project lead and set timeline",
-    },
-    {
-      id: "review",
-      title: t("reviewAndConfirm") || "Review & Confirm",
-      description:
-        t("reviewDetailsBeforeCreating") || "Review all details and confirm",
-    },
+  } = wizard;
+  const selectedTemplate = templates.find(
+    (template) =>
+      template.id === data.templateId && template.programId === data.programId,
+  );
+  const referenceErrors: Record<string, string> = {};
+  if (!programs.some((program) => program.id === data.programId))
+    referenceErrors.programId = "setupProgramUnavailable";
+  if (
+    data.standardIds.some(
+      (id) =>
+        !existingProject?.checklist.some((item) => item.standardId === id) &&
+        !standards.some(
+          (standard) =>
+            standard.programId === data.programId && standard.standardId === id,
+        ),
+    )
+  ) {
+    referenceErrors.standardIds = "setupStandardsUnavailable";
+  }
+  if (
+    !users.some(
+      (user) => user.id === data.leadId && isEligibleProjectLead(user),
+    )
+  )
+    referenceErrors.leadId = "setupLeadUnavailable";
+  if (data.teamMemberIds.some((id) => !users.some((user) => user.id === id)))
+    referenceErrors.teamMemberIds = "setupTeamUnavailable";
+  const responsibilityRoles = new Set([
+    "TeamMember",
+    "Auditor",
+    "Viewer",
+    "ProjectLead",
+  ]);
+  if (
+    data.teamMemberIds.some(
+      (id) =>
+        data.teamMemberRoles[id] &&
+        !responsibilityRoles.has(data.teamMemberRoles[id]),
+    )
+  ) {
+    referenceErrors.teamMemberIds = "setupTeamRolesInvalid";
+  }
+  if (
+    data.departmentIds.some((id) => !departments.some((dept) => dept.id === id))
+  )
+    referenceErrors.departmentIds = "setupDepartmentsUnavailable";
+  if (data.templateId && !selectedTemplate)
+    referenceErrors.templateId = "setupTemplateUnavailable";
+  const stepFields = [
+    ["projectName", "description", "templateId"],
+    ["programId", "standardIds"],
+    ["leadId", "startDate", "endDate", "teamMemberIds", "departmentIds"],
   ];
+  const errors = { ...validationErrors, ...referenceErrors };
+  const validCurrentStep = (
+    currentStep === 3 ? Object.keys(errors) : stepFields[currentStep]
+  ).every((field) => !errors[field]);
+  const checklist = useMemo(() => {
+    const availableIds = data.standardIds.filter((id) =>
+      standards.some(
+        (standard) =>
+          standard.programId === data.programId && standard.standardId === id,
+      ),
+    );
+    return buildProjectChecklist(
+      data.programId,
+      availableIds,
+      standards,
+      selectedTemplate?.checklist || [],
+      existingProject?.checklist || [],
+    );
+  }, [
+    data.programId,
+    data.standardIds,
+    standards,
+    selectedTemplate,
+    existingProject,
+  ]);
+  const allowed =
+    currentUser &&
+    organizationId &&
+    can(isEditMode ? Action.Update : Action.Create, Resource.Project) &&
+    (!isEditMode ||
+      (existingProject &&
+        !existingProject.archived &&
+        existingProject.status !== ProjectStatus.Finalized));
 
-  /**
-   * Build a proper ChecklistItem[] from the wizard state.
-   * - Selected standards → one ChecklistItem each (item = description, standardId set)
-   * - Template checklist items that already have item+standardId are preserved as-is
-   * - Template items without standardId are kept as freeform items
-   */
-  const buildChecklist = (): ChecklistItem[] => {
-    // Separate already-proper ChecklistItems (have item + standardId) from template blobs
-    const existing = (data.checklistItems as any[]).filter(
-      (i) => typeof i.item === "string" && i.standardId,
-    ) as ChecklistItem[];
-    const existingStdIds = new Set(existing.map((i) => i.standardId));
-
-    // Freeform template items (no standardId) — convert title→item, give defaults
-    const freeform: ChecklistItem[] = (data.checklistItems as any[])
-      .filter((i) => !i.standardId)
-      .map((i, idx) => ({
-        id: i.id || `tmpl-${Date.now()}-${idx}`,
-        item: i.item || i.title || "",
-        standardId: "",
-        status: i.status || ComplianceStatus.NotStarted,
-        assignedTo: i.assignedTo || "",
-        dueDate: i.dueDate || "",
-        actionPlan: i.actionPlan || "",
-        notes: i.notes || "",
-        evidenceFiles: i.evidenceFiles || [],
-        comments: i.comments || [],
-        ...(i.departmentId != null ? { departmentId: i.departmentId } : {}),
-      }));
-
-    // Generate one ChecklistItem per selected standard (skip those already covered)
-    const fromStandards: ChecklistItem[] = data.standardIds
-      .filter((stdId) => !existingStdIds.has(stdId))
-      .map((stdId) => {
-        const std =
-          standards.find(
-            (s) => s.standardId === stdId && s.programId === data.programId,
-          ) ?? standards.find((s) => s.standardId === stdId);
-        return {
-          id: `item-${stdId}-${Date.now()}`,
-          item: std?.description || stdId,
-          standardId: stdId,
-          status: ComplianceStatus.NotStarted,
-          assignedTo: "",
-          dueDate: "",
-          actionPlan: "",
-          notes: "",
-          evidenceFiles: [],
-          comments: [],
-        };
-      });
-
-    return [...existing, ...fromStandards, ...freeform];
-  };
-
-  /**
-   * Handle final submission — create OR update depending on mode (A1)
-   */
   const handleSubmit = async () => {
+    if (submitting.current) return;
+    const validation = validateAllSteps(data, isEditMode);
+    if (
+      !allowed ||
+      !validation.isValid ||
+      Object.keys(referenceErrors).length ||
+      !checklist.length ||
+      (existingProject && data.programId !== existingProject.programId)
+    ) {
+      toast.error(t("setupReviewErrors"));
+      return;
+    }
+    submitting.current = true;
     setIsSubmitting(true);
-
     try {
-      // Find user object for projectLead
-      const leadUser = users.find((u) => u.id === data.leadId);
-
-      if (isEditMode && existingProject) {
-        // --- EDIT MODE: Update existing project ---
-        const updatedProject: Project = {
-          ...existingProject,
-          name: data.projectName,
-          description: data.description || "",
-          programId: data.programId,
-          startDate: data.startDate?.toISOString() || existingProject.startDate,
-          endDate: data.endDate?.toISOString(),
-          projectLead: leadUser
-            ? ({
-                id: leadUser.id,
-                name: leadUser.name,
-                email: leadUser.email,
-                role: leadUser.role,
-                departmentId: leadUser.departmentId,
-              } as any)
-            : existingProject.projectLead,
-          teamMembers: data.teamMemberIds,
-          teamMemberRoles: data.teamMemberRoles,
-          departmentIds: data.departmentIds,
-          standardIds: data.standardIds,
-          checklist: buildChecklist(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        await updateProject(updatedProject);
-        showToast(
-          t("projectUpdatedSuccessfully") || "Project updated successfully!",
-          "success",
-        );
+      const lead = users.find((user) => user.id === data.leadId);
+      if (!lead || !data.startDate)
+        throw new Error("Project setup references are unavailable");
+      const memberIds = [...new Set(data.teamMemberIds)].filter(
+        (id) => id !== lead.id,
+      );
+      const projectData = {
+        name: data.projectName.trim(),
+        description: data.description.trim(),
+        programId: data.programId,
+        projectLead: lead,
+        startDate: data.startDate.toISOString(),
+        endDate: data.endDate?.toISOString(),
+        teamMembers: memberIds,
+        teamMemberRoles: Object.fromEntries(
+          memberIds.map((id) => [id, data.teamMemberRoles[id] || "TeamMember"]),
+        ),
+        departmentIds: [...new Set(data.departmentIds)],
+        standardIds: [
+          ...new Set([
+            ...data.standardIds,
+            ...(existingProject?.checklist
+              .map((item) => item.standardId)
+              .filter(Boolean) || []),
+          ]),
+        ],
+        checklist,
+      };
+      let savedId: string;
+      if (existingProject) {
+        await updateProject({ ...existingProject, ...projectData });
+        savedId = existingProject.id;
       } else {
-        // --- CREATE MODE: Add new project ---
-        const newProject: Omit<Project, "id"> = {
-          name: data.projectName,
-          description: data.description || "",
-          programId: data.programId,
-          startDate: data.startDate?.toISOString() || new Date().toISOString(),
-          endDate: data.endDate?.toISOString(),
+        const now = new Date().toISOString();
+        const project: Omit<Project, "id"> = {
+          ...projectData,
           status: ProjectStatus.NotStarted,
           progress: 0,
-          projectLead: leadUser
-            ? ({
-                id: leadUser.id,
-                name: leadUser.name,
-                email: leadUser.email,
-                role: leadUser.role,
-                departmentId: leadUser.departmentId,
-              } as any)
-            : undefined,
-          teamMembers: data.teamMemberIds,
-          teamMemberRoles: data.teamMemberRoles,
-          departmentIds: data.departmentIds,
-          standardIds: data.standardIds,
-          checklist: buildChecklist(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        } as any;
-
-        await addProject(newProject);
-        clearDraft();
-        showToast(
-          t("projectCreatedSuccessfully") || "Project created successfully!",
-          "success",
-        );
+          createdAt: now,
+          updatedAt: now,
+        };
+        const saved = await addProject(project);
+        savedId = saved.id;
       }
-
-      // Navigate to projects list
-      setNavigation?.({ view: "projects" });
+      wizard.clearDraft();
+      if (active.current) {
+        toast.success(
+          t(
+            isEditMode
+              ? "projectUpdatedSuccessfully"
+              : "projectCreatedSuccessfully",
+          ),
+        );
+        setNavigation?.({ view: "projectDetail", projectId: savedId });
+      }
     } catch (error) {
-      console.error("Error saving project:", error);
-      showToast(
-        t("errorSavingProject") || "Error saving project. Please try again.",
-        "error",
-      );
+      console.error("Project setup save failed:", error);
+      if (active.current) toast.error(t("errorSavingProject"));
     } finally {
+      submitting.current = false;
       setIsSubmitting(false);
     }
   };
-
-  /**
-   * Handle cancel
-   */
   const handleCancel = async () => {
-    if (data.projectName || data.description) {
-      // Show confirmation if user has entered data
-      const confirmMsg = isEditMode
-        ? t("confirmCancelEdit") || "Discard unsaved changes?"
-        : t("confirmCancelWizard") ||
-          "Are you sure you want to cancel? Your draft is saved and you can resume later.";
-      if (
-        !(await useConfirmStore
-          .getState()
-          .confirm(
-            confirmMsg,
-            t("cancelProject") || "Cancel",
-            t("discard") || "Discard",
-          ))
-      )
-        return;
-    }
-
+    if (isSubmitting) return;
+    if (
+      (data.projectName || data.description) &&
+      !(await useConfirmStore
+        .getState()
+        .confirm(
+          t(isEditMode ? "confirmCancelEdit" : "setupLeaveConfirm"),
+          t("cancelProject"),
+          t("cancel"),
+        ))
+    )
+      return;
+    wizard.saveDraft();
     setNavigation?.({ view: "projects" });
   };
-
-  /**
-   * Render current step
-   */
-  const renderStep = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <Step1TemplateBasics
-            data={data}
-            updateData={updateData}
-            validationErrors={validationErrors}
-            touched={touched}
-            touchField={touchField}
-            templates={projectTemplates}
-            applyTemplate={applyTemplate}
-          />
-        );
-
-      case 1:
-        return (
-          <Step2ProgramStandards
-            data={data}
-            updateData={updateData}
-            validationErrors={validationErrors}
-            touched={touched}
-            touchField={touchField}
-            programs={accreditationPrograms}
-            allStandards={standards}
-          />
-        );
-
-      case 2:
-        return (
-          <Step3TeamTimeline
-            data={data}
-            updateData={updateData}
-            validationErrors={validationErrors}
-            touched={touched}
-            touchField={touchField}
-            users={users}
-            departments={departments}
-          />
-        );
-
-      case 3:
-        return (
-          <Step4ReviewConfirm
-            data={data}
-            goToStep={goToStep}
-            users={users}
-            programs={accreditationPrograms}
-            allStandards={standards}
-            templates={projectTemplates}
-            departments={departments}
-          />
-        );
-
-      default:
-        return null;
-    }
+  if (!allowed)
+    return (
+      <div role="alert" className="p-6 space-y-4">
+        <p>{t("setupUnavailable")}</p>
+        <Button onClick={() => setNavigation?.({ view: "projects" })}>
+          {t("projectBackToList")}
+        </Button>
+      </div>
+    );
+  const shared = {
+    data,
+    updateData,
+    validationErrors: errors,
+    touched,
+    touchField,
   };
-
+  const steps = [
+    { id: "basics", title: t("templateAndBasics") },
+    { id: "program", title: t("programAndStandards") },
+    { id: "team", title: t("teamAndTimeline") },
+    { id: "review", title: t("reviewAndConfirm") },
+  ];
   return (
-    <div className="min-h-screen bg-brand-background dark:bg-dark-brand-background py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Page heading — changes based on create vs. edit mode (A1) */}
-        <div className="mb-5 flex items-start gap-4">
-          <button
-            type="button"
-            onClick={() => setNavigation?.({ view: "projects" })}
-            className="mt-1 flex-shrink-0 p-1.5 rounded-lg text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-brand-surface-secondary dark:hover:bg-dark-brand-surface-secondary hover:text-brand-text-primary dark:hover:text-dark-brand-text-primary transition-colors"
-            aria-label={t("back") || "Back"}
+    <div className="bg-brand-background dark:bg-dark-brand-background py-6 px-2 sm:px-4">
+      <div className="max-w-4xl mx-auto space-y-4">
+        <div className="flex items-start gap-3">
+          <Button
+            variant="ghost"
+            disabled={isSubmitting}
+            onClick={handleCancel}
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18"
-              />
-            </svg>
-          </button>
+            {t("back")}
+          </Button>
           <div>
-            <h1 className="text-2xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
-              {isEditMode
-                ? t("editProject") || "Edit Project"
-                : t("createNewProject") || "Create New Project"}
+            <h1 className="text-2xl font-bold">
+              {t(isEditMode ? "editProject" : "createNewProject")}
             </h1>
-            {isEditMode && existingProject ? (
-              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
-                {existingProject.name}
-              </p>
-            ) : (
-              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
-                {t("createProjectSubtitle") ||
-                  "Fill in the details below to set up your accreditation project."}
-              </p>
-            )}
+            <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+              {t("setupJourney")}
+            </p>
           </div>
         </div>
+        {!isEditMode && (
+          <div className="flex flex-wrap justify-between items-center gap-2 rounded-lg border border-brand-border dark:border-dark-brand-border p-3">
+            <p role={wizard.draftStatus === "failed" ? "alert" : "status"}>
+              {t(`setupDraft_${wizard.draftStatus}`)}
+            </p>
+            <Button
+              variant="ghost"
+              disabled={isSubmitting}
+              onClick={async () => {
+                if (
+                  await useConfirmStore
+                    .getState()
+                    .confirm(
+                      t("setupResetConfirm"),
+                      t("setupReset"),
+                      t("setupReset"),
+                    )
+                )
+                  wizard.resetWizard();
+              }}
+            >
+              {t("setupReset")}
+            </Button>
+          </div>
+        )}
+        {isEditMode && <p className="text-sm">{t("setupEditPreserves")}</p>}
         <MultiStepWizard
           steps={steps}
           currentStep={currentStep}
-          onStepChange={(step: number) => goToStep(step)}
+          onStepChange={goToStep}
           onComplete={handleSubmit}
           onCancel={handleCancel}
-          canGoNext={canProceedToNextStep()}
-          canGoBack={true}
+          canGoNext={wizard.canProceedToNextStep() && validCurrentStep}
           isSubmitting={isSubmitting}
-          className="bg-brand-surface dark:bg-dark-brand-surface shadow-xl rounded-xl overflow-hidden"
+          completeLabel={t(isEditMode ? "saveChanges" : "createProject")}
+          className="bg-brand-surface dark:bg-dark-brand-surface shadow rounded-xl"
         >
-          {renderStep()}
+          <fieldset disabled={isSubmitting} className="min-w-0">
+            {currentStep === 0 && (
+              <Step1TemplateBasics
+                {...shared}
+                templates={templates}
+                applyTemplate={wizard.applyTemplate}
+              />
+            )}
+            {currentStep === 1 && (
+              <Step2ProgramStandards
+                {...shared}
+                programs={programs}
+                allStandards={standards}
+                lockedProgram={isEditMode}
+                conflictingIds={resolvedStandards.conflicts
+                  .filter((record) => record.programId === data.programId)
+                  .map((record) => record.standardId)}
+              />
+            )}
+            {currentStep === 2 && (
+              <Step3TeamTimeline
+                {...shared}
+                users={users}
+                departments={departments}
+                isEditMode={isEditMode}
+              />
+            )}
+            {currentStep === 3 && (
+              <Step4ReviewConfirm
+                data={data}
+                goToStep={goToStep}
+                users={users}
+                programs={programs}
+                allStandards={standards}
+                templates={templates}
+                departments={departments}
+                checklist={checklist}
+              />
+            )}
+            {currentStep === 3 && Object.keys(errors).length > 0 && (
+              <p role="alert">{t("setupReviewErrors")}</p>
+            )}
+            {currentStep === 0 && referenceErrors.templateId && (
+              <div role="alert" className="space-y-2">
+                <p>{t("setupTemplateUnavailable")}</p>
+                <Button
+                  onClick={() =>
+                    updateData({ templateId: null, checklistItems: [] })
+                  }
+                >
+                  {t("startFromScratch")}
+                </Button>
+              </div>
+            )}
+          </fieldset>
         </MultiStepWizard>
       </div>
     </div>
   );
 };
 
+const CreateProjectWizard: React.FC<Props> = (props) => {
+  const organizationId = useTenantStore((state) => state.organizationId);
+  const userId = useUserStore((state) => state.currentUser?.id);
+  const exists = useProjectStore((state) =>
+    state.projects.some((project) => project.id === props.projectId),
+  );
+  return (
+    <ProjectSetup
+      key={`${organizationId}:${userId}:${props.projectId || "create"}:${exists}`}
+      {...props}
+    />
+  );
+};
 export default CreateProjectWizard;

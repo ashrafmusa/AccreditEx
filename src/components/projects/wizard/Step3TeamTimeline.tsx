@@ -16,8 +16,11 @@ import DatePicker from "@/components/ui/DatePicker";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
-import { User, UserRole } from "@/types";
-import React, { useContext, useState } from "react";
+import { Department, User, UserRole } from "@/types";
+import { isEligibleProjectLead } from "@/utils/roleAccess";
+import { parseProjectTimeline } from "@/utils/projectSetup";
+import { validateStep3 } from "./projectValidation";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { WizardData } from "./useProjectWizard";
 
 interface Step3TeamTimelineProps {
@@ -27,7 +30,8 @@ interface Step3TeamTimelineProps {
   touched: Record<string, boolean>;
   touchField: (field: string) => void;
   users: User[];
-  departments: any[]; // Department type
+  departments: Department[];
+  isEditMode?: boolean;
 }
 
 export const Step3TeamTimeline: React.FC<Step3TeamTimelineProps> = ({
@@ -38,17 +42,39 @@ export const Step3TeamTimeline: React.FC<Step3TeamTimelineProps> = ({
   touchField,
   users,
   departments,
+  isEditMode = false,
 }) => {
   const { t } = useTranslation();
   const { lang } = useContext(LanguageContext);
   const toast = useToast();
   const [isGeneratingTimeline, setIsGeneratingTimeline] = useState(false);
+  const [timelineSuggestion, setTimelineSuggestion] = useState<{
+    startDate: Date;
+    endDate: Date;
+  } | null>(null);
+  const active = useRef(true);
+  useEffect(() => {
+    active.current = true;
+    return () => {
+      active.current = false;
+    };
+  }, []);
+  useEffect(
+    () => setTimelineSuggestion(null),
+    [data.projectName, data.programId, data.standardIds],
+  );
 
   /**
    * Handle project lead selection
    */
   const handleLeadChange = (leadId: string) => {
-    updateData({ leadId });
+    const teamMemberRoles = { ...data.teamMemberRoles };
+    delete teamMemberRoles[leadId];
+    updateData({
+      leadId,
+      teamMemberIds: data.teamMemberIds.filter((id) => id !== leadId),
+      teamMemberRoles,
+    });
     touchField("leadId");
   };
 
@@ -99,13 +125,6 @@ export const Step3TeamTimeline: React.FC<Step3TeamTimelineProps> = ({
   const handleStartDateChange = (date: Date | undefined) => {
     updateData({ startDate: date });
     touchField("startDate");
-
-    // Auto-adjust end date if it becomes invalid
-    if (date && data.endDate && data.endDate <= date) {
-      const suggestedEnd = new Date(date);
-      suggestedEnd.setDate(suggestedEnd.getDate() + 30); // Default 30 days
-      updateData({ endDate: suggestedEnd });
-    }
   };
 
   /**
@@ -147,42 +166,26 @@ END: YYYY-MM-DD
 RATIONALE: (one sentence explaining the timeline)`;
 
       const response = await aiAgentService.chat(prompt, true);
+      if (!active.current) return;
       const text = response.response || "";
 
-      const startMatch = text.match(/START:\s*(\d{4}-\d{2}-\d{2})/);
-      const endMatch = text.match(/END:\s*(\d{4}-\d{2}-\d{2})/);
-
-      if (startMatch) {
-        const suggestedStart = new Date(startMatch[1]);
-        if (!isNaN(suggestedStart.getTime())) {
-          updateData({ startDate: suggestedStart });
-          touchField("startDate");
-        }
+      const suggestion = parseProjectTimeline(text);
+      if (
+        !validateStep3({ ...suggestion, leadId: data.leadId }, isEditMode)
+          .isValid
+      ) {
+        throw new Error("AI timeline is not valid for this project");
       }
-      if (endMatch) {
-        const suggestedEnd = new Date(endMatch[1]);
-        if (!isNaN(suggestedEnd.getTime())) {
-          updateData({ endDate: suggestedEnd });
-          touchField("endDate");
-        }
-      }
-
-      const rationaleMatch = text.match(/RATIONALE:\s*(.+)/);
-      if (rationaleMatch) {
-        toast.success(`Timeline set: ${rationaleMatch[1].trim()}`);
-      } else {
-        toast.success(
-          t("aiSuggestedTimeline") || "AI suggested project timeline.",
-        );
-      }
+      setTimelineSuggestion(suggestion);
     } catch (error) {
       console.error("AI timeline generation error:", error);
-      toast.error(
-        t("failedToGenerateTimeline") ||
-          "Failed to generate timeline. Please try again.",
-      );
+      if (active.current)
+        toast.error(
+          t("failedToGenerateTimeline") ||
+            "Failed to generate timeline. Please try again.",
+        );
     } finally {
-      setIsGeneratingTimeline(false);
+      if (active.current) setIsGeneratingTimeline(false);
     }
   };
 
@@ -232,15 +235,14 @@ RATIONALE: (one sentence explaining the timeline)`;
           <option value="">
             {t("selectProjectLead") || "Select project lead..."}
           </option>
-          {users.map((user) => (
+          {users.filter(isEligibleProjectLead).map((user) => (
             <option key={user.id} value={user.id}>
-              {user.name} ({user.role}){" "}
-              {user.departmentId ? `- ${user.departmentId}` : ""}
+              {user.name}
             </option>
           ))}
         </select>
         {validationErrors.leadId && touched.leadId && (
-          <ErrorMessage message={validationErrors.leadId} />
+          <ErrorMessage message={t(validationErrors.leadId)} />
         )}
       </div>
 
@@ -250,7 +252,7 @@ RATIONALE: (one sentence explaining the timeline)`;
           <UsersIcon className="w-4 h-4 inline mr-1" />
           {t("teamMembers")}{" "}
           <span className="text-xs text-brand-text-secondary">
-            ({t("optional")})
+            ({t("setupOptional")})
           </span>
         </label>
         <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 max-h-[200px] overflow-y-auto space-y-2">
@@ -274,8 +276,8 @@ RATIONALE: (one sentence explaining the timeline)`;
                       {user.name}
                     </div>
                     <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      {user.role}{" "}
-                      {user.departmentId ? `• ${user.departmentId}` : ""}
+                      {departments.find((dept) => dept.id === user.departmentId)
+                        ?.name?.[lang] || ""}
                     </div>
                   </div>
                   {/* A2: per-member role selector (only visible when checked) */}
@@ -291,6 +293,7 @@ RATIONALE: (one sentence explaining the timeline)`;
                       onClick={(e) => e.stopPropagation()}
                       className="text-xs rounded border border-brand-border dark:border-dark-brand-border bg-white dark:bg-gray-800 text-brand-text-primary dark:text-dark-brand-text-primary px-2 py-1 focus:ring-brand-primary"
                       title={t("projectRole") || "Project role"}
+                      aria-label={`${t("projectRole")} — ${user.name}`}
                     >
                       <option value={UserRole.TeamMember}>
                         {t("teamMember") || "Team Member"}
@@ -315,6 +318,20 @@ RATIONALE: (one sentence explaining the timeline)`;
             {data.teamMemberIds.length} {t("membersSelected")}
           </p>
         )}
+        {validationErrors.teamMemberIds && (
+          <ErrorMessage message={t(validationErrors.teamMemberIds)} />
+        )}
+        {data.teamMemberIds
+          .filter((id) => !users.some((user) => user.id === id))
+          .map((id) => (
+            <Button
+              key={id}
+              variant="ghost"
+              onClick={() => handleTeamMemberToggle(id)}
+            >
+              {t("setupRemoveUnavailableMember")} ({id})
+            </Button>
+          ))}
       </div>
 
       {/* Departments (Optional, Multi-select) */}
@@ -323,7 +340,7 @@ RATIONALE: (one sentence explaining the timeline)`;
           <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
             {t("departments")}{" "}
             <span className="text-xs text-brand-text-secondary">
-              ({t("optional")})
+              ({t("setupOptional")})
             </span>
           </label>
           <div className="flex flex-wrap gap-2">
@@ -331,6 +348,7 @@ RATIONALE: (one sentence explaining the timeline)`;
               <button
                 key={dept.id}
                 type="button"
+                aria-pressed={data.departmentIds.includes(dept.id)}
                 onClick={() => handleDepartmentToggle(dept.id)}
                 className={`px-3 py-1 rounded-full text-sm transition-all ${
                   data.departmentIds.includes(dept.id)
@@ -340,12 +358,26 @@ RATIONALE: (one sentence explaining the timeline)`;
               >
                 {typeof dept.name === "string"
                   ? dept.name
-                  : dept.name[lang as "en" | "ar"] || dept.name.en}
+                  : dept.name?.[lang] || dept.name?.en || dept.id}
               </button>
             ))}
           </div>
         </div>
       )}
+      {validationErrors.departmentIds && (
+        <ErrorMessage message={t(validationErrors.departmentIds)} />
+      )}
+      {data.departmentIds
+        .filter((id) => !departments.some((dept) => dept.id === id))
+        .map((id) => (
+          <Button
+            key={id}
+            variant="ghost"
+            onClick={() => handleDepartmentToggle(id)}
+          >
+            {t("setupRemoveUnavailableDepartment")} ({id})
+          </Button>
+        ))}
 
       {/* Timeline Section */}
       <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
@@ -369,38 +401,66 @@ RATIONALE: (one sentence explaining the timeline)`;
             ) : (
               <>
                 <SparklesIcon className="w-4 h-4 mr-1" />
-                {t("aiSuggestTimeline") || "AI Suggest Timeline"}
+                {t("setupSuggestTimeline")}
               </>
             )}
           </Button>
         </div>
 
+        {timelineSuggestion && (
+          <div
+            role="status"
+            className="p-3 rounded-lg border border-brand-border dark:border-dark-brand-border mb-4 space-y-2"
+          >
+            <p>
+              {t("setupTimelineReview")}{" "}
+              {timelineSuggestion.startDate.toLocaleDateString(lang)} —{" "}
+              {timelineSuggestion.endDate.toLocaleDateString(lang)}
+            </p>
+            <Button
+              onClick={() => {
+                updateData(timelineSuggestion);
+                setTimelineSuggestion(null);
+              }}
+            >
+              {t("setupApplyTimeline")}
+            </Button>
+          </div>
+        )}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
+            <label htmlFor="setup-start-date" className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
               {t("startDate")} <span className="text-red-500">*</span>
             </label>
             <DatePicker
+              id="setup-start-date"
+              ariaLabel={t("startDate")}
               date={data.startDate}
               setDate={(date) => {
                 handleStartDateChange(date);
                 touchField("startDate");
               }}
-              fromDate={new Date()}
+              fromDate={
+                isEditMode
+                  ? undefined
+                  : new Date(new Date().setHours(0, 0, 0, 0))
+              }
             />
             {validationErrors.startDate && touched.startDate && (
-              <ErrorMessage message={validationErrors.startDate} />
+              <ErrorMessage message={t(validationErrors.startDate)} />
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
-              {t("endDate")}{" "}
+            <label htmlFor="setup-end-date" className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
+              {t("setupTargetDate")}{" "}
               <span className="text-xs text-brand-text-secondary">
-                ({t("optional")})
+                ({t("setupOptional")})
               </span>
             </label>
             <DatePicker
+              id="setup-end-date"
+              ariaLabel={t("setupTargetDate")}
               date={data.endDate}
               setDate={(date) => {
                 handleEndDateChange(date);
@@ -409,7 +469,7 @@ RATIONALE: (one sentence explaining the timeline)`;
               fromDate={data.startDate || new Date()}
             />
             {validationErrors.endDate && touched.endDate && (
-              <ErrorMessage message={validationErrors.endDate} />
+              <ErrorMessage message={t(validationErrors.endDate)} />
             )}
           </div>
         </div>

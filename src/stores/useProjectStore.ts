@@ -34,7 +34,7 @@ interface ProjectState {
   fetchAllProjects: () => Promise<void>;
   subscribeToProjects: () => void;
   unsubscribeFromProjects: () => void;
-  addProject: (newProjectData: Omit<Project, "id">) => Promise<void>;
+  addProject: (newProjectData: Omit<Project, "id">) => Promise<Project>;
   updateProject: (project: Project) => Promise<void>;
   applyProjectSnapshot: (projectId: string, project: Project | null) => void;
   deleteProject: (projectId: string) => Promise<void>;
@@ -182,13 +182,13 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     }
   },
   addProject: async (newProjectData: Omit<Project, "id">) => {
+    const user = useUserStore.getState().currentUser;
+    if (!user || !permissionService.can(user, Action.Create, Resource.Project)) {
+      throw new Error("Project creation is not authorized");
+    }
     const newProject = await projectService.createProject(newProjectData);
-    set((state) => ({
-      projects: [
-        ...state.projects,
-        { ...newProject, progress: calculateProgress(newProject.checklist) },
-      ],
-    }));
+    get().applyProjectSnapshot(newProject.id, newProject);
+    return newProject;
   },
   updateProject: async (updatedProject) => {
     assertProjectWritable(

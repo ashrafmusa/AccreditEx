@@ -14,6 +14,7 @@ import {
   finalizeProject,
   getProjects,
   updateProject,
+  createProject,
 } from "@/services/projectService";
 import { getAuthInstance } from "@/firebase/firebaseConfig";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
@@ -51,6 +52,7 @@ jest.mock("@/services/projectService", () => ({
   finalizeProject: jest.fn(),
   getProjects: jest.fn(),
   updateProject: jest.fn(),
+  createProject: jest.fn(),
 }));
 jest.mock("@/services/workflowEngine", () => ({
   workflowEngine: { evaluate: jest.fn().mockResolvedValue(undefined) },
@@ -244,6 +246,23 @@ describe("Project record integration", () => {
     expect(result.unapprovedDocuments).toBe(1);
   });
 
+  it("returns the persisted project, avoids listener duplicates and blocks viewer creation", async () => {
+    // Arrange
+    const saved = record("created");
+    useProjectStore.setState({ projects: [saved] });
+    jest.mocked(createProject).mockResolvedValue(saved);
+    const { id, ...input } = saved;
+    // Act
+    const project = await useProjectStore.getState().addProject(input);
+    // Assert
+    expect(project.id).toBe("created");
+    expect(useProjectStore.getState().projects).toHaveLength(1);
+    actor = { ...actor, role: UserRole.Viewer };
+    await expect(useProjectStore.getState().addProject(input)).rejects.toThrow(
+      "not authorized",
+    );
+    expect(createProject).toHaveBeenCalledTimes(1);
+  });
   it("reauthenticates the submitted password before finalization", async () => {
     // Arrange
     useProjectStore.setState({ projects: [record()] });
