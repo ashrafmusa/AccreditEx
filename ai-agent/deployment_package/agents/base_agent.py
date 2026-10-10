@@ -28,6 +28,7 @@ from agent_utils import (
 # Import the markdown skill we just created. 
 # Adjust the import path depending on where you saved the Markdown Formatting Skill file.
 from skills.markdown_formatting import get_markdown_formatting_skill
+from skills.response_standard import STANDARD_RESPONSE_RULES
 
 logger = logging.getLogger(__name__)
 
@@ -177,8 +178,9 @@ class BaseSpecialistAgent(ABC):
             self.rate_limiter.check(self._resolve_user_id(user_id, context))
             message = self.validator.sanitize(message, field_name="message", allow_empty=False)
 
-            # Use the combined prompt with the Markdown skill injected
-            system_prompt = self.get_full_prompt(context)
+            # Use the combined prompt with the Markdown skill injected; chat replies
+            # follow the shared AccreditEx response standard.
+            system_prompt = self.get_full_prompt(context) + STANDARD_RESPONSE_RULES
             
             messages = [
                 {"role": "system", "content": system_prompt},

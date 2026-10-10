@@ -27,6 +27,7 @@ from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
 from agent_utils import build_workspace_snapshot
+from skills.response_standard import STANDARD_RESPONSE_RULES, build_standard_response
 
 # Import specialist prompts (Quick Win 1)
 from specialist_prompts import (
@@ -288,18 +289,23 @@ class UnifiedAccreditexAgent:
             return 0.74
         return 0.62
 
-    def _build_workflow_response(self, field_name: str, content: str) -> Dict[str, Any]:
-        """Build a consistent workflow response payload with additive metadata."""
-        return {
-            "status": "completed",
-            field_name: content,
-            "timestamp": datetime.now().isoformat(),
-            "meta": {
-                "route_mode": "endpoint",
-                "model": self.model,
-                "quality_confidence": self._estimate_quality_confidence(content),
-            }
-        }
+    def _build_workflow_response(
+        self,
+        field_name: str,
+        content: str,
+        response_type: Optional[str] = None,
+        title: Optional[str] = None,
+        extra: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Build the standard AI response payload (keeps the legacy field for old clients)."""
+        return build_standard_response(
+            response_type or field_name,
+            content,
+            title=title,
+            model=self.model,
+            legacy_field=field_name,
+            extra=extra,
+        )
 
     async def _get_organization_context(self, user_id: Optional[str] = None, organization_id: Optional[str] = None) -> Dict[str, Any]:
         """Fetch comprehensive organizational data using enhanced Firebase client"""
@@ -533,7 +539,7 @@ class UnifiedAccreditexAgent:
         
         # Create messages
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
             {"role": "user", "content": message}
         ]
         
@@ -701,7 +707,7 @@ class UnifiedAccreditexAgent:
 
 Always be specific and actionable, using real data from their workspace.
 """
-        return base_prompt
+        return base_prompt + STANDARD_RESPONSE_RULES
 
     async def chat(self, message: str, thread_id: Optional[str] = None, context: Optional[Dict[str, Any]] = None) -> AsyncGenerator[str, None]:
         """
@@ -850,17 +856,17 @@ Always be specific and actionable, using real data from their workspace.
         
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a compliance auditor. Never invent statistics or scores that are not supported by the provided content."},
+                {"role": "system", "content": "You are a compliance auditor. Never invent statistics or scores that are not supported by the provided content." + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500
         )
         
-        return {
-            "status": "completed",
-            "analysis": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "analysis",
+            response.choices[0].message.content,
+            response_type="compliance_check",
+        )
 
     async def assess_risk(self, area: str, current_status: str, upcoming_review_date: str, critical_areas: Optional[List[str]] = None) -> Dict[str, Any]:
         """Assess compliance risk for a specific area"""
@@ -875,17 +881,18 @@ Always be specific and actionable, using real data from their workspace.
         
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a risk management expert. Never invent statistics that are not supported by the provided information."},
+                {"role": "system", "content": "You are a risk management expert. Never invent statistics that are not supported by the provided information." + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500
         )
         
-        return {
-            "risk_level": "Calculated",
-            "assessment": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "assessment",
+            response.choices[0].message.content,
+            response_type="risk_assessment",
+            extra={"risk_level": "Calculated"},
+        )
 
     async def get_training_recommendations(self, role: str, competency_gaps: List[str], accreditation_focus: str, timeline: str) -> Dict[str, Any]:
         """Get training recommendations based on role and gaps"""
@@ -900,16 +907,17 @@ Always be specific and actionable, using real data from their workspace.
         
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": "You are a healthcare training coordinator."},
+                {"role": "system", "content": "You are a healthcare training coordinator." + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=1500
         )
         
-        return {
-            "recommendations": response.choices[0].message.content,
-            "timestamp": datetime.now().isoformat()
-        }
+        return self._build_workflow_response(
+            "recommendations",
+            response.choices[0].message.content,
+            response_type="training_recommendations",
+        )
 
     # ─────────────────────────────────────────────────────────────
     # Week 3: Dedicated AI Workflow Methods
@@ -944,7 +952,7 @@ Provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -983,7 +991,7 @@ Use the 5 Whys methodology and provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1020,7 +1028,7 @@ Provide a PDCA cycle with:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1060,7 +1068,7 @@ Provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1100,7 +1108,7 @@ Provide:
 
         response = await self._create_completion(
             messages=[
-                {"role": "system", "content": system_prompt},
+                {"role": "system", "content": system_prompt + STANDARD_RESPONSE_RULES},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=2048
@@ -1153,7 +1161,7 @@ Format your response in clear Markdown with headings and bullet points."""
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are an expert healthcare accreditation consultant providing strategic project insights."},
+                    {"role": "system", "content": "You are an expert healthcare accreditation consultant providing strategic project insights." + STANDARD_RESPONSE_RULES},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,
@@ -1204,7 +1212,7 @@ Format with clear headings and bullet points."""
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are a document management expert helping users find relevant compliance documents."},
+                    {"role": "system", "content": "You are a document management expert helping users find relevant compliance documents." + STANDARD_RESPONSE_RULES},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.5,
@@ -1253,7 +1261,7 @@ Format with clear Markdown headings."""
             response = await self.client.chat.completions.create(
                 model=self.model,
                 messages=[
-                    {"role": "system", "content": "You are a healthcare training coordinator providing personalized training recommendations."},
+                    {"role": "system", "content": "You are a healthcare training coordinator providing personalized training recommendations." + STANDARD_RESPONSE_RULES},
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.7,

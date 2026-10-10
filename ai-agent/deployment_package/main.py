@@ -32,6 +32,7 @@ sys.path.append(current_dir)
 from unified_accreditex_agent import UnifiedAccreditexAgent
 from monitoring import performance_monitor
 from cache import cache
+from skills.response_standard import standardize_payload
 
 # Configure logging
 logging.basicConfig(
@@ -144,16 +145,10 @@ async def verify_api_key(request: Request, api_key: str = Depends(api_key_header
 agent = None
 
 
-def ensure_workflow_response(result: Dict[str, Any], expected_field: str) -> Dict[str, Any]:
-    """Normalize workflow responses to stable schema (non-breaking additive guard)."""
-    normalized = dict(result or {})
-    normalized.setdefault("status", "completed")
-    normalized.setdefault("timestamp", datetime.utcnow().isoformat())
-    normalized.setdefault(expected_field, normalized.get("response", ""))
-
+def ensure_workflow_response(result: Dict[str, Any], expected_field: str, response_type: Optional[str] = None) -> Dict[str, Any]:
+    """Normalize AI responses to the standard ai-response/1 contract (legacy field kept)."""
+    normalized = standardize_payload(result, response_type or expected_field, expected_field)
     meta = normalized.get("meta") or {}
-    if not isinstance(meta, dict):
-        meta = {}
     meta.setdefault("route_mode", "endpoint")
     meta.setdefault("schema_validated", True)
     normalized["meta"] = meta
@@ -497,7 +492,7 @@ async def check_compliance(
             content_summary=payload.content_summary,
             requirements=payload.requirements,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "analysis", "compliance_check"))
     except Exception as e:
         logger.error(f"Compliance check error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -520,7 +515,7 @@ async def assess_risk(
             upcoming_review_date=payload.upcoming_review_date,
             critical_areas=payload.critical_areas,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "assessment", "risk_assessment"))
     except Exception as e:
         logger.error(f"Risk assessment error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -552,7 +547,7 @@ async def get_training_recommendations(
             accreditation_focus=accreditation_focus,
             timeline=timeline,
         )
-        return JSONResponse(content=result)
+        return JSONResponse(content=ensure_workflow_response(result, "recommendations", "training_recommendations"))
     except Exception as e:
         logger.error(f"Training recommendations error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
