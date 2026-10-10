@@ -9,10 +9,14 @@
  */
 
 import { LibraryTemplate, templateLibrary } from '@/data/templateLibrary';
+import { en as aiEn } from '@/data/locales/en/ai';
+import { ar as aiAr } from '@/data/locales/ar/ai';
+import type { Language } from '@/types';
 import { aiAgentService } from './aiAgentService';
 
 export interface DocumentGenerationRequest {
   templateId: string;
+  language?: Language;
   context: {
     projectId?: string;
     departmentId?: string;
@@ -29,6 +33,7 @@ export interface DocumentGenerationRequest {
 
 export interface DocumentGenerationResponse {
   content: string;
+  language?: Language;
   suggestions: string[];
   complianceIssues: string[];
   estimatedReadingTime: number;
@@ -38,6 +43,7 @@ export interface DocumentGenerationResponse {
 
 export interface ContentImprovementRequest {
   content: string;
+  language?: Language;
   suggestions: {
     improveClarity?: boolean;
     enhanceStructure?: boolean;
@@ -99,6 +105,7 @@ export class AIDocumentGeneratorService {
    */
   async generateDocument(request: DocumentGenerationRequest): Promise<DocumentGenerationResponse> {
     const startTime = Date.now();
+    const language = request.language ?? 'en';
 
     try {
       const template = templateLibrary.find(t => t.id === request.templateId);
@@ -107,10 +114,10 @@ export class AIDocumentGeneratorService {
       }
 
       // Get AI suggestions for content generation
-      const suggestions = await this.getContentSuggestions(template, request.context);
+      const suggestions = await this.getContentSuggestions(template, request.context, language);
 
       // Generate document content based on template and context
-      const generatedContent = await this.generateContentFromTemplate(template, request.context, suggestions);
+      const generatedContent = await this.generateContentFromTemplate(template, request.context, suggestions, language);
 
       // Analyze generated content
       const analysis = await this.analyzeDocument(generatedContent);
@@ -122,6 +129,7 @@ export class AIDocumentGeneratorService {
 
       return {
         content: generatedContent,
+        language,
         suggestions,
         complianceIssues,
         estimatedReadingTime: Math.ceil(generatedContent.split(' ').length / 200), // 200 words per minute
@@ -137,7 +145,7 @@ export class AIDocumentGeneratorService {
   /**
    * Get content suggestions from AI based on template and context
    */
-  private async getContentSuggestions(template: LibraryTemplate, context: any): Promise<string[]> {
+  private async getContentSuggestions(template: LibraryTemplate, context: DocumentGenerationRequest['context'], language: Language): Promise<string[]> {
     const prompt = `I need to generate a document using the ${template.name} template. 
     Context: ${JSON.stringify(context)}
     Template description: ${template.description}
@@ -150,7 +158,8 @@ export class AIDocumentGeneratorService {
     - Compliance requirements
     - Best practices
 
-    Return just the list of suggestions.`;
+    Return just the list of suggestions in ${language === 'ar' ? 'Arabic' : 'English'}.
+    Use this output language regardless of the language of the template or context.`;
 
     const response = await aiAgentService.chat(prompt, false);
 
@@ -166,7 +175,7 @@ export class AIDocumentGeneratorService {
   /**
    * Generate content from template with AI assistance
    */
-  private async generateContentFromTemplate(template: LibraryTemplate, context: any, suggestions: string[]): Promise<string> {
+  private async generateContentFromTemplate(template: LibraryTemplate, context: DocumentGenerationRequest['context'], suggestions: string[], language: Language): Promise<string> {
     const prompt = `You are a senior healthcare accreditation consultant. Generate a complete, accreditation-ready document based on the following template and context.
 
 Template Name: ${template.name}
@@ -205,45 +214,50 @@ WRITING STANDARDS:
 - Include realistic healthcare content appropriate for a hospital accreditation setting.
 - Follow the template structure and include revision history even if not in the template.
 
-Return ONLY the HTML content.`;
+Return ONLY the HTML content in ${language === 'ar' ? 'Arabic' : 'English'}.
+Translate all narrative, headings, and table labels into this language, regardless of the template or context language.
+${language === 'ar' ? 'Use dir="rtl" on block elements.' : 'Use dir="ltr" on block elements.'}`;
 
     const response = await aiAgentService.chat(prompt, false);
     let content = (response.response || '').trim();
     // Strip markdown fences if AI wraps output
     content = content.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
-    return this.ensureSOPHeaderTable(content, template, context);
+    if (!content) throw new Error('AI returned an empty document');
+    return this.ensureSOPHeaderTable(content, template, context, language);
   }
 
   /**
    * Ensure generated document starts with a standardized SOP header table.
    * This guards against prompt drift so output consistently matches UI/business expectations.
    */
-  private ensureSOPHeaderTable(content: string, template: LibraryTemplate, context: any): string {
+  private ensureSOPHeaderTable(content: string, template: LibraryTemplate, context: any, language: Language): string {
     // Clean any model-generated header/control artifacts first, then prepend exactly one canonical header.
     const cleanedContent = this.removeExistingSopHeaderArtifacts(content);
 
+    const labels = language === 'ar' ? aiAr : aiEn;
     const instituteName =
       (typeof context?.instituteName === 'string' && context.instituteName.trim()) ||
-      'Institute Name';
+      labels.aiSopInstituteName;
 
     const documentTitle =
       (typeof context?.documentTitle === 'string' && context.documentTitle.trim()) ||
+      content.match(/<h[12][^>]*>([^<]+)<\/h[12]>/i)?.[1]?.trim() ||
       template.name;
 
     const headerTable = `
-<table style="width: 100%; border-collapse: collapse; margin-bottom: 16px;" aria-label="SOP Document Header">
+<table dir="${language === 'ar' ? 'rtl' : 'ltr'}" style="width: 100%; border-collapse: collapse; margin-bottom: 16px;" aria-label="${labels.aiSopHeader}">
   <tbody>
     <tr>
       <td rowspan="3" style="width: 22%; border: 1px solid #000;"><div style="min-height: 64px;"></div></td>
       <td colspan="2" style="border: 1px solid #000; font-weight: 700; font-size: 1.05rem; padding: 8px 10px;">${this.escapeHtml(instituteName)}</td>
     </tr>
     <tr>
-      <td style="width: 53%; border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Document Title: ${this.escapeHtml(documentTitle)}</td>
-      <td style="width: 25%; border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Issue Date:</td>
+      <td style="width: 53%; border: 1px solid #000; font-weight: 600; padding: 6px 10px;">${labels.aiSopDocumentTitle}: ${this.escapeHtml(documentTitle)}</td>
+      <td style="width: 25%; border: 1px solid #000; font-weight: 600; padding: 6px 10px;">${labels.aiSopIssueDate}:</td>
     </tr>
     <tr>
-      <td style="border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Document Code:</td>
-      <td style="border: 1px solid #000; font-weight: 600; padding: 6px 10px;">Issue:</td>
+      <td style="border: 1px solid #000; font-weight: 600; padding: 6px 10px;">${labels.aiSopDocumentCode}:</td>
+      <td style="border: 1px solid #000; font-weight: 600; padding: 6px 10px;">${labels.aiSopIssue}:</td>
     </tr>
   </tbody>
 </table>
@@ -264,9 +278,12 @@ Return ONLY the HTML content.`;
         .toLowerCase();
 
       const looksLikeSopHeader =
-        tableText.includes('document title') &&
-        tableText.includes('document code') &&
-        (tableText.includes('issue date') || tableText.includes('issue :') || tableText.includes('issue:'));
+        (tableText.includes('document title') &&
+          tableText.includes('document code') &&
+          (tableText.includes('issue date') || tableText.includes('issue :') || tableText.includes('issue:'))) ||
+        (tableText.includes(aiAr.aiSopDocumentTitle) &&
+          tableText.includes(aiAr.aiSopDocumentCode) &&
+          tableText.includes(aiAr.aiSopIssueDate));
 
       return looksLikeSopHeader ? '' : tableHtml;
     });
@@ -333,11 +350,15 @@ WRITING STANDARDS:
 - Add standard cross-references (CBAHI, JCI, ISO) where appropriate.
 - Substantive content in every section — no placeholder text.
 
-Return ONLY the improved HTML content.`;
+Return ONLY the improved HTML content.
+${request.language
+  ? `Write all content in ${request.language === 'ar' ? 'Arabic' : 'English'}, including headings and table labels. Use dir="${request.language === 'ar' ? 'rtl' : 'ltr'}" on block elements.`
+  : 'Preserve the language of the original document; do not translate it.'}`;
 
     const response = await aiAgentService.chat(prompt, false);
     let improved = (response.response || '').trim();
     improved = improved.replace(/```html?\s*/gi, '').replace(/```\s*/g, '').trim();
+    if (!improved) throw new Error('AI returned an empty improved document');
 
     // Parse response to extract improved content and changes
     return {

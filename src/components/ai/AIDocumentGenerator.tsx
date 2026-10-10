@@ -35,6 +35,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import React, { useEffect, useRef, useState } from "react";
 import DOMPurify from "dompurify";
 import AIResponseView from "@/components/ai/AIResponseView";
+import type { Language } from "@/types";
 
 interface AIDocumentGeneratorProps {
   templateId?: string;
@@ -55,7 +56,9 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
   context: propsContext,
   preferences: propsPreferences,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const [documentLanguage, setDocumentLanguage] = useState<Language>(lang);
+  const [generatedLanguage, setGeneratedLanguage] = useState<Language>(lang);
   const toast = useToast();
 
   const [selectedTemplate, setSelectedTemplate] =
@@ -141,6 +144,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
     try {
       const request: DocumentGenerationRequest = {
         templateId: selectedTemplate.id,
+        language: documentLanguage,
         context,
         preferences,
       };
@@ -149,6 +153,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
         await aiDocumentGeneratorService.generateDocument(request);
 
       setGeneratedContent(response.content);
+      setGeneratedLanguage(response.language ?? documentLanguage);
       setSuggestions(response.suggestions);
       setComplianceIssues(response.complianceIssues);
       setWordCount(response.wordCount);
@@ -198,6 +203,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
     try {
       const result = await aiDocumentGeneratorService.improveContent({
         content: generatedContent,
+        language: generatedLanguage,
         suggestions: {
           improveClarity: true,
           enhanceStructure: true,
@@ -697,6 +703,26 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
             </h3>
 
             <div>
+              <label className="block text-sm font-medium text-brand-text-primary dark:text-dark-brand-text-primary mb-2" htmlFor="document-language">
+                {t("aiDocumentLanguage")}
+              </label>
+              <select
+                id="document-language"
+                value={documentLanguage}
+                disabled={isGenerating}
+                onChange={(e) => {
+                  if (e.target.value === "en" || e.target.value === "ar") {
+                    setDocumentLanguage(e.target.value);
+                  }
+                }}
+                className="w-full px-4 py-2 border border-brand-border dark:border-dark-brand-border rounded-lg bg-brand-surface dark:bg-dark-brand-surface text-brand-text-primary dark:text-dark-brand-text-primary"
+              >
+                <option value="en">{t("aiDocumentLanguageEnglish")}</option>
+                <option value="ar">{t("aiDocumentLanguageArabic")}</option>
+              </select>
+            </div>
+
+            <div>
               <label
                 className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
                 htmlFor="tone"
@@ -871,6 +897,7 @@ const AIDocumentGenerator: React.FC<AIDocumentGeneratorProps> = ({
 
               <div
                 ref={contentRef}
+                dir={generatedLanguage === "ar" ? "rtl" : "ltr"}
                 className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-4 max-h-96 overflow-y-auto"
               >
                 {/^\s*<[a-z!]/i.test(generatedContent) ? (

@@ -1783,7 +1783,9 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                     await onCreateDocument({
                       name: { en: docName, ar: docName },
                       type: "Policy",
-                      content: { en: response.content, ar: "" },
+                      content: response.language === "ar"
+                        ? { en: "", ar: response.content }
+                        : { en: response.content, ar: "" },
                       tags: ["ai-generated"],
                     });
                     toast.success(

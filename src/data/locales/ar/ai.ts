@@ -1,4 +1,13 @@
 export const ar = {
+    aiDocumentLanguage: 'لغة الوثيقة',
+    aiDocumentLanguageEnglish: 'الإنجليزية',
+    aiDocumentLanguageArabic: 'العربية',
+    aiSopInstituteName: 'اسم المؤسسة',
+    aiSopHeader: 'رأس وثيقة إجراءات التشغيل القياسية',
+    aiSopDocumentTitle: 'عنوان الوثيقة',
+    aiSopIssueDate: 'تاريخ الإصدار',
+    aiSopDocumentCode: 'رمز الوثيقة',
+    aiSopIssue: 'الإصدار',
     aiResponseCopy: 'نسخ',
     aiResponseCopied: 'تم النسخ إلى الحافظة',
     aiResponseHelpful: 'مفيد',

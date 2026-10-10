@@ -1,4 +1,13 @@
 export const en = {
+    aiDocumentLanguage: 'Document language',
+    aiDocumentLanguageEnglish: 'English',
+    aiDocumentLanguageArabic: 'Arabic',
+    aiSopInstituteName: 'Institute Name',
+    aiSopHeader: 'SOP Document Header',
+    aiSopDocumentTitle: 'Document Title',
+    aiSopIssueDate: 'Issue Date',
+    aiSopDocumentCode: 'Document Code',
+    aiSopIssue: 'Issue',
     aiResponseCopy: 'Copy',
     aiResponseCopied: 'Copied to clipboard',
     aiResponseHelpful: 'Helpful',
