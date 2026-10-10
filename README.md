@@ -43,7 +43,9 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 -   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis.
 -   **Analytics Hub**: Multi-format reporting (PDF, Excel, CSV, JSON), AI-powered quality insights, PDCA cycle tracking, and executive briefings.
 
-#### Pending SMCS data reconciliation
+#### SMCS data reconciliation
+
+On 2026-10-10, the 14 legacy SMCS projects in `org-accreditex` were reconciled to the existing OHAS program after complete standard-coverage validation. A full pre-update backup was retained outside the repository, and post-update comparison verified that only `programId` changed. The Audit Log's organization/timestamp index was created separately and verified READY; the server-backed query and live UI both returned 80 activity rows. Additional user/type-filter indexes are declared for those optional query combinations but were not deployed as part of this targeted repair.
 
 `scripts/migrations/reconcile-smcs-program.cjs` defaults to a read-only plan. It verifies destination ownership/sharing and complete SMCS standard coverage, and only targets legacy SMCS projects belonging to the explicitly selected organization.
 
@@ -51,7 +53,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 node scripts\migrations\reconcile-smcs-program.cjs --project=accreditex-79c08 --organization=org-accreditex --program=T0ayZzzR9OBq15wU5smS
 ```
 
-Live application requires separate approval, existing authorized credentials, and explicit `--apply --confirm-project=accreditex-79c08 --expected-count=14 --backup=<absolute-path-outside-repository>` arguments. The script writes a full backup before an atomic, concurrency-guarded update of **only `programId`**, then verifies every project. Never commit the backup. Database indexes must also be applied separately and reach READY before claiming Audit Log is repaired; frontend Hosting deployment does not deploy indexes.
+Future live application requires separate approval, existing authorized credentials, and explicit `--apply --confirm-project=accreditex-79c08 --expected-count=<reviewed-candidate-count> --backup=<absolute-path-outside-repository>` arguments. The script writes a full backup before an atomic, concurrency-guarded update of **only `programId`**, then verifies every project. Never commit the backup. Database indexes must also be applied separately and reach READY before claiming Audit Log is repaired; frontend Hosting deployment does not deploy indexes.
 
 ### Hospital-Specific Features
 -   **Accreditation Hub**: Cross-standard evidence mapping, pre-loaded 240+ standards / 1,043 sub-standards.
