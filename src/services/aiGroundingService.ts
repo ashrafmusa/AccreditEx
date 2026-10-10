@@ -24,6 +24,7 @@ export interface AIGrounding {
   organizationId: string;
   sources: AIGroundingSource[];
   coverage: { available: number; selected: number; omitted: number; limitations: string[] };
+  search?: { query: string };
 }
 
 interface GroundingRecords {
@@ -88,11 +89,25 @@ export function buildAIGrounding(
     });
   };
   if (canRead(Resource.Document)) for (const d of records.documents.filter(inScope)) {
-    add("document", d.id, localized(d.name) || d.id, localized(d.content),
+    const inline = localized(d.content).trim();
+    const extraction = d.extractedText;
+    const usableExtraction = extraction && (extraction.status === "extracted" || extraction.status === "truncated");
+    const content = inline || (usableExtraction ? extraction.text : "");
+    if (!inline && extraction) {
+      const warning = usableExtraction
+        ? "Attachment text is extracted, not verified against the original file; image-only content may be missing."
+        : "Some attachment text could not be extracted; inspect the original files before use.";
+      if (!limits.includes(warning)) limits.push(warning);
+    }
+    add("document", d.id, localized(d.name) || d.id, content,
       [...link("department", "department", d.departmentIds), ...link("related", "document", d.relatedDocumentIds),
         ...link("parent", "document", d.parentDocumentId ? [d.parentDocumentId] : []),
         ...link("project", "project", d.projectId ? [d.projectId] : [])],
       d.expiryDate && Date.parse(d.expiryDate) < Date.now() ? "Expired" : d.status, d.currentVersion);
+    if (!inline && usableExtraction && extraction.limitations.length) {
+      const source = sources.find(s => s.kind === "document" && s.id === d.id);
+      if (source) source.excerptTruncated = true;
+    }
   }
   if (canRead(Resource.Standard)) for (const s of records.standards.filter(referenceInScope)) {
     add("standard", s.id || s.standardId, s.standardId, `${s.description}\n${(s.subStandards || []).map(v => `${v.id}: ${v.description}`).join("\n")}`,
@@ -205,9 +220,11 @@ export function getAIGrounding(query: string, maxChars = 5000): AIGrounding {
   const activeUser: User | null = auth && currentUser?.email === auth.email &&
     currentUser.organizationId === organizationId ? currentUser : null;
   const app = useAppStore.getState();
-  return buildAIGrounding(query, organizationId || "", {
+  const grounding = buildAIGrounding(query, organizationId || "", {
     documents: app.documents || [], standards: app.standards || [], accreditationPrograms: app.accreditationPrograms || [],
     departments: app.departments || [], projects: useProjectStore.getState().projects || [], risks: app.risks || [],
     trainingPrograms: app.trainingPrograms || [], competencies: app.competencies || [], auditPlans: app.auditPlans || [],
   }, resource => permissionService.can(activeUser, Action.Read, resource), maxChars);
+  if (activeUser && query.trim()) grounding.search = { query: query.slice(0, 2000) };
+  return grounding;
 }

@@ -180,7 +180,8 @@ const AIResponseView: React.FC<AIResponseViewProps> = ({
 
   const components = useMemo(() => markdownComponents(compact), [compact]);
   const textSize = compact ? "text-xs" : "text-sm";
-  const evidence = grounding ? <EvidenceProvenance grounding={grounding} /> : null;
+  const suppliedEvidence = grounding ?? data?.grounding;
+  const evidence = suppliedEvidence ? <EvidenceProvenance grounding={suppliedEvidence} /> : null;
 
   if (loading) {
     return (

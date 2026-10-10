@@ -608,6 +608,16 @@ export interface AccreditationProgram {
   status?: 'active' | 'retired' | 'pending';
 }
 
+export interface DocumentTextExtraction {
+  sourceFileName: string;
+  text: string;
+  status: 'extracted' | 'truncated' | 'empty' | 'unsupported' | 'failed';
+  extractedAt: string;
+  pagesProcessed: number;
+  totalPages: number | null;
+  limitations: ('sizeLimit' | 'pageLimit' | 'characterLimit' | 'ocrUnavailable' | 'unsupportedFormat' | 'parseFailed')[];
+}
+
 export interface AppDocument {
   id: string;
   organizationId?: string;
@@ -618,6 +628,8 @@ export interface AppDocument {
   status: 'Draft' | 'Under Review' | 'Pending Review' | 'Approved' | 'Rejected' | 'Obsolete';
   content: LocalizedString | null;
   fileUrl?: string;
+  /** Bounded attachment text, separate from editable content; does not approve a document. */
+  extractedText?: DocumentTextExtraction;
   currentVersion: number;
   uploadedAt: string;
   versionHistory?: {

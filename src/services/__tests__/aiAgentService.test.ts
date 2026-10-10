@@ -86,6 +86,19 @@ describe('AIAgentService', () => {
     // ─────────────────────────────────────────────────────────────
 
     describe('Chat', () => {
+        it('returns server supplied evidence rather than the client request snapshot', async () => {
+            // Arrange
+            const verified = { schema: 'ai-grounding/1', organizationId: '', sources: [],
+                coverage: { available: 0, selected: 0, omitted: 0, limitations: ['Server access checked.'] } };
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true, headers: new Headers({ 'content-type': 'text/plain', 'X-AI-Grounding': JSON.stringify(verified) }),
+                text: async () => 'Review evidence.',
+            });
+            // Act
+            const result = await service.chat('Review', false);
+            // Assert
+            expect(result.grounding).toEqual(verified);
+        });
         it('discards late replies after a conversation reset without restoring an old thread', async () => {
             // Arrange
             const oldResponse: ChatResponse = { response: 'Old evidence', thread_id: 'old-thread', timestamp: '' };

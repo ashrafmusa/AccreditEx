@@ -92,7 +92,7 @@ interface AppState {
 
   // Documents
   addDocument: (doc: AppDocument) => void;
-  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], content?: { en: string; ar: string } }) => Promise<AppDocument>;
+  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, extractedText?: AppDocument['extractedText'], tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string } }) => Promise<AppDocument>;
   addProcessMap: (docData: { name: { en: string; ar: string }, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<void>;
   updateDocument: (doc: AppDocument) => Promise<void>;
   deleteDocument: (docId: string) => Promise<void>;
@@ -291,7 +291,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Documents
   addDocument: (doc: AppDocument) => set(state => ({ documents: [...state.documents, doc] })),
-  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string } }): Promise<AppDocument> => {
+  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, extractedText?: AppDocument['extractedText'], tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string } }): Promise<AppDocument> => {
     try {
       const currentUser = useUserStore.getState().currentUser;
       const uploaderName = currentUser?.name || 'Unknown';
@@ -310,6 +310,7 @@ export const useAppStore = create<AppState>((set, get) => ({
         status: 'Draft',
         content: initialContent,
         fileUrl: docData.fileUrl,
+        extractedText: docData.extractedText,
         currentVersion: 1,
         versionHistory: [{
           version: 1,

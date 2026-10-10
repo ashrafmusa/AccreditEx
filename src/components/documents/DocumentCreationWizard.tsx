@@ -17,6 +17,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { DocumentGenerationResponse } from "@/services/aiDocumentGeneratorService";
 import { aiDocumentToHtml } from "@/utils/aiDocumentFormat";
 import { cloudinaryService } from "@/services/cloudinaryService";
+import { extractDocumentText, extractionWarningKey } from "@/services/documentTextExtractionService";
 import { AppDocument } from "@/types";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import AIDocumentGenerator from "../ai/AIDocumentGenerator";
@@ -183,7 +184,7 @@ const DocumentCreationWizard: React.FC<DocumentCreationWizardProps> = ({
   );
 
   // ─── File Upload Handler ──────────────────────────────────────────────────
-  const handleFileUploaded = async (fileUrl: string, fileName: string) => {
+  const handleFileUploaded = async (fileUrl: string, fileName: string, extractedText: NonNullable<AppDocument["extractedText"]>) => {
     setIsSubmitting(true);
     try {
       await onCreateDocument({
@@ -194,6 +195,7 @@ const DocumentCreationWizard: React.FC<DocumentCreationWizardProps> = ({
         type: "Evidence",
         category: "Quality Management",
         fileUrl,
+        extractedText,
         departmentId: currentUser?.departmentId || "",
         projectId: projects[0]?.id || "",
       });
@@ -404,25 +406,34 @@ const DocumentCreationWizard: React.FC<DocumentCreationWizardProps> = ({
             </p>
             <FileUploader
               onFilesSelected={async (files: File[]) => {
-                if (files.length === 0) return;
+                if (files.length === 0 || isSubmitting) return;
                 const file = files[0];
+                setIsSubmitting(true);
                 try {
+                  const extractedText = await extractDocumentText(file);
+                  const warningKey = extractionWarningKey(extractedText);
+                  if (warningKey) toast.warning(t(warningKey));
                   const url = await cloudinaryService.uploadFile(file);
-                  await handleFileUploaded(url, file.name);
+                  await handleFileUploaded(url, file.name, extractedText);
                 } catch (error) {
                   console.error("Upload failed:", error);
-                  toast.error("Failed to upload file");
+                  toast.error(t("failedToUploadFile"));
+                } finally {
+                  setIsSubmitting(false);
                 }
               }}
               acceptedFileTypes={[
                 "application/pdf",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "text/plain",
                 "image/*",
               ]}
               maxFileSize={10 * 1024 * 1024}
               maxFiles={1}
               multiple={false}
+              disabled={isSubmitting}
             />
+            <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">{t("documentExtractionNotice")}</p>
             <div className="mt-6 flex justify-end">
               <button
                 type="button"

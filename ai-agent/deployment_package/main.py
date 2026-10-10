@@ -18,6 +18,7 @@ import logging
 import time
 from datetime import datetime
 import base64
+import json
 import firebase_admin
 from firebase_admin import auth as firebase_auth
 
@@ -33,7 +34,7 @@ from unified_accreditex_agent import UnifiedAccreditexAgent
 from monitoring import performance_monitor
 from cache import cache
 from skills.response_standard import standardize_payload
-from agent_utils import validate_ai_grounding, grounding_from_context
+from agent_utils import validate_ai_grounding, grounding_from_context, rehydrate_ai_grounding, GroundingServiceUnavailable
 
 # Configure logging
 logging.basicConfig(
@@ -94,6 +95,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Content-Type", "Authorization", "X-API-Key"],
+    expose_headers=["X-AI-Grounding"],
 )
 
 # API Key Security
@@ -302,9 +304,41 @@ def validate_request_grounding(
         raise HTTPException(status_code=422, detail=str(error)) from error
 
 
-def workflow_grounding_kwargs(payload: GroundedWorkflowRequest, auth_info: Dict[str, Any]) -> Dict[str, Any]:
-    grounding = validate_request_grounding(payload.ai_grounding, auth_info, getattr(payload, "user_id", None))
+async def authenticated_grounding(grounding, request: Request, auth_info, user_id=None, organization_id=None):
+    if grounding is None:
+        return None
+    if auth_info.get("auth_type") != "firebase":
+        raise HTTPException(status_code=403, detail="Supplied grounding requires Firebase-authenticated evidence reads")
+    validated = validate_request_grounding(grounding, auth_info, user_id, organization_id)
+    search = grounding.get("search")
+    query = None
+    if search is not None:
+        if not isinstance(search, dict) or not isinstance(search.get("query"), str) or len(search["query"]) > 2000:
+            raise HTTPException(status_code=422, detail="Grounding search requires a bounded query")
+        query = search["query"]
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Bearer ") or not header[7:]:
+        raise HTTPException(status_code=403, detail="Firebase bearer token required for evidence reads")
+    try:
+        from firebase_client import firebase_client
+        project_id = getattr(firebase_client, "project_id", None) or os.getenv("FIREBASE_PROJECT_ID") or os.getenv("GOOGLE_CLOUD_PROJECT") or firebase_client.db.project
+        return await rehydrate_ai_grounding(validated, header[7:], project_id, query)
+    except GroundingServiceUnavailable as error:
+        raise HTTPException(status_code=503, detail="Authorized evidence service unavailable") from error
+    except Exception as error:
+        raise HTTPException(status_code=503, detail="Authorized evidence service unavailable") from error
+
+
+async def workflow_grounding_kwargs(payload: GroundedWorkflowRequest, auth_info: Dict[str, Any], request: Request) -> Dict[str, Any]:
+    grounding = await authenticated_grounding(payload.ai_grounding, request, auth_info, getattr(payload, "user_id", None))
     return {"ai_grounding": grounding} if grounding is not None else {}
+
+
+def grounded_workflow_response(result, field, grounding_kwargs, response_type=None):
+    normalized = ensure_workflow_response(result, field, response_type)
+    if grounding_kwargs:
+        normalized["grounding"] = grounding_kwargs["ai_grounding"]
+    return normalized
 
 
 class ComplianceCheckRequest(GroundedWorkflowRequest):
@@ -452,8 +486,8 @@ async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(
         if context_payload.get("ai_grounding") is not None and nested_grounding is not None:
             if context_payload["ai_grounding"] != nested_grounding:
                 raise HTTPException(status_code=422, detail="Conflicting top-level and nested ai_grounding")
-        validated_grounding = validate_request_grounding(
-            raw_grounding, auth_info,
+        validated_grounding = await authenticated_grounding(
+            raw_grounding, request, auth_info,
             context_payload.get("user_id") or chat_request.user_id,
             context_payload.get("organization_id"),
         )
@@ -509,7 +543,9 @@ async def chat(request: Request, chat_request: ChatRequest, auth_info = Depends(
         
         return StreamingResponse(
             generate(),
-            media_type="text/plain"
+            media_type="text/plain",
+            headers={"X-AI-Grounding": json.dumps(validated_grounding, ensure_ascii=True, separators=(",", ":"))}
+            if validated_grounding is not None else {},
         )
     
     except HTTPException:
@@ -536,7 +572,7 @@ async def check_compliance(
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.check_document_compliance(
             document_type=payload.document_type,
@@ -545,7 +581,7 @@ async def check_compliance(
             requirements=payload.requirements,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "analysis", "compliance_check"))
+        return JSONResponse(content=grounded_workflow_response(result, "analysis", grounding_kwargs, "compliance_check"))
     except Exception as e:
         logger.error(f"Compliance check error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -562,7 +598,7 @@ async def assess_risk(
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.assess_risk(
             area=payload.area,
@@ -571,7 +607,7 @@ async def assess_risk(
             critical_areas=payload.critical_areas,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "assessment", "risk_assessment"))
+        return JSONResponse(content=grounded_workflow_response(result, "assessment", grounding_kwargs, "risk_assessment"))
     except Exception as e:
         logger.error(f"Risk assessment error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -588,7 +624,7 @@ async def get_training_recommendations(
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         competency_gaps = payload.competency_gaps or payload.current_skills or []
         accreditation_focus = (
@@ -606,7 +642,7 @@ async def get_training_recommendations(
             timeline=timeline,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "recommendations", "training_recommendations"))
+        return JSONResponse(content=grounded_workflow_response(result, "recommendations", grounding_kwargs, "training_recommendations"))
     except Exception as e:
         logger.error(f"Training recommendations error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -623,7 +659,7 @@ async def generate_action_plan(request: Request, payload: ActionPlanRequest, aut
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.generate_action_plan(
             standard_id=payload.standard_id,
@@ -632,7 +668,7 @@ async def generate_action_plan(request: Request, payload: ActionPlanRequest, aut
             findings=payload.findings,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "action_plan"))
+        return JSONResponse(content=grounded_workflow_response(result, "action_plan", grounding_kwargs))
     except Exception as e:
         logger.error(f"Action plan generation error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -645,7 +681,7 @@ async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.analyze_root_cause(
             issue_title=payload.issue_title,
@@ -654,7 +690,7 @@ async def analyze_root_cause(request: Request, payload: RootCauseAnalysisRequest
             affected_areas=payload.affected_areas,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "root_cause_analysis"))
+        return JSONResponse(content=grounded_workflow_response(result, "root_cause_analysis", grounding_kwargs))
     except Exception as e:
         logger.error(f"Root cause analysis error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -667,7 +703,7 @@ async def suggest_pdca_improvements(request: Request, payload: PDCARequest, auth
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.suggest_pdca_improvements(
             process_name=payload.process_name,
@@ -676,7 +712,7 @@ async def suggest_pdca_improvements(request: Request, payload: PDCARequest, auth
             previous_actions=payload.previous_actions,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "pdca_improvements"))
+        return JSONResponse(content=grounded_workflow_response(result, "pdca_improvements", grounding_kwargs))
     except Exception as e:
         logger.error(f"PDCA improvement error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -689,7 +725,7 @@ async def assess_survey_risk(request: Request, payload: SurveyRiskRequest, auth_
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.assess_survey_risk(
             standard=payload.standard,
@@ -699,7 +735,7 @@ async def assess_survey_risk(request: Request, payload: SurveyRiskRequest, auth_
             survey_date=payload.survey_date,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "survey_risk_assessment"))
+        return JSONResponse(content=grounded_workflow_response(result, "survey_risk_assessment", grounding_kwargs))
     except Exception as e:
         logger.error(f"Survey risk assessment error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
@@ -712,7 +748,7 @@ async def check_design_compliance(request: Request, payload: DesignComplianceReq
     if not agent:
         raise HTTPException(status_code=503, detail="Agent not initialized")
     
-    grounding_kwargs = workflow_grounding_kwargs(payload, auth_info)
+    grounding_kwargs = await workflow_grounding_kwargs(payload, auth_info, request)
     try:
         result = await agent.check_design_compliance(
             design_element=payload.design_element,
@@ -721,7 +757,7 @@ async def check_design_compliance(request: Request, payload: DesignComplianceReq
             design_phase=payload.design_phase,
             **grounding_kwargs,
         )
-        return JSONResponse(content=ensure_workflow_response(result, "design_compliance_assessment"))
+        return JSONResponse(content=grounded_workflow_response(result, "design_compliance_assessment", grounding_kwargs))
     except Exception as e:
         logger.error(f"Design compliance error: {e}")
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")

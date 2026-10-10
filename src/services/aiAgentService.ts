@@ -15,6 +15,7 @@ import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { normalizeAIResponse } from '@/utils/aiResponse';
 import { getAIGrounding, type AIGrounding } from '@/services/aiGroundingService';
+import { parseAIGrounding } from '@/utils/aiGrounding';
 
 export interface ChatMessage {
     role: 'user' | 'assistant';
@@ -394,7 +395,7 @@ export class AIAgentService {
             }
         };
         try {
-            const grounding = getAIGrounding(message, includeContext ? 5000 : 2500);
+            let grounding = getAIGrounding(message, includeContext ? 5000 : 2500);
             const workspaceContext = includeContext ? this.getContext() : undefined;
             const chatUrl = this.getApiUrl('/chat');
             const request: ChatRequest = {
@@ -476,6 +477,11 @@ export class AIAgentService {
             }
 
             // Check if response is streaming or regular JSON
+            const verifiedEvidence = typeof response.headers?.get === 'function'
+                ? response.headers.get('X-AI-Grounding') : null;
+            if (verifiedEvidence) {
+                grounding = parseAIGrounding(JSON.parse(verifiedEvidence), grounding.organizationId);
+            }
             const contentType = this.getContentType(response);
 
             console.log('📦 Processing response type:', contentType);

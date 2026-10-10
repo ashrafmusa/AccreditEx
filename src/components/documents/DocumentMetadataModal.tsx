@@ -6,6 +6,8 @@ import { cloudinaryService } from "@/services/cloudinaryService";
 import { useAppStore } from "@/stores/useAppStore";
 import { XMarkIcon, SparklesIcon, CheckIcon } from "../icons";
 import { aiAgentService } from "@/services/aiAgentService";
+import { extractDocumentText, extractionWarningKey } from "@/services/documentTextExtractionService";
+import { useToast } from "@/hooks/useToast";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const extractJSON = (text: string): any | null => {
@@ -254,6 +256,7 @@ interface DocumentMetadataModalProps {
     name: { en: string; ar: string };
     type: AppDocument["type"];
     fileUrl?: string;
+    extractedText?: AppDocument["extractedText"];
     tags?: string[];
     category?: string;
     departmentIds?: string[];
@@ -269,6 +272,7 @@ const DocumentMetadataModal: React.FC<DocumentMetadataModalProps> = ({
   preselectedType,
 }) => {
   const { t, dir, lang } = useTranslation();
+  const toast = useToast();
   const { departments } = useAppStore();
 
   // ─── Form State ─────────────────────────────────────────────────────────
@@ -572,11 +576,15 @@ Return ONLY the HTML content.`;
     setUploadError("");
 
     let fileUrl: string | undefined;
+    let extractedText: AppDocument["extractedText"];
 
     if (selectedFiles.length > 0) {
       try {
         setIsUploading(true);
         const file = selectedFiles[0];
+        extractedText = await extractDocumentText(file);
+        const warningKey = extractionWarningKey(extractedText);
+        if (warningKey) toast.warning(t(warningKey));
         const folder = `accreditex/documents/${type.toLowerCase()}`;
         fileUrl = await cloudinaryService.uploadDocument(
           file,
@@ -597,6 +605,7 @@ Return ONLY the HTML content.`;
       name: { en: nameEn, ar: nameAr },
       type,
       fileUrl,
+      ...(extractedText ? { extractedText } : {}),
       tags: tags.length > 0 ? tags : undefined,
       category: category || undefined,
       departmentIds:
@@ -1151,10 +1160,12 @@ Return ONLY the HTML content.`;
               </label>
               <FileUploader
                 onFilesSelected={handleFilesSelected}
+                acceptedFileTypes={["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain", "image/*"]}
                 multiple={false}
                 maxFiles={1}
                 disabled={isUploading}
               />
+              <p className="mt-2 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">{t("documentExtractionNotice")}</p>
             </div>
 
             {/* Upload Progress */}

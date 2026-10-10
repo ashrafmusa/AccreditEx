@@ -1,4 +1,11 @@
 export const en = {
+    documentExtractionNotice: 'Attachment text is extracted locally (up to 10 MB, 50 PDF pages, and 100,000 characters) and saved separately from editable drafts. Images and scans are not read by OCR. Extraction does not approve a document or verify clinical or accreditation compliance.',
+    documentExtractionSizeLimit: 'The attachment exceeds the 10 MB text-extraction limit. No text was extracted; extraction is recorded as failed.',
+    documentExtractionFailed: 'Attachment text extraction failed. The file may still be saved, but it has no usable extracted evidence. Retry with a readable PDF, DOCX, or UTF-8 text file.',
+    documentExtractionUnsupported: 'This attachment has no supported text extraction. Images and scans require OCR, which is unavailable; no clinical findings or compliance claims were inferred.',
+    documentExtractionEmpty: 'No readable text was found. The attachment may be empty or scanned. OCR is unavailable; no evidence or clinical findings were inferred.',
+    documentExtractionTruncated: 'Only part of the attachment text was extracted due to the 50-page or 100,000-character limit. Omitted text and images may contain relevant evidence; review the original file.',
+    documentExtractionNoOcr: 'Text was extracted, but embedded images and scans were not read. OCR is unavailable. Review the original attachment; extracted text is not approval or certification.',
     document: 'Document',
     documentRepository: 'Document Repository',
     documentRepositoryDescription: 'Manage all policies, procedures, and evidence for this project.',

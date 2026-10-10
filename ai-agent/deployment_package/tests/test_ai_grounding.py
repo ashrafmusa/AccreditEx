@@ -77,7 +77,7 @@ def production_functions(filename, names, namespace, class_name=None):
 
 def api_namespace():
     return production_functions("main.py", {
-        "resolve_request_scope", "validate_request_grounding", "workflow_grounding_kwargs",
+        "resolve_request_scope", "validate_request_grounding", "workflow_grounding_kwargs", "grounded_workflow_response",
         "chat", *(name for name, _, _, _ in WORKFLOWS),
     }, {
         **vars(typing), "GroundedWorkflowRequest": object,
@@ -85,13 +85,26 @@ def api_namespace():
             "ChatRequest", "ComplianceCheckRequest", "RiskAssessmentRequest", "TrainingRequest",
             "ActionPlanRequest", "RootCauseAnalysisRequest", "PDCARequest", "SurveyRiskRequest", "DesignComplianceRequest",
         )},
-        "HTTPException": HTTPException, "Request": object, "logger": Mock(), "time": time,
+        "HTTPException": HTTPException, "Request": object, "logger": Mock(), "time": time, "json": json,
         "Depends": lambda dependency: None, "verify_api_key": Mock(),
         "validate_ai_grounding": validate_ai_grounding, "grounding_from_context": grounding_from_context,
         "performance_monitor": Mock(), "JSONResponse": lambda content: content,
         "StreamingResponse": lambda stream, **kwargs: stream,
         "ensure_workflow_response": lambda result, *args: result,
     })
+
+
+_api_namespace = api_namespace
+
+
+def api_namespace():
+    ns = _api_namespace()
+    async def authenticated(grounding, request, auth_info, user_id=None, organization_id=None):
+        if grounding is not None and auth_info.get("auth_type") != "firebase":
+            raise HTTPException(403, "Firebase authentication required")
+        return ns["validate_request_grounding"](grounding, auth_info, user_id, organization_id)
+    ns["authenticated_grounding"] = authenticated
+    return ns
 
 
 class TestGroundingPolicy(unittest.TestCase):
@@ -182,7 +195,8 @@ class TestGroundedEndpoints(unittest.IsolatedAsyncioTestCase):
                 # Act
                 response = await ns[endpoint](request=Mock(), payload=payload, auth_info=auth)
                 # Assert
-                self.assertEqual(response, {field: "result"})
+                self.assertEqual(response[field], "result")
+                self.assertEqual(response["grounding"]["organizationId"], "org-a")
                 self.assertEqual(getattr(agent, method).call_args.kwargs["ai_grounding"]["organizationId"], "org-a")
                 payload.ai_grounding["organizationId"] = "org-b"
                 with self.assertRaises(HTTPException) as caught:

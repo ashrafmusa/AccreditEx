@@ -1,4 +1,5 @@
 import type { AIAction } from "@/utils/aiActions";
+import type { AIGrounding } from "@/services/aiGroundingService";
 
 /** Standard AI response contract (mirrors backend `ai-response/1`). */
 export type AIResponseType =
@@ -34,6 +35,7 @@ export interface AIResponse {
   /** 0..1, or null when unknown */
   confidence: number | null;
   grounded: boolean;
+  grounding?: AIGrounding;
   model: string;
   generatedAt: string;
   source: AIResponseSource;

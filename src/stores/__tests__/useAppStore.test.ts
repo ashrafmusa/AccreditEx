@@ -32,7 +32,13 @@ jest.mock('@/services/departmentService', () => ({
   getDepartments: jest.fn(() => Promise.resolve([])),
 }));
 
+jest.mock('@/services/documentService', () => ({
+  addDocument: jest.fn(async data => ({ ...data, id: 'persisted-document' })),
+}));
+
 import { useAppStore } from '@/stores/useAppStore';
+import { addDocument } from '@/services/documentService';
+import type { DocumentTextExtraction } from '@/types';
 
 describe('useAppStore', () => {
   beforeEach(() => {
@@ -48,6 +54,24 @@ describe('useAppStore', () => {
     expect(state.standards).toEqual([]);
     expect(state.competencies).toEqual([]);
     expect(state.departments).toEqual([]);
+  });
+
+  it('persists attachment extraction separately while keeping the document a draft', async () => {
+    // Arrange
+    const extractedText: DocumentTextExtraction = {
+      sourceFileName: 'review.txt', text: 'Review checklist.', status: 'extracted',
+      extractedAt: '', pagesProcessed: 0, totalPages: null, limitations: [],
+    };
+    // Act
+    const result = await useAppStore.getState().addControlledDocument({
+      name: { en: 'Review', ar: '' }, type: 'Evidence', extractedText,
+      content: { en: 'Editable draft.', ar: '' },
+    });
+    // Assert
+    expect(addDocument).toHaveBeenCalledWith(expect.objectContaining({
+      extractedText, content: { en: 'Editable draft.', ar: '' }, status: 'Draft',
+    }));
+    expect(result.extractedText).toEqual(extractedText);
   });
 
   it('should update standards', () => {

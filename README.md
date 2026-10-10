@@ -214,8 +214,14 @@ AI-powered features (15+ tools) are provided by a custom Python FastAPI backend 
 ### Cross-app evidence grounding
 
 All existing chat callers and eight dedicated workflow endpoints share the
-`ai-grounding/1` evidence envelope. Retrieval uses authorized loaded records,
+`ai-grounding/1` evidence envelope. The frontend selects authorized loaded records
 matching the active organization and the centralized read-permission service.
+The backend reloads selected records using the incoming Firebase token through
+Firestore REST, enforcing read rules instead of trusting client text. Optional
+search scans up to 50 organization-scoped documents and 50 standards, then ranks
+and budgets at most seven records. Service failures are explicit; they do not
+fall back to unverified client evidence. API-key callers cannot submit grounding
+without Firebase user access.
 Explicitly global standard/program catalogs are supported; unscoped legacy
 records are withheld rather than assumed to belong to the current organization.
 
@@ -224,7 +230,8 @@ risk, CAPA, PDCA, training/competency, and audit-plan links. Sources carry stabl
 references, document versions/statuses, bounded excerpts, and coverage limits.
 Both assistant chat interfaces expose a collapsible evidence-provenance panel
 with the exact supplied excerpts, recorded status/version, and retrieval limits.
-This panel does not validate source authenticity or certify the answer.
+The panel shows server-reloaded evidence when available. Reloading verifies
+authorized database provenance, not clinical truth or accreditation compliance.
 Relationship lists are deduplicated and bounded; ambiguous standard codes across
 programs/editions are withheld rather than automatically linked.
 Backend handlers reject organization mismatches and malformed evidence. The
@@ -240,11 +247,18 @@ AI remains advisory: existing changes require user review/approval. Provider
 failures do not create fabricated root causes, risk ratings, compliance statuses,
 or successful writing edits.
 
-**Boundaries:** this is retrieval from the loaded app snapshot, not an exhaustive
-server-side knowledge index. Uploaded binary attachments are not extracted by
-this layer, and catalog descriptions do not authenticate an official standard
-edition. A source citation establishes provenance, not clinical accuracy or
-accreditation certification. Missing links and absent sources require review.
+PDF, DOCX, and UTF-8 text uploads extract bounded text locally (10 MB, 50 PDF
+pages, 100,000 characters) using a bundled PDF worker, not a third-party parsing
+service. Extraction status and limitations are stored separately from editable
+content and do not approve the document. Empty, unsupported, scanned/image-only,
+truncated, and failed extraction produce explicit localized warnings. No OCR is
+performed. Existing attachments are not silently fetched or backfilled.
+
+**Boundaries:** bounded retrieval is not an exhaustive knowledge index. Stored
+extracted text is not independently verified against the binary, and catalog
+descriptions do not authenticate an official standard edition. A source citation
+establishes provenance, not clinical accuracy or accreditation certification.
+Missing links and absent sources require review.
 
 ## Lab Operations Module
 

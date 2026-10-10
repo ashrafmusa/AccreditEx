@@ -113,6 +113,25 @@ describe("Permission-aware AI evidence retrieval", () => {
     expect(result.sources.find(s => s.kind === "document")?.excerpt).toBe("تحقق من هوية العينة.");
   });
 
+  it("uses extracted attachment text only when editable content is absent", () => {
+    // Arrange
+    const records = snapshot();
+    records.documents[0].content = { en: "", ar: "" };
+    records.documents[0].extractedText = {
+      sourceFileName: "policy.pdf", text: "Specimen review excerpt.", status: "truncated",
+      extractedAt: "", pagesProcessed: 50, totalPages: 80, limitations: ["pageLimit"],
+    };
+    // Act
+    const extracted = buildAIGrounding("policy", "org-a", records, () => true);
+    records.documents[0].content = { en: "Editable policy content.", ar: "" };
+    const inline = buildAIGrounding("policy", "org-a", records, () => true);
+    // Assert
+    expect(extracted.sources.find(s => s.kind === "document")?.excerpt).toBe("Specimen review excerpt.");
+    expect(extracted.sources.find(s => s.kind === "document")?.excerptTruncated).toBe(true);
+    expect(extracted.coverage.limitations.join(" ")).toContain("not verified against the original file");
+    expect(inline.sources.find(s => s.kind === "document")?.excerpt).toBe("Editable policy content.");
+  });
+
   it("withholds ambiguous standard code links across editions", () => {
     // Arrange
     const records = snapshot();

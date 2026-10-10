@@ -5,6 +5,7 @@ import type {
   AIResponseType,
 } from "@/types/aiResponse";
 import { extractActions, type AIAction } from "@/utils/aiActions";
+import { parseAIGrounding } from "@/utils/aiGrounding";
 
 /** Fields that older endpoints / clients used to carry the AI text. */
 const CONTENT_FIELDS = [
@@ -172,6 +173,7 @@ export function normalizeAIResponse(raw: unknown, options: NormalizeOptions = {}
     actions,
     confidence: toConfidence(record.confidence ?? meta.quality_confidence),
     grounded: record.grounded === true,
+    grounding: record.grounding === undefined ? undefined : parseAIGrounding(record.grounding),
     model: typeof record.model === "string" ? record.model : typeof meta.model === "string" ? meta.model : "",
     generatedAt:
       (typeof record.generated_at === "string" && record.generated_at) ||
