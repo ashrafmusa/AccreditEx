@@ -12,6 +12,7 @@ import { useToast } from "../hooks/useToast";
 import { useTranslation } from "../hooks/useTranslation";
 import {
   hasOhasSmcsProjects,
+  resolveOhasSmcsProgram,
   seedOhasSmcsProjects,
 } from "../services/ohasService";
 import { useAppStore } from "../stores/useAppStore";
@@ -48,35 +49,39 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
   const canModify = currentUser?.role === UserRole.Admin;
 
   const alreadySeeded = hasOhasSmcsProjects(projects);
+  const smcsProgram = resolveOhasSmcsProgram(accreditationPrograms, standards);
 
   const handleSeedOhas = async () => {
+    if (!smcsProgram) {
+      toast.error(t("smcsProgramUnavailable"));
+      return;
+    }
     if (
       !(await useConfirmStore
         .getState()
-        .confirm(
-          "This will create 14 pre-built OHAS/SMCS accreditation projects covering all Oman Specialized Medical Care Services departments. Continue?",
-          "Seed OHAS/SMCS Projects",
-          "Seed 14 Projects",
-        ))
+        .confirm(t("smcsSeedConfirm"), t("smcsSeedTitle"), t("smcsSeedAction")))
     )
       return;
     setIsSeeding(true);
     try {
-      const result = await seedOhasSmcsProjects();
+      const result = await seedOhasSmcsProjects(smcsProgram.id);
       if (result.errors.length === 0) {
         toast.success(
-          `✓ ${result.created} SMCS projects created: ${result.departments.slice(0, 3).join(", ")}${result.created > 3 ? ` +${result.created - 3} more` : ""}.`,
+          t("smcsSeedSuccess").replace("{count}", String(result.created)),
         );
       } else {
         toast.warning(
-          `Created ${result.created} projects. ${result.errors.length} failed: ${result.errors[0]}`,
+          t("smcsSeedPartial")
+            .replace("{created}", String(result.created))
+            .replace("{failed}", String(result.errors.length))
+            .replace("{error}", result.errors[0]),
         );
       }
       // Refresh projects list
       await useProjectStore.getState().fetchAllProjects();
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      toast.error(`Seed failed: ${msg}`);
+      toast.error(t("smcsSeedFailed").replace("{error}", msg));
     } finally {
       setIsSeeding(false);
     }
@@ -162,8 +167,12 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
   return (
     <div className="space-y-6">
       <header>
-        <h1 className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">{t("qualityProgramTitle")}</h1>
-        <p className="mt-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">{t("qualityProgramHelp")}</p>
+        <h1 className="text-3xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
+          {t("qualityProgramTitle")}
+        </h1>
+        <p className="mt-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+          {t("qualityProgramHelp")}
+        </p>
       </header>
       {canModify && (
         <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
@@ -181,18 +190,20 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
             <Button
               variant="secondary"
               onClick={handleSeedOhas}
-              disabled={isSeeding || alreadySeeded}
+              disabled={isSeeding || alreadySeeded || !smcsProgram}
               title={
                 alreadySeeded
-                  ? "OHAS/SMCS projects already seeded"
-                  : "Create 14 pre-built SMCS department projects"
+                  ? t("smcsSeedAlreadyDone")
+                  : !smcsProgram
+                    ? t("smcsProgramUnavailable")
+                    : t("smcsSeedConfirm")
               }
             >
               {isSeeding
-                ? "Seeding…"
+                ? t("smcsSeeding")
                 : alreadySeeded
-                  ? "✓ OHAS/SMCS Seeded"
-                  : "🏥 Seed OHAS/SMCS (14 Projects)"}
+                  ? t("smcsSeedAlreadyDone")
+                  : t("smcsSeedAction")}
             </Button>
             {/* SMCS Clinical Calculators */}
           </div>

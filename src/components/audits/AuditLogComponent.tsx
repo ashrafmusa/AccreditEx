@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Project, ActivityLogItem } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import { SearchIcon, ClipboardDocumentListIcon } from "@/components/icons";
-import { TableContainer, EmptyState } from "@/components/ui";
+import { TableContainer, EmptyState, Button } from "@/components/ui";
 import { getRecentActivityLogs } from "@/services/activityLogService";
 
 interface AuditLogComponentProps {
@@ -14,14 +14,18 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activityLogData, setActivityLogData] = useState<ActivityLogItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   const fetchLogs = useCallback(async () => {
     setIsLoading(true);
+    setLoadError(false);
     try {
       const logs = await getRecentActivityLogs(100);
       setActivityLogData(logs);
     } catch (error) {
       console.error("Failed to fetch activity logs:", error);
+      setActivityLogData([]);
+      setLoadError(true);
     } finally {
       setIsLoading(false);
     }
@@ -62,6 +66,14 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
           />
         </div>
       </div>
+      {loadError && (
+        <div role="alert" className="p-4 text-sm text-red-700 dark:text-red-300">
+          <p>{t("auditLogLoadFailed")}</p>
+          <Button variant="secondary" onClick={fetchLogs} className="mt-3">
+            {t("auditLogRetry")}
+          </Button>
+        </div>
+      )}
       <TableContainer>
         <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
           <thead className="bg-gray-50 dark:bg-gray-700">
@@ -131,7 +143,7 @@ const AuditLogComponent: React.FC<AuditLogComponentProps> = ({ project }) => {
           </tbody>
         </table>
       </TableContainer>
-      {filteredLog.length === 0 && (
+      {!isLoading && !loadError && filteredLog.length === 0 && (
         <EmptyState
           icon={<ClipboardDocumentListIcon className="w-6 h-6" />}
           title={searchTerm ? t("noResults") : t("noActivity")}

@@ -62,13 +62,17 @@ const AuditHubPage: React.FC<AuditHubPageProps> = () => {
   const [aiModalContent, setAiModalContent] = useState("");
   const [aiModalTitle, setAiModalTitle] = useState("");
 
+  const [logError, setLogError] = useState(false);
   const fetchActivityLog = useCallback(async () => {
     setIsLoadingLog(true);
+    setLogError(false);
     try {
       const logs = await getRecentActivityLogs(200);
       setActivityLog(logs);
     } catch (error) {
       console.error("Failed to fetch activity logs:", error);
+      setActivityLog([]);
+      setLogError(true);
     } finally {
       setIsLoadingLog(false);
     }
@@ -346,6 +350,14 @@ Format your response in clear Markdown with headers and bullet points.`;
               />
             </div>
           </div>
+          {logError && (
+            <div role="alert" className="p-4 text-sm text-red-700 dark:text-red-300">
+              <p>{t("auditLogLoadFailed")}</p>
+              <Button variant="secondary" onClick={fetchActivityLog} className="mt-3">
+                {t("auditLogRetry")}
+              </Button>
+            </div>
+          )}
           <TableContainer>
             <table className="min-w-full divide-y divide-gray-200 dark:divide-dark-brand-border">
               <thead className="bg-gray-50 dark:bg-gray-700">
@@ -430,7 +442,7 @@ Format your response in clear Markdown with headers and bullet points.`;
                 )}
               </tbody>
             </table>
-            {!isLoadingLog && filteredLog.length === 0 && (
+            {!isLoadingLog && !logError && filteredLog.length === 0 && (
               <EmptyState
                 icon={ClipboardDocumentSearchIcon}
                 title={searchTerm ? t("noProjectsFound") : t("noActivity")}

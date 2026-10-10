@@ -37,8 +37,21 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
     - Analysis is explicitly requested with **Analyze Document**. Missing metrics show **Not assessed**, invalid responses fail visibly, and findings must include exact quotes from the supplied document. Quality estimates are not verified accreditation scores; no default scores are fabricated.
 -   **Risk Management Hub**: ISO 31000-compliant risk register with risk matrices, CAPA integration, and root cause analysis (Fishbone + Five-Why).
 -   **Audit Management Hub**: Internal/external audit planning, tracer worksheets, findings management, and corrective action tracking.
+    - Activity-log reads require the `activity_logs` organization/timestamp composite indexes declared in `firestore.indexes.json`. Read failures display an error and retry action instead of claiming the log is empty.
+    - SMCS seeding resolves a single active program from complete standard coverage, never the dataset's legacy `prog-ohap` identifier, and checks for existing legacy or repaired projects before writing.
+
 -   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis.
 -   **Analytics Hub**: Multi-format reporting (PDF, Excel, CSV, JSON), AI-powered quality insights, PDCA cycle tracking, and executive briefings.
+
+#### Pending SMCS data reconciliation
+
+`scripts/migrations/reconcile-smcs-program.cjs` defaults to a read-only plan. It verifies destination ownership/sharing and complete SMCS standard coverage, and only targets legacy SMCS projects belonging to the explicitly selected organization.
+
+```powershell
+node scripts\migrations\reconcile-smcs-program.cjs --project=accreditex-79c08 --organization=org-accreditex --program=T0ayZzzR9OBq15wU5smS
+```
+
+Live application requires separate approval, existing authorized credentials, and explicit `--apply --confirm-project=accreditex-79c08 --expected-count=14 --backup=<absolute-path-outside-repository>` arguments. The script writes a full backup before an atomic, concurrency-guarded update of **only `programId`**, then verifies every project. Never commit the backup. Database indexes must also be applied separately and reach READY before claiming Audit Log is repaired; frontend Hosting deployment does not deploy indexes.
 
 ### Hospital-Specific Features
 -   **Accreditation Hub**: Cross-standard evidence mapping, pre-loaded 240+ standards / 1,043 sub-standards.
