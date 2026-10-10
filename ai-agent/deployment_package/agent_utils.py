@@ -20,7 +20,7 @@ from typing import Any, Deque, Dict, Iterable, List, Mapping, Optional, Tuple, U
 from urllib.parse import quote
 
 DEFAULT_MODEL = "openai/gpt-oss-120b"
-DEFAULT_FALLBACK_MODEL = "llama-3.1-8b-instant"
+DEFAULT_FALLBACK_MODEL = "openai/gpt-oss-20b"
 
 
 def _env_float(name: str, default: float) -> float:
@@ -70,8 +70,8 @@ class AgentConfig:
             temperature = _env_float(f"{agent_prefix.upper()}_TEMPERATURE", temperature)
         temperature = min(max(temperature, 0.0), 2.0)
         return cls(
-            model=os.getenv("GROQ_MODEL") or DEFAULT_MODEL,
-            fallback_model=os.getenv("GROQ_FALLBACK_MODEL") or DEFAULT_FALLBACK_MODEL,
+            model=os.getenv("GROQ_MODEL") or os.getenv("MODEL_NAME") or DEFAULT_MODEL,
+            fallback_model=os.getenv("GROQ_FALLBACK_MODEL") or os.getenv("FALLBACK_MODEL") or DEFAULT_FALLBACK_MODEL,
             temperature=temperature,
             max_tokens=max(1, _env_int("AGENT_MAX_TOKENS", cls.max_tokens)),
             cache_ttl_seconds=max(0, _env_int("AGENT_CACHE_TTL", cls.cache_ttl_seconds)),

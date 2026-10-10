@@ -87,8 +87,10 @@ class UnifiedAccreditexAgent:
             logger.warning("⚠️ Firebase database not initialized!")
         
         # Model configuration — primary + fallback for rate limits
-        self.model = os.getenv("GROQ_MODEL") or "llama-3.3-70b-versatile"
-        self.fallback_model = os.getenv("GROQ_FALLBACK_MODEL") or "llama-3.1-8b-instant"
+        self.model = os.getenv("GROQ_MODEL") or os.getenv("MODEL_NAME") or "openai/gpt-oss-120b"
+        self.fast_model = os.getenv("FAST_MODEL") or "openai/gpt-oss-20b"
+        self.fallback_model = os.getenv("GROQ_FALLBACK_MODEL") or os.getenv("FALLBACK_MODEL") or self.fast_model
+        self._available_models = None
         self.temperature = 0.7
         self.max_tokens = 4096
         
@@ -193,14 +195,16 @@ class UnifiedAccreditexAgent:
 
     # ── Model availability resolver ──────────────────────────────────
     _MODEL_PREFERENCE = (
-        "llama-3.3-70b-versatile",
         "openai/gpt-oss-120b",
-        "llama-3.1-70b-versatile",
         "openai/gpt-oss-20b",
         "qwen/qwen3-32b",
-        "meta-llama/llama-4-scout-17b-16e-instruct",
-        "llama-3.1-8b-instant",
     )
+    _RETIRED_MODELS = {
+        "llama-3.1-8b-instant": "openai/gpt-oss-20b",
+        "llama-3.3-70b-versatile": "openai/gpt-oss-120b",
+        "llama-3.1-70b-versatile": "openai/gpt-oss-120b",
+        "meta-llama/llama-4-scout-17b-16e-instruct": "openai/gpt-oss-120b",
+    }
     _NON_CHAT_MARKERS = ("whisper", "guard", "tts", "playai", "orpheus", "embed")
 
     def _install_model_resolver(self) -> None:
@@ -211,10 +215,12 @@ class UnifiedAccreditexAgent:
             if isinstance(kwargs.get('messages'), list):
                 kwargs['messages'] = apply_response_language(kwargs['messages'])
             requested = kwargs.get('model')
+            requested = self._RETIRED_MODELS.get(requested, requested)
+            kwargs["model"] = requested
             # Explicit fallback IDs must never resolve back to the exhausted primary.
             fallback = getattr(self, "fallback_model", None)
-            is_fallback = requested == fallback
-            if is_fallback:
+            is_fallback = requested == self._RETIRED_MODELS.get(fallback, fallback)
+            if is_fallback or requested in self._MODEL_PREFERENCE:
                 self._model_substitutions.pop(requested, None)
             elif requested in self._model_substitutions:
                 kwargs['model'] = self._model_substitutions[requested]
@@ -225,7 +231,7 @@ class UnifiedAccreditexAgent:
                 is_missing = getattr(e, 'status_code', None) == 404 or 'model_not_found' in text
                 if not (is_missing and requested):
                     raise
-                if is_fallback:
+                if is_fallback or requested in self._MODEL_PREFERENCE:
                     raise
                 replacement = await self._discover_model(exclude=kwargs.get('model'))
                 if not replacement:
@@ -251,11 +257,23 @@ class UnifiedAccreditexAgent:
                 return preferred
         return chat_models[0] if chat_models else None
 
+    async def _supported_model(self, requested: str) -> str:
+        requested = self._RETIRED_MODELS.get(requested, requested)
+        if self._available_models is None:
+            try:
+                listing = await self.client.models.list()
+                self._available_models = {item.id for item in listing.data}
+            except Exception as error:
+                raise RuntimeError("AI model availability could not be verified.") from error
+        if requested not in self._available_models:
+            raise RuntimeError("Configured AI model is unavailable.")
+        return requested
+
     # ── Rate-limit-aware API call ────────────────────────────────────
-    async def _create_completion(self, messages, stream=False, max_tokens=None, temperature=None):
+    async def _create_completion(self, messages, stream=False, max_tokens=None, temperature=None, model=None):
         """Call Groq with automatic fallback to lighter model on 429."""
         kwargs = {
-            'model': self.model,
+            'model': await self._supported_model(model or self.model),
             'messages': messages,
             'stream': stream,
             'temperature': temperature or self.temperature,
@@ -269,11 +287,15 @@ class UnifiedAccreditexAgent:
             self.last_llm_error = f"{type(e).__name__} status={getattr(e, 'status_code', None)}"
             error_str = str(e)
             if getattr(e, "status_code", None) == 429 or '429' in error_str or 'rate_limit' in error_str.lower():
-                if self.fallback_model == self.model:
+                requested_fallback = self.fallback_model
+                if self._RETIRED_MODELS.get(requested_fallback, requested_fallback) == kwargs["model"]:
+                    requested_fallback = self.model if kwargs["model"] != self._RETIRED_MODELS.get(self.model, self.model) else self.fast_model
+                fallback = await self._supported_model(requested_fallback)
+                if fallback == kwargs["model"]:
                     self.last_llm_error = "All configured models exhausted: fallback duplicates primary"
                     raise RuntimeError("All configured AI models are unavailable; please retry later.") from e
-                logger.warning(f"⚠️ Rate-limited on {self.model}, falling back to {self.fallback_model}")
-                kwargs['model'] = self.fallback_model
+                logger.warning(f"Rate-limited on {kwargs['model']}, falling back to {fallback}")
+                kwargs['model'] = fallback
                 try:
                     result = await self.client.chat.completions.create(**kwargs)
                     self.last_llm_error = None
@@ -504,6 +526,25 @@ class UnifiedAccreditexAgent:
             Response chunks from specialist
         """
         logger.info(f"📋 Routing to specialist: {task_type}")
+        if context and context.get("current_data"):
+            specialist = {"compliance": self.compliance_agent, "risk": self.risk_agent,
+                          "training": self.training_agent}.get(task_type)
+            if specialist:
+                messages = [{"role": "system", "content": specialist.get_full_prompt(context) + STANDARD_RESPONSE_RULES},
+                            {"role": "user", "content": message}]
+                response = await self._create_completion(
+                    messages=messages, stream=stream, model=self.fast_model,
+                    max_tokens=response_token_budget(True, apply_response_language(messages)))
+                if stream:
+                    async for chunk in response:
+                        if chunk.choices[0].finish_reason == "length":
+                            yield TRUNCATED_RESPONSE_MARKER
+                            return
+                        if chunk.choices[0].delta.content:
+                            yield chunk.choices[0].delta.content
+                else:
+                    yield response.choices[0].message.content
+                return
         
         # Route to appropriate specialist
         if task_type == 'compliance':
@@ -557,6 +598,7 @@ class UnifiedAccreditexAgent:
         
         # Stream response
         stream_response = await self._create_completion(
+            model=self.fast_model,
             messages=messages,
             temperature=self.temperature,
             max_tokens=self.max_tokens,
@@ -841,6 +883,7 @@ Always be specific and actionable, using real data from their workspace.
 
             # Stream response with automatic fallback on rate limit
             stream = await self._create_completion(
+                model=self.fast_model if has_context else self.model,
                 messages=messages,
                 stream=True,
                 max_tokens=response_token_budget(has_context, apply_response_language(messages)),

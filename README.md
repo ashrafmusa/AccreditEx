@@ -77,6 +77,15 @@ Configured fallback model IDs are preserved during model resolution; a quota
 failure retries the distinct configured fallback rather than aliasing it back
 to the exhausted primary. If both models fail, the request reports failure.
 
+**Hybrid routing:** routine chat/navigation uses `FAST_MODEL` (default
+`openai/gpt-oss-20b`). Complex grounded workflows and document generation use
+`MODEL_NAME` (default `openai/gpt-oss-120b`), with a distinct supported fallback.
+Provider availability and organization-specific limits must be checked before
+changing these settings. Historical Llama 8B/70B and Scout IDs were retired for
+free/developer plans; see [Groq deprecations](https://console.groq.com/docs/deprecations).
+Whisper transcription is a separate audio capability, not a text-model fallback,
+and is not enabled by this routing change.
+
 ### Workflow Automation
 -   **Trigger-Condition-Action Engine**: 10 entity types × 10 event types, 8 condition operators, 11 action types.
 -   **Visual Workflow Builder**: 4-step modal for creating workflows with real-time config.
