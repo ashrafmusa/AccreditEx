@@ -27,7 +27,7 @@ from firebase_client import firebase_client
 from monitoring import performance_monitor
 from document_analyzer import document_analyzer
 from agent_utils import build_workspace_snapshot
-from skills.response_standard import STANDARD_RESPONSE_RULES, build_standard_response
+from skills.response_standard import STANDARD_RESPONSE_RULES, apply_response_language, build_standard_response
 
 # Import specialist prompts (Quick Win 1)
 from specialist_prompts import (
@@ -208,6 +208,8 @@ class UnifiedAccreditexAgent:
         original_create = self.client.chat.completions.create
 
         async def create_with_resolution(*args, **kwargs):
+            if isinstance(kwargs.get('messages'), list):
+                kwargs['messages'] = apply_response_language(kwargs['messages'])
             requested = kwargs.get('model')
             if requested in self._model_substitutions:
                 kwargs['model'] = self._model_substitutions[requested]
@@ -1277,4 +1279,3 @@ Format with clear Markdown headings."""
         except Exception as e:
             logger.error(f"Error getting training status: {e}")
             return {'error': str(e)}
-

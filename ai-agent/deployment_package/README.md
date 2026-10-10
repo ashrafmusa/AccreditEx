@@ -25,3 +25,13 @@ It is configured to use **Groq** for high-performance, free AI inference using t
 - **Free Tier**: Generous free usage for Llama 3 models.
 - **Speed**: Extremely fast inference.
 - **Quality**: Llama 3 70B is comparable to GPT-4 for many tasks.
+
+## Response Language
+The latest user message determines the reply language, including section headings.
+English questions receive English answers and Arabic questions receive Arabic answers,
+unless the user explicitly requests another output language. Workspace content,
+interface language, and earlier conversation turns must not override this choice.
+The shared completion client and specialist agents apply this rule on each request.
+
+Run the language regression tests from this directory:
+`python -B -m unittest discover -s tests -p test_response_language.py -v`

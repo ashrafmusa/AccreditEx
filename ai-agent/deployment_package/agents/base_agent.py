@@ -28,7 +28,7 @@ from agent_utils import (
 # Import the markdown skill we just created. 
 # Adjust the import path depending on where you saved the Markdown Formatting Skill file.
 from skills.markdown_formatting import get_markdown_formatting_skill
-from skills.response_standard import STANDARD_RESPONSE_RULES
+from skills.response_standard import STANDARD_RESPONSE_RULES, apply_response_language
 
 logger = logging.getLogger(__name__)
 
@@ -182,10 +182,10 @@ class BaseSpecialistAgent(ABC):
             # follow the shared AccreditEx response standard.
             system_prompt = self.get_full_prompt(context) + STANDARD_RESPONSE_RULES
             
-            messages = [
+            messages = apply_response_language([
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": message}
-            ]
+            ])
             
             self.log.info("chat_request", agent=self.get_specialist_name())
             
@@ -252,10 +252,10 @@ class BaseSpecialistAgent(ABC):
             
             self.rate_limiter.check(self._resolve_user_id(user_id, context))
             
-            messages = [
+            messages = apply_response_language([
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": message}
-            ]
+            ])
             
             # Base API call parameters
             api_params = {

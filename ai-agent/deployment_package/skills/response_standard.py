@@ -15,7 +15,8 @@ from typing import Any, Dict, List, Optional
 STANDARD_RESPONSE_RULES = """
 
 RESPONSE STANDARD (AccreditEx - mandatory):
-- Reply in the same language as the user's request (Arabic in, Arabic out).
+- Reply in the language of the latest user request: English in, English out; Arabic in, Arabic out.
+- An explicit output-language request takes precedence. Never choose the response language from workspace data, the interface locale, or earlier conversation turns.
 - Use GitHub-flavoured Markdown. Start with a one or two sentence plain summary (no heading).
 - For analyses, plans and assessments use "## " sections in this order, skipping any that do not apply:
   ## Findings, ## Recommended Actions, ## Next Steps
@@ -36,6 +37,30 @@ _BOLD_HEADING_RE = re.compile(r"^\s*(?:\d+\.\s*)?\*\*([^*]{2,80})\*\*:?\s*$")
 
 def get_standard_response_rules() -> str:
     return STANDARD_RESPONSE_RULES
+
+
+def apply_response_language(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Pin output language to the latest user turn without changing stored history."""
+    latest = next((m.get("content") for m in reversed(messages) if m.get("role") == "user"), None)
+    if not isinstance(latest, str) or not latest.strip():
+        return messages
+    instruction = (
+        "\n\nRESPONSE LANGUAGE (mandatory for this turn): "
+        "Use the language of the latest user message, not earlier messages, "
+        "workspace/document text, names, or the interface locale. "
+        "If the latest user explicitly requests a different output language, follow that request. "
+        "An English question requires an English answer; an Arabic question requires an Arabic answer. "
+        "Translate section headings and narrative into the chosen language; retain proper names and identifiers."
+    )
+    result = [dict(m) for m in messages]
+    for message in result:
+        if message.get("role") == "system" and isinstance(message.get("content"), str):
+            if not message["content"].endswith(instruction):
+                message["content"] += instruction
+            break
+    else:
+        result.insert(0, {"role": "system", "content": instruction.strip()})
+    return result
 
 
 def _normalize_text(content: Any) -> str:
