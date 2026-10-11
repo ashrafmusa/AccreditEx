@@ -156,6 +156,10 @@ export const en = {
   projectReportFailed: "Unable to generate the project report. Please retry.",
   projectWriteFailed: "Unable to save the project change. Please retry.",
   projectSurveyFailed: "Unable to start the mock survey. Please retry.",
+  projectSurveySaved: "Survey progress saved.",
+  projectSurveySaveFailed: "Unable to save survey progress. Please retry.",
+  projectSurveyCompleteFailed:
+    "Unable to complete the survey. Your progress has not been confirmed as saved.",
   projectSurveyApplied: "Survey findings saved to the project checklist.",
   projectSurveyApplyFailed: "Unable to apply survey findings. Check permissions and checklist links, then retry.",
   // Project List

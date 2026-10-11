@@ -965,7 +965,7 @@ export interface MockSurveyResult {
   id: string;
   itemId: string;
   checklistItemId?: string;
-  result: 'Pass' | 'Fail' | 'Not Applicable';
+  result?: 'Pass' | 'Fail' | 'Not Applicable';
   notes?: string;
 }
 

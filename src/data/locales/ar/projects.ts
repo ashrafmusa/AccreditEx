@@ -153,6 +153,10 @@ export const ar = {
   projectReportFailed: "تعذر إنشاء تقرير المشروع. أعد المحاولة.",
   projectWriteFailed: "تعذر حفظ تغيير المشروع. أعد المحاولة.",
   projectSurveyFailed: "تعذر بدء محاكاة التقييم. أعد المحاولة.",
+  projectSurveySaved: "تم حفظ تقدم الجولة التفقدية.",
+  projectSurveySaveFailed: "تعذر حفظ تقدم الجولة التفقدية. أعد المحاولة.",
+  projectSurveyCompleteFailed:
+    "تعذر إكمال الجولة التفقدية. لم يتم تأكيد حفظ تقدمك.",
   projectSurveyApplied: "تم حفظ نتائج الجولة التفقدية في قائمة مراجعة المشروع.",
   projectSurveyApplyFailed: "تعذر تطبيق نتائج الجولة التفقدية. تحقق من الصلاحيات وروابط قائمة المراجعة ثم أعد المحاولة.",
   // Project List
