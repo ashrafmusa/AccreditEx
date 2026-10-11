@@ -25,8 +25,11 @@ const LAB_OPS_COLLECTION = "labOpsData";
 const MAX_PAYLOAD_BYTES = 900_000;
 
 function omitUndefinedFields(value: unknown): unknown {
-    if (Array.isArray(value)) return value.map(omitUndefinedFields);
-    if (value && typeof value === "object") {
+    if (Array.isArray(value)) {
+        return value.filter((item) => item !== undefined).map(omitUndefinedFields);
+    }
+    if (value && typeof value === "object" &&
+        (Object.getPrototypeOf(value) === Object.prototype || Object.getPrototypeOf(value) === null)) {
         return Object.fromEntries(
             Object.entries(value).filter(([, field]) => field !== undefined)
                 .map(([key, field]) => [key, omitUndefinedFields(field)]),

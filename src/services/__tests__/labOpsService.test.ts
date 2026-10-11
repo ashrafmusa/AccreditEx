@@ -59,7 +59,7 @@ describe("Lab Operations persistence", () => {
                 id: "equipment-1",
                 name: "Analyzer",
                 optionalField: undefined,
-                nested: { absent: undefined, present: "value" },
+                nested: { absent: undefined, present: "value", values: ["first", undefined, "last"] },
             }],
         } as unknown as LabOpsPersistedData;
 
@@ -71,7 +71,7 @@ describe("Lab Operations persistence", () => {
                 equipment: [{
                     id: "equipment-1",
                     name: "Analyzer",
-                    nested: { present: "value" },
+                    nested: { present: "value", values: ["first", "last"] },
                 }],
             }),
             { merge: true },
