@@ -18,6 +18,8 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       'process.env.NODE_ENV': JSON.stringify(mode),
+      // Production activation requires a separately reviewed rollout change, not an incidental .env flag.
+      'process.env.VITE_LAB_RECORD_STORAGE': JSON.stringify(mode === 'production' ? 'false' : getEnv('VITE_LAB_RECORD_STORAGE') || 'false'),
       'process.env.VITE_API_KEY': JSON.stringify(getEnv('VITE_API_KEY')),
       'process.env.VITE_AUTH_DOMAIN': JSON.stringify(getEnv('VITE_AUTH_DOMAIN')),
       'process.env.VITE_PROJECT_ID': JSON.stringify(getEnv('VITE_PROJECT_ID')),

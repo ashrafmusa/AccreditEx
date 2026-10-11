@@ -325,11 +325,115 @@ and Competency Matrix.
 - Lab Operations Firestore create/update rules now require tenant admins,
   matching the route. These rules require a separately authorized rules
   deployment; a Hosting deployment does not apply them.
-- Operational arrays still share one Firestore aggregate. A 900,000-byte UTF-8
-  JSON payload guard leaves document-size headroom and surfaces oversized saves
-  as sync failures. This is not a scalability solution: append-only log
-  collections, pagination, and conflict-safe record updates remain a separately
-  planned schema migration. Do not assume concurrent aggregate edits merge.
+- **Dormant record storage upgrade:** `VITE_LAB_RECORD_STORAGE` defaults to
+  `false`. This upgrade additionally compiles it OFF for Vite's `production`
+  mode and rejects it at runtime when `NODE_ENV` is `production`, even if an
+  existing environment file or process variable says `true`. Non-production
+  emulator/staging rehearsal can explicitly enable the flag. Production
+  activation requires a separately authorized, reviewed change to both guards,
+  a rules/schema rollout, and a build explicitly enabling the flag.
+  Enabling it without a verified, `ready: true` destination fails closed; there
+  is no fallback to stale aggregates and no browser-driven migration.
+  `labOpsRecords/{organizationId}` holds master data and a revision; its
+  `iqcResults`, `reagentUsageLogs`, `calibrations`, and `maintenanceLogs`
+  subcollections hold individual records under their original IDs.
+- Record-mode usage and calibration writes are transactions with the current
+  inventory/equipment state. Identical retries with the same ID/payload are
+  no-ops; conflicting reused IDs fail. Insufficient stock, quarantined/expired/
+  depleted inventory, blocked quality flags, mismatched units and backdated
+  calibrations are rejected. IQC and maintenance updates compare their previous
+  payload and master revision. Other master edits use revision compare-and-set;
+  concurrent stale edits fail visibly and require reload, rather than merging or
+  overwriting another operator's inventory changes. There is no offline or
+  cross-organization operation queue. Queued metadata saves are discarded before
+  dispatch if their captured organization is no longer active. An already dispatched transaction remains
+  bound to its original organization; late responses cannot populate another
+  organization's store.
+- Log queries use deterministic date/ID ordering and snapshot cursors, with
+  50-record pages (maximum 100). Recent usage has an explicit partial-history
+  notice and **Load older usage** control, even if the selected reagent has no
+  entries on the current page. Calibration, maintenance and IQC histories are
+  fetched through every page before editing/calculation consumers become
+  available; failure or a revision change during hydration blocks the workspace.
+  Their tables progressively show older records independently of calculation
+  history. Westgard and QC Dashboard therefore never calculate against a
+  silently truncated window. The existing chart's 20-run display window does
+  not truncate rule evaluation.
+- Limits: master arrays still share a document (Firestore's 1 MiB limit applies);
+  legacy mode retains its 900,000-byte guard and is not conflict-safe.
+  Full calibration/maintenance/IQC hydration deliberately preserves current
+  statistics and rule behavior, but has growing read/memory costs. This is not
+  a server-side analytics or archival solution. Linked IQC risk/CAPA/event master
+  edits are not one atomic clinical workflow with the IQC record; failed steps
+  remain visible and require review. Record mutations reload full calculation
+  histories after commit. Forms retain an in-session operation ID for uncertain
+  create retries; closing/reloading the form is not a durable offline retry log.
+
+### Record migration rehearsal, rollout and rollback
+
+`scripts\migrations\lab-operations-records.cjs` is intentionally **emulator-only**:
+it requires a loopback `FIRESTORE_EMULATOR_HOST` and an explicit `demo-*` project.
+It does not accept production credentials or initialize a production target.
+Run a disposable, seeded emulator in another terminal (`npx firebase emulators:start
+--only firestore --project demo-accreditex-rules`), then in PowerShell:
+
+```powershell
+$env:FIRESTORE_EMULATOR_HOST = "127.0.0.1:8080"
+New-Item -ItemType Directory -Force lab-migration-backups | Out-Null
+node scripts\migrations\lab-operations-records.cjs --mode dry-run --org org-a --project demo-accreditex-rules
+node scripts\migrations\lab-operations-records.cjs --mode backup --org org-a --project demo-accreditex-rules --backup lab-migration-backups\org-a.json
+node scripts\migrations\lab-operations-records.cjs --mode migrate --org org-a --project demo-accreditex-rules --backup lab-migration-backups\org-a.json
+```
+
+Dry-run validates ownership, dates and unique IDs without writes. Backup creates
+an exclusive local file with a SHA-256 fingerprint and original source ID/data;
+never overwrite it, commit it, or paste its contents into logs. The ignored
+backup directory still contains sensitive operational data: restrict access,
+retain according to policy, and use approved encrypted storage for real backups.
+Migration preserves the entire source aggregate, uses original log IDs, writes
+at most 100 records plus a checkpoint per transaction, and verifies exact
+destination sets/payloads before activation. An interruption resumes at the last
+atomic offset using the **same backup**; changed sources, invalid/duplicate IDs,
+foreign backups and destination conflicts fail closed. A completed migration
+retry is a no-op, including after subsequent record-mode usage.
+
+Production is **not authorized by this upgrade**. Before any future rollout:
+
+1. Obtain explicit migration/rules authorization and review a production-specific
+   runner (this emulator-only script is not a production deployment tool).
+2. Quiesce Lab Operations writers and old browser sessions; reconcile duplicate
+   legacy sources/IDs and invalid dates; take an approved recoverable backup.
+   Deploy reviewed rules separately, not with Hosting. The new rules freeze all
+   organization-owned legacy aggregates once that organization's destination
+   exists, including while migration is incomplete.
+3. Rehearse interruption/resume, tenant access, concurrent usage and rollback in
+   the emulator/staging environment. Do not dual-write aggregates and records.
+4. Migrate one explicitly selected organization at a time while the flag stays
+   off and writers remain paused. Verify source fingerprints and exact records;
+   only then activate `ready`, remove the production lockouts in an authorized
+   reviewed change, enable the flag in that build, and verify
+   tenant/admin permissions, histories, usage and calibration behavior live.
+   New organizations also need explicitly provisioned ready record roots.
+5. Rollback **before new writes**: keep writers paused, disable the flag, retain
+   the destination for investigation, and block record-schema writes for old
+   clients as well (reviewed rollback rules and/or a privileged `ready: false`
+   change). Explicitly restore aggregate write
+   access using reviewed rollback rules (the new freeze cannot be bypassed merely
+   by turning the flag off). The preserved aggregate is the cutover snapshot.
+   Rollback **after new writes** requires a fresh backup of both schemas and a
+   reviewed reconciliation/export of post-cutover logs, current inventory/
+   equipment and edited master data into the aggregate. Verify capacity and
+   reconciled totals before switching; blindly restoring the cutover snapshot
+   would lose usage/calibration changes. After rollback, new writes may resume
+   only in the reconciled aggregate with the record schema still frozen. Do not
+   simply set the old destination `ready: true` again: subsequent legacy writes
+   would be missing there. Re-activation needs another reviewed reconciliation/
+   migration and verification. No destructive rollback is automated.
+
+Validation: `npm run test:firestore` covers the resumable migration, all four log
+kinds, frozen rollback aggregate, tenant/role isolation, equal-date pagination,
+interruption, changed-source rejection, idempotent retries and concurrent usage.
+No production data, rules or Hosting deployment is part of these commands.
 
 ## Quick Commands
 ```bash

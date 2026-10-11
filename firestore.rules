@@ -640,9 +640,51 @@ service cloud.firestore {
     // Stores aggregated Lab Ops domain state (equipment, IQC, quality records, etc.)
     match /labOpsData/{docId} {
       allow read: if isAuthenticated() && belongsToUserOrg();
-      allow create: if isAdmin() && setsCorrectOrg();
-      allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
-      allow delete: if isAdmin() && belongsToUserOrg();
+      allow create: if isAdmin() && setsCorrectOrg()
+        && !exists(/databases/$(database)/documents/labOpsRecords/$(request.resource.data.organizationId));
+      allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg()
+        && !exists(/databases/$(database)/documents/labOpsRecords/$(resource.data.organizationId));
+      allow delete: if isAdmin() && belongsToUserOrg()
+        && !exists(/databases/$(database)/documents/labOpsRecords/$(resource.data.organizationId));
+    }
+
+    // Dormant record schema. Provision/activate only through a separately reviewed migration.
+    // Unlike legacy helpers, missing tenant claims and missing ownership fail closed.
+    match /labOpsRecords/{orgId} {
+      function labTenant() {
+        return isAuthenticated() && getUserOrgId() == orgId;
+      }
+      function activeLab() {
+        return get(/databases/$(database)/documents/labOpsRecords/$(orgId)).data.ready == true;
+      }
+      allow read: if labTenant() && resource.data.organizationId == orgId && resource.data.ready == true;
+      allow create, delete: if false;
+      allow update: if labTenant() && isAdmin()
+        && resource.data.organizationId == orgId && request.resource.data.organizationId == orgId
+        && resource.data.ready == true && request.resource.data.ready == true
+        && request.resource.data.revision == resource.data.revision + 1
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['migration']);
+
+      match /{kind}/{recordId} {
+        function validKind() {
+          return kind in ['iqcResults', 'reagentUsageLogs', 'calibrations', 'maintenanceLogs'];
+        }
+        function atomicLabWrite() {
+          let before = get(/databases/$(database)/documents/labOpsRecords/$(orgId)).data;
+          let after = getAfter(/databases/$(database)/documents/labOpsRecords/$(orgId)).data;
+          return labTenant() && isAdmin() && validKind() && activeLab()
+            && request.resource.data.organizationId == orgId
+            && request.resource.data.record.id == recordId
+            && request.resource.data.sortAt is string
+            && after.revision == before.revision + 1
+            && after.lastOperation.kind == kind && after.lastOperation.id == recordId;
+        }
+        allow read: if labTenant() && validKind() && activeLab();
+        allow create: if atomicLabWrite();
+        allow update: if atomicLabWrite() && kind in ['iqcResults', 'maintenanceLogs']
+          && resource.data.organizationId == orgId && request.resource.data.sortAt == resource.data.sortAt;
+        allow delete: if false;
+      }
     }
     
     // Custom Calendar Events collection

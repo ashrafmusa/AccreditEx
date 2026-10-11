@@ -81,6 +81,7 @@ const LabOperationsPage: React.FC = () => {
   const organizationId = useTenantStore((state) => state.organizationId);
   const loadedOrganizationId = useLabOpsStore((state) => state.loadedOrganizationId);
   const hasLoaded = useLabOpsStore((state) => state.hasLoadedFromFirestore);
+  const recordMode = useLabOpsStore((state) => state.recordMode);
   useEffect(() => {
     const state = useLabOpsStore.getState();
     if (!state.hasLoadedFromFirestore || state.loadedOrganizationId !== organizationId) {
@@ -130,7 +131,7 @@ const LabOperationsPage: React.FC = () => {
 
       {syncStatus === "error" && syncError && (
         <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <span>{syncError}</span>
+          <span>{recordMode ? t("labOpsRecordSyncFailed") : syncError}</span>
           <Button
             variant="outline"
             size="sm"

@@ -122,3 +122,4 @@ firestore-users-mapping.json
 .firebase/
 .env.local
 *.zip
+lab-migration-backups/

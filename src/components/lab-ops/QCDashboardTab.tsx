@@ -2,7 +2,8 @@
  * QC Dashboard Tab
  * Overview of all QC data with Levey-Jennings chart visualization and Westgard rule summary
  */
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
+import LabLogPager from "./LabLogPager";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import { Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -116,6 +117,7 @@ const LeveyJenningsChart: React.FC<{
 
 // Stat cards using calibration/equipment data as proxy for QC overview
 const QCDashboardTab: React.FC = () => {
+  const [calibrationLimit, setCalibrationLimit] = useState(25);
   const { t } = useTranslation();
   const { equipment, calibrations, maintenanceLogs, reagents } =
     useLabOpsStore();
@@ -369,7 +371,7 @@ const QCDashboardTab: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {recent6mo.map((c) => (
+              {recent6mo.slice(0, calibrationLimit).map((c) => (
                 <tr
                   key={c.id}
                   className="border-b border-gray-100 dark:border-gray-700"
@@ -399,6 +401,7 @@ const QCDashboardTab: React.FC = () => {
             </tbody>
           </table>
         )}
+        <LabLogPager visible={calibrationLimit} total={recent6mo.length} onMore={() => setCalibrationLimit((n) => n + 25)} />
       </Card>
     </div>
   );

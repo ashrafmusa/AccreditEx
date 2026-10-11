@@ -2,7 +2,7 @@
  * Maintenance Log Tab
  * View/add preventive, corrective, and emergency maintenance work orders
  */
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type {
   MaintenanceLog,
@@ -15,6 +15,8 @@ import {
 } from "@/types/labOps";
 import { Button, Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
+import LabLogPager from "./LabLogPager";
 import {
   PlusIcon,
   ExclamationTriangleIcon,
@@ -41,6 +43,9 @@ const typeColor: Record<MaintenanceType, string> = {
 
 const MaintenanceTab: React.FC = () => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const pendingMaintenance = useRef<MaintenanceLog | null>(null);
+  const [historyLimit, setHistoryLimit] = useState(25);
   const {
     maintenanceLogs,
     equipment,
@@ -92,7 +97,7 @@ const MaintenanceTab: React.FC = () => {
     (m) => m.status === "scheduled" && m.scheduledDate < today,
   ).length;
 
-  const handleAdd = () => {
+  const handleAdd = async () => {
     if (!form.equipmentId || !form.description || !form.scheduledDate) return;
     const equip = equipment.find((e) => e.id === form.equipmentId);
     const now = new Date().toISOString();
@@ -110,18 +115,27 @@ const MaintenanceTab: React.FC = () => {
       createdAt: now,
       updatedAt: now,
     };
-    addMaintenanceLog(log);
+    try {
+      pendingMaintenance.current = pendingMaintenance.current || log;
+      await addMaintenanceLog(pendingMaintenance.current);
+      pendingMaintenance.current = null;
+    } catch {
+      toast.error(t("labOpsRecordSaveFailed"));
+      return;
+    }
     setShowAdd(false);
     setForm({ type: "preventive", status: "scheduled" });
   };
 
-  const handleMarkComplete = (log: MaintenanceLog) => {
-    updateMaintenanceLog({
+  const handleMarkComplete = async (log: MaintenanceLog) => {
+    try {
+      await updateMaintenanceLog({
       ...log,
       status: "completed",
       completedDate: today,
       updatedAt: new Date().toISOString(),
-    });
+      });
+    } catch { toast.error(t("labOpsRecordSaveFailed")); }
   };
 
   return (
@@ -339,7 +353,7 @@ const MaintenanceTab: React.FC = () => {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((m) => {
+            {filtered.slice(0, historyLimit).map((m) => {
               const isOD = m.status === "scheduled" && m.scheduledDate < today;
               return (
                 <tr
@@ -406,6 +420,7 @@ const MaintenanceTab: React.FC = () => {
             )}
           </tbody>
         </table>
+        <LabLogPager visible={historyLimit} total={filtered.length} onMore={() => setHistoryLimit((n) => n + 25)} />
       </div>
     </div>
   );

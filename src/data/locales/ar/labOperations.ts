@@ -10,6 +10,11 @@ export const ar = {
     tabQualityManagement: "إدارة الجودة",
     tabCompetencyMatrix: "مصفوفة الكفاءة",
     labOpsInvalidUsage: "أدخل اسم المستخدم وكمية موجبة صالحة لا تتجاوز المخزون المتاح.",
+    labOpsRecordSaveFailed: "لم يتم تأكيد السجل. أعد التحميل وحاول مجددًا؛ احتفظ بمعرف السجل نفسه عند انقطاع الاتصال.",
+    labOpsUsagePartial: "تم تحميل الاستخدام الأخير. حمّل الصفحات الأقدم لمراجعة السجل الكامل.",
+    labOpsLoadOlder: "تحميل الاستخدام الأقدم",
+    labOpsShowOlder: "عرض السجلات الأقدم",
+    labOpsRecordSyncFailed: "تعذرت مزامنة تخزين السجلات. أعد التحميل قبل التعديل. قد يلزم مراجعة اكتمال الترحيل أو الصلاحيات أو التغييرات المتزامنة.",
     labOpsSelectStaff: "اختر موظفاً",
     labOpsLoadingRequired: "يجب تحميل عمليات المختبر بنجاح قبل تعديل السجلات.",
 

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 
 import IQCWestgardTab from "@/components/lab-ops/IQCWestgardTab";
 import type { ToastContextType } from "@/hooks/useToast";
@@ -125,7 +125,7 @@ describe("IQCWestgardTab", () => {
     expect(screen.getByRole("button", { name: "iqcSubmitResult" })).toBeDisabled();
   });
 
-  it("logs a violating QC run and creates a linked NC event", () => {
+  it("logs a violating QC run and creates a linked NC event", async () => {
     const analyte = useLabOpsStore.getState().iqcAnalytes[0];
     useLabOpsStore.setState((state: LabOpsState) => ({
       competencyRecords: [
@@ -161,12 +161,12 @@ describe("IQCWestgardTab", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "iqcSubmitResult" }));
 
-    expect(mockToast.success).toHaveBeenCalledWith("iqcResultLoggedSuccess");
+    await waitFor(() => expect(mockToast.success).toHaveBeenCalledWith("iqcResultLoggedSuccess"));
     expect(screen.getByText(/iqcRunRejected/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "iqcCreateNC" }));
 
-    expect(screen.getByText("iqcNCCreated")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("iqcNCCreated")).toBeInTheDocument());
     expect(mockToast.success).toHaveBeenCalledWith("iqcNCCreated");
   });
 });

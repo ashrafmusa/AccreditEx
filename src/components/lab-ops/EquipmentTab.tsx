@@ -12,6 +12,7 @@ import {
 } from "@/components/icons";
 import { Button, Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type {
   AssetRiskLevel,
@@ -28,7 +29,8 @@ import {
   EQUIPMENT_STATUS_LABELS,
 } from "@/types/labOps";
 import QRCode from "qrcode";
-import React, { useCallback, useMemo, useState } from "react";
+import LabLogPager from "./LabLogPager";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 
 const statusColor: Record<EquipmentStatus, string> = {
   active:
@@ -50,6 +52,9 @@ const calColor: Record<CalibrationResult, string> = {
 
 const EquipmentTab: React.FC = () => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const pendingCalibration = useRef<CalibrationRecord | null>(null);
+  const [calibrationLimit, setCalibrationLimit] = useState(25);
   const {
     equipment,
     calibrations,
@@ -180,7 +185,7 @@ const EquipmentTab: React.FC = () => {
     });
   };
 
-  const handleAddCal = () => {
+  const handleAddCal = async () => {
     if (!selectedId || !calForm.calibrationDate || !calForm.calibratedBy)
       return;
     const cal: CalibrationRecord = {
@@ -198,7 +203,14 @@ const EquipmentTab: React.FC = () => {
       notes: calForm.notes,
       createdAt: new Date().toISOString(),
     };
-    addCalibration(cal);
+    try {
+      pendingCalibration.current = pendingCalibration.current || cal;
+      await addCalibration(pendingCalibration.current);
+      pendingCalibration.current = null;
+    } catch {
+      toast.error(t("labOpsRecordSaveFailed"));
+      return;
+    }
     setShowCalForm(false);
     setCalForm({ result: "pass" });
   };
@@ -498,7 +510,7 @@ const EquipmentTab: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {selectedCals.map((c) => (
+                {selectedCals.slice(0, calibrationLimit).map((c) => (
                   <tr
                     key={c.id}
                     className="border-b border-gray-100 dark:border-gray-700"
@@ -519,6 +531,7 @@ const EquipmentTab: React.FC = () => {
               </tbody>
             </table>
           )}
+          <LabLogPager visible={calibrationLimit} total={selectedCals.length} onMore={() => setCalibrationLimit((n) => n + 25)} />
         </Card>
 
         {selected.notes && (

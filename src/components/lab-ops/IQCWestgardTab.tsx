@@ -3,7 +3,7 @@
  * Internal Quality Control with Levey-Jennings charting and automatic
  * Westgard multi-rule detection. ISO 15189 / CBAHI / CAP compliant.
  */
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 import AISuggestionModal from "@/components/ai/AISuggestionModal";
 import {
@@ -14,6 +14,7 @@ import {
   SparklesIcon,
 } from "@/components/icons";
 import { useToast } from "@/hooks/useToast";
+import LabLogPager from "./LabLogPager";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
@@ -240,6 +241,8 @@ const IQCWestgardTab: React.FC = () => {
   const organizationId = useTenantStore((state) => state.organizationId);
   const staff = users.filter((user) => user.organizationId === organizationId && user.isActive !== false);
   const [operatorId, setOperatorId] = useState("");
+  const [historyLimit, setHistoryLimit] = useState(25);
+  const pendingResult = useRef<IQCResult | null>(null);
   const operator = staff.find((user) => user.id === operatorId);
   const { t } = useTranslation();
   const toast = useToast();
@@ -342,7 +345,27 @@ const IQCWestgardTab: React.FC = () => {
     selectedAnalyte,
   ]);
 
-  const handleLogResult = () => {
+  const persistResult = async (result: IQCResult) => {
+    pendingResult.current = result;
+    try {
+      await addIQCResult(result);
+    } catch {
+      toast.error(t("labOpsRecordSaveFailed"));
+      return;
+    }
+    pendingResult.current = null;
+    setJustLogged(result);
+    setShowResultForm(false);
+    toast.success(t("iqcResultLoggedSuccess") || "QC result logged successfully.");
+    setResultForm({
+      measuredValue: "", measuredBy: "", measuredAt: new Date().toISOString().slice(0, 16), reagentLot: "", note: "",
+    });
+  };
+  const handleLogResult = async () => {
+    if (pendingResult.current) {
+      await persistResult(pendingResult.current);
+      return;
+    }
     const val = parseFloat(resultForm.measuredValue);
     if (!selectedAnalyte || !Number.isFinite(val) || !operator) return;
     if (!competencyGate.authorized) {
@@ -455,22 +478,10 @@ const IQCWestgardTab: React.FC = () => {
       }
     }
 
-    addIQCResult(result);
-    setJustLogged(result);
-    setShowResultForm(false);
-    toast.success(
-      t("iqcResultLoggedSuccess") || "QC result logged successfully.",
-    );
-    setResultForm({
-      measuredValue: "",
-      measuredBy: "",
-      measuredAt: new Date().toISOString().slice(0, 16),
-      reagentLot: "",
-      note: "",
-    });
+    await persistResult(result);
   };
 
-  const handleCreateNC = (result: IQCResult) => {
+  const handleCreateNC = async (result: IQCResult) => {
     if (!selectedAnalyte) return;
     const now = new Date().toISOString();
     const eventId = `qe-iqc-${Date.now()}`;
@@ -494,7 +505,12 @@ const IQCWestgardTab: React.FC = () => {
     });
 
     const updated = { ...result, linkedQualityEventId: eventId };
-    updateIQCResult(updated);
+    try {
+      await updateIQCResult(updated);
+    } catch {
+      toast.error(t("labOpsRecordSaveFailed"));
+      return;
+    }
     setJustLogged(updated);
     toast.success(t("iqcNCCreated") || "NC Event Created");
   };
@@ -1019,7 +1035,7 @@ const IQCWestgardTab: React.FC = () => {
               <tbody>
                 {[...analyteResults]
                   .reverse()
-                  .slice(0, 15)
+                  .slice(0, historyLimit)
                   .map((r) => (
                     <tr
                       key={r.id}
@@ -1094,6 +1110,7 @@ const IQCWestgardTab: React.FC = () => {
                 )}
               </tbody>
             </table>
+            <LabLogPager visible={historyLimit} total={analyteResults.length} onMore={() => setHistoryLimit((n) => n + 25)} />
           </div>
         </div>
       )}

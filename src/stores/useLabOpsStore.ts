@@ -6,7 +6,9 @@ import type { LabOpsPersistedData } from "@/services/labOpsService";
 import {
     getLabOpsData,
     saveLabOpsDataWithRetry,
+    labRecordService, labRecordStorageEnabled,
 } from "@/services/labOpsService";
+import { LAB_LOG_KINDS, type LabLogKind, type LabLog, type LabLogCursor, type LabLogPage } from "@/services/labOpsRecords";
 import type {
     CalibrationRecord,
     CAPARecord,
@@ -45,7 +47,10 @@ let queuedPayload: LabOpsPersistedData | null = null;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let isSaving = false;
 let queuedOrganizationId = "";
+let queuedRecordMode = false;
+let queuedRevision = 0;
 let loadGeneration = 0;
+let activeSave: Promise<void> | null = null;
 
 export interface LabOpsState {
     // Data
@@ -65,6 +70,12 @@ export interface LabOpsState {
     syncStatus: LabOpsSyncStatus;
     syncError: string | null;
     lastSyncedAt: string | null;
+    recordMode: boolean;
+    recordRevision: number;
+    usageCursor: LabLogCursor | null;
+    usageHasMore: boolean;
+    loadingUsage: boolean;
+    loadMoreUsage: () => Promise<void>;
 
     // Equipment CRUD
     addEquipment: (eq: Equipment) => void;
@@ -72,17 +83,17 @@ export interface LabOpsState {
     removeEquipment: (id: string) => void;
 
     // Calibrations
-    addCalibration: (cal: CalibrationRecord) => void;
+    addCalibration: (cal: CalibrationRecord) => void | Promise<void>;
 
     // Maintenance
-    addMaintenanceLog: (log: MaintenanceLog) => void;
-    updateMaintenanceLog: (log: MaintenanceLog) => void;
+    addMaintenanceLog: (log: MaintenanceLog) => void | Promise<void>;
+    updateMaintenanceLog: (log: MaintenanceLog) => void | Promise<void>;
 
     // Reagents
     addReagent: (r: Reagent) => void;
     updateReagent: (r: Reagent) => void;
     removeReagent: (id: string) => void;
-    addReagentUsage: (usage: ReagentUsageLog) => void;
+    addReagentUsage: (usage: ReagentUsageLog) => void | Promise<void>;
 
     // Proficiency
     addProficiencyTest: (pt: ProficiencyTest) => void;
@@ -102,8 +113,8 @@ export interface LabOpsState {
     iqcResults: IQCResult[];
     addIQCAnalyte: (analyte: IQCAnalyte) => void;
     updateIQCAnalyte: (analyte: IQCAnalyte) => void;
-    addIQCResult: (result: IQCResult) => void;
-    updateIQCResult: (result: IQCResult) => void;
+    addIQCResult: (result: IQCResult) => void | Promise<void>;
+    updateIQCResult: (result: IQCResult) => void | Promise<void>;
     getIQCResultsForAnalyte: (analyteId: string) => IQCResult[];
     addCompetencyRecord: (record: CompetencyRecord) => void;
     updateCompetencyRecord: (record: CompetencyRecord) => void;
@@ -143,6 +154,8 @@ const toPersistedData = (state: LabOpsState): LabOpsPersistedData => ({
 const queueSave = (get: () => LabOpsState, set: (state: Partial<LabOpsState>) => void): void => {
     queuedPayload = toPersistedData(get());
     queuedOrganizationId = get().loadedOrganizationId!;
+    queuedRecordMode = get().recordMode;
+    queuedRevision = get().recordRevision;
     set({ syncStatus: "saving", syncError: null });
 
     if (saveTimer) {
@@ -159,34 +172,83 @@ const flushSaveQueue = async (
     set: (state: Partial<LabOpsState>) => void,
 ): Promise<void> => {
     if (isSaving || !queuedPayload) {
+        if (activeSave) {
+            await activeSave.catch(() => undefined);
+            if (queuedPayload) await flushSaveQueue(get, set);
+        }
+        return;
+    }
+
+    if (queuedOrganizationId !== useTenantStore.getState().organizationId) {
+        queuedPayload = null;
         return;
     }
 
     isSaving = true;
     const payload = queuedPayload;
     const organizationId = queuedOrganizationId;
+    const recordMode = queuedRecordMode;
+    const revision = queuedRevision;
     queuedPayload = null;
 
     try {
-        await saveLabOpsDataWithRetry(payload, 3, 500, organizationId);
-        if (get().loadedOrganizationId === organizationId) set({
+        activeSave = (async () => {
+            if (recordMode) {
+                const nextRevision = await labRecordService.save(organizationId, payload, revision);
+                if (get().loadedOrganizationId === organizationId && useTenantStore.getState().organizationId === organizationId) {
+                    set({ recordRevision: nextRevision });
+                }
+                if (queuedPayload && queuedOrganizationId === organizationId && queuedRecordMode && queuedRevision === revision) {
+                    queuedRevision = nextRevision;
+                }
+            } else await saveLabOpsDataWithRetry(payload, 3, 500, organizationId);
+        })();
+        await activeSave;
+        if (get().loadedOrganizationId === organizationId && useTenantStore.getState().organizationId === organizationId) set({
             syncStatus: "synced",
             syncError: null,
             lastSyncedAt: new Date().toISOString(),
         });
     } catch (error) {
         console.error("Failed to synchronize Lab Operations:", error);
-        if (get().loadedOrganizationId === organizationId) set({
+        if (get().loadedOrganizationId === organizationId && useTenantStore.getState().organizationId === organizationId) set({
             syncStatus: "error",
             syncError: error instanceof Error ? error.message : "Save failed",
         });
     } finally {
         isSaving = false;
+        activeSave = null;
         if (queuedPayload) {
-            void flushSaveQueue(get, set);
+            await flushSaveQueue(get, set);
         }
     }
 };
+
+async function writeOperationalRecord<K extends LabLogKind>(
+    get: () => LabOpsState, set: (state: Partial<LabOpsState>) => void, kind: K, record: LabLog<K>, previous?: LabLog<K>,
+): Promise<void> {
+    const org = get().loadedOrganizationId;
+    const generation = loadGeneration;
+    if (!org || !get().hasLoadedFromFirestore || org !== useTenantStore.getState().organizationId) {
+        throw new Error("Load Lab Operations successfully before logging");
+    }
+    try {
+        await get().flushPendingSaves();
+        if (generation !== loadGeneration || org !== useTenantStore.getState().organizationId) throw new Error("Organization changed");
+        if (get().syncStatus === "error") throw new Error("Reload Lab Operations before logging");
+        set({ syncStatus: "saving", syncError: null });
+        await labRecordService.write(org, kind, record, get().recordRevision, previous);
+        if (generation !== loadGeneration || org !== useTenantStore.getState().organizationId) return;
+        // Hydrate complete calculation histories after each committed operation, never a truncated QC window.
+        await get().loadFromFirestore();
+        if (!get().hasLoadedFromFirestore) throw new Error("Record committed, but reload failed; retry the same record ID");
+    } catch (error) {
+        if (generation === loadGeneration && org === useTenantStore.getState().organizationId) set({
+            syncStatus: "error", syncError: error instanceof Error ? error.message : "Record save failed",
+        });
+        throw error;
+    }
+}
 
 export const useLabOpsStore = create<LabOpsState>((set, get) => ({
     equipment: SEED_EQUIPMENT,
@@ -205,6 +267,31 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
     syncStatus: "idle",
     syncError: null,
     lastSyncedAt: null,
+    recordMode: false,
+    recordRevision: 0,
+    usageCursor: null,
+    usageHasMore: false,
+    loadingUsage: false,
+    loadMoreUsage: async () => {
+        const org = get().loadedOrganizationId;
+        const generation = loadGeneration;
+        if (!get().recordMode || !get().usageHasMore || get().loadingUsage || !org || org !== useTenantStore.getState().organizationId) return;
+        set({ loadingUsage: true });
+        try {
+            const page = await labRecordService.page(org, "reagentUsageLogs", get().usageCursor);
+            if ((await labRecordService.state(org)).revision !== get().recordRevision) {
+                throw new Error("Lab records changed; reload before continuing history");
+            }
+            if (generation !== loadGeneration || org !== useTenantStore.getState().organizationId) return;
+            const records = new Map(get().reagentUsageLogs.map((r) => [r.id, r]));
+            page.records.forEach((r) => records.set(r.id, r));
+            set({ reagentUsageLogs: [...records.values()], usageCursor: page.cursor, usageHasMore: page.hasMore });
+        } catch (error) {
+            if (generation === loadGeneration) set({ syncStatus: "error", syncError: error instanceof Error ? error.message : "Log page failed" });
+        } finally {
+            if (generation === loadGeneration) set({ loadingUsage: false });
+        }
+    },
     iqcAnalytes: SEED_IQC_ANALYTES,
     iqcResults: SEED_IQC_RESULTS,
 
@@ -226,6 +313,7 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
 
     // Calibrations
     addCalibration: (cal) => {
+        if (get().recordMode) return writeOperationalRecord(get, set, "calibrations", cal);
         set((s) => ({
             calibrations: [...s.calibrations, cal],
             equipment: s.equipment.map((equipment) => equipment.id !== cal.equipmentId ? equipment : {
@@ -243,10 +331,12 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
 
     // Maintenance
     addMaintenanceLog: (log) => {
+        if (get().recordMode) return writeOperationalRecord(get, set, "maintenanceLogs", log);
         set((s) => ({ maintenanceLogs: [...s.maintenanceLogs, log] }));
         void get().saveToFirestore();
     },
     updateMaintenanceLog: (log) => {
+        if (get().recordMode) return writeOperationalRecord(get, set, "maintenanceLogs", log, get().maintenanceLogs.find((r) => r.id === log.id));
         set((s) => ({
             maintenanceLogs: s.maintenanceLogs.map((m) =>
                 m.id === log.id ? log : m,
@@ -271,6 +361,7 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         void get().saveToFirestore();
     },
     addReagentUsage: (usage) => {
+        if (get().recordMode) return writeOperationalRecord(get, set, "reagentUsageLogs", usage);
         const reagent = get().reagents.find((record) => record.id === usage.reagentId);
         if (!reagent || !usage.usedBy.trim() || !Number.isFinite(usage.quantityUsed)
             || usage.quantityUsed <= 0 || usage.quantityUsed > reagent.quantity) {
@@ -393,10 +484,12 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         void get().saveToFirestore();
     },
     addIQCResult: (result) => {
+        if (get().recordMode) return writeOperationalRecord(get, set, "iqcResults", result);
         set((s) => ({ iqcResults: [...s.iqcResults, result] }));
         void get().saveToFirestore();
     },
     updateIQCResult: (result) => {
+        if (get().recordMode) return writeOperationalRecord(get, set, "iqcResults", result, get().iqcResults.find((r) => r.id === result.id));
         set((s) => ({
             iqcResults: s.iqcResults.map((r) => (r.id === result.id ? result : r)),
         }));
@@ -426,12 +519,38 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         const organizationId = useTenantStore.getState().organizationId;
         const generation = ++loadGeneration;
         if (saveTimer) clearTimeout(saveTimer);
-        await flushSaveQueue(get, set);
+        await get().flushPendingSaves();
         if (generation !== loadGeneration) return;
-        set({ loading: true, syncError: null, hasLoadedFromFirestore: false, loadedOrganizationId: null });
+        set({ loading: true, syncError: null, hasLoadedFromFirestore: false, loadedOrganizationId: null, usageCursor: null, usageHasMore: false, loadingUsage: false });
         try {
-            const remote = await getLabOpsData(organizationId);
+            const recordMode = labRecordStorageEnabled();
+            set({ recordMode });
+            let remote: LabOpsPersistedData | null;
+            let recordRevision = 0;
+            let usageCursor: LabLogCursor | null = null;
+            let usageHasMore = false;
+            if (recordMode) {
+                const state = await labRecordService.state(organizationId);
+                recordRevision = state.revision;
+                remote = { ...state, iqcResults: [], reagentUsageLogs: [], calibrations: [], maintenanceLogs: [] };
+                for (const kind of LAB_LOG_KINDS) {
+                    let cursor: LabLogCursor | null = null;
+                    do {
+                        const page: LabLogPage<LabLogKind> = await labRecordService.page(organizationId, kind, cursor);
+                        (remote[kind] as LabLog<LabLogKind>[]).push(...page.records);
+                        cursor = page.hasMore ? page.cursor : null;
+                        if (kind === "reagentUsageLogs") {
+                            usageCursor = page.cursor;
+                            usageHasMore = page.hasMore;
+                            break;
+                        }
+                    } while (cursor);
+                }
+                // Fail closed if concurrent writes changed a calculation history during pagination.
+                if ((await labRecordService.state(organizationId)).revision !== recordRevision) throw new Error("Lab records changed during loading; retry");
+            } else remote = await getLabOpsData(organizationId);
             if (generation !== loadGeneration || useTenantStore.getState().organizationId !== organizationId) return;
+            set({ recordMode, recordRevision, usageCursor, usageHasMore });
             if (remote) {
                 set({
                     equipment: remote.equipment || [],
@@ -483,6 +602,8 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         if (forceImmediate) {
             queuedPayload = toPersistedData(get());
             queuedOrganizationId = get().loadedOrganizationId!;
+            queuedRecordMode = get().recordMode;
+            queuedRevision = get().recordRevision;
             if (saveTimer) {
                 clearTimeout(saveTimer);
                 saveTimer = null;
@@ -495,6 +616,7 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
     },
     retrySyncNow: async () => {
         if (!get().hasLoadedFromFirestore) await get().loadFromFirestore();
+        else if (get().recordMode) await get().loadFromFirestore();
         else await get().saveToFirestore(true);
     },
     flushPendingSaves: async () => {
@@ -503,6 +625,7 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
             saveTimer = null;
         }
         await flushSaveQueue(get, set);
+        while (queuedPayload || isSaving) await flushSaveQueue(get, set);
     },
 }));
 

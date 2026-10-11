@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/useToast";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type { Reagent, ReagentStatus, ReagentUsageLog } from "@/types/labOps";
 import { REAGENT_STATUS_LABELS } from "@/types/labOps";
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 
 const statusColor: Record<ReagentStatus, string> = {
   in_stock:
@@ -29,6 +29,7 @@ const statusColor: Record<ReagentStatus, string> = {
 const ReagentTab: React.FC = () => {
   const { t } = useTranslation();
   const toast = useToast();
+  const pendingUsage = useRef<ReagentUsageLog | null>(null);
   const {
     reagents,
     reagentUsageLogs,
@@ -36,6 +37,9 @@ const ReagentTab: React.FC = () => {
     removeReagent,
     addReagentUsage,
     equipment,
+    usageHasMore,
+    loadingUsage,
+    loadMoreUsage,
   } = useLabOpsStore();
 
   const [search, setSearch] = useState("");
@@ -122,7 +126,7 @@ const ReagentTab: React.FC = () => {
     setForm({ status: "in_stock" });
   };
 
-  const handleLogUsage = () => {
+  const handleLogUsage = async () => {
     if (!selected || !usageForm.usedBy?.trim() || !Number.isFinite(usageForm.quantityUsed)
       || !usageForm.quantityUsed || usageForm.quantityUsed <= 0
       || usageForm.quantityUsed > selected.quantity) {
@@ -140,13 +144,15 @@ const ReagentTab: React.FC = () => {
       notes: usageForm.notes,
     };
     try {
-      addReagentUsage(usage);
+      pendingUsage.current = pendingUsage.current || usage;
+      await addReagentUsage(pendingUsage.current);
     } catch (error) {
       console.error("Failed to record reagent usage:", error);
-      toast.error(t("labOpsInvalidUsage"));
+      toast.error(t("labOpsRecordSaveFailed"));
       return;
     }
     setShowUsage(false);
+    pendingUsage.current = null;
     setUsageForm({});
   };
 
@@ -274,6 +280,12 @@ const ReagentTab: React.FC = () => {
 
         {/* Usage log */}
         <Card className="p-4">
+          {usageHasMore && <div className="mb-3">
+            <p role="status">{t("labOpsUsagePartial")}</p>
+            <Button variant="outline" size="sm" disabled={loadingUsage} onClick={() => void loadMoreUsage()}>
+              {t("labOpsLoadOlder")}
+            </Button>
+          </div>}
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold dark:text-dark-brand-text-primary">
               {t("usageLog")}

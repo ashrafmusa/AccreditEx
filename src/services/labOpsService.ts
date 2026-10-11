@@ -2,6 +2,10 @@ import { useTenantStore } from "@/stores/useTenantStore";
 import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
 
 import { db } from "@/firebase/firebaseConfig";
+import { createLabRecordService } from "./labOpsRecords";
+export const labRecordService = createLabRecordService(db);
+export const labRecordStorageEnabled = (): boolean =>
+    process.env.NODE_ENV !== "production" && process.env.VITE_LAB_RECORD_STORAGE === "true";
 import type {
     CalibrationRecord,
     CAPARecord,

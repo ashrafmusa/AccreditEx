@@ -10,6 +10,11 @@ export const en = {
     tabQualityManagement: "Quality Management",
     tabCompetencyMatrix: "Competency Matrix",
     labOpsInvalidUsage: "Enter an operator and a finite, positive quantity no greater than the available stock.",
+    labOpsRecordSaveFailed: "The record was not confirmed. Reload and retry; keep the same record ID if the connection failed.",
+    labOpsUsagePartial: "Recent usage is loaded. Load older pages to review the full history.",
+    labOpsLoadOlder: "Load older usage",
+    labOpsShowOlder: "Show older records",
+    labOpsRecordSyncFailed: "Record storage could not synchronize. Reload before editing. Migration readiness, permissions or concurrent changes may need review.",
     labOpsSelectStaff: "Select a staff member",
     labOpsLoadingRequired: "Lab Operations must load successfully before records can be edited.",
 
