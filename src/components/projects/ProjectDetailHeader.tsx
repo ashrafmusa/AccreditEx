@@ -26,9 +26,12 @@ const ProjectDetailHeader: React.FC<Props> = ({
 }) => {
   const { t, lang } = useTranslation();
   const { can } = usePermission();
-  const progress = Number.isFinite(project.progress)
-    ? Math.max(0, Math.min(100, project.progress))
-    : 0;
+  const progress =
+    Number.isFinite(project.progress) &&
+    project.progress >= 0 &&
+    project.progress <= 100
+      ? Math.round(project.progress)
+      : null;
 
   const isFinalized = project.status === ProjectStatus.Finalized;
   const canModify =
@@ -98,15 +101,24 @@ const ProjectDetailHeader: React.FC<Props> = ({
             {t("projectChecklistProgress")}
           </span>
           <span className="text-sm font-bold text-brand-primary">
-            {Math.round(progress)}%
+            {progress === null ? t("projectNotAssessed") : `${progress}%`}
           </span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+        {progress !== null && (
           <div
-            className="bg-brand-primary h-2.5 rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
+            role="progressbar"
+            aria-label={t("projectChecklistProgress")}
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5"
+          >
+            <div
+              className="bg-brand-primary h-2.5 rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -161,6 +161,36 @@ describe("Project detail user journey", () => {
       screen.getByRole("button", { name: en["projects.documents"] }),
     ).toHaveAttribute("aria-current", "page");
   });
+  it("does not present invalid checklist progress as zero and labels valid progress accessibly", () => {
+    // Arrange
+    project = { ...project, progress: Number.NaN };
+    const view = render(
+      <ProjectDetailPage
+        navigation={{ view: "projectDetail", projectId: "p1" }}
+        setNavigation={jest.fn()}
+      />,
+    );
+    // Assert
+    expect(screen.getByText(en.projectNotAssessed)).toBeInTheDocument();
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
+
+    // Act
+    project = { ...project, progress: 37 };
+    view.rerender(
+      <ProjectDetailPage
+        navigation={{ view: "projectDetail", projectId: "p1" }}
+        setNavigation={jest.fn()}
+      />,
+    );
+    // Assert
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuenow",
+      "37",
+    );
+    expect(
+      screen.getByRole("progressbar", { name: en.projectChecklistProgress }),
+    ).toBeInTheDocument();
+  });
   it("shows localized failure and retry without rendering a cached project", () => {
     // Arrange
     failed = true;
