@@ -52,6 +52,32 @@ describe("Lab Operations persistence", () => {
         expect(setDoc).toHaveBeenNthCalledWith(2, "labOpsData/org-b", expect.objectContaining({ organizationId: "org-b" }), { merge: true });
     });
 
+    it("omits undefined optional fields before writing nested records to Firestore", async () => {
+        const dataWithOptionalFields = {
+            ...data,
+            equipment: [{
+                id: "equipment-1",
+                name: "Analyzer",
+                optionalField: undefined,
+                nested: { absent: undefined, present: "value" },
+            }],
+        } as unknown as LabOpsPersistedData;
+
+        await saveLabOpsData(dataWithOptionalFields, "org-a");
+
+        expect(setDoc).toHaveBeenCalledWith(
+            "labOpsData/org-a",
+            expect.objectContaining({
+                equipment: [{
+                    id: "equipment-1",
+                    name: "Analyzer",
+                    nested: { present: "value" },
+                }],
+            }),
+            { merge: true },
+        );
+    });
+
     it("distinguishes a missing record from a failed read", async () => {
         jest.mocked(getDocs).mockResolvedValueOnce({ empty: true } as Awaited<ReturnType<typeof getDocs>>);
         expect(await getLabOpsData()).toBeNull();

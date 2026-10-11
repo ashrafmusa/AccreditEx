@@ -24,6 +24,17 @@ import type {
 const LAB_OPS_COLLECTION = "labOpsData";
 const MAX_PAYLOAD_BYTES = 900_000;
 
+function omitUndefinedFields(value: unknown): unknown {
+    if (Array.isArray(value)) return value.map(omitUndefinedFields);
+    if (value && typeof value === "object") {
+        return Object.fromEntries(
+            Object.entries(value).filter(([, field]) => field !== undefined)
+                .map(([key, field]) => [key, omitUndefinedFields(field)]),
+        );
+    }
+    return value;
+}
+
 function requireOrganization(organizationId: string): string {
     if (!organizationId || organizationId.includes("/")) {
         throw new Error("Lab Operations requires an active organization");
@@ -80,7 +91,7 @@ export async function saveLabOpsData(
         }
         const ref = doc(db, LAB_OPS_COLLECTION, orgId);
         await setDoc(ref, {
-            ...data,
+            ...omitUndefinedFields(data) as LabOpsPersistedData,
             organizationId: orgId,
             updatedAt: new Date().toISOString(),
         }, { merge: true });
