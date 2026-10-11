@@ -75,8 +75,8 @@ describe("SurveyComponent", () => {
     );
 
     // Act
-    fireEvent.click(screen.getByRole("radio", { name: "Pass" }));
-    fireEvent.change(screen.getByPlaceholderText("Surveyor notes..."), {
+    fireEvent.click(screen.getByRole("radio", { name: "surveyPass" }));
+    fireEvent.change(screen.getByPlaceholderText("surveyorNotes"), {
       target: { value: "Identification verified." },
     });
     fireEvent.click(screen.getByRole("button", { name: "saveChanges" }));
@@ -166,7 +166,7 @@ describe("SurveyComponent", () => {
     );
 
     // Assert
-    expect(screen.getByRole("radio", { name: "Pass" })).toBeDisabled();
+    expect(screen.getByRole("radio", { name: "surveyPass" })).toBeDisabled();
     expect(
       screen.queryByRole("button", { name: "saveChanges" }),
     ).not.toBeInTheDocument();

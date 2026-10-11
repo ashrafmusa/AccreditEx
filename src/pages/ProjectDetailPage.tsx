@@ -246,12 +246,19 @@ Be specific and actionable.`;
           generatedBy: currentUser.name,
         });
 
+        try {
+          await recordAssessorPackExportAudit(reportPack, currentUser.id, {
+            reviewerName: options?.reviewerName,
+            note: options?.signOffNote,
+          });
+        } catch (error) {
+          console.error("Assessor pack audit persistence failed:", error);
+          toast.error(t("projectAssessorAuditFailed"));
+          setIsGeneratingReport(false);
+          return;
+        }
         exportAssessorReportPackJson(reportPack);
         exportAssessorEvidenceMatrixCsv(reportPack);
-        recordAssessorPackExportAudit(reportPack, {
-          reviewerName: options?.reviewerName,
-          note: options?.signOffNote,
-        });
         toast.success(t("projectAssessorExported"));
         setIsGeneratingReport(false);
         return;

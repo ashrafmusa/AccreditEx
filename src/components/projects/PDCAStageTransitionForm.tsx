@@ -1,6 +1,7 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
-import { PDCAStage } from "@/types";
+import { AppDocument, PDCAStage } from "@/types";
+import { useToast } from "@/hooks/useToast";
 import React, { useState } from "react";
 import { XMarkIcon } from "../icons";
 
@@ -8,6 +9,7 @@ interface PDCAStageTransitionFormProps {
   currentStage: PDCAStage;
   cycleTitle?: string;
   cycleDescription?: string;
+  availableDocuments: AppDocument[];
   onConfirm: (notes: string, attachments: string[]) => void;
   onCancel: () => void;
 }
@@ -16,10 +18,12 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
   currentStage,
   cycleTitle,
   cycleDescription,
+  availableDocuments,
   onConfirm,
   onCancel,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const toast = useToast();
   const [notes, setNotes] = useState("");
   const [attachments, setAttachments] = useState<string[]>([]);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
@@ -96,6 +100,7 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
       );
     } catch (error) {
       console.error("AI suggestion error:", error);
+      toast.error(t("pdcaAISuggestionFailed"));
     } finally {
       setIsAISuggesting(false);
     }
@@ -182,7 +187,10 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
           {/* Notes */}
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
-              <label className="block text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              <label
+                htmlFor="pdca-transition-notes"
+                className="block text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary"
+              >
                 {t("transitionNotes")} <span className="text-red-500">*</span>
               </label>
               <button
@@ -212,14 +220,15 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
                         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                       />
                     </svg>
-                    Generating...
+                    {t("pdcaGeneratingSuggestion")}
                   </>
                 ) : (
-                  <>🤖 AI Suggest Notes</>
+                  <>🤖 {t("pdcaAISuggestNotes")}</>
                 )}
               </button>
             </div>
             <textarea
+              id="pdca-transition-notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={4}
@@ -236,12 +245,37 @@ const PDCAStageTransitionForm: React.FC<PDCAStageTransitionFormProps> = ({
             <label className="block text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
               {t("attachments")} ({t("optional")})
             </label>
-            <div className="border-2 border-dashed border-brand-border dark:border-dark-brand-border rounded-lg p-4 text-center">
-              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                {t("attachEvidenceDocuments") ||
-                  "Attach evidence documents (feature coming soon)"}
+            {availableDocuments.length === 0 ? (
+              <p className="rounded-lg border border-brand-border dark:border-dark-brand-border p-4 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                {t("pdcaNoEvidenceDocuments")}
               </p>
-            </div>
+            ) : (
+              <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-brand-border dark:border-dark-brand-border p-3">
+                {availableDocuments.map((document) => (
+                  <label
+                    key={document.id}
+                    className="flex min-h-11 items-center gap-3 text-sm text-brand-text-primary dark:text-dark-brand-text-primary"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={attachments.includes(document.id)}
+                      onChange={(event) => {
+                        setAttachments((current) =>
+                          event.target.checked
+                            ? [...current, document.id]
+                            : current.filter((id) => id !== document.id),
+                        );
+                      }}
+                    />
+                    <span>
+                      {document.name?.[lang] ||
+                        document.name?.en ||
+                        document.id}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Validation Errors */}

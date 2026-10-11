@@ -27,7 +27,7 @@ const SurveyComponent: React.FC<SurveyComponentProps> = ({
   onUpdateSurvey,
   setNavigation,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const toast = useToast();
   const [results, setResults] = useState<MockSurveyResult[]>(
     survey.results || [],
@@ -119,7 +119,7 @@ Keep it very concise (5-6 lines max). This is quick guidance during an active su
       setAiHints((prev) => ({ ...prev, [itemId]: response.response }));
     } catch (error) {
       console.error("AI hint error:", error);
-      toast.error("Failed to get AI guidance.");
+      toast.error(t("projectSurveyAIHintFailed"));
     } finally {
       setLoadingHint(null);
     }
@@ -153,7 +153,7 @@ Keep it actionable and concise.`;
       setSurveyBriefing(response.response);
     } catch (error) {
       console.error("Survey briefing error:", error);
-      toast.error("Failed to generate survey briefing.");
+      toast.error(t("projectSurveyBriefingFailed"));
     } finally {
       setIsBriefing(false);
     }
@@ -188,7 +188,11 @@ Keep it actionable and concise.`;
           {t("mockSurvey")} - {project.name}
         </h1>
         <p className="text-sm text-gray-500">
-          Date: {new Date(survey.date).toLocaleDateString()} | Surveyor:{" "}
+          {t("surveyDate")}:{" "}
+          {new Date(survey.date).toLocaleDateString(
+            lang === "ar" ? "ar-OM" : "en-US",
+          )}{" "}
+          | {t("surveyor")}:{" "}
           {surveyor?.name}
         </p>
         <button
@@ -214,10 +218,10 @@ Keep it actionable and concise.`;
                   d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                 />
               </svg>{" "}
-              Generating...
+              {t("projectSurveyGenerating")}
             </>
           ) : (
-            <>🤖 AI Survey Briefing</>
+            <>🤖 {t("projectSurveyBriefing")}</>
           )}
         </button>
       </div>
@@ -226,13 +230,13 @@ Keep it actionable and concise.`;
         <div className="bg-linear-to-r from-rose-50 to-cyan-50 dark:from-rose-900/10 dark:to-cyan-900/10 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800">
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-              🤖 AI Survey Briefing
+              🤖 {t("projectSurveyBriefing")}
             </h3>
             <button
               onClick={() => setSurveyBriefing(null)}
               className="text-xs text-gray-500 hover:text-gray-700"
             >
-              ✕ Dismiss
+              ✕ {t("dismiss")}
             </button>
           </div>
           <AIResponseView content={surveyBriefing} />
@@ -271,7 +275,13 @@ Keep it actionable and concise.`;
                               handleResultChange(item.id, { result: res })
                             }
                           />
-                          {res}
+                          {t(
+                            res === "Pass"
+                              ? "surveyPass"
+                              : res === "Fail"
+                                ? "surveyFail"
+                                : "surveyNotApplicable",
+                          )}
                         </label>
                       ),
                     )}
@@ -285,7 +295,7 @@ Keep it actionable and concise.`;
                     }
                     disabled={isReadOnly || isSaving || isCompleting}
                     rows={2}
-                    placeholder="Surveyor notes..."
+                    placeholder={t("surveyorNotes")}
                     className="w-full text-sm p-2 border rounded-md"
                   />
                 </div>
@@ -316,10 +326,10 @@ Keep it actionable and concise.`;
                           d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                         />
                       </svg>{" "}
-                      Loading...
+                      {t("projectSurveyLoadingHint")}
                     </>
                   ) : (
-                    <>🤖 AI Hint</>
+                    <>🤖 {t("projectSurveyAIHint")}</>
                   )}
                 </button>
                 {aiHints[item.id] && (

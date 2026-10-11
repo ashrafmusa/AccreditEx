@@ -18,6 +18,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import {
   calculateAssessorPackExportMetrics,
   getAssessorPackExportAudit,
+  type AssessorPackExportMetrics,
 } from "@/services/assessorReportPackService";
 import {
   calculateGuideReadinessCorrelation,
@@ -28,6 +29,7 @@ import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
 import { useAppStore } from "@/stores/useAppStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import {
   CAPAReport,
   ComplianceStatus,
@@ -44,7 +46,7 @@ import {
 } from "@/utils/chartTheme";
 import { statusToTranslationKey } from "@/utils/complianceUtils";
 import { exportDashboardMetricsToCSV } from "@/utils/exportUtils";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Bar,
   BarChart,
@@ -91,6 +93,10 @@ const getDefaultDashboardData = () => ({
   documentsReviewOverdue: 0,
   mitigatedRisks: 0,
 });
+  const assessorAuditErrorToast = useRef(toast.error);
+  const translateRef = useRef(t);
+  assessorAuditErrorToast.current = toast.error;
+  translateRef.current = t;
 
 const PIE_COLORS = CHART_COLORS.palette;
 
@@ -104,10 +110,17 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
 
   const projects = useProjectStore((state) => state.projects);
   const { users } = useUserStore();
+  const organizationId = useTenantStore((state) => state.organizationId);
   const { documents, auditPlans, audits } = useAppStore();
 
   // Loading state — driven by store data availability, no artificial delay
   const [isLoading, setIsLoading] = useState(false);
+  const [assessorExportMetrics, setAssessorExportMetrics] =
+    useState<AssessorPackExportMetrics>({
+      totalExports: 0,
+      exportsLast30Days: 0,
+      reviewerSignOffRatePercent: 0,
+    });
   const [cycleGuideDismissed, setCycleGuideDismissed] = useState<boolean>(
     () => {
       try {
@@ -146,6 +159,27 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
       // no-op
     }
   }, [cycleGuideDismissed, cycleGuideCompleted]);
+
+  useEffect(() => {
+    let active = true;
+    void getAssessorPackExportAudit()
+      .then((entries) => {
+        if (active) {
+          setAssessorExportMetrics(calculateAssessorPackExportMetrics(entries));
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load assessor export metrics:", error);
+        if (active) {
+          assessorAuditErrorToast.current(
+            translateRef.current("assessorExportAuditLoadFailed"),
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId]);
 
   const firstProgramId = projects[0]?.programId;
 
@@ -189,11 +223,6 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
           (cycleGuideCompleted.length / accreditationCycleSteps.length) * 100,
         )
       : 0;
-
-  const assessorExportMetrics = useMemo(() => {
-    const auditEntries = getAssessorPackExportAudit();
-    return calculateAssessorPackExportMetrics(auditEntries);
-  }, [cycleGuideCompleted.length, cycleGuideDismissed]);
 
   const readinessMetrics = useMemo(
     () => calculatePortfolioReadiness(projects, risks, documents),

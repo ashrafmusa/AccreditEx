@@ -518,6 +518,9 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       ...capa,
       pdcaStage: newStage,
       pdcaHistory: [...(capa.pdcaHistory || []), historyEntry],
+      linkedDocumentIds: Array.from(
+        new Set([...(capa.linkedDocumentIds || []), ...attachments]),
+      ),
     };
 
     await get().updateCapa(projectId, updatedCapa);

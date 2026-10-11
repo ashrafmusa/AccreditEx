@@ -149,6 +149,10 @@ export const en = {
     "Finalization failed. Check your password, permissions and connection, then retry. No successful signature has been confirmed.",
   projectAssessorExported:
     "Assessor pack exported as JSON and evidence-matrix CSV.",
+  projectAssessorAuditFailed:
+    "The export audit record could not be saved, so the assessor pack was not exported. Please retry.",
+  assessorExportAuditLoadFailed:
+    "Assessor export history could not be loaded. Dashboard export metrics may be incomplete.",
   projectReportGenerating:
     "Generating the project PDF report. This may take 30-60 seconds.",
   projectReportGenerated:
@@ -160,6 +164,19 @@ export const en = {
   projectSurveySaveFailed: "Unable to save survey progress. Please retry.",
   projectSurveyCompleteFailed:
     "Unable to complete the survey. Your progress has not been confirmed as saved.",
+  projectSurveyAIHintFailed: "Unable to get AI survey guidance. Please retry.",
+  projectSurveyBriefingFailed: "Unable to generate the survey briefing. Please retry.",
+  projectSurveyGenerating: "Generating...",
+  projectSurveyBriefing: "AI Survey Briefing",
+  projectSurveyLoadingHint: "Loading...",
+  projectSurveyAIHint: "AI Hint",
+  surveyDate: "Date",
+  surveyor: "Surveyor",
+  surveyorNotes: "Surveyor notes...",
+  surveyPass: "Pass",
+  surveyFail: "Fail",
+  surveyNotApplicable: "Not Applicable",
+  dismiss: "Dismiss",
   projectSurveyApplied: "Survey findings saved to the project checklist.",
   projectSurveyApplyFailed: "Unable to apply survey findings. Check permissions and checklist links, then retry.",
   // Project List

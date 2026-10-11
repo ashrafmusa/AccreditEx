@@ -15,6 +15,7 @@ import {
   getProjects,
   updateProject,
   createProject,
+  updateCapa,
 } from "@/services/projectService";
 import { getAuthInstance } from "@/firebase/firebaseConfig";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
@@ -53,6 +54,7 @@ jest.mock("@/services/projectService", () => ({
   getProjects: jest.fn(),
   updateProject: jest.fn(),
   createProject: jest.fn(),
+  updateCapa: jest.fn(),
 }));
 jest.mock("@/services/workflowEngine", () => ({
   workflowEngine: { evaluate: jest.fn().mockResolvedValue(undefined) },
@@ -473,5 +475,47 @@ describe("Project record integration", () => {
       useProjectStore.getState().applySurveyFindingsToProject("p1", "absent"),
     ).rejects.toThrow("read-only");
     expect(updateProject).not.toHaveBeenCalled();
+  });
+
+  it("persists PDCA evidence references on both CAPA history and linked documents", async () => {
+    // Arrange
+    const capa = {
+      id: "capa1",
+      checklistItemId: "c1",
+      rootCause: "Process gap",
+      correctiveAction: "Update the process",
+      status: ProjectStatus.InProgress,
+      pdcaStage: "Plan" as const,
+      pdcaHistory: [],
+      linkedDocumentIds: ["existing-doc"],
+      createdAt: "",
+      updatedAt: "",
+    };
+    useProjectStore.setState({
+      projects: [{ ...record(), capaReports: [capa] }],
+    });
+
+    // Act
+    await useProjectStore
+      .getState()
+      .updateCAPAPDCAStage("p1", "capa1", "Do", "Started implementation", [
+        "evidence-doc",
+      ]);
+
+    // Assert
+    expect(updateCapa).toHaveBeenCalledWith(
+      "p1",
+      "capa1",
+      expect.objectContaining({
+        pdcaStage: "Do",
+        linkedDocumentIds: ["existing-doc", "evidence-doc"],
+        pdcaHistory: [
+          expect.objectContaining({
+            notes: "Started implementation",
+            attachments: ["evidence-doc"],
+          }),
+        ],
+      }),
+    );
   });
 });

@@ -1,5 +1,15 @@
 import { AppDocument, Project, Risk, Standard } from "@/types";
 import { convertToCSV, downloadCSV } from "@/utils/exportUtils";
+import {
+    addDoc,
+    collection,
+    getDocsFromServer,
+    limit,
+    orderBy,
+    where,
+} from "firebase/firestore";
+import { db } from "@/firebase/firebaseConfig";
+import { getTenantQuery, getTenantStamp } from "@/utils/tenantQuery";
 
 export interface AssessorReportPack {
     metadata: {
@@ -62,8 +72,6 @@ export interface AssessorPackExportMetrics {
     exportsLast30Days: number;
     reviewerSignOffRatePercent: number;
 }
-
-const ASSESSOR_PACK_AUDIT_STORAGE_KEY = "accreditex_assessor_pack_export_audit";
 
 const safeText = (value?: string): string => value || "";
 
@@ -199,18 +207,18 @@ export const exportAssessorEvidenceMatrixCsv = (pack: AssessorReportPack): void 
     );
 };
 
-export const recordAssessorPackExportAudit = (
+export const recordAssessorPackExportAudit = async (
     pack: AssessorReportPack,
+    userId: string,
     reviewerSignOff?: {
         reviewerName?: string;
         note?: string;
     },
-): AssessorPackExportAuditEntry => {
+): Promise<AssessorPackExportAuditEntry> => {
     const normalizedReviewerName = reviewerSignOff?.reviewerName?.trim();
     const normalizedReviewerNote = reviewerSignOff?.note?.trim();
 
-    const entry: AssessorPackExportAuditEntry = {
-        id: `assessor-pack-export-${Date.now()}`,
+    const entry: Omit<AssessorPackExportAuditEntry, "id"> = {
         projectId: pack.metadata.projectId,
         projectName: pack.metadata.projectName,
         generatedBy: pack.metadata.generatedBy,
@@ -220,40 +228,62 @@ export const recordAssessorPackExportAudit = (
             ? {
                 reviewerName: normalizedReviewerName,
                 approvedAt: new Date().toISOString(),
-                note: normalizedReviewerNote || undefined,
-            }
-            : undefined,
+                    ...(normalizedReviewerNote
+                        ? { note: normalizedReviewerNote }
+                        : {}),
+                }
+                : undefined,
     };
 
-    try {
-        const existing = getAssessorPackExportAudit();
-        localStorage.setItem(
-            ASSESSOR_PACK_AUDIT_STORAGE_KEY,
-            JSON.stringify([entry, ...existing].slice(0, 500)),
-        );
-    } catch {
-        // no-op; export should remain non-blocking
-    }
+    const record = await addDoc(collection(db, "activity_logs"), {
+            projectId: entry.projectId,
+            projectName: entry.projectName,
+            generatedBy: entry.generatedBy,
+            exportedAt: entry.exportedAt,
+            format: entry.format,
+            ...(entry.reviewerSignOff
+                ? { reviewerSignOff: entry.reviewerSignOff }
+                : {}),
+        ...getTenantStamp(),
+        userId,
+        user: pack.metadata.generatedBy,
+        timestamp: entry.exportedAt,
+        action: {
+            en: `Exported assessor pack for "${pack.metadata.projectName}"`,
+            ar: `تم تصدير حزمة المقيم للمشروع "${pack.metadata.projectName}"`,
+        },
+        details: JSON.stringify(entry.reviewerSignOff || {}),
+        type: "assessor_pack_export",
+        resourceId: pack.metadata.projectId,
+    });
 
-    return entry;
+    return { ...entry, id: record.id };
 };
 
-export const getAssessorPackExportAudit = (): AssessorPackExportAuditEntry[] => {
-    try {
-        const raw = localStorage.getItem(ASSESSOR_PACK_AUDIT_STORAGE_KEY);
-        if (!raw) {
-            return [];
-        }
+export const getAssessorPackExportAudit = async (): Promise<AssessorPackExportAuditEntry[]> => {
+    const snapshot = await getDocsFromServer(
+        getTenantQuery(
+            "activity_logs",
+            where("type", "==", "assessor_pack_export"),
+            orderBy("timestamp", "desc"),
+            limit(500),
+        ),
+    );
 
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-            return [];
-        }
-
-        return parsed as AssessorPackExportAuditEntry[];
-    } catch {
-        return [];
-    }
+    return snapshot.docs
+        .map((record) => {
+            const data = record.data();
+            return {
+                id: record.id,
+                projectId: data.projectId,
+                projectName: data.projectName,
+                generatedBy: data.generatedBy,
+                exportedAt: data.exportedAt,
+                format: data.format,
+                reviewerSignOff: data.reviewerSignOff,
+            } as AssessorPackExportAuditEntry;
+        })
+        .sort((a, b) => b.exportedAt.localeCompare(a.exportedAt));
 };
 
 export const calculateAssessorPackExportMetrics = (

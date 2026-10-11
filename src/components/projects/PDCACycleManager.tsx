@@ -9,6 +9,7 @@ import PDCACycleCard from "./PDCACycleCard";
 import PDCAStageTransitionForm from "./PDCAStageTransitionForm";
 import PDCACycleDetailModal from "./PDCACycleDetailModal";
 import { aiAgentService } from "@/services/aiAgentService";
+import { useAppStore } from "@/stores/useAppStore";
 
 interface PDCACycleManagerProps {
   project: Project;
@@ -23,6 +24,7 @@ const PDCACycleManager: React.FC<PDCACycleManagerProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const { currentUser, users } = useUserStore();
+  const documents = useAppStore((state) => state.documents);
   const { updateCAPAPDCAStage, createPDCACycle, updatePDCACycle, updateCapa } =
     useProjectStore();
   const [selectedItem, setSelectedItem] = useState<{
@@ -120,10 +122,10 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
         prioritySelect.value = priority;
       }
 
-      toast.success("AI suggested PDCA cycle setup.");
+      toast.success(t("pdcaAISuggestionSucceeded"));
     } catch (error) {
       console.error("AI PDCA cycle suggestion error:", error);
-      toast.error("Failed to generate AI suggestion.");
+      toast.error(t("pdcaAISuggestionFailed"));
     } finally {
       setIsAISuggesting(false);
     }
@@ -263,6 +265,9 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
           ...currentCycle,
           currentStage: nextStage,
           stageHistory: [...(currentCycle.stageHistory || []), historyEntry],
+          linkedDocumentIds: Array.from(
+            new Set([...(currentCycle.linkedDocumentIds || []), ...attachments]),
+          ),
         };
 
         await updatePDCACycle(project.id, updatedCycle);
@@ -478,6 +483,15 @@ Use healthcare accreditation terminology. Be specific and actionable.`;
               ? (transitioningItem.item as CAPAReport).description || ""
               : (transitioningItem.item as PDCACycle).description || ""
           }
+          availableDocuments={documents.filter(
+            (document) =>
+              (!project.organizationId ||
+                document.organizationId === project.organizationId) &&
+              (document.projectId === project.id ||
+                transitioningItem.item.linkedDocumentIds?.includes(
+                  document.id,
+                )),
+          )}
           onConfirm={handleConfirmTransition}
           onCancel={() => {
             setShowTransitionForm(false);

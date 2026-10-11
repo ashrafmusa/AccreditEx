@@ -146,6 +146,10 @@ export const ar = {
     "فشل الاعتماد النهائي. تحقق من كلمة المرور والصلاحيات والاتصال ثم أعد المحاولة. لم يتم تأكيد توقيع ناجح.",
   projectAssessorExported:
     "تم تصدير حزمة المقيم بصيغة JSON ومصفوفة الأدلة بصيغة CSV.",
+  projectAssessorAuditFailed:
+    "تعذر حفظ سجل التصدير، لذلك لم يتم تصدير حزمة المقيم. يرجى إعادة المحاولة.",
+  assessorExportAuditLoadFailed:
+    "تعذر تحميل سجل تصدير المقيم. قد تكون مقاييس لوحة المعلومات غير مكتملة.",
   projectReportGenerating:
     "جار إنشاء تقرير المشروع بصيغة PDF. قد يستغرق ذلك 30 إلى 60 ثانية.",
   projectReportGenerated:
@@ -157,6 +161,19 @@ export const ar = {
   projectSurveySaveFailed: "تعذر حفظ تقدم الجولة التفقدية. أعد المحاولة.",
   projectSurveyCompleteFailed:
     "تعذر إكمال الجولة التفقدية. لم يتم تأكيد حفظ تقدمك.",
+  projectSurveyAIHintFailed: "تعذر الحصول على إرشادات الجولة من الذكاء الاصطناعي. أعد المحاولة.",
+  projectSurveyBriefingFailed: "تعذر إنشاء إحاطة الجولة. أعد المحاولة.",
+  projectSurveyGenerating: "جارٍ الإنشاء...",
+  projectSurveyBriefing: "إحاطة الجولة بالذكاء الاصطناعي",
+  projectSurveyLoadingHint: "جارٍ التحميل...",
+  projectSurveyAIHint: "إرشاد بالذكاء الاصطناعي",
+  surveyDate: "التاريخ",
+  surveyor: "المقيّم",
+  surveyorNotes: "ملاحظات المقيّم...",
+  surveyPass: "اجتاز",
+  surveyFail: "لم يجتز",
+  surveyNotApplicable: "لا ينطبق",
+  dismiss: "إغلاق",
   projectSurveyApplied: "تم حفظ نتائج الجولة التفقدية في قائمة مراجعة المشروع.",
   projectSurveyApplyFailed: "تعذر تطبيق نتائج الجولة التفقدية. تحقق من الصلاحيات وروابط قائمة المراجعة ثم أعد المحاولة.",
   // Project List

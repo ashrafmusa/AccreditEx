@@ -2,6 +2,7 @@ import SurveyRiskPredictor from "@/components/quality-insights/SurveyRiskPredict
 import {
   calculateAssessorPackExportMetrics,
   getAssessorPackExportAudit,
+  type AssessorPackExportMetrics,
 } from "@/services/assessorReportPackService";
 import { calculatePredictiveAuditRisk } from "@/services/qualityOutcomeIntelligenceService";
 import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
@@ -14,7 +15,7 @@ import {
   User,
   UserTrainingStatus,
 } from "@/types";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import StatCard from "../components/common/StatCard";
 import {
   CheckBadgeIcon,
@@ -30,6 +31,8 @@ import QualityTrendChart from "../components/quality-insights/QualityTrendChart"
 import RootCauseAnalysis from "../components/quality-insights/RootCauseAnalysis";
 import TrainingEffectivenessChart from "../components/quality-insights/TrainingEffectivenessChart";
 import { useTranslation } from "../hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
+import { useTenantStore } from "@/stores/useTenantStore";
 
 interface QualityInsightsPageProps {
   projects: Project[];
@@ -42,7 +45,40 @@ interface QualityInsightsPageProps {
 
 const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
   const { t } = useTranslation();
+  const toast = useToast();
+  const organizationId = useTenantStore((state) => state.organizationId);
   const documents = useAppStore((state) => state.documents);
+  const [assessorExportMetrics, setAssessorExportMetrics] =
+    useState<AssessorPackExportMetrics>({
+      totalExports: 0,
+      exportsLast30Days: 0,
+      reviewerSignOffRatePercent: 0,
+    });
+  const assessorAuditErrorToast = useRef(toast.error);
+  const translateRef = useRef(t);
+  assessorAuditErrorToast.current = toast.error;
+  translateRef.current = t;
+
+  useEffect(() => {
+    let active = true;
+    void getAssessorPackExportAudit()
+      .then((entries) => {
+        if (active) {
+          setAssessorExportMetrics(calculateAssessorPackExportMetrics(entries));
+        }
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load assessor export metrics:", error);
+        if (active) {
+          assessorAuditErrorToast.current(
+            translateRef.current("assessorExportAuditLoadFailed"),
+          );
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId]);
 
   const kpis = useMemo(() => {
     const pendingChecks = props.projects
@@ -89,11 +125,6 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
   const readiness = useMemo(() => {
     return calculatePortfolioReadiness(props.projects, props.risks, documents);
   }, [props.projects, props.risks, documents]);
-
-  const assessorExportMetrics = useMemo(() => {
-    const auditEntries = getAssessorPackExportAudit();
-    return calculateAssessorPackExportMetrics(auditEntries);
-  }, [props.projects.length]);
 
   const openCapas = useMemo(
     () =>

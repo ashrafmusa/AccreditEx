@@ -5,10 +5,29 @@ import {
     recordAssessorPackExportAudit,
 } from "@/services/assessorReportPackService";
 import { ComplianceStatus, ProjectStatus, type Project, type Risk, type Standard } from "@/types";
+import { addDoc, getDocsFromServer } from "firebase/firestore";
+
+jest.mock("firebase/firestore", () => ({
+    collection: jest.fn(() => "activity-logs"),
+    addDoc: jest.fn(),
+    getDocsFromServer: jest.fn(),
+    where: jest.fn((field, operator, value) => ({ field, operator, value })),
+    orderBy: jest.fn((field, direction) => ({ field, direction })),
+    limit: jest.fn((count) => ({ count })),
+}));
+jest.mock("@/firebase/firebaseConfig", () => ({ db: {} }));
+jest.mock("@/utils/tenantQuery", () => ({
+    getTenantQuery: jest.fn(() => "tenant-query"),
+    getTenantStamp: jest.fn(() => ({ organizationId: "org-a" })),
+}));
 
 describe("assessorReportPackService", () => {
     beforeEach(() => {
-        localStorage.clear();
+        jest.clearAllMocks();
+        jest.mocked(addDoc).mockResolvedValue({ id: "audit-1" } as Awaited<ReturnType<typeof addDoc>>);
+        jest.mocked(getDocsFromServer).mockResolvedValue({
+            docs: [],
+        } as Awaited<ReturnType<typeof getDocsFromServer>>);
     });
 
     const project: Project = {
@@ -101,7 +120,7 @@ describe("assessorReportPackService", () => {
         expect(pack.openFindings.length).toBeGreaterThan(0);
     });
 
-    it("records and retrieves assessor export audit entries", () => {
+    it("records assessor exports in the tenant-scoped durable activity log", async () => {
         const pack = buildAssessorReportPack({
             project,
             standards,
@@ -110,16 +129,25 @@ describe("assessorReportPackService", () => {
             generatedBy: "QA Lead",
         });
 
-        const entry = recordAssessorPackExportAudit(pack);
-        const audit = getAssessorPackExportAudit();
+        const entry = await recordAssessorPackExportAudit(pack, "user-1");
 
         expect(entry.projectId).toBe("project-1");
-        expect(audit.length).toBe(1);
-        expect(audit[0].projectName).toBe("Medication Safety Program");
-        expect(audit[0].format).toBe("json+csv");
+        expect(entry.id).toBe("audit-1");
+        expect(entry.format).toBe("json+csv");
+        expect(addDoc).toHaveBeenCalledWith(
+            "activity-logs",
+            expect.objectContaining({
+                projectId: "project-1",
+                projectName: "Medication Safety Program",
+                userId: "user-1",
+                organizationId: "org-a",
+                type: "assessor_pack_export",
+                resourceId: "project-1",
+            }),
+        );
     });
 
-    it("persists reviewer sign-off metadata when provided", () => {
+    it("persists reviewer sign-off metadata when provided", async () => {
         const pack = buildAssessorReportPack({
             project,
             standards,
@@ -128,20 +156,36 @@ describe("assessorReportPackService", () => {
             generatedBy: "QA Lead",
         });
 
-        recordAssessorPackExportAudit(pack, {
+        const entry = await recordAssessorPackExportAudit(pack, "user-1", {
             reviewerName: "Dr. Sarah Ahmed",
             note: "Reviewed for mock assessor readiness",
         });
 
-        const audit = getAssessorPackExportAudit();
-        expect(audit[0].reviewerSignOff?.reviewerName).toBe("Dr. Sarah Ahmed");
-        expect(audit[0].reviewerSignOff?.approvedAt).toBeDefined();
-        expect(audit[0].reviewerSignOff?.note).toBe(
+        expect(entry.reviewerSignOff?.reviewerName).toBe("Dr. Sarah Ahmed");
+        expect(entry.reviewerSignOff?.approvedAt).toBeDefined();
+        expect(entry.reviewerSignOff?.note).toBe(
             "Reviewed for mock assessor readiness",
         );
     });
 
-    it("calculates assessor export metrics including sign-off rate", () => {
+    it("rejects the export when the durable audit write fails", async () => {
+        // Arrange
+        const pack = buildAssessorReportPack({
+            project,
+            standards,
+            documents: documents as any,
+            risks,
+            generatedBy: "QA Lead",
+        });
+        jest.mocked(addDoc).mockRejectedValue(new Error("Audit unavailable"));
+
+        // Act / Assert
+        await expect(recordAssessorPackExportAudit(pack, "user-1")).rejects.toThrow(
+            "Audit unavailable",
+        );
+    });
+
+    it("loads tenant-scoped export history and calculates sign-off metrics", async () => {
         const pack = buildAssessorReportPack({
             project,
             standards,
@@ -150,17 +194,44 @@ describe("assessorReportPackService", () => {
             generatedBy: "QA Lead",
         });
 
-        recordAssessorPackExportAudit(pack, {
-            reviewerName: "Dr. Sarah Ahmed",
-            note: "Approved",
-        });
-        recordAssessorPackExportAudit(pack);
+        const signedAt = new Date().toISOString();
+        const olderAt = new Date(Date.now() - 2 * 86400000).toISOString();
+        jest.mocked(getDocsFromServer).mockResolvedValue({
+            docs: [
+                {
+                    id: "audit-1",
+                    data: () => ({
+                        projectId: "project-1",
+                        projectName: "Medication Safety Program",
+                        generatedBy: "QA Lead",
+                        exportedAt: signedAt,
+                        format: "json+csv",
+                        reviewerSignOff: {
+                            reviewerName: "Dr. Sarah Ahmed",
+                            approvedAt: signedAt,
+                            note: "Approved",
+                        },
+                    }),
+                },
+                {
+                    id: "audit-2",
+                    data: () => ({
+                        projectId: "project-1",
+                        projectName: "Medication Safety Program",
+                        generatedBy: "QA Lead",
+                        exportedAt: olderAt,
+                        format: "json+csv",
+                    }),
+                },
+            ],
+        } as unknown as Awaited<ReturnType<typeof getDocsFromServer>>);
 
-        const entries = getAssessorPackExportAudit();
+        const entries = await getAssessorPackExportAudit();
         const metrics = calculateAssessorPackExportMetrics(entries);
 
         expect(metrics.totalExports).toBe(2);
         expect(metrics.exportsLast30Days).toBe(2);
         expect(metrics.reviewerSignOffRatePercent).toBe(50);
+        expect(getDocsFromServer).toHaveBeenCalledWith("tenant-query");
     });
 });
