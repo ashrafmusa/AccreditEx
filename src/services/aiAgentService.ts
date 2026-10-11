@@ -153,15 +153,18 @@ export class AIAgentService {
         const safeDocuments = (documents || []).filter(d => !!organizationId && d.organizationId === organizationId);
 
         const authUser = getAuthInstance().currentUser;
+        const authEmail = authUser?.email;
         const resolvedUser = (currentUser?.organizationId === organizationId && currentUser.email === authUser?.email ? currentUser : null) || (authUser?.email
-            ? safeUsers.find(u => u.email === authUser.email) || null
+            ? safeUsers.find(u => u.email === authEmail) || null
             : null);
 
         // Get user's assigned projects
-        const userProjects = safeProjects.filter(p =>
-            p.projectLead?.id === resolvedUser?.id ||
-            p.teamMembers?.includes(resolvedUser?.id)
-        );
+        const userProjects = resolvedUser
+            ? safeProjects.filter(p =>
+                p.projectLead?.id === resolvedUser.id ||
+                p.teamMembers?.includes(resolvedUser.id)
+            )
+            : [];
 
         // Get user's department info
         const userDepartment = safeDepartments.find(d =>

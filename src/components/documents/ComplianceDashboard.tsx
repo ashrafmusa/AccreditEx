@@ -274,7 +274,11 @@ export default function ComplianceDashboard({
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="area" />
               <YAxis domain={[0, 100]} />
-              <Tooltip formatter={(value) => `${value.toFixed(1)}%`} />
+              <Tooltip
+                formatter={(value) =>
+                  `${typeof value === "number" ? value.toFixed(1) : value}%`
+                }
+              />
               <Legend />
               <Bar dataKey="current" fill="#3b82f6" name="Current Score" />
               <Bar dataKey="target" fill="#10b981" name="Target Score" />

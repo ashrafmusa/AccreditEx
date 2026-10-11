@@ -93,10 +93,6 @@ const getDefaultDashboardData = () => ({
   documentsReviewOverdue: 0,
   mitigatedRisks: 0,
 });
-  const assessorAuditErrorToast = useRef(toast.error);
-  const translateRef = useRef(t);
-  assessorAuditErrorToast.current = toast.error;
-  translateRef.current = t;
 
 const PIE_COLORS = CHART_COLORS.palette;
 
@@ -107,6 +103,10 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
   const { t } = useTranslation();
   const toast = useToast();
   const { theme } = useTheme();
+  const assessorAuditErrorToast = useRef(toast.error);
+  const translateRef = useRef(t);
+  assessorAuditErrorToast.current = toast.error;
+  translateRef.current = t;
 
   const projects = useProjectStore((state) => state.projects);
   const { users } = useUserStore();

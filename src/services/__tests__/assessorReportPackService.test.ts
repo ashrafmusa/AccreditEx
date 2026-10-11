@@ -27,7 +27,7 @@ describe("assessorReportPackService", () => {
         jest.mocked(addDoc).mockResolvedValue({ id: "audit-1" } as Awaited<ReturnType<typeof addDoc>>);
         jest.mocked(getDocsFromServer).mockResolvedValue({
             docs: [],
-        } as Awaited<ReturnType<typeof getDocsFromServer>>);
+        } as unknown as Awaited<ReturnType<typeof getDocsFromServer>>);
     });
 
     const project: Project = {

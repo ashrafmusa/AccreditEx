@@ -10,6 +10,7 @@ import type { User } from '@/types';
 const mockSignIn = jest.fn();
 const mockSignOut = jest.fn();
 const mockGetDocs = jest.fn();
+const mockGetDoc = jest.fn();
 const mockSetDoc = jest.fn();
 const mockDeleteDoc = jest.fn();
 
@@ -23,6 +24,7 @@ jest.mock('firebase/firestore', () => ({
     query: jest.fn(() => 'query-ref'),
     where: jest.fn(),
     getDocs: (...args: any[]) => mockGetDocs(...args),
+    getDoc: (...args: any[]) => mockGetDoc(...args),
     setDoc: (...args: any[]) => mockSetDoc(...args),
     deleteDoc: (...args: any[]) => mockDeleteDoc(...args),
     doc: jest.fn((_db, _col, id) => `doc-ref-${id}`),
@@ -74,7 +76,10 @@ jest.mock('@/services/secureUserService', () => ({
 
 const mockGuard = jest.fn();
 jest.mock('@/services/permissionService', () => ({
-    permissionService: { guard: (...args: any[]) => mockGuard(...args) },
+    permissionService: {
+        guard: (...args: any[]) => mockGuard(...args),
+        buildPermissionCache: (role: string) => ({ role }),
+    },
     Action: { Create: 'create', Delete: 'delete', Read: 'read', Update: 'update' },
     Resource: { User: 'user' },
 }));
@@ -109,6 +114,9 @@ describe('useUserStore', () => {
     beforeEach(() => {
         useUserStore.setState({ currentUser: null, users: [] });
         jest.clearAllMocks();
+        mockGetDoc.mockResolvedValue({
+            exists: () => false,
+        });
     });
 
     describe('initial state', () => {
@@ -165,10 +173,11 @@ describe('useUserStore', () => {
             expect(result).toBeNull();
         });
 
-        it('returns null on auth failure', async () => {
+        it('propagates auth failures to the caller', async () => {
             mockSignIn.mockRejectedValue(new Error('Invalid credentials'));
-            const result = await useUserStore.getState().login('wrong@test.com', 'bad');
-            expect(result).toBeNull();
+            await expect(
+                useUserStore.getState().login('wrong@test.com', 'bad')
+            ).rejects.toThrow('Invalid credentials');
         });
     });
 

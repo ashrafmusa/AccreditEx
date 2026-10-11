@@ -119,7 +119,7 @@ export async function updateOrganization(
     await updateDoc(ref, {
         ...updates,
         updatedAt: new Date().toISOString(),
-    } as Record<string, unknown>);
+    });
 }
 
 /**

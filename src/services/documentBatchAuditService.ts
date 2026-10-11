@@ -49,7 +49,7 @@ export async function auditSingleDocument(docId: string, projectId: string): Pro
             complianceScore,
             auditedAt: new Date(),
             auditedBy: currentUser?.uid || 'system',
-            auditedByEmail: currentUser?.email,
+            auditedByEmail: currentUser?.email ?? undefined,
             criticalIssuesCount,
         };
 

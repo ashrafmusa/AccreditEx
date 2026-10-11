@@ -24,4 +24,8 @@ declare module 'mammoth' {
         input: { arrayBuffer: ArrayBuffer },
         options?: ConvertToHtmlOptions
     ): Promise<ConvertResult>;
+
+    export function extractRawText(
+        input: { arrayBuffer: ArrayBuffer }
+    ): Promise<ConvertResult>;
 }

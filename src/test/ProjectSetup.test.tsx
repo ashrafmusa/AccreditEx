@@ -244,7 +244,7 @@ describe("Project setup integrity", () => {
   });
   it("keeps Quick Start generic instead of assigning it to the first program", () => {
     // Arrange
-    const programs = [{ id: "ohas", name: "OHAS", description: { en: "" } }];
+    const programs = [{ id: "ohas", name: "OHAS", description: { en: "", ar: "" } }];
 
     // Act
     const quickStart = generateProjectTemplates(programs).find(
@@ -495,7 +495,7 @@ describe("Project setup integrity", () => {
   it("creates a Quick Start project for the selected program with both standards and starter tasks", async () => {
     // Arrange
     projectTemplates = generateProjectTemplates([
-      { id: "ohas", name: "OHAS", description: { en: "" } },
+      { id: "ohas", name: "OHAS", description: { en: "", ar: "" } },
     ]);
     render(<CreateProjectWizard setNavigation={navigate} />);
 

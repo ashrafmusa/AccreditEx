@@ -191,7 +191,9 @@ export async function importDocxFile(file: File): Promise<{
     return {
         html: sanitized,
         metadata: {
-            ...metadata,
+            title: metadata.title ?? 'Imported Document',
+            summary: metadata.summary ?? '',
+            wordCount: metadata.wordCount,
             fileName: file.name,
         },
     };

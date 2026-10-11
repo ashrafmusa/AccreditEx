@@ -131,8 +131,7 @@ export async function updateDemoRequestStatus(
     status: DemoRequestStatus,
     notes?: string,
 ): Promise<void> {
-    const data: Record<string, unknown> = { status };
+    const data: { status: DemoRequestStatus; notes?: string } = { status };
     if (notes !== undefined) data.notes = notes;
     await updateDoc(doc(db, 'demoRequests', id), data);
 }
-

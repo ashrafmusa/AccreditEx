@@ -5,13 +5,16 @@ import type { ToastContextType } from "@/hooks/useToast";
 import type { LabOpsState } from "@/stores/useLabOpsStore";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 
-const mockToast: ToastContextType = {
+const mockToastActions = {
   success: jest.fn(),
   error: jest.fn(),
   info: jest.fn(),
   warning: jest.fn(),
   custom: jest.fn(),
   showToast: jest.fn(),
+};
+const mockToast: ToastContextType = {
+  ...mockToastActions,
   toast: undefined as unknown as ToastContextType,
 };
 mockToast.toast = mockToast;
@@ -75,10 +78,10 @@ const initialDataState = {
 
 describe("IQCWestgardTab", () => {
   beforeEach(() => {
-    mockToast.success.mockClear();
-    mockToast.error.mockClear();
-    mockToast.info.mockClear();
-    mockToast.warning.mockClear();
+    mockToastActions.success.mockClear();
+    mockToastActions.error.mockClear();
+    mockToastActions.info.mockClear();
+    mockToastActions.warning.mockClear();
     useLabOpsStore.setState(JSON.parse(JSON.stringify(initialDataState)));
   });
 

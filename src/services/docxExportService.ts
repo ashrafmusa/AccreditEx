@@ -5,6 +5,7 @@ import {
     Document,
     HeadingLevel,
     ImageRun,
+    LevelFormat,
     Packer,
     Paragraph,
     Table,
@@ -66,10 +67,10 @@ const extractAndEmbedImages = async (htmlContent: string): Promise<Map<string, s
 /**
  * Parse HTML and convert to DOCX paragraphs with enhanced styling
  */
-const htmlToDocxParagraphs = (htmlContent: string, imageMap?: Map<string, string>): Paragraph[] => {
+const htmlToDocxParagraphs = (htmlContent: string, imageMap?: Map<string, string>): Array<Paragraph | Table> => {
     const parser = new DOMParser();
     const doc = parser.parseFromString(htmlContent, 'text/html');
-    const paragraphs: Paragraph[] = [];
+    const paragraphs: Array<Paragraph | Table> = [];
 
     const processNode = (node: Node, isInList = false, listLevel = 0): void => {
         if (node.nodeType === Node.ELEMENT_NODE) {
@@ -202,7 +203,7 @@ const htmlToDocxParagraphs = (htmlContent: string, imageMap?: Map<string, string
                                     text: content,
                                     bullet: isSorted ? undefined : { level: listLevel },
                                     numbering: isSorted
-                                        ? { level: listLevel, instance: 0 }
+                                        ? { reference: 'ordered-list', level: listLevel }
                                         : undefined,
                                 })
                             );
@@ -235,12 +236,34 @@ const htmlToDocxParagraphs = (htmlContent: string, imageMap?: Map<string, string
                         try {
                             const base64 = imageMap.get(src) || '';
                             // Parse base64
-                            const base64Data = base64.split(',')[1];
+                            const imageMatch = base64.match(
+                                /^data:image\/(png|jpe?g|gif|bmp);base64,([A-Za-z0-9+/=]+)$/i,
+                            );
+                            if (!imageMatch) {
+                                throw new Error('Image format is unsupported for DOCX export');
+                            }
+                            const mimeType = imageMatch[1].toLowerCase();
+                            const imageType:
+                                | 'jpg'
+                                | 'png'
+                                | 'gif'
+                                | 'bmp' =
+                                mimeType === 'jpeg' || mimeType === 'jpg'
+                                    ? 'jpg'
+                                    : mimeType === 'png'
+                                      ? 'png'
+                                      : mimeType === 'gif'
+                                        ? 'gif'
+                                        : 'bmp';
+                            const base64Data = imageMatch[2];
                             paragraphs.push(
                                 new Paragraph({
                                     children: [
                                         new ImageRun({
-                                            data: base64Data,
+                                            type: imageType,
+                                            data: Uint8Array.from(atob(base64Data), (character) =>
+                                                character.charCodeAt(0),
+                                            ),
                                             transformation: {
                                                 width: 400,
                                                 height: 300,
@@ -278,8 +301,12 @@ const htmlToDocxParagraphs = (htmlContent: string, imageMap?: Map<string, string
                                                 new TableCell({
                                                     children: [
                                                         new Paragraph({
-                                                            text: (cell as HTMLElement).textContent || '',
-                                                            bold: true,
+                                                            children: [
+                                                                new TextRun({
+                                                                    text: (cell as HTMLElement).textContent || '',
+                                                                    bold: true,
+                                                                }),
+                                                            ],
                                                             alignment: AlignmentType.CENTER,
                                                         }),
                                                     ],
@@ -310,7 +337,6 @@ const htmlToDocxParagraphs = (htmlContent: string, imageMap?: Map<string, string
                             });
 
                             if (tableRows.length > 0) {
-                                const cols = tableRows[0]?.children?.length || 1;
                                 paragraphs.push(
                                     new Table({
                                         width: { size: 100, type: 'pct' },
@@ -359,6 +385,21 @@ export const exportToDocx = async (
         const paragraphs = htmlToDocxParagraphs(htmlContent);
 
         const doc = new Document({
+            numbering: {
+                config: [
+                    {
+                        reference: 'ordered-list',
+                        levels: [
+                            {
+                                level: 0,
+                                format: LevelFormat.DECIMAL,
+                                text: '%1.',
+                                alignment: AlignmentType.START,
+                            },
+                        ],
+                    },
+                ],
+            },
             sections: [
                 {
                     properties: {
@@ -405,6 +446,21 @@ export const convertToDocxBlob = async (
         const paragraphs = htmlToDocxParagraphs(htmlContent);
 
         const doc = new Document({
+            numbering: {
+                config: [
+                    {
+                        reference: 'ordered-list',
+                        levels: [
+                            {
+                                level: 0,
+                                format: LevelFormat.DECIMAL,
+                                text: '%1.',
+                                alignment: AlignmentType.START,
+                            },
+                        ],
+                    },
+                ],
+            },
             sections: [
                 {
                     properties: {
