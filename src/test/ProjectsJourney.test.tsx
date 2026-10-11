@@ -347,6 +347,42 @@ describe("Projects action-first journey", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("resets project scope and selection when the signed-in user or role changes", async () => {
+    // Arrange
+    const navigate = jest.fn();
+    const view = render(<ProjectListPage setNavigation={navigate} />);
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Select project: Beta" }),
+    );
+    expect(screen.getByText(common.projectSelected)).toBeInTheDocument();
+
+    // Act
+    actor = { ...user, role: UserRole.Viewer };
+    view.rerender(<ProjectListPage setNavigation={navigate} />);
+
+    // Assert
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("article", { name: "Beta" }),
+      ).not.toBeInTheDocument();
+      expect(
+        screen.queryByText(common.projectSelected),
+      ).not.toBeInTheDocument();
+    });
+
+    // Act
+    actor = user;
+    view.rerender(<ProjectListPage setNavigation={navigate} />);
+
+    // Assert
+    await waitFor(() =>
+      expect(screen.getByRole("article", { name: "Beta" })).toBeInTheDocument(),
+    );
+    expect(
+      screen.getByRole("checkbox", { name: "Select project: Beta" }),
+    ).not.toBeChecked();
+  });
+
   it("shows load errors explicitly instead of an empty state or cached project cards", () => {
     // Arrange
     loadError = "failed";

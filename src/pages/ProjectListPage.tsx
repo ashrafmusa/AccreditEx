@@ -21,7 +21,7 @@ import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState, ProjectStatus, User } from "@/types";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   PROJECT_STATUS_KEYS,
   projectCalendarDate,
@@ -72,6 +72,10 @@ const ProjectListPage: React.FC<ProjectListPageProps> = ({ setNavigation }) => {
   const [showOnlyMyProjects, setShowOnlyMyProjects] = useState(
     !currentUser || currentUser.role !== "Admin",
   );
+  useEffect(() => {
+    setShowOnlyMyProjects(!currentUser || currentUser.role !== "Admin");
+    setSelectedProjects([]);
+  }, [currentUser?.id, currentUser?.role]);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
