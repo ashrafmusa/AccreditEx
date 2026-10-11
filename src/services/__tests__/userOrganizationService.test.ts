@@ -29,7 +29,7 @@ describe("findSoleOrganizationOwnedByUser", () => {
     it("returns null when the user owns no organizations", async () => {
         jest.mocked(getDocs).mockResolvedValueOnce({
             docs: [],
-        } as Awaited<ReturnType<typeof getDocs>>);
+        } as unknown as Awaited<ReturnType<typeof getDocs>>);
 
         await expect(findSoleOrganizationOwnedByUser("auth-user-1")).resolves.toBeNull();
     });
