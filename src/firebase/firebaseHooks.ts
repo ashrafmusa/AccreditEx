@@ -1,11 +1,34 @@
 import { db, getAuthInstance } from '@/firebase/firebaseConfig';
 import { migrateUserDocToAuthUid } from '@/services/secureUserService';
+import { findSoleOrganizationOwnedByUser } from '@/services/userOrganizationService';
 import { useTenantStore } from '@/stores/useTenantStore';
 import { useUserStore } from '@/stores/useUserStore';
 import { User, UserRole } from '@/types';
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, doc, getDoc, getDocs, limit, query, setDoc, where } from 'firebase/firestore';
 import { useEffect } from 'react';
+
+async function hydrateUserOrganization(userData: User, authUid: string): Promise<User> {
+  if (userData.organizationId) {
+    useTenantStore.getState().loadOrganizationForUser(userData.organizationId);
+    return userData;
+  }
+
+  try {
+    const organizationId = await findSoleOrganizationOwnedByUser(authUid);
+    if (organizationId) {
+      const resolvedUser = { ...userData, organizationId };
+      useTenantStore.getState().loadOrganizationForUser(organizationId);
+      console.info(`[Auth] Resolved missing organization from sole owner match for ${userData.email}`);
+      return resolvedUser;
+    }
+  } catch (error) {
+    console.warn(`[Auth] Could not safely resolve an organization for ${userData.email}.`, error);
+  }
+
+  useTenantStore.getState().loadOrganizationForUser();
+  return userData;
+}
 
 export function useFirebaseAuth() {
   const setCurrentUser = useUserStore(state => state.setCurrentUser);
@@ -24,9 +47,11 @@ export function useFirebaseAuth() {
 
           if (uidDocSnap.exists()) {
             // User document is correctly keyed by Auth UID
-            const userData = { ...uidDocSnap.data(), id: uidDocSnap.id } as User;
+            const userData = await hydrateUserOrganization(
+              { ...uidDocSnap.data(), id: uidDocSnap.id } as User,
+              firebaseUser.uid,
+            );
             setCurrentUser(userData);
-            useTenantStore.getState().loadOrganizationForUser(userData.organizationId);
             return;
           }
 
@@ -57,9 +82,11 @@ export function useFirebaseAuth() {
                   const migratedDocSnap = await getDoc(migratedDocRef);
 
                   if (migratedDocSnap.exists()) {
-                    const migratedUser = { ...migratedDocSnap.data(), id: migratedDocSnap.id } as User;
+                    const migratedUser = await hydrateUserOrganization(
+                      { ...migratedDocSnap.data(), id: migratedDocSnap.id } as User,
+                      firebaseUser.uid,
+                    );
                     setCurrentUser(migratedUser);
-                    useTenantStore.getState().loadOrganizationForUser(migratedUser.organizationId);
                     console.info(`[Auth] Migration complete for ${firebaseUser.email}`);
                     return;
                   }
@@ -75,8 +102,8 @@ export function useFirebaseAuth() {
             }
 
             // Use the document as-is (either no migration needed or migration failed)
-            setCurrentUser(userData);
-            useTenantStore.getState().loadOrganizationForUser(userData.organizationId);
+            const resolvedUser = await hydrateUserOrganization(userData, firebaseUser.uid);
+            setCurrentUser(resolvedUser);
           } else {
             // Self-heal path: user exists in Firebase Auth but profile doc is missing.
             // Bootstrap from an organization created by this user (trial flow) if found.
