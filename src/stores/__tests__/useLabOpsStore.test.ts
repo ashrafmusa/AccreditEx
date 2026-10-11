@@ -170,6 +170,52 @@ describe("Lab Operations safeguards", () => {
         expect(useLabOpsStore.getState().calibrations).toEqual([calibration]);
     });
 
+    it("persists equipment edits while preserving status and calibration history", async () => {
+        const equipment = { ...SEED_EQUIPMENT[0], status: "decommissioned" as const };
+        const calibration = {
+            id: "cal-history", equipmentId: equipment.id, equipmentName: equipment.name,
+            calibratedBy: "QA", calibrationDate: "2026-10-11", nextDueDate: "2027-01-01",
+            result: "pass" as const, createdAt: "2026-10-11",
+        };
+        useLabOpsStore.setState({
+            equipment: [equipment], calibrations: [calibration],
+            hasLoadedFromFirestore: true, loadedOrganizationId: "org-a",
+        });
+
+        await useLabOpsStore.getState().updateEquipment({
+            ...equipment, name: "Updated analyzer", updatedAt: "2026-10-12",
+        });
+
+        expect(useLabOpsStore.getState().equipment[0]).toMatchObject({
+            id: equipment.id, name: "Updated analyzer", status: "decommissioned",
+        });
+        expect(useLabOpsStore.getState().calibrations).toEqual([calibration]);
+        expect(saveLabOpsDataWithRetry).toHaveBeenCalledWith(
+            expect.objectContaining({
+                equipment: [expect.objectContaining({ name: "Updated analyzer" })],
+                calibrations: [calibration],
+            }),
+            3,
+            500,
+            "org-a",
+        );
+    });
+
+    it("rolls back equipment edits when persistence fails", async () => {
+        const equipment = SEED_EQUIPMENT[0];
+        useLabOpsStore.setState({
+            equipment: [equipment], hasLoadedFromFirestore: true, loadedOrganizationId: "org-a",
+        });
+        jest.mocked(saveLabOpsDataWithRetry).mockRejectedValueOnce(new Error("offline"));
+
+        await expect(useLabOpsStore.getState().updateEquipment({
+            ...equipment, name: "Unconfirmed change",
+        })).rejects.toThrow("offline");
+
+        expect(useLabOpsStore.getState().equipment[0]).toEqual(equipment);
+        expect(useLabOpsStore.getState().syncStatus).toBe("error");
+    });
+
     it("rejects invalid usage without changing stock or logs and subtracts valid usage exactly", () => {
         const reagent = { ...SEED_REAGENTS[0], quantity: 10 };
         useLabOpsStore.setState({ reagents: [reagent] });

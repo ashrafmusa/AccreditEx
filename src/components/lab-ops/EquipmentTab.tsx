@@ -59,6 +59,7 @@ const EquipmentTab: React.FC = () => {
     equipment,
     calibrations,
     addEquipment,
+    updateEquipment,
     decommissionEquipment,
     restoreEquipment,
     addCalibration,
@@ -73,6 +74,8 @@ const EquipmentTab: React.FC = () => {
   >("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [savingEdit, setSavingEdit] = useState(false);
   const [showCalForm, setShowCalForm] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState("");
@@ -196,6 +199,56 @@ const EquipmentTab: React.FC = () => {
     restoreEquipment(selected.id);
   };
 
+  const handleSaveEdit = async () => {
+    if (!selected) return;
+    const name = form.name?.trim();
+    const manufacturer = form.manufacturer?.trim();
+    const serialNumber = form.serialNumber?.trim();
+    const calibrationIntervalDays = Number(form.calibrationIntervalDays);
+    const maintenanceIntervalDays = Number(form.maintenanceIntervalDays);
+    if (!name || !manufacturer || !serialNumber) {
+      toast.error(t("labOpsEquipmentRequiredFields"));
+      return;
+    }
+    if (
+      !Number.isInteger(calibrationIntervalDays) ||
+      calibrationIntervalDays < 1 ||
+      !Number.isInteger(maintenanceIntervalDays) ||
+      maintenanceIntervalDays < 1
+    ) {
+      toast.error(t("labOpsEquipmentInvalidIntervals"));
+      return;
+    }
+
+    setSavingEdit(true);
+    try {
+      await updateEquipment({
+        ...selected,
+        ...form,
+        id: selected.id,
+        createdAt: selected.createdAt,
+        name,
+        manufacturer,
+        model: form.model?.trim() || "",
+        serialNumber,
+        assetTag: form.assetTag?.trim() || undefined,
+        labSection: form.labSection?.trim() || "",
+        location: form.location?.trim() || "",
+        calibrationIntervalDays,
+        maintenanceIntervalDays,
+        sopDocumentId: form.sopDocumentId?.trim() || undefined,
+        notes: form.notes?.trim() || undefined,
+        updatedAt: new Date().toISOString(),
+      });
+      setIsEditing(false);
+      toast.success(t("labOpsEquipmentUpdated"));
+    } catch {
+      toast.error(t("labOpsRecordSaveFailed"));
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const handleAddCal = async () => {
     if (!selectedId || !calForm.calibrationDate || !calForm.calibratedBy)
       return;
@@ -276,7 +329,14 @@ const EquipmentTab: React.FC = () => {
         )}
 
         <div className="flex items-center gap-2 flex-wrap">
-          <Button variant="ghost" size="sm" onClick={() => setSelectedId(null)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedId(null);
+              setIsEditing(false);
+            }}
+          >
             {t("back")}
           </Button>
           <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">
@@ -302,17 +362,254 @@ const EquipmentTab: React.FC = () => {
           >
             <PrinterIcon className="h-4 w-4" /> QR Code
           </Button>
-          {selected.status === "decommissioned" ? (
-            <Button variant="secondary" size="sm" onClick={handleRestore}>
-              {t("restoreEquipment")}
-            </Button>
-          ) : (
-            <Button variant="danger" size="sm" onClick={handleDecommission}>
-              {t("decommissionEquipment")}
-            </Button>
+          {!isEditing && (
+            <>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setForm({ ...selected });
+                  setIsEditing(true);
+                }}
+              >
+                {t("editEquipment")}
+              </Button>
+              {selected.status === "decommissioned" ? (
+                <Button variant="secondary" size="sm" onClick={handleRestore}>
+                  {t("restoreEquipment")}
+                </Button>
+              ) : (
+                <Button variant="danger" size="sm" onClick={handleDecommission}>
+                  {t("decommissionEquipment")}
+                </Button>
+              )}
+            </>
           )}
         </div>
 
+        {isEditing ? (
+          <Card className="p-4">
+            <h3 className="font-semibold mb-3 dark:text-dark-brand-text-primary">
+              {t("editEquipment")}
+            </h3>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("nameRequired")}
+                <input
+                  required
+                  value={form.name || ""}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("manufacturerRequired")}
+                <input
+                  required
+                  value={form.manufacturer || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, manufacturer: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("model")}
+                <input
+                  value={form.model || ""}
+                  onChange={(e) => setForm({ ...form, model: e.target.value })}
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("serialNumberRequired")}
+                <input
+                  required
+                  value={form.serialNumber || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, serialNumber: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("assetTag")}
+                <input
+                  value={form.assetTag || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, assetTag: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("category")}
+                <select
+                  value={form.category}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      category: e.target.value as EquipmentCategory,
+                    })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  {Object.entries(EQUIPMENT_CATEGORY_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("labSection")}
+                <input
+                  value={form.labSection || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, labSection: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("location")}
+                <input
+                  value={form.location || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, location: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("purchaseDate")}
+                <input
+                  type="date"
+                  value={form.purchaseDate || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, purchaseDate: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("installationDate")}
+                <input
+                  type="date"
+                  value={form.installationDate || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, installationDate: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("warrantyExpiry")}
+                <input
+                  type="date"
+                  value={form.warrantyExpiry || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, warrantyExpiry: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("calibrationIntervalDays")}
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={form.calibrationIntervalDays ?? ""}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      calibrationIntervalDays:
+                        e.target.value === "" ? undefined : Number(e.target.value),
+                    })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("nextCalibrationDue")}
+                <input
+                  type="date"
+                  value={form.nextCalibrationDue || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, nextCalibrationDue: e.target.value || undefined })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("maintenanceIntervalDays")}
+                <input
+                  type="number"
+                  min="1"
+                  step="1"
+                  value={form.maintenanceIntervalDays ?? ""}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      maintenanceIntervalDays:
+                        e.target.value === "" ? undefined : Number(e.target.value),
+                    })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("nextMaintenanceDue")}
+                <input
+                  type="date"
+                  value={form.nextMaintenanceDue || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, nextMaintenanceDue: e.target.value || undefined })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+              <label className="text-xs font-medium dark:text-dark-brand-text-primary">
+                {t("sopDocumentId")}
+                <input
+                  value={form.sopDocumentId || ""}
+                  onChange={(e) =>
+                    setForm({ ...form, sopDocumentId: e.target.value })
+                  }
+                  className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </label>
+            </div>
+            <label className="block mt-3 text-xs font-medium dark:text-dark-brand-text-primary">
+              {t("notes")}
+              <textarea
+                rows={3}
+                value={form.notes || ""}
+                onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                className="mt-1 w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+              />
+            </label>
+            <div className="flex justify-end gap-2 mt-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={savingEdit}
+                onClick={() => setIsEditing(false)}
+              >
+                {t("cancel")}
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                loading={savingEdit}
+                onClick={() => void handleSaveEdit()}
+              >
+                {t("save")}
+              </Button>
+            </div>
+          </Card>
+        ) : (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card className="p-3">
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
@@ -351,6 +648,7 @@ const EquipmentTab: React.FC = () => {
             </p>
           </Card>
         </div>
+        )}
 
         {/* Calibration & Maintenance dates */}
         <div className="grid grid-cols-2 gap-4">

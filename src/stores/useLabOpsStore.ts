@@ -79,7 +79,7 @@ export interface LabOpsState {
 
     // Equipment CRUD
     addEquipment: (eq: Equipment) => void;
-    updateEquipment: (eq: Equipment) => void;
+    updateEquipment: (eq: Equipment) => Promise<void>;
     decommissionEquipment: (id: string) => void;
     restoreEquipment: (id: string) => void;
 
@@ -301,11 +301,25 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         set((s) => ({ equipment: [...s.equipment, eq] }));
         void get().saveToFirestore();
     },
-    updateEquipment: (eq) => {
+    updateEquipment: async (eq) => {
+        const previous = get().equipment.find((equipment) => equipment.id === eq.id);
+        if (!previous) throw new Error("Equipment no longer exists");
         set((s) => ({
             equipment: s.equipment.map((e) => (e.id === eq.id ? eq : e)),
         }));
-        void get().saveToFirestore();
+        try {
+            await get().saveToFirestore(true);
+            if (get().syncStatus === "error") {
+                throw new Error(get().syncError || "Equipment update failed to synchronize");
+            }
+        } catch (error) {
+            set((s) => ({
+                equipment: s.equipment.map((equipment) => equipment.id === eq.id && equipment === eq
+                    ? previous
+                    : equipment),
+            }));
+            throw error;
+        }
     },
     decommissionEquipment: (id) => {
         set((s) => ({
