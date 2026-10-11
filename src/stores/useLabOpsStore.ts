@@ -80,7 +80,8 @@ export interface LabOpsState {
     // Equipment CRUD
     addEquipment: (eq: Equipment) => void;
     updateEquipment: (eq: Equipment) => void;
-    removeEquipment: (id: string) => void;
+    decommissionEquipment: (id: string) => void;
+    restoreEquipment: (id: string) => void;
 
     // Calibrations
     addCalibration: (cal: CalibrationRecord) => void | Promise<void>;
@@ -306,8 +307,20 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         }));
         void get().saveToFirestore();
     },
-    removeEquipment: (id) => {
-        set((s) => ({ equipment: s.equipment.filter((e) => e.id !== id) }));
+    decommissionEquipment: (id) => {
+        set((s) => ({
+            equipment: s.equipment.map((e) => e.id === id
+                ? { ...e, status: "decommissioned", updatedAt: new Date().toISOString() }
+                : e),
+        }));
+        void get().saveToFirestore();
+    },
+    restoreEquipment: (id) => {
+        set((s) => ({
+            equipment: s.equipment.map((e) => e.id === id && e.status === "decommissioned"
+                ? { ...e, status: "inactive", updatedAt: new Date().toISOString() }
+                : e),
+        }));
         void get().saveToFirestore();
     },
 

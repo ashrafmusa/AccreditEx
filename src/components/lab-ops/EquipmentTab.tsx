@@ -59,7 +59,8 @@ const EquipmentTab: React.FC = () => {
     equipment,
     calibrations,
     addEquipment,
-    removeEquipment,
+    decommissionEquipment,
+    restoreEquipment,
     addCalibration,
   } = useLabOpsStore();
 
@@ -185,6 +186,16 @@ const EquipmentTab: React.FC = () => {
     });
   };
 
+  const handleDecommission = () => {
+    if (!window.confirm(`${selected?.name}\n\n${t("confirmDecommissionEquipment")}`)) return;
+    if (selected) decommissionEquipment(selected.id);
+  };
+
+  const handleRestore = () => {
+    if (!selected || !window.confirm(`${selected.name}\n\n${t("confirmRestoreEquipment")}`)) return;
+    restoreEquipment(selected.id);
+  };
+
   const handleAddCal = async () => {
     if (!selectedId || !calForm.calibrationDate || !calForm.calibratedBy)
       return;
@@ -291,6 +302,15 @@ const EquipmentTab: React.FC = () => {
           >
             <PrinterIcon className="h-4 w-4" /> QR Code
           </Button>
+          {selected.status === "decommissioned" ? (
+            <Button variant="secondary" size="sm" onClick={handleRestore}>
+              {t("restoreEquipment")}
+            </Button>
+          ) : (
+            <Button variant="danger" size="sm" onClick={handleDecommission}>
+              {t("decommissionEquipment")}
+            </Button>
+          )}
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">

@@ -33,6 +33,10 @@ export const en = {
     // ── Equipment Tab ──
     equipmentInventory: "Equipment Inventory",
     addEquipment: "Add Equipment",
+    decommissionEquipment: "Decommission Equipment",
+    confirmDecommissionEquipment: "Mark this equipment as decommissioned? It will be out of service, and its history will be retained.",
+    restoreEquipment: "Restore Equipment",
+    confirmRestoreEquipment: "Restore this equipment to inactive status? Verify it before returning it to service.",
     searchEquipment: "Search equipment…",
     allCategoriesEquip: "All Categories",
     newEquipment: "New Equipment",

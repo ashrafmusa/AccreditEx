@@ -33,6 +33,10 @@ export const ar = {
     // ── Equipment Tab ──
     equipmentInventory: "مخزون الأجهزة",
     addEquipment: "إضافة جهاز",
+    decommissionEquipment: "إخراج الجهاز من الخدمة",
+    confirmDecommissionEquipment: "هل تريد إخراج هذا الجهاز من الخدمة؟ سيُوقف استخدامه مع الاحتفاظ بسجلاته.",
+    restoreEquipment: "استعادة الجهاز",
+    confirmRestoreEquipment: "هل تريد استعادة هذا الجهاز إلى حالة غير نشطة؟ تحقق منه قبل إعادته إلى الخدمة.",
     searchEquipment: "البحث في الأجهزة…",
     allCategoriesEquip: "جميع الفئات",
     newEquipment: "جهاز جديد",

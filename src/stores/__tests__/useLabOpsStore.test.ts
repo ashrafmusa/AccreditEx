@@ -152,6 +152,24 @@ describe("Lab Operations safeguards", () => {
         expect(useLabOpsStore.getState().equipment[0].status).toBe("active");
     });
 
+    it("decommissions equipment without removing its associated calibration history and restores it inactive", () => {
+        const equipment = SEED_EQUIPMENT[0];
+        const calibration = {
+            id: "cal-history", equipmentId: equipment.id, equipmentName: equipment.name,
+            calibratedBy: "QA", calibrationDate: "2026-10-11", nextDueDate: "2027-01-01",
+            result: "pass" as const, createdAt: "2026-10-11",
+        };
+        useLabOpsStore.setState({ equipment: [equipment], calibrations: [calibration] });
+
+        useLabOpsStore.getState().decommissionEquipment(equipment.id);
+        expect(useLabOpsStore.getState().equipment[0].status).toBe("decommissioned");
+        expect(useLabOpsStore.getState().calibrations).toEqual([calibration]);
+
+        useLabOpsStore.getState().restoreEquipment(equipment.id);
+        expect(useLabOpsStore.getState().equipment[0].status).toBe("inactive");
+        expect(useLabOpsStore.getState().calibrations).toEqual([calibration]);
+    });
+
     it("rejects invalid usage without changing stock or logs and subtracts valid usage exactly", () => {
         const reagent = { ...SEED_REAGENTS[0], quantity: 10 };
         useLabOpsStore.setState({ reagents: [reagent] });
