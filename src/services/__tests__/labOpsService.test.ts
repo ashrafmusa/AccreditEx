@@ -1,6 +1,6 @@
 import { getDocs, setDoc } from "firebase/firestore";
 import { TextEncoder } from "node:util";
-import { getLabOpsData, saveLabOpsData, type LabOpsPersistedData } from "@/services/labOpsService";
+import { getLabOpsData, saveLabOpsData, labRecordStorageEnabled, type LabOpsPersistedData } from "@/services/labOpsService";
 
 jest.mock("@/firebase/firebaseConfig", () => ({ db: {} }));
 jest.mock("@/stores/useTenantStore", () => ({
@@ -24,6 +24,26 @@ const data: LabOpsPersistedData = {
 
 describe("Lab Operations persistence", () => {
     beforeEach(() => jest.clearAllMocks());
+
+    it("keeps production record mode off even when the environment flag is true", () => {
+        // Arrange
+        const originalMode = process.env.NODE_ENV;
+        const originalGate = process.env.VITE_LAB_RECORD_STORAGE;
+        try {
+            process.env.VITE_LAB_RECORD_STORAGE = "true";
+            process.env.NODE_ENV = "production";
+            // Act / Assert
+            expect(labRecordStorageEnabled()).toBe(false);
+            process.env.NODE_ENV = "development";
+            expect(labRecordStorageEnabled()).toBe(true);
+            delete process.env.VITE_LAB_RECORD_STORAGE;
+            expect(labRecordStorageEnabled()).toBe(false);
+        } finally {
+            process.env.NODE_ENV = originalMode;
+            if (originalGate === undefined) delete process.env.VITE_LAB_RECORD_STORAGE;
+            else process.env.VITE_LAB_RECORD_STORAGE = originalGate;
+        }
+    });
 
     it("writes each organization to a distinct canonical path", async () => {
         await saveLabOpsData(data, "org-a");
