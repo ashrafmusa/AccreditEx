@@ -6,6 +6,8 @@ import { cloudinaryService } from "@/services/cloudinaryService";
 import {
   AppDocument,
   CAPAReport,
+  ComplianceStatus,
+  DesignControlItem,
   PDCACycle,
   Project,
   ProjectStatus,
@@ -198,5 +200,49 @@ describe("Project evidence persistence", () => {
     );
     expect(success).not.toHaveBeenCalled();
     log.mockRestore();
+  });
+
+  it("normalizes legacy design controls without linked document IDs", async () => {
+    // Arrange
+    const legacyControl = {
+      id: "legacy-control",
+      requirement: "Maintain identification controls",
+      standardId: "LAB.1",
+      status: ComplianceStatus.NotStarted,
+    } as DesignControlItem;
+    const project: Project = {
+      id: "p1",
+      name: "Laboratory",
+      programId: "ohas",
+      status: ProjectStatus.InProgress,
+      startDate: "",
+      progress: 0,
+      checklist: [],
+      designControls: [legacyControl],
+      createdAt: "",
+      updatedAt: "",
+    };
+    const save = jest.fn().mockResolvedValue(undefined);
+    render(
+      <DesignControlsComponent
+        project={project}
+        documents={[]}
+        isFinalized={false}
+        onSave={save}
+      />,
+    );
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: "saveChanges" }));
+
+    // Assert
+    await waitFor(() =>
+      expect(save).toHaveBeenCalledWith([
+        expect.objectContaining({
+          id: "legacy-control",
+          linkedDocumentIds: [],
+        }),
+      ]),
+    );
   });
 });

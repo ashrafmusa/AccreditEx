@@ -63,7 +63,12 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   } | null>(null);
 
   useEffect(() => {
-    setControls(JSON.parse(JSON.stringify(project.designControls || [])));
+    setControls(
+      (project.designControls || []).map((control) => ({
+        ...control,
+        linkedDocumentIds: control.linkedDocumentIds || [],
+      })),
+    );
   }, [project.designControls]);
 
   const handleUpdate = (
@@ -315,7 +320,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
     if (!aiDocSuggestions) return;
     const { rowIndex, docIds } = aiDocSuggestions;
     const newControls = [...controls];
-    const existingIds = newControls[rowIndex].linkedDocumentIds;
+    const existingIds = newControls[rowIndex].linkedDocumentIds || [];
     const uniqueNewIds = docIds.filter((id) => !existingIds.includes(id));
     newControls[rowIndex].linkedDocumentIds = [...existingIds, ...uniqueNewIds];
     setControls(newControls);
@@ -332,7 +337,8 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
     if (currentRowIndex !== null) {
       const newControls = [...controls];
       // Add new documents, avoiding duplicates
-      const existingIds = newControls[currentRowIndex].linkedDocumentIds;
+      const existingIds =
+        newControls[currentRowIndex].linkedDocumentIds || [];
       const uniqueNewIds = documentIds.filter(
         (id) => !existingIds.includes(id),
       );
@@ -348,9 +354,9 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
 
   const handleRemoveDocument = (rowIndex: number, docId: string) => {
     const newControls = [...controls];
-    newControls[rowIndex].linkedDocumentIds = newControls[
-      rowIndex
-    ].linkedDocumentIds.filter((id) => id !== docId);
+    newControls[rowIndex].linkedDocumentIds = (
+      newControls[rowIndex].linkedDocumentIds || []
+    ).filter((id) => id !== docId);
     setControls(newControls);
   };
   const handleUploadDocument = (rowIndex: number) => {
@@ -386,7 +392,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
       });
       const newControls = [...controls];
       newControls[currentRowIndex].linkedDocumentIds = [
-        ...newControls[currentRowIndex].linkedDocumentIds,
+        ...(newControls[currentRowIndex].linkedDocumentIds || []),
         newDoc.id,
       ];
       setControls(newControls);
@@ -676,9 +682,9 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
                         )}
 
                       {/* Display linked documents */}
-                      {row.linkedDocumentIds.length > 0 && (
+                      {(row.linkedDocumentIds || []).length > 0 && (
                         <div className="mt-2 space-y-1">
-                          {row.linkedDocumentIds.map((docId) => {
+                          {(row.linkedDocumentIds || []).map((docId) => {
                             const doc = documents.find((d) => d.id === docId);
                             if (!doc) return null;
                             return (
@@ -793,7 +799,7 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
         documents={documents}
         selectedIds={
           currentRowIndex !== null
-            ? controls[currentRowIndex]?.linkedDocumentIds
+            ? controls[currentRowIndex]?.linkedDocumentIds || []
             : []
         }
         multiSelect={true}
