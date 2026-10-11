@@ -498,7 +498,11 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         else await get().saveToFirestore(true);
     },
     flushPendingSaves: async () => {
-        await get().saveToFirestore(true);
+        if (saveTimer) {
+            clearTimeout(saveTimer);
+            saveTimer = null;
+        }
+        await flushSaveQueue(get, set);
     },
 }));
 

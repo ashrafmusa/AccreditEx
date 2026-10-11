@@ -33,6 +33,8 @@ describe("Lab Operations safeguards", () => {
         expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
         expect(useLabOpsStore.getState().equipment).toEqual([]);
         expect(useLabOpsStore.getState().hasLoadedFromFirestore).toBe(true);
+        await useLabOpsStore.getState().flushPendingSaves();
+        expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
         await useLabOpsStore.getState().saveToFirestore(true);
         expect(saveLabOpsDataWithRetry).toHaveBeenCalledWith(
             expect.objectContaining({ equipment: [], iqcResults: [], competencyRecords: [] }), 3, 500, "org-a",
