@@ -93,6 +93,7 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
   const templates = useMemo(
     () =>
       catalogue.projectTemplates.filter((template) =>
+        !template.programId ||
         programs.some((program) => program.id === template.programId),
       ),
     [catalogue.projectTemplates, programs],
@@ -149,7 +150,8 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
   } = wizard;
   const selectedTemplate = templates.find(
     (template) =>
-      template.id === data.templateId && template.programId === data.programId,
+      template.id === data.templateId &&
+      (!template.programId || template.programId === data.programId),
   );
   const referenceErrors: Record<string, string> = {};
   if (!programs.some((program) => program.id === data.programId))
@@ -421,6 +423,7 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
                 {...shared}
                 programs={programs}
                 allStandards={standards}
+                templates={templates}
                 lockedProgram={isEditMode}
                 conflictingIds={resolvedStandards.conflicts
                   .filter((record) => record.programId === data.programId)

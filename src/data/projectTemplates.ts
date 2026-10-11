@@ -640,9 +640,11 @@ const baseTemplates = [
 export const generateProjectTemplates = (accreditationPrograms: AccreditationProgram[]): ProjectTemplate[] => {
   return baseTemplates.map(template => {
     // Find matching program by name (case-insensitive)
-    const matchingProgram = accreditationPrograms.find(
-      prog => prog.name.toLowerCase().includes(template.programName.toLowerCase())
-    );
+    const matchingProgram = template.programName
+      ? accreditationPrograms.find(
+          prog => prog.name.toLowerCase().includes(template.programName.toLowerCase())
+        )
+      : undefined;
 
     // Return template with actual program ID from Firebase (or empty if generic/not found)
     return {

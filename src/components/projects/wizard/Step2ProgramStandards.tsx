@@ -11,6 +11,7 @@ import { CheckCircleIcon, ShieldCheckIcon } from "@/components/icons";
 import { ErrorMessage } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { AccreditationProgram, Standard } from "@/types";
+import { ProjectTemplate } from "@/types/templates";
 import React, { useMemo, useState } from "react";
 import { WizardData } from "./useProjectWizard";
 
@@ -22,6 +23,7 @@ interface Step2ProgramStandardsProps {
   touchField: (field: string) => void;
   programs: AccreditationProgram[];
   allStandards: Standard[];
+  templates?: ProjectTemplate[];
   lockedProgram?: boolean;
   conflictingIds?: string[];
 }
@@ -34,6 +36,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
   touchField,
   programs,
   allStandards,
+  templates = [],
   lockedProgram = false,
   conflictingIds = [],
 }) => {
@@ -85,12 +88,16 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
    */
   const handleProgramChange = (programId: string) => {
     if (lockedProgram || programId === data.programId) return;
+    const selectedTemplate = templates.find(
+      (template) => template.id === data.templateId,
+    );
+    const keepGenericTemplate = selectedTemplate?.programId === "";
     updateData({
       programId,
       // Clear standards when program changes
       standardIds: [],
-      templateId: null,
-      checklistItems: [],
+      templateId: keepGenericTemplate ? data.templateId : null,
+      checklistItems: keepGenericTemplate ? data.checklistItems : [],
     });
     setStandardSearch("");
     touchField("programId");

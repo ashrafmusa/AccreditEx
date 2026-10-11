@@ -32,7 +32,9 @@ import {
   Standard,
   UserRole,
 } from "@/types";
+import { ProjectTemplate } from "@/types/templates";
 import { en } from "@/data/locales/en/projects";
+import { generateProjectTemplates } from "@/data/projectTemplates";
 
 const addProject = jest.fn();
 const updateProject = jest.fn();
@@ -41,6 +43,7 @@ const error = jest.fn();
 const navigate = jest.fn();
 let projects: Project[] = [];
 let permitted = true;
+let projectTemplates: ProjectTemplate[] = [];
 const user = {
   id: "lead",
   name: "Laboratory Lead",
@@ -118,7 +121,7 @@ jest.mock("@/stores/useAppStore", () => ({
       },
     ],
     standards,
-    projectTemplates: [],
+    projectTemplates,
     departments: [
       { id: "lab", organizationId: "org-a", name: { en: "Laboratory" } },
     ],
@@ -163,6 +166,7 @@ describe("Project setup integrity", () => {
     localStorage.clear();
     projects = [];
     permitted = true;
+    projectTemplates = [];
     addProject.mockResolvedValue({ id: "new-project" });
     Object.defineProperty(globalThis.crypto, "randomUUID", {
       configurable: true,
@@ -237,6 +241,18 @@ describe("Project setup integrity", () => {
     expect(() =>
       buildProjectChecklist("ohas", ["unknown"], standards, []),
     ).toThrow("unavailable");
+  });
+  it("keeps Quick Start generic instead of assigning it to the first program", () => {
+    // Arrange
+    const programs = [{ id: "ohas", name: "OHAS", description: { en: "" } }];
+
+    // Act
+    const quickStart = generateProjectTemplates(programs).find(
+      (template) => template.id === "template-quick-start",
+    );
+
+    // Assert
+    expect(quickStart?.programId).toBe("");
   });
   it("collapses identical source duplicates and blocks conflicting identifiers instead of guessing their text", () => {
     // Arrange
@@ -475,6 +491,63 @@ describe("Project setup integrity", () => {
       }),
     );
     expect(success).toHaveBeenCalled();
+  });
+  it("creates a Quick Start project for the selected program with both standards and starter tasks", async () => {
+    // Arrange
+    projectTemplates = generateProjectTemplates([
+      { id: "ohas", name: "OHAS", description: { en: "" } },
+    ]);
+    render(<CreateProjectWizard setNavigation={navigate} />);
+
+    // Act
+    fireEvent.click(
+      screen.getByRole("button", { name: /Quick Start Project/i }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /OHAS/ }));
+    fireEvent.click(screen.getByRole("checkbox", { name: /LAB.1/ }));
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.change(screen.getByLabelText(/project lead/i), {
+      target: { value: "lead" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+
+    // Assert
+    expect(
+      screen.getByText("Control specimen identity"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Initial Assessment")).toBeInTheDocument();
+    expect(screen.getByText("Mock Survey")).toBeInTheDocument();
+
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: /create project/i }));
+
+    // Assert
+    await waitFor(() =>
+      expect(addProject).toHaveBeenCalledWith(
+        expect.objectContaining({
+          programId: "ohas",
+          standardIds: ["LAB.1"],
+          checklist: expect.arrayContaining([
+            expect.objectContaining({
+              standardId: "LAB.1",
+              item: "Control specimen identity",
+            }),
+            expect.objectContaining({
+              standardId: "",
+              item: "Initial Assessment",
+            }),
+            expect.objectContaining({
+              standardId: "",
+              item: "Mock Survey",
+            }),
+          ]),
+        }),
+      ),
+    );
+    expect(navigate).toHaveBeenCalledWith({
+      view: "projectDetail",
+      projectId: "new-project",
+    });
   });
   it("preserves the review on failure and does not show success or navigate", async () => {
     // Arrange
