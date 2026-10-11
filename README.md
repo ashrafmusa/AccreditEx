@@ -299,13 +299,37 @@ Missing links and absent sources require review.
 
 ## Lab Operations Module
 
-The Lab Operations module (P2 roadmap item, fully implemented) provides:
--   **LabOperationsPage**: 5-tab hub for laboratory compliance
--   **CAP Assessment Tab**: 11 CAP disciplines × 6-element competency evaluation (726 lines)
--   **QC Data Import Tab**: CSV/JSON import with validation and trending (584 lines + 378-line service)
--   **LIMS Integration**: Multi-vendor connectivity via `src/services/limsIntegration/` (10 files)
--   **Tracer Worksheets**: Interactive CAP/JCI survey preparation tool (931 lines)
--   **Knowledge Base**: Searchable articles with categorized content (552 lines)
+The admin-only Lab Operations workspace has eight tabs: Equipment, Maintenance,
+Reagents, QC Dashboard, Proficiency Testing, Quality Management, IQC/Westgard,
+and Competency Matrix.
+
+- Persistence requires an active organization. New writes use
+  `labOpsData/{organizationId}`; a single organization-owned legacy document is
+  still readable, and the next save copies the loaded state to the canonical
+  path without deleting the legacy record. Canonical records take precedence;
+  multiple legacy records without a canonical record fail visibly and need
+  reconciliation. No production data is migrated automatically.
+- Failed reads are not treated as empty collections. Editing and saving remain
+  blocked until loading succeeds; Retry reloads after a load failure. Genuinely
+  empty organizations start with empty arrays, not demonstration records; data
+  is persisted on the first save rather than automatically writing defaults.
+- Calibration history and equipment restrictions update together. Failed
+  calibration never restores an asset to active status. Reagent usage and
+  inventory update together and reject nonfinite, nonpositive, or excessive use.
+- IQC operators are selected from active organization staff by user ID, not
+  free-text names. The latest matching competency record determines the gate;
+  revocations fail closed, including tied update timestamps. A level-specific
+  authorization does not authorize another level. Legacy name-only records
+  must be reviewed and linked to a canonical staff ID using Competency Matrix
+  **Edit** before they authorize QC logging.
+- Lab Operations Firestore create/update rules now require tenant admins,
+  matching the route. These rules require a separately authorized rules
+  deployment; a Hosting deployment does not apply them.
+- Operational arrays still share one Firestore aggregate. A 900,000-byte UTF-8
+  JSON payload guard leaves document-size headroom and surfaces oversized saves
+  as sync failures. This is not a scalability solution: append-only log
+  collections, pagination, and conflict-safe record updates remain a separately
+  planned schema migration. Do not assume concurrent aggregate edits merge.
 
 ## Quick Commands
 ```bash

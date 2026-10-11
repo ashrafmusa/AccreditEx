@@ -74,10 +74,11 @@ describe("applyWestgardRules", () => {
 });
 
 describe("checkCompetencyAuthorization", () => {
-    it("matches staff names despite punctuation/spacing differences", () => {
+    it("requires canonical staff identity rather than a matching name", () => {
         const records: CompetencyRecord[] = [
             {
                 id: "comp-001",
+                staffId: "staff-001",
                 staffName: "A. Hassan",
                 analyteCode: "GLU-L1",
                 analyteName: "Glucose",
@@ -92,14 +93,15 @@ describe("checkCompetencyAuthorization", () => {
         ];
 
         const gate = checkCompetencyAuthorization(records, "A Hassan", "GLU-L1", "2026-04-01T00:00:00Z");
-        expect(gate.authorized).toBe(true);
-        expect(gate.status).toBe("authorized");
+        expect(gate.authorized).toBe(false);
+        expect(checkCompetencyAuthorization(records, "staff-001", "GLU-L1", "2026-04-01").authorized).toBe(true);
     });
 
     it("matches analyte base code when level suffix differs", () => {
         const records: CompetencyRecord[] = [
             {
                 id: "comp-002",
+                staffId: "staff-002",
                 staffName: "A. Hassan",
                 analyteCode: "GLU",
                 analyteName: "Glucose",
@@ -113,8 +115,22 @@ describe("checkCompetencyAuthorization", () => {
             },
         ];
 
-        const gate = checkCompetencyAuthorization(records, "A. Hassan", "GLU-L1", "2026-04-01T00:00:00Z");
+        const gate = checkCompetencyAuthorization(records, "staff-002", "GLU-L1", "2026-04-01T00:00:00Z");
         expect(gate.authorized).toBe(true);
         expect(gate.status).toBe("authorized");
+    });
+
+    it("uses the latest revocation independent of array order", () => {
+        const record: CompetencyRecord = {
+            id: "old", staffId: "staff", staffName: "Operator", analyteCode: "GLU",
+            analyteName: "Glucose", labSection: "Chemistry", status: "authorized",
+            authorizedUntil: "2099-12-31", lastAssessedDate: "2026-01-01",
+            assessor: "QA", createdAt: "2026-01-01", updatedAt: "2026-01-01",
+        };
+        const revoked: CompetencyRecord = { ...record, id: "new", status: "revoked", updatedAt: "2026-04-01" };
+        for (const records of [[record, revoked], [revoked, record]]) {
+            expect(checkCompetencyAuthorization(records, "staff", "GLU-L1", "2026-04-02").authorized).toBe(false);
+        }
+        expect(checkCompetencyAuthorization([{ ...record, analyteCode: "GLU-L2", level: 2 }], "staff", "GLU-L1").authorized).toBe(false);
     });
 });

@@ -8,6 +8,8 @@ import { PlusIcon, UserGroupIcon } from "@/components/icons";
 import { Button, Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import type { CompetencyRecord, CompetencyStatus } from "@/types/labOps";
 import { COMPETENCY_STATUS_LABELS } from "@/types/labOps";
 
@@ -21,6 +23,9 @@ const statusClass: Record<CompetencyStatus, string> = {
 
 const CompetencyMatrixTab: React.FC = () => {
   const { t } = useTranslation();
+  const users = useUserStore((state) => state.users);
+  const organizationId = useTenantStore((state) => state.organizationId);
+  const staff = users.filter((user) => user.organizationId === organizationId && user.isActive !== false);
   const {
     competencyRecords,
     addCompetencyRecord,
@@ -56,6 +61,7 @@ const CompetencyMatrixTab: React.FC = () => {
 
   const handleCreate = () => {
     if (
+      !staff.some((user) => user.id === form.staffId) ||
       !form.staffName?.trim() ||
       !form.analyteCode?.trim() ||
       !form.analyteName?.trim() ||
@@ -68,8 +74,8 @@ const CompetencyMatrixTab: React.FC = () => {
     }
 
     const now = new Date().toISOString();
-    addCompetencyRecord({
-      id: `comp-${Date.now()}`,
+    const record: CompetencyRecord = {
+      id: form.id || `comp-${Date.now()}`,
       staffName: form.staffName.trim(),
       staffId: form.staffId?.trim() || undefined,
       analyteCode: form.analyteCode.trim(),
@@ -81,9 +87,11 @@ const CompetencyMatrixTab: React.FC = () => {
       lastAssessedDate: form.lastAssessedDate,
       assessor: form.assessor.trim(),
       notes: form.notes?.trim() || undefined,
-      createdAt: now,
+      createdAt: form.createdAt || now,
       updatedAt: now,
-    });
+    };
+    if (form.id) updateCompetencyRecord(record);
+    else addCompetencyRecord(record);
 
     setForm({ status: "authorized" });
     setShowForm(false);
@@ -193,12 +201,18 @@ const CompetencyMatrixTab: React.FC = () => {
       {showForm && (
         <Card className="p-4 bg-gray-50 dark:bg-gray-800/60">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
-            <input
-              value={form.staffName || ""}
-              onChange={(e) => setForm({ ...form, staffName: e.target.value })}
-              placeholder={`${t("competencyStaffName") || "Staff name"} *`}
+            <select
+              value={form.staffId || ""}
+              onChange={(e) => {
+                const user = staff.find((record) => record.id === e.target.value);
+                setForm({ ...form, staffId: user?.id, staffName: user?.name });
+              }}
+              aria-label={t("competencyStaffName")}
               className="w-full px-2.5 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-            />
+            >
+              <option value="">{t("labOpsSelectStaff")}</option>
+              {staff.map((user) => <option key={user.id} value={user.id}>{user.name} ({user.email})</option>)}
+            </select>
             <input
               value={form.analyteCode || ""}
               onChange={(e) =>
@@ -329,6 +343,13 @@ const CompetencyMatrixTab: React.FC = () => {
                 </td>
                 <td className="px-3 py-2">
                   <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => { setForm(r); setShowForm(true); }}
+                    >
+                      {t("edit")}
+                    </Button>
                     {r.status === "authorized" && (
                       <Button
                         variant="ghost"

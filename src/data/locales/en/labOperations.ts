@@ -9,6 +9,9 @@ export const en = {
     tabProficiencyTesting: "Proficiency Testing",
     tabQualityManagement: "Quality Management",
     tabCompetencyMatrix: "Competency Matrix",
+    labOpsInvalidUsage: "Enter an operator and a finite, positive quantity no greater than the available stock.",
+    labOpsSelectStaff: "Select a staff member",
+    labOpsLoadingRequired: "Lab Operations must load successfully before records can be edited.",
 
     // ── Shared ──
     back: "← Back",

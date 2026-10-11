@@ -640,8 +640,8 @@ service cloud.firestore {
     // Stores aggregated Lab Ops domain state (equipment, IQC, quality records, etc.)
     match /labOpsData/{docId} {
       allow read: if isAuthenticated() && belongsToUserOrg();
-      allow create: if isAtLeastTeamMember() && setsCorrectOrg();
-      allow update: if isAtLeastTeamMember() && belongsToUserOrg() && setsCorrectOrg();
+      allow create: if isAdmin() && setsCorrectOrg();
+      allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
       allow delete: if isAdmin() && belongsToUserOrg();
     }
     

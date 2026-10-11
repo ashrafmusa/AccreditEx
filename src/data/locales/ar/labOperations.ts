@@ -9,6 +9,9 @@ export const ar = {
     tabProficiencyTesting: "اختبارات الكفاءة",
     tabQualityManagement: "إدارة الجودة",
     tabCompetencyMatrix: "مصفوفة الكفاءة",
+    labOpsInvalidUsage: "أدخل اسم المستخدم وكمية موجبة صالحة لا تتجاوز المخزون المتاح.",
+    labOpsSelectStaff: "اختر موظفاً",
+    labOpsLoadingRequired: "يجب تحميل عمليات المختبر بنجاح قبل تعديل السجلات.",
 
     // ── Shared ──
     back: "← رجوع",

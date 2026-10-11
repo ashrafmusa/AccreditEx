@@ -1117,6 +1117,7 @@ export interface IQCResult {
     sdFromMean: number;
     measuredAt: string;
     measuredBy: string;
+    measuredByStaffId?: string;
     reagentLot?: string;
     violatedRules: WestgardRule[];
     rejected: boolean;
@@ -1160,13 +1161,6 @@ export interface CompetencyGate {
     record?: CompetencyRecord;
 }
 
-function normalizeNameForMatch(value: string): string {
-    return value
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "");
-}
-
 function normalizeAnalyteCodeForMatch(value: string): string {
     return value
         .trim()
@@ -1181,34 +1175,38 @@ function getAnalyteBaseCode(value: string): string {
 
 export function checkCompetencyAuthorization(
     records: CompetencyRecord[],
-    staffName: string,
+    staffId: string,
     analyteCode: string,
     asOfDateIso?: string,
 ): CompetencyGate {
-    const normalizedStaff = normalizeNameForMatch(staffName);
     const normalizedAnalyte = normalizeAnalyteCodeForMatch(analyteCode);
-    if (!normalizedStaff || !normalizedAnalyte) {
+    if (!staffId || !normalizedAnalyte) {
         return { authorized: false, status: "missing" };
     }
 
     const analyteBaseCode = getAnalyteBaseCode(analyteCode);
 
-    const matched = records.find(
+    const matches = records.filter(
         (r) =>
-            normalizeNameForMatch(r.staffName) === normalizedStaff &&
+            r.staffId === staffId &&
             (
                 normalizeAnalyteCodeForMatch(r.analyteCode) === normalizedAnalyte ||
-                getAnalyteBaseCode(r.analyteCode) === analyteBaseCode
+                (normalizeAnalyteCodeForMatch(r.analyteCode) === analyteBaseCode && !r.level)
             ),
-    );
+    ).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)
+        || (a.status === "authorized" ? 1 : 0) - (b.status === "authorized" ? 1 : 0)
+        || b.id.localeCompare(a.id));
+    const matched = matches[0];
 
     if (!matched) {
         return { authorized: false, status: "missing" };
     }
 
     const asOf = asOfDateIso ? new Date(asOfDateIso) : new Date();
-    const authorizedUntil = new Date(matched.authorizedUntil);
-    const isCurrent = matched.status === "authorized" && authorizedUntil >= asOf;
+    const authorizedUntil = new Date(matched.authorizedUntil.length === 10
+        ? `${matched.authorizedUntil}T23:59:59.999Z` : matched.authorizedUntil);
+    const isCurrent = matched.status === "authorized" && authorizedUntil >= asOf
+        && new Date(matched.lastAssessedDate) <= asOf;
 
     return {
         authorized: isCurrent,

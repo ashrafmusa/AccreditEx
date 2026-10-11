@@ -54,7 +54,6 @@ const EquipmentTab: React.FC = () => {
     equipment,
     calibrations,
     addEquipment,
-    updateEquipment,
     removeEquipment,
     addCalibration,
   } = useLabOpsStore();
@@ -200,17 +199,6 @@ const EquipmentTab: React.FC = () => {
       createdAt: new Date().toISOString(),
     };
     addCalibration(cal);
-    // Update equipment calibration dates
-    if (selected) {
-      updateEquipment({
-        ...selected,
-        lastCalibrationDate: cal.calibrationDate,
-        nextCalibrationDue: cal.nextDueDate,
-        status:
-          selected.status === "calibration_due" ? "active" : selected.status,
-        updatedAt: new Date().toISOString(),
-      });
-    }
     setShowCalForm(false);
     setCalForm({ result: "pass" });
   };

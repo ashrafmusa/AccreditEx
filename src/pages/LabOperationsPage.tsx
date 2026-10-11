@@ -16,7 +16,8 @@ import { Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type { LabOpsTab } from "@/types/labOps";
-import React, { lazy, Suspense, useState } from "react";
+import React, { lazy, Suspense, useEffect, useState } from "react";
+import { useTenantStore } from "@/stores/useTenantStore";
 
 const EquipmentTab = lazy(() => import("@/components/lab-ops/EquipmentTab"));
 const MaintenanceTab = lazy(
@@ -77,6 +78,15 @@ const LabOperationsPage: React.FC = () => {
   const syncError = useLabOpsStore((state) => state.syncError);
   const lastSyncedAt = useLabOpsStore((state) => state.lastSyncedAt);
   const retrySyncNow = useLabOpsStore((state) => state.retrySyncNow);
+  const organizationId = useTenantStore((state) => state.organizationId);
+  const loadedOrganizationId = useLabOpsStore((state) => state.loadedOrganizationId);
+  const hasLoaded = useLabOpsStore((state) => state.hasLoadedFromFirestore);
+  useEffect(() => {
+    const state = useLabOpsStore.getState();
+    if (!state.hasLoadedFromFirestore || state.loadedOrganizationId !== organizationId) {
+      void state.loadFromFirestore();
+    }
+  }, [organizationId]);
 
   const syncBadgeClass =
     syncStatus === "saving"
@@ -160,7 +170,9 @@ const LabOperationsPage: React.FC = () => {
       </div>
 
       {/* Tab content */}
-      <Suspense
+      {!hasLoaded || loadedOrganizationId !== organizationId ? (
+        <p role="status">{t("labOpsLoadingRequired")}</p>
+      ) : <Suspense
         fallback={
           <div className="animate-pulse h-64 bg-gray-100 dark:bg-gray-800 rounded-lg" />
         }
@@ -173,7 +185,7 @@ const LabOperationsPage: React.FC = () => {
         {activeTab === "qualityManagement" && <QualityManagementTab />}
         {activeTab === "iqcWestgard" && <IQCWestgardTab />}
         {activeTab === "competencyMatrix" && <CompetencyMatrixTab />}
-      </Suspense>
+      </Suspense>}
     </div>
   );
 };

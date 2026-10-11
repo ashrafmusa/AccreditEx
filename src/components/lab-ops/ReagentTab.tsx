@@ -9,6 +9,7 @@ import {
 } from "@/components/icons";
 import { Button, Card } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useToast } from "@/hooks/useToast";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import type { Reagent, ReagentStatus, ReagentUsageLog } from "@/types/labOps";
 import { REAGENT_STATUS_LABELS } from "@/types/labOps";
@@ -27,11 +28,11 @@ const statusColor: Record<ReagentStatus, string> = {
 
 const ReagentTab: React.FC = () => {
   const { t } = useTranslation();
+  const toast = useToast();
   const {
     reagents,
     reagentUsageLogs,
     addReagent,
-    updateReagent,
     removeReagent,
     addReagentUsage,
     equipment,
@@ -122,10 +123,15 @@ const ReagentTab: React.FC = () => {
   };
 
   const handleLogUsage = () => {
-    if (!selectedId || !usageForm.quantityUsed || !usageForm.usedBy) return;
+    if (!selected || !usageForm.usedBy?.trim() || !Number.isFinite(usageForm.quantityUsed)
+      || !usageForm.quantityUsed || usageForm.quantityUsed <= 0
+      || usageForm.quantityUsed > selected.quantity) {
+      toast.error(t("labOpsInvalidUsage"));
+      return;
+    }
     const usage: ReagentUsageLog = {
       id: `ru-${Date.now()}`,
-      reagentId: selectedId,
+      reagentId: selected.id,
       reagentName: selected?.name || "",
       usedBy: usageForm.usedBy || "",
       usageDate: usageForm.usageDate || new Date().toISOString(),
@@ -133,21 +139,12 @@ const ReagentTab: React.FC = () => {
       unit: selected?.unit || "units",
       notes: usageForm.notes,
     };
-    addReagentUsage(usage);
-    // Update reagent quantity
-    if (selected) {
-      const newQty = Math.max(0, selected.quantity - usage.quantityUsed);
-      updateReagent({
-        ...selected,
-        quantity: newQty,
-        status:
-          newQty <= 0
-            ? "depleted"
-            : newQty <= selected.reorderLevel
-              ? "low_stock"
-              : selected.status,
-        updatedAt: new Date().toISOString(),
-      });
+    try {
+      addReagentUsage(usage);
+    } catch (error) {
+      console.error("Failed to record reagent usage:", error);
+      toast.error(t("labOpsInvalidUsage"));
+      return;
     }
     setShowUsage(false);
     setUsageForm({});
@@ -298,6 +295,9 @@ const ReagentTab: React.FC = () => {
                   </label>
                   <input
                     type="number"
+                    min="0"
+                    max={selected.quantity}
+                    step="any"
                     value={usageForm.quantityUsed || ""}
                     onChange={(e) =>
                       setUsageForm({

@@ -42,6 +42,18 @@ describe('Firestore tenant and ownership rules', () => {
   const clientDb = (uid: string, role: string, organizationId = 'org-a') =>
     testEnv.authenticatedContext(uid, { role, organizationId }).firestore();
 
+  it('reserves Lab Operations writes for tenant admins', async () => {
+    const adminDb = clientDb('admin-a', 'Admin');
+    const memberDb = clientDb('member-a', 'TeamMember');
+    const leadDb = clientDb('lead-a', 'ProjectLead');
+    await assertSucceeds(setDoc(doc(adminDb, 'labOpsData/org-a'), { organizationId: 'org-a', equipment: [] }));
+    await assertFails(updateDoc(doc(memberDb, 'labOpsData/org-a'), { equipment: [] }));
+    await assertFails(updateDoc(doc(leadDb, 'labOpsData/org-a'), { equipment: [] }));
+    await assertFails(setDoc(doc(memberDb, 'labOpsData/member'), { organizationId: 'org-a' }));
+    await assertFails(setDoc(doc(adminDb, 'labOpsData/org-b'), { organizationId: 'org-b' }));
+    await assertFails(getDoc(doc(clientDb('admin-b', 'Admin', 'org-b'), 'labOpsData/org-a')));
+  });
+
   it('scopes CAPA reads and writes to the active organization', async () => {
     const tenantDb = clientDb('member-a', 'TeamMember');
     await assertSucceeds(setDoc(doc(tenantDb, 'capaReports/capa-a'), {

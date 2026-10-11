@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install Cloud Functions type-check dependencies
+        run: npm ci --prefix functions
+
       - name: TypeScript type check
         run: npx tsc --noEmit
 

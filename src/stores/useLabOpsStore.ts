@@ -34,6 +34,8 @@ import {
     SEED_REAGENTS,
 } from "@/types/labOps";
 import { create } from "zustand";
+import { useTenantStore } from "@/stores/useTenantStore";
+import { checkCompetencyAuthorization } from "@/types/labOps";
 
 type LabOpsSyncStatus = "idle" | "saving" | "synced" | "error";
 
@@ -42,6 +44,8 @@ const SAVE_DEBOUNCE_MS = 700;
 let queuedPayload: LabOpsPersistedData | null = null;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
 let isSaving = false;
+let queuedOrganizationId = "";
+let loadGeneration = 0;
 
 export interface LabOpsState {
     // Data
@@ -57,6 +61,7 @@ export interface LabOpsState {
     competencyRecords: CompetencyRecord[];
     loading: boolean;
     hasLoadedFromFirestore: boolean;
+    loadedOrganizationId: string | null;
     syncStatus: LabOpsSyncStatus;
     syncError: string | null;
     lastSyncedAt: string | null;
@@ -103,7 +108,7 @@ export interface LabOpsState {
     addCompetencyRecord: (record: CompetencyRecord) => void;
     updateCompetencyRecord: (record: CompetencyRecord) => void;
     removeCompetencyRecord: (id: string) => void;
-    findCompetencyRecord: (staffName: string, analyteCode: string) => CompetencyRecord | undefined;
+    findCompetencyRecord: (staffId: string, analyteCode: string) => CompetencyRecord | undefined;
     loadFromFirestore: () => Promise<void>;
     saveToFirestore: (forceImmediate?: boolean) => Promise<void>;
     retrySyncNow: () => Promise<void>;
@@ -137,6 +142,7 @@ const toPersistedData = (state: LabOpsState): LabOpsPersistedData => ({
 
 const queueSave = (get: () => LabOpsState, set: (state: Partial<LabOpsState>) => void): void => {
     queuedPayload = toPersistedData(get());
+    queuedOrganizationId = get().loadedOrganizationId!;
     set({ syncStatus: "saving", syncError: null });
 
     if (saveTimer) {
@@ -158,17 +164,19 @@ const flushSaveQueue = async (
 
     isSaving = true;
     const payload = queuedPayload;
+    const organizationId = queuedOrganizationId;
     queuedPayload = null;
 
     try {
-        await saveLabOpsDataWithRetry(payload);
-        set({
+        await saveLabOpsDataWithRetry(payload, 3, 500, organizationId);
+        if (get().loadedOrganizationId === organizationId) set({
             syncStatus: "synced",
             syncError: null,
             lastSyncedAt: new Date().toISOString(),
         });
     } catch (error) {
-        set({
+        console.error("Failed to synchronize Lab Operations:", error);
+        if (get().loadedOrganizationId === organizationId) set({
             syncStatus: "error",
             syncError: error instanceof Error ? error.message : "Save failed",
         });
@@ -193,6 +201,7 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
     competencyRecords: SEED_COMPETENCY_RECORDS,
     loading: false,
     hasLoadedFromFirestore: false,
+    loadedOrganizationId: null,
     syncStatus: "idle",
     syncError: null,
     lastSyncedAt: null,
@@ -217,7 +226,18 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
 
     // Calibrations
     addCalibration: (cal) => {
-        set((s) => ({ calibrations: [...s.calibrations, cal] }));
+        set((s) => ({
+            calibrations: [...s.calibrations, cal],
+            equipment: s.equipment.map((equipment) => equipment.id !== cal.equipmentId ? equipment : {
+                ...equipment,
+                lastCalibrationDate: cal.calibrationDate,
+                nextCalibrationDue: cal.result === "fail" ? equipment.nextCalibrationDue : cal.nextDueDate,
+                status: equipment.status === "decommissioned" ? equipment.status
+                    : cal.result === "fail" ? "calibration_due"
+                    : equipment.status === "calibration_due" ? "active" : equipment.status,
+                updatedAt: new Date().toISOString(),
+            }),
+        }));
         void get().saveToFirestore();
     },
 
@@ -251,7 +271,22 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         void get().saveToFirestore();
     },
     addReagentUsage: (usage) => {
-        set((s) => ({ reagentUsageLogs: [...s.reagentUsageLogs, usage] }));
+        const reagent = get().reagents.find((record) => record.id === usage.reagentId);
+        if (!reagent || !usage.usedBy.trim() || !Number.isFinite(usage.quantityUsed)
+            || usage.quantityUsed <= 0 || usage.quantityUsed > reagent.quantity) {
+            throw new Error("Invalid reagent usage quantity or operator");
+        }
+        const quantity = reagent.quantity - usage.quantityUsed;
+        set((s) => ({
+            reagentUsageLogs: [...s.reagentUsageLogs, usage],
+            reagents: s.reagents.map((record) => record.id !== reagent.id ? record : {
+                ...record,
+                quantity,
+                status: record.status === "quarantine" || record.status === "expired" ? record.status
+                    : quantity === 0 ? "depleted" : quantity <= record.reorderLevel ? "low_stock" : "in_stock",
+                updatedAt: new Date().toISOString(),
+            }),
+        }));
         void get().saveToFirestore();
     },
 
@@ -385,54 +420,69 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         set((s) => ({ competencyRecords: s.competencyRecords.filter((r) => r.id !== id) }));
         void get().saveToFirestore();
     },
-    findCompetencyRecord: (staffName, analyteCode) =>
-        get().competencyRecords.find(
-            (r) =>
-                r.staffName.trim().toLowerCase() === staffName.trim().toLowerCase() &&
-                r.analyteCode.trim().toLowerCase() === analyteCode.trim().toLowerCase(),
-        ),
+    findCompetencyRecord: (staffId, analyteCode) =>
+        checkCompetencyAuthorization(get().competencyRecords, staffId, analyteCode).record,
     loadFromFirestore: async () => {
-        set({ loading: true, syncError: null });
+        const organizationId = useTenantStore.getState().organizationId;
+        const generation = ++loadGeneration;
+        if (saveTimer) clearTimeout(saveTimer);
+        await flushSaveQueue(get, set);
+        if (generation !== loadGeneration) return;
+        set({ loading: true, syncError: null, hasLoadedFromFirestore: false, loadedOrganizationId: null });
         try {
-            const remote = await getLabOpsData();
+            const remote = await getLabOpsData(organizationId);
+            if (generation !== loadGeneration || useTenantStore.getState().organizationId !== organizationId) return;
             if (remote) {
                 set({
-                    equipment: remote.equipment || SEED_EQUIPMENT,
-                    calibrations: remote.calibrations || SEED_CALIBRATION_RECORDS,
-                    maintenanceLogs: remote.maintenanceLogs || SEED_MAINTENANCE_LOGS,
-                    reagents: remote.reagents || SEED_REAGENTS,
+                    equipment: remote.equipment || [],
+                    calibrations: remote.calibrations || [],
+                    maintenanceLogs: remote.maintenanceLogs || [],
+                    reagents: remote.reagents || [],
                     reagentUsageLogs: remote.reagentUsageLogs || [],
-                    proficiencyTests: remote.proficiencyTests || SEED_PROFICIENCY_TESTS,
-                    qualityEvents: remote.qualityEvents || SEED_QUALITY_EVENTS,
-                    capaRecords: remote.capaRecords || SEED_CAPA_RECORDS,
-                    qualityRisks: remote.qualityRisks || SEED_QUALITY_RISKS,
-                    competencyRecords: remote.competencyRecords || SEED_COMPETENCY_RECORDS,
-                    iqcAnalytes: remote.iqcAnalytes || SEED_IQC_ANALYTES,
-                    iqcResults: remote.iqcResults || SEED_IQC_RESULTS,
+                    proficiencyTests: remote.proficiencyTests || [],
+                    qualityEvents: remote.qualityEvents || [],
+                    capaRecords: remote.capaRecords || [],
+                    qualityRisks: remote.qualityRisks || [],
+                    competencyRecords: remote.competencyRecords || [],
+                    iqcAnalytes: remote.iqcAnalytes || [],
+                    iqcResults: remote.iqcResults || [],
                     hasLoadedFromFirestore: true,
+                    loadedOrganizationId: organizationId,
                     syncStatus: "synced",
                     lastSyncedAt: new Date().toISOString(),
                 });
             } else {
-                await saveLabOpsDataWithRetry(toPersistedData(get()));
+                const empty: LabOpsPersistedData = {
+                    equipment: [], calibrations: [], maintenanceLogs: [], reagents: [],
+                    reagentUsageLogs: [], proficiencyTests: [], qualityEvents: [], capaRecords: [],
+                    qualityRisks: [], competencyRecords: [], iqcAnalytes: [], iqcResults: [],
+                };
                 set({
+                    ...empty,
                     hasLoadedFromFirestore: true,
-                    syncStatus: "synced",
-                    lastSyncedAt: new Date().toISOString(),
+                    loadedOrganizationId: organizationId,
+                    syncStatus: "idle",
+                    lastSyncedAt: null,
                 });
             }
         } catch (error) {
+            if (generation !== loadGeneration || useTenantStore.getState().organizationId !== organizationId) return;
             set({
                 syncStatus: "error",
                 syncError: error instanceof Error ? error.message : "Failed to load Lab Ops data",
             });
         } finally {
-            set({ loading: false });
+            if (generation === loadGeneration) set({ loading: false });
         }
     },
     saveToFirestore: async (forceImmediate = false) => {
+        if (!get().hasLoadedFromFirestore || get().loadedOrganizationId !== useTenantStore.getState().organizationId) {
+            set({ syncStatus: "error", syncError: "Load Lab Operations successfully before saving" });
+            return;
+        }
         if (forceImmediate) {
             queuedPayload = toPersistedData(get());
+            queuedOrganizationId = get().loadedOrganizationId!;
             if (saveTimer) {
                 clearTimeout(saveTimer);
                 saveTimer = null;
@@ -444,7 +494,8 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         queueSave(get, set);
     },
     retrySyncNow: async () => {
-        await get().saveToFirestore(true);
+        if (!get().hasLoadedFromFirestore) await get().loadFromFirestore();
+        else await get().saveToFirestore(true);
     },
     flushPendingSaves: async () => {
         await get().saveToFirestore(true);
@@ -464,5 +515,4 @@ if (typeof window !== "undefined" && process.env.NODE_ENV !== "test") {
         }
     });
 
-    void useLabOpsStore.getState().loadFromFirestore();
 }

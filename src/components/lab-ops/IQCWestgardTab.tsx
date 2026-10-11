@@ -17,6 +17,8 @@ import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import type { IQCAnalyte, IQCResult } from "@/types/labOps";
 import {
   applyWestgardRules,
@@ -234,6 +236,11 @@ const LeveyJenningsChart: React.FC<LJProps> = ({
 // ── Main Component ────────────────────────────────────────────────────────────
 
 const IQCWestgardTab: React.FC = () => {
+  const users = useUserStore((state) => state.users);
+  const organizationId = useTenantStore((state) => state.organizationId);
+  const staff = users.filter((user) => user.organizationId === organizationId && user.isActive !== false);
+  const [operatorId, setOperatorId] = useState("");
+  const operator = staff.find((user) => user.id === operatorId);
   const { t } = useTranslation();
   const toast = useToast();
   const {
@@ -324,22 +331,20 @@ const IQCWestgardTab: React.FC = () => {
     }
     return checkCompetencyAuthorization(
       competencyRecords,
-      resultForm.measuredBy,
+      operator?.id || "",
       selectedAnalyte.analyteCode,
-      resultForm.measuredAt
-        ? new Date(resultForm.measuredAt).toISOString()
-        : undefined,
+      resultForm.measuredAt || undefined,
     );
   }, [
     competencyRecords,
     resultForm.measuredAt,
-    resultForm.measuredBy,
+    operator,
     selectedAnalyte,
   ]);
 
   const handleLogResult = () => {
     const val = parseFloat(resultForm.measuredValue);
-    if (!selectedAnalyte || isNaN(val) || !resultForm.measuredBy.trim()) return;
+    if (!selectedAnalyte || !Number.isFinite(val) || !operator) return;
     if (!competencyGate.authorized) {
       toast.error(
         t("iqcCompetencyBlocked") ||
@@ -371,7 +376,8 @@ const IQCWestgardTab: React.FC = () => {
       measuredAt: resultForm.measuredAt
         ? new Date(resultForm.measuredAt).toISOString()
         : now,
-      measuredBy: resultForm.measuredBy.trim(),
+      measuredBy: operator.name,
+      measuredByStaffId: operator.id,
       reagentLot: resultForm.reagentLot.trim() || undefined,
       violatedRules: rules,
       rejected,
@@ -698,14 +704,15 @@ const IQCWestgardTab: React.FC = () => {
               placeholder={`${t("iqcMeasuredValue") || "Measured value"} (${selectedAnalyte.unit}) *`}
               className={inputCls}
             />
-            <input
-              value={resultForm.measuredBy}
-              onChange={(e) =>
-                setResultForm({ ...resultForm, measuredBy: e.target.value })
-              }
-              placeholder={`${t("iqcMeasuredBy") || "Measured by"} *`}
+            <select
+              value={operatorId}
+              onChange={(e) => setOperatorId(e.target.value)}
+              aria-label={t("iqcMeasuredBy")}
               className={inputCls}
-            />
+            >
+              <option value="">{t("labOpsSelectStaff")}</option>
+              {staff.map((user) => <option key={user.id} value={user.id}>{user.name} ({user.email})</option>)}
+            </select>
             <input
               type="datetime-local"
               value={resultForm.measuredAt}
