@@ -1306,8 +1306,6 @@ Existing Notes: ${item.notes || "None"}`;
                 item={item}
                 project={project}
                 isFinalized={isFinalized}
-                onUpload={() => {}}
-                onLinkData={() => {}}
                 onUpdate={handleEvidenceUpdate}
               />
             </div>

@@ -933,6 +933,13 @@ export interface ChecklistItem {
   evidenceFiles: string[];
   comments: Comment[];
   departmentId?: string;
+  linkedFhirResources?: LinkedFhirResource[];
+}
+
+export interface LinkedFhirResource {
+  resourceType: string;
+  resourceId: string;
+  displayText: string;
 }
 
 export interface DesignControlItem {

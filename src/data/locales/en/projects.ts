@@ -125,6 +125,11 @@ export const en = {
     "This project is read-only. Finalized and archived records cannot be changed here.",
   projectRequirementsAction: "Review {count} outstanding requirements",
   projectEvidenceAction: "Review {count} linked documents",
+  projectEvidenceUploaded: "Evidence uploaded and linked to this requirement.",
+  projectEvidenceUploadFailed:
+    "Could not upload or link evidence. Please try again.",
+  projectEvidenceCaptureFailed:
+    "Could not capture or link evidence. Please try again.",
   projectImprovementAction: "PDCA and {count} active CAPA",
   projectUnresolvedEvidence:
     "{count} evidence references could not be resolved in this workspace. Review the checklist links.",

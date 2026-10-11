@@ -123,6 +123,10 @@ export const ar = {
     "هذا المشروع للقراءة فقط. لا يمكن تعديل السجلات المعتمدة نهائياً أو المؤرشفة هنا.",
   projectRequirementsAction: "مراجعة {count} متطلب متبقٍ",
   projectEvidenceAction: "مراجعة {count} مستند مرتبط",
+  projectEvidenceUploaded: "تم رفع الدليل وربطه بهذا المتطلب.",
+  projectEvidenceUploadFailed: "تعذر رفع الدليل أو ربطه. يرجى المحاولة مرة أخرى.",
+  projectEvidenceCaptureFailed:
+    "تعذر التقاط الدليل أو ربطه. يرجى المحاولة مرة أخرى.",
   projectImprovementAction: "دورات التحسين و{count} إجراء تصحيحي ووقائي نشط",
   projectUnresolvedEvidence:
     "تعذر العثور على {count} مرجع دليل في مساحة العمل. راجع روابط قائمة التحقق.",

@@ -1,11 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/useToast";
 import { ChecklistItem, Project, AppDocument } from "@/types";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   PaperClipIcon,
   CircleStackIcon,
-  PlusIcon,
   UploadIcon,
   CameraIcon,
 } from "@/components/icons";
@@ -24,8 +23,6 @@ interface ChecklistEvidenceProps {
   item: ChecklistItem;
   project: Project;
   isFinalized: boolean;
-  onUpload: (projectId: string, checklistItemId: string, fileData: any) => void;
-  onLinkData: () => void;
   onUpdate: (updates: Partial<ChecklistItem>) => Promise<void> | void;
 }
 
@@ -33,8 +30,6 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   item,
   project,
   isFinalized,
-  onUpload,
-  onLinkData,
   onUpdate,
 }) => {
   const { t } = useTranslation();
@@ -48,6 +43,17 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   const [viewingPDF, setViewingPDF] = useState<AppDocument | null>(null);
   const [viewingDoc, setViewingDoc] = useState<AppDocument | null>(null);
   const [viewingDOCX, setViewingDOCX] = useState<AppDocument | null>(null);
+  const currentItem = useRef(item);
+  const finalized = useRef(isFinalized);
+  currentItem.current = item;
+  finalized.current = isFinalized;
+
+  useEffect(() => {
+    if (isFinalized) {
+      setShowUploader(false);
+      setIsPickerOpen(false);
+    }
+  }, [isFinalized]);
 
   const evidenceDocs = documents.filter(
     (doc) =>
@@ -57,7 +63,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   );
 
   const handleFilesSelected = async (files: File[]) => {
-    if (files.length === 0) return;
+    if (isFinalized || isUploading || isCapturing || files.length === 0) return;
 
     setIsUploading(true);
     setUploadProgress(0);
@@ -65,45 +71,32 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
     try {
       const file = files[0];
 
-      console.log("🚀 Starting upload process for:", file.name);
-      console.log("📊 File details:", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-      });
-
-      // Upload to Cloudinary
       const fileUrl = await cloudinaryService.uploadDocument(
         file,
         `projects/${project.id}/checklist/${item.id}`,
         (progress) => setUploadProgress(progress.progress),
       );
+      if (finalized.current) throw new Error("Project became read-only");
 
-      console.log("✅ Cloudinary upload successful:", fileUrl);
-
-      // Create and save document to Firebase
-      console.log("💾 Creating document in Firebase...");
       const createdDoc = await addControlledDocument({
         name: { en: file.name, ar: file.name },
         type: "Evidence",
         fileUrl,
         projectId: project.id,
         tags: [`checklist:${item.id}`, `project:${project.id}`],
-      } as any);
+      });
 
-      console.log("✅ Firebase document created:", createdDoc.id);
+      await onUpdate({
+        evidenceFiles: [
+          ...new Set([...currentItem.current.evidenceFiles, createdDoc.id]),
+        ],
+      });
 
-      // Link to checklist item
-      await onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
-
-      console.log("✅ Checklist item updated");
-
+      toast.success(t("projectEvidenceUploaded"));
       setShowUploader(false);
     } catch (error) {
-      console.error("❌ Upload error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Upload failed";
-      alert(`Upload failed: ${errorMessage}`);
+      console.error("Checklist evidence upload failed:", error);
+      toast.error(t("projectEvidenceUploadFailed"));
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
@@ -111,6 +104,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   };
 
   const handleCameraCapture = async () => {
+    if (isFinalized || isCapturing || isUploading) return;
     setIsCapturing(true);
     try {
       const photo = await smartCapturePhoto();
@@ -133,6 +127,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
         `projects/${project.id}/checklist/${item.id}`,
         (progress) => setUploadProgress(progress.progress),
       );
+      if (finalized.current) throw new Error("Project became read-only");
 
       // Create document in Firebase
       const createdDoc = await addControlledDocument({
@@ -145,15 +140,17 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
           `project:${project.id}`,
           "camera-capture",
         ],
-      } as any);
+      });
 
-      // Link to checklist item
-      await onUpdate({ evidenceFiles: [...item.evidenceFiles, createdDoc.id] });
+      await onUpdate({
+        evidenceFiles: [
+          ...new Set([...currentItem.current.evidenceFiles, createdDoc.id]),
+        ],
+      });
+      toast.success(t("projectEvidenceUploaded"));
     } catch (error) {
-      console.error("Camera capture error:", error);
-      const errorMessage =
-        error instanceof Error ? error.message : "Capture failed";
-      alert(`Capture failed: ${errorMessage}`);
+      console.error("Checklist evidence capture failed:", error);
+      toast.error(t("projectEvidenceCaptureFailed"));
     } finally {
       setIsCapturing(false);
       setIsUploading(false);
@@ -162,7 +159,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   };
 
   const handleDocumentsSelected = async (documentIds: string[]) => {
-    if (isFinalized) return;
+    if (isFinalized || isUploading || isCapturing) return;
     const uniqueIds = documentIds.filter(
       (id) => !item.evidenceFiles.includes(id),
     );
@@ -176,7 +173,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
   };
 
   const handleRemoveDocument = async (docId: string) => {
-    if (isFinalized) return;
+    if (isFinalized || isUploading || isCapturing) return;
     try {
       await onUpdate({
         evidenceFiles: item.evidenceFiles.filter((id) => id !== docId),
@@ -219,12 +216,16 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
             compact={true}
             showActions={true}
             onView={handleViewDocument}
-            onRemove={!isFinalized ? handleRemoveDocument : undefined}
+            onRemove={
+              !isFinalized && !isUploading && !isCapturing
+                ? handleRemoveDocument
+                : undefined
+            }
           />
         ))}
 
         {/* Linked FHIR Resources */}
-        {(item as any).linkedFhirResources?.map((res: any) => (
+        {item.linkedFhirResources?.map((res) => (
           <div
             key={res.resourceId}
             className="flex items-center gap-2 p-2 bg-blue-100 dark:bg-blue-900/50 rounded-md text-sm"
@@ -234,12 +235,11 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
           </div>
         ))}
 
-        {evidenceDocs.length === 0 &&
-          !(item as any).linkedFhirResources?.length && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 italic">
-              {t("noEvidenceAttached") || "No evidence attached"}
-            </p>
-          )}
+        {evidenceDocs.length === 0 && !item.linkedFhirResources?.length && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+            {t("noEvidenceAttached") || "No evidence attached"}
+          </p>
+        )}
       </div>
 
       {/* Action Buttons */}
@@ -257,6 +257,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
           </button>
           <button
             onClick={() => setShowUploader(true)}
+            disabled={isUploading || isCapturing}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-brand-primary hover:bg-sky-700 rounded-md transition-colors"
           >
             <UploadIcon className="w-4 h-4" />
@@ -269,18 +270,11 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
             <PaperClipIcon className="w-4 h-4" />
             {t("linkDocument") || "Link Document"}
           </button>
-          <button
-            onClick={onLinkData}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md transition-colors"
-          >
-            <CircleStackIcon className="w-4 h-4" />
-            {t("linkLiveData") || "Link Live Data"}
-          </button>
         </div>
       )}
 
       {/* File Uploader Modal */}
-      {showUploader && (
+      {showUploader && !isFinalized && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 p-6">
             <h3 className="text-lg font-semibold mb-4">
@@ -328,7 +322,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
 
       {/* Document Picker */}
       <DocumentPicker
-        isOpen={isPickerOpen}
+        isOpen={isPickerOpen && !isFinalized && !isUploading && !isCapturing}
         onClose={() => setIsPickerOpen(false)}
         onSelect={handleDocumentsSelected}
         documents={documents.filter(
