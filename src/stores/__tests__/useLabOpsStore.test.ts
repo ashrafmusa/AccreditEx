@@ -4,7 +4,40 @@ import { SEED_EQUIPMENT, SEED_REAGENTS } from "@/types/labOps";
 import { SEED_IQC_RESULTS } from "@/types/labOps";
 import type { LabLogCursor } from "@/services/labOpsRecords";
 import type { LabRecordState } from "@/services/labOpsRecords";
+import type { LabOpsPersistedData } from "@/services/labOpsService";
 let mockOrganizationId = "org-a";
+
+const importEquipment = (id: string) => ({
+    id,
+    name: `Analyzer ${id}`,
+    manufacturer: "Acme",
+    model: "A1",
+    serialNumber: `serial-${id}`,
+    category: "analyzer" as const,
+    labSection: "Chemistry",
+    location: "Lab",
+    status: "active" as const,
+    purchaseDate: "2026-01-01",
+    calibrationIntervalDays: 365,
+    maintenanceIntervalDays: 365,
+    createdAt: "2026-01-01T00:00:00.000Z",
+    updatedAt: "2026-01-01T00:00:00.000Z",
+});
+
+const emptyImportData = (): LabOpsPersistedData => ({
+    equipment: [],
+    calibrations: [],
+    maintenanceLogs: [],
+    reagents: [],
+    reagentUsageLogs: [],
+    proficiencyTests: [],
+    qualityEvents: [],
+    capaRecords: [],
+    qualityRisks: [],
+    competencyRecords: [],
+    iqcAnalytes: [],
+    iqcResults: [],
+});
 
 jest.mock("@/services/labOpsService", () => ({
     getLabOpsData: jest.fn(), resetLabOpsData: jest.fn(), saveLabOpsDataWithRetry: jest.fn(), labRecordStorageEnabled: jest.fn(() => false),
@@ -135,6 +168,82 @@ describe("Lab Operations safeguards", () => {
         await expect(useLabOpsStore.getState().resetOrganizationData("org-a"))
             .rejects.toThrow("record-level");
         expect(resetLabOpsData).not.toHaveBeenCalled();
+    });
+
+    it("adds new imported records and skips IDs that already exist", async () => {
+        useLabOpsStore.setState({
+            equipment: [importEquipment("eq-existing")],
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: false,
+            syncStatus: "synced",
+        });
+        const importedData = emptyImportData();
+        importedData.equipment = [importEquipment("eq-existing"), importEquipment("eq-new")];
+        importedData.calibrations = [{
+            id: "cal-new",
+            equipmentId: "eq-new",
+            equipmentName: "Analyzer eq-new",
+            calibratedBy: "Technician",
+            calibrationDate: "2026-10-01",
+            nextDueDate: "2027-10-01",
+            result: "pass",
+            createdAt: "2026-10-01T00:00:00.000Z",
+        }];
+
+        const result = await useLabOpsStore.getState().importOrganizationData("org-a", importedData);
+
+        expect(result).toEqual({ importedCount: 2, skippedCount: 1 });
+        expect(saveLabOpsDataWithRetry).toHaveBeenCalledWith(
+            expect.objectContaining({
+                equipment: [importEquipment("eq-existing"), importEquipment("eq-new")],
+                calibrations: importedData.calibrations,
+            }),
+            3,
+            500,
+            "org-a",
+        );
+        expect(useLabOpsStore.getState().equipment).toEqual([
+            importEquipment("eq-existing"),
+            importEquipment("eq-new"),
+        ]);
+    });
+
+    it("rejects imported records with links to records that do not exist", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: false,
+            syncStatus: "synced",
+        });
+        const importedData = emptyImportData();
+        importedData.calibrations = [{
+            id: "cal-orphan",
+            equipmentId: "missing-equipment",
+            equipmentName: "Missing Analyzer",
+            calibratedBy: "Technician",
+            calibrationDate: "2026-10-01",
+            nextDueDate: "2027-10-01",
+            result: "pass",
+            createdAt: "2026-10-01T00:00:00.000Z",
+        }];
+
+        await expect(useLabOpsStore.getState().importOrganizationData("org-a", importedData))
+            .rejects.toThrow('references unknown equipmentId "missing-equipment"');
+        expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
+    });
+
+    it("blocks imports when record-level storage is active", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: true,
+            syncStatus: "synced",
+        });
+
+        await expect(useLabOpsStore.getState().importOrganizationData("org-a", emptyImportData()))
+            .rejects.toThrow("record-level");
+        expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
     });
 
     it("rejects an operational write before dispatch when the tenant switches, without queuing it for the new tenant", async () => {

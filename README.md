@@ -320,6 +320,12 @@ and Competency Matrix.
   untouched. Keep the downloaded file secure. The UI fails closed when
   record-level storage is active; that schema needs a separately verified
   reset procedure.
+- Tenant admins can import the versioned organization-specific JSON backup or
+  the multi-sheet Excel template from the Lab Operations page. Imports are
+  previewed, validated, and additive: existing records are not replaced or
+  deleted, and records with IDs already present are skipped. JSON backups must
+  match the active organization. Import is unavailable while record-level
+  storage is active.
 - Calibration history and equipment restrictions update together. Failed
   calibration never restores an asset to active status. Reagent usage and
   inventory update together and reject nonfinite, nonpositive, or excessive use.

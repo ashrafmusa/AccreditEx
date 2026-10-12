@@ -127,6 +127,10 @@ export interface LabOpsState {
     retrySyncNow: () => Promise<void>;
     flushPendingSaves: () => Promise<void>;
     resetOrganizationData: (organizationId: string) => Promise<void>;
+    importOrganizationData: (
+        organizationId: string,
+        data: LabOpsPersistedData,
+    ) => Promise<{ importedCount: number; skippedCount: number }>;
 
     // Computed helpers
     getEquipmentById: (id: string) => Equipment | undefined;
@@ -699,6 +703,120 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
             syncError: null,
             lastSyncedAt: new Date().toISOString(),
         });
+    },
+    importOrganizationData: async (organizationId, importedData) => {
+        if (!organizationId || organizationId !== useTenantStore.getState().organizationId
+            || organizationId !== get().loadedOrganizationId || !get().hasLoadedFromFirestore) {
+            throw new Error("Load Lab Operations for the active organization before importing");
+        }
+        if (get().recordMode) {
+            throw new Error("Import is unavailable while record-level Lab Operations storage is active");
+        }
+
+        const generation = loadGeneration;
+        await get().flushPendingSaves();
+        if (generation !== loadGeneration || organizationId !== useTenantStore.getState().organizationId
+            || organizationId !== get().loadedOrganizationId || !get().hasLoadedFromFirestore) {
+            throw new Error("Organization changed; reload Lab Operations before importing");
+        }
+        if (get().syncStatus === "error") {
+            throw new Error("Pending Lab Operations changes did not synchronize; retry before importing");
+        }
+
+        const current = toPersistedData(get());
+        const merged = { ...current };
+        let importedCount = 0;
+        let skippedCount = 0;
+        const additionsByGroup = new Map<
+            keyof LabOpsPersistedData,
+            { id: string; values: Record<string, unknown> }[]
+        >();
+        for (const key of Object.keys(current) as (keyof LabOpsPersistedData)[]) {
+            const existingIds = new Set(current[key].map((record) => record.id));
+            const additions = importedData[key].filter((record) => {
+                if (existingIds.has(record.id)) {
+                    skippedCount += 1;
+                    return false;
+                }
+                existingIds.add(record.id);
+                importedCount += 1;
+                return true;
+            });
+            (merged[key] as typeof additions) = [...current[key], ...additions] as typeof additions;
+            additionsByGroup.set(key, additions.map((record) => ({
+                id: record.id,
+                values: Object.fromEntries(Object.entries(record)),
+            })));
+        }
+        if (importedCount === 0) return { importedCount, skippedCount };
+
+        const references: {
+            source: keyof LabOpsPersistedData;
+            field: string;
+            target: keyof LabOpsPersistedData;
+            optional?: boolean;
+        }[] = [
+            { source: "calibrations", field: "equipmentId", target: "equipment" },
+            { source: "maintenanceLogs", field: "equipmentId", target: "equipment" },
+            { source: "reagents", field: "associatedEquipmentId", target: "equipment", optional: true },
+            { source: "reagentUsageLogs", field: "reagentId", target: "reagents" },
+            { source: "reagentUsageLogs", field: "equipmentId", target: "equipment", optional: true },
+            { source: "proficiencyTests", field: "correctiveActionId", target: "capaRecords", optional: true },
+            { source: "qualityEvents", field: "capaId", target: "capaRecords", optional: true },
+            { source: "capaRecords", field: "sourceEventId", target: "qualityEvents", optional: true },
+            { source: "qualityRisks", field: "sourceEventId", target: "qualityEvents", optional: true },
+            { source: "qualityRisks", field: "relatedCapaId", target: "capaRecords", optional: true },
+            { source: "iqcAnalytes", field: "equipmentId", target: "equipment" },
+            { source: "iqcResults", field: "analyteId", target: "iqcAnalytes" },
+            { source: "iqcResults", field: "equipmentId", target: "equipment" },
+            { source: "iqcResults", field: "linkedQualityEventId", target: "qualityEvents", optional: true },
+            { source: "iqcResults", field: "linkedRiskRecordId", target: "qualityRisks", optional: true },
+            { source: "iqcResults", field: "linkedCapaId", target: "capaRecords", optional: true },
+        ];
+        const brokenReferences: string[] = [];
+        for (const reference of references) {
+            const targetIds = new Set(merged[reference.target].map((record) => record.id));
+            for (const row of additionsByGroup.get(reference.source) ?? []) {
+                const linkedId = row.values[reference.field];
+                if (linkedId === undefined || linkedId === null || linkedId === "") {
+                    if (!reference.optional) {
+                        brokenReferences.push(`${reference.source} ${row.id} is missing ${reference.field}`);
+                    }
+                } else if (typeof linkedId !== "string" || !targetIds.has(linkedId)) {
+                    brokenReferences.push(`${reference.source} ${row.id} references unknown ${reference.field} "${String(linkedId)}"`);
+                }
+                if (brokenReferences.length >= 8) break;
+            }
+            if (brokenReferences.length >= 8) break;
+        }
+        if (brokenReferences.length) {
+            throw new Error(`Import validation failed: ${brokenReferences.join("; ")}`);
+        }
+
+        set({ syncStatus: "saving", syncError: null });
+        try {
+            await saveLabOpsDataWithRetry(merged, 3, 500, organizationId);
+            if (generation !== loadGeneration || organizationId !== useTenantStore.getState().organizationId
+                || organizationId !== get().loadedOrganizationId) {
+                throw new Error("Organization changed during import; reload Lab Operations to verify the saved data");
+            }
+            set({
+                ...merged,
+                syncStatus: "synced",
+                syncError: null,
+                lastSyncedAt: new Date().toISOString(),
+            });
+            return { importedCount, skippedCount };
+        } catch (error) {
+            if (organizationId === useTenantStore.getState().organizationId
+                && organizationId === get().loadedOrganizationId) {
+                set({
+                    syncStatus: "error",
+                    syncError: error instanceof Error ? error.message : "Import save failed",
+                });
+            }
+            throw error;
+        }
     },
     flushPendingSaves: async () => {
         if (saveTimer) {

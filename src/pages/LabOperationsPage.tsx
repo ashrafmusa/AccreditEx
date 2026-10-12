@@ -18,8 +18,9 @@ import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import { useAdminGuard } from "@/hooks/useAdminGuard";
 import { useToast } from "@/hooks/useToast";
 import type { LabOpsTab } from "@/types/labOps";
-import React, { lazy, Suspense, useEffect, useState } from "react";
+import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { useTenantStore } from "@/stores/useTenantStore";
+import type { LabOpsImportPreview } from "@/services/labOpsImportService";
 
 const EquipmentTab = lazy(() => import("@/components/lab-ops/EquipmentTab"));
 const MaintenanceTab = lazy(
@@ -87,6 +88,12 @@ const LabOperationsPage: React.FC = () => {
   const hasLoaded = useLabOpsStore((state) => state.hasLoadedFromFirestore);
   const recordMode = useLabOpsStore((state) => state.recordMode);
   const resetOrganizationData = useLabOpsStore((state) => state.resetOrganizationData);
+  const importOrganizationData = useLabOpsStore((state) => state.importOrganizationData);
+  const importFileRef = useRef<HTMLInputElement>(null);
+  const [showImportPanel, setShowImportPanel] = useState(false);
+  const [importPreview, setImportPreview] = useState<LabOpsImportPreview | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importingData, setImportingData] = useState(false);
   const [showResetPanel, setShowResetPanel] = useState(false);
   const [resetConfirmation, setResetConfirmation] = useState("");
   const [backupDownloaded, setBackupDownloaded] = useState(false);
@@ -176,16 +183,72 @@ const LabOperationsPage: React.FC = () => {
     }
   };
 
+  const handleDownloadImportTemplate = async () => {
+    try {
+      const { createLabOpsExcelTemplate } = await import("@/services/labOpsImportService");
+      const template = createLabOpsExcelTemplate();
+      const url = URL.createObjectURL(new Blob([template], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      }));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "accreditex-lab-operations-import-template.xlsx";
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    } catch (error) {
+      console.error("Failed to create Lab Operations import template:", error);
+      toast.error(error instanceof Error ? error.message : t("labOpsImportFailed"));
+    }
+  };
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    event.target.value = "";
+    setImportError(null);
+    setImportPreview(null);
+    try {
+      if (recordMode) {
+        throw new Error(t("labOpsImportRecordModeBlocked"));
+      }
+      if (!hasLoaded || loadedOrganizationId !== organizationId) {
+        throw new Error(t("labOpsLoadingRequired"));
+      }
+      const { parseLabOpsImportFile } = await import("@/services/labOpsImportService");
+      setImportPreview(await parseLabOpsImportFile(file, organizationId || ""));
+    } catch (error) {
+      console.error("Failed to preview Lab Operations import:", error);
+      setImportError(error instanceof Error ? error.message : t("labOpsImportFailed"));
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!organizationId || !importPreview || importingData) return;
+    setImportingData(true);
+    try {
+      const result = await importOrganizationData(organizationId, importPreview.data);
+      toast.success(t("labOpsImportSuccess", result));
+      setImportPreview(null);
+      setShowImportPanel(false);
+      if (importFileRef.current) importFileRef.current.value = "";
+    } catch (error) {
+      console.error("Failed to import Lab Operations data:", error);
+      toast.error(error instanceof Error ? error.message : t("labOpsImportFailed"));
+    } finally {
+      setImportingData(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      {resettingData && (
+      {(resettingData || importingData) && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
           role="status"
           aria-live="polite"
         >
           <p className="rounded-lg bg-white px-4 py-3 text-sm font-medium shadow-lg dark:bg-gray-800">
-            {t("labOpsResetting")}
+            {resettingData ? t("labOpsResetting") : t("labOpsImporting")}
           </p>
         </div>
       )}
@@ -228,6 +291,121 @@ const LabOperationsPage: React.FC = () => {
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
           {`${t("lastSynced") || "Last synced"}: ${new Date(lastSyncedAt).toLocaleString()}`}
         </p>
+      )}
+
+      {isAdmin && (
+        <section className="rounded-lg border border-brand-primary/30 p-4">
+          {!showImportPanel ? (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={!hasLoaded || loadedOrganizationId !== organizationId || syncStatus === "saving"}
+              onClick={() => {
+                setImportError(null);
+                setImportPreview(null);
+                setShowImportPanel(true);
+              }}
+            >
+              {t("labOpsImportOpen")}
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              <h2 className="font-semibold">{t("labOpsImportTitle")}</h2>
+              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                {recordMode ? t("labOpsImportRecordModeBlocked") : t("labOpsImportHelp")}
+              </p>
+              {!recordMode && (
+                <>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => void handleDownloadImportTemplate()}
+                      disabled={importingData}
+                    >
+                      {t("labOpsImportDownloadTemplate")}
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => importFileRef.current?.click()}
+                      disabled={!hasLoaded || loadedOrganizationId !== organizationId || importingData}
+                    >
+                      {t("labOpsImportChooseFile")}
+                    </Button>
+                    <input
+                      ref={importFileRef}
+                      type="file"
+                      accept=".xlsx,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                      className="hidden"
+                      onChange={(event) => void handleImportFile(event)}
+                    />
+                  </div>
+                  {importError && (
+                    <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+                      {importError}
+                    </p>
+                  )}
+                  {importPreview && (
+                    <div className="space-y-3 rounded-md bg-brand-background p-3 dark:bg-dark-brand-background">
+                      <p className="text-sm font-medium">
+                        {t("labOpsImportPreview", { rowCount: importPreview.rowCount })}
+                      </p>
+                      <ul className="grid gap-1 text-sm sm:grid-cols-2">
+                        {Object.entries(importPreview.data).filter(([, records]) => records.length > 0).map(([key, records]) => (
+                          <li key={key}>
+                            {t(`labOpsImportGroup_${key}`)}: {records.length}
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                        {t("labOpsImportAddOnly")}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          disabled={importingData || syncStatus === "saving"}
+                          onClick={() => void handleConfirmImport()}
+                        >
+                          {importingData ? t("labOpsImporting") : t("labOpsImportConfirm")}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={importingData}
+                          onClick={() => {
+                            setShowImportPanel(false);
+                            setImportPreview(null);
+                            setImportError(null);
+                            if (importFileRef.current) importFileRef.current.value = "";
+                          }}
+                        >
+                          {t("cancel")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {!importPreview && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={importingData}
+                      onClick={() => setShowImportPanel(false)}
+                    >
+                      {t("cancel")}
+                    </Button>
+                  )}
+                </>
+              )}
+              {recordMode && (
+                <Button variant="ghost" size="sm" onClick={() => setShowImportPanel(false)}>
+                  {t("cancel")}
+                </Button>
+              )}
+            </div>
+          )}
+        </section>
       )}
 
       {isAdmin && (
