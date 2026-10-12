@@ -2,6 +2,35 @@ import React from "react";
 import { TrainingProgram, UserTrainingStatus, User } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 
+export type TrainingDueState = "overdue" | "dueToday" | "dueSoon" | "upcoming" | "none";
+
+export function getTrainingDueState(
+  dueDate?: string,
+  now: Date = new Date(),
+): TrainingDueState {
+  if (!dueDate) return "none";
+  const dueDay = dueDate.slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dueDay)) return "none";
+  const [year, month, day] = dueDay.split("-").map(Number);
+  const parsedDueDay = new Date(Date.UTC(year, month - 1, day));
+  if (
+    Number.isNaN(parsedDueDay.getTime())
+    || parsedDueDay.getUTCFullYear() !== year
+    || parsedDueDay.getUTCMonth() !== month - 1
+    || parsedDueDay.getUTCDate() !== day
+  ) {
+    return "none";
+  }
+  const today = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  const daysUntilDue = Math.round(
+    (parsedDueDay.getTime() - today) / 86_400_000,
+  );
+  if (daysUntilDue < 0) return "overdue";
+  if (daysUntilDue === 0) return "dueToday";
+  if (daysUntilDue <= 7) return "dueSoon";
+  return "upcoming";
+}
+
 interface TrainingCardProps {
   program: TrainingProgram;
   status: UserTrainingStatus[string];
@@ -42,6 +71,17 @@ const TrainingCard: React.FC<TrainingCardProps> = ({
   };
 
   const { text, color, buttonText } = getStatusInfo();
+  const dueState = getTrainingDueState(assignment?.dueDate);
+  const dueDateClass = dueState === "overdue" || dueState === "dueToday"
+    ? "text-red-600 dark:text-red-400"
+    : dueState === "dueSoon"
+      ? "text-amber-700 dark:text-amber-300"
+      : "text-brand-text-secondary dark:text-dark-brand-text-secondary";
+  const dueDateLabel = assignment?.dueDate
+    ? dueState === "none"
+      ? assignment.dueDate
+      : new Date(`${assignment.dueDate.slice(0, 10)}T00:00:00`).toLocaleDateString()
+    : "";
 
   return (
     <div className="bg-brand-surface dark:bg-dark-brand-surface rounded-xl shadow-md border border-brand-border dark:border-dark-brand-border hover:shadow-xl hover:-translate-y-1 transition-all flex flex-col justify-between">
@@ -74,9 +114,14 @@ const TrainingCard: React.FC<TrainingCardProps> = ({
             </>
           ) : (
             assignment?.dueDate && (
-              <p className="text-red-600 dark:text-red-400 font-semibold">
+              <p className={`${dueDateClass} font-semibold`}>
                 {t("dueOn")}:{" "}
-                {new Date(assignment.dueDate).toLocaleDateString()}
+                {dueDateLabel}
+                {dueState !== "none" && (
+                  <span className="ltr:ml-1 rtl:mr-1">
+                    ({t(`trainingDue_${dueState}`)})
+                  </span>
+                )}
               </p>
             )
           )}

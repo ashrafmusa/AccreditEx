@@ -45,7 +45,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
     - Activity-log reads require the `activity_logs` organization/timestamp composite indexes declared in `firestore.indexes.json`. Reads require server confirmation rather than silently falling back to stale offline rows. Read failures display an error and retry action instead of claiming the log is empty.
     - SMCS seeding resolves a single active program from complete standard coverage, never the dataset's legacy `prog-ohap` identifier, and checks for existing legacy or repaired projects before writing.
 
--   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis.
+-   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis. My Training summarizes completion and overdue assignments, prioritizes nearest due dates, and supports course search.
 -   **Analytics Hub**: Multi-format reporting (PDF, Excel, CSV, JSON), AI-powered quality insights, PDCA cycle tracking, and executive briefings.
 
 #### SMCS data reconciliation
