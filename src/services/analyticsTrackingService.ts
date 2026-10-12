@@ -21,7 +21,8 @@ let initPromise: Promise<Analytics | null> | null = null;
 async function getAnalyticsInstance(): Promise<Analytics | null> {
     if (analyticsInstance) return analyticsInstance;
     if (initPromise) return initPromise;
-    if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") return null;
+    const app = getApp();
+    if (app.options.projectId?.startsWith("demo-")) return null;
 
     initPromise = (async () => {
         try {
@@ -30,7 +31,7 @@ async function getAnalyticsInstance(): Promise<Analytics | null> {
                 console.warn("📊 Firebase Analytics not supported in this environment");
                 return null;
             }
-            analyticsInstance = getAnalytics(getApp());
+            analyticsInstance = getAnalytics(app);
             return analyticsInstance;
         } catch (err) {
             console.warn("📊 Failed to initialize Firebase Analytics:", err);
