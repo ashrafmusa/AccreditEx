@@ -158,9 +158,11 @@ export const ar = {
     overdueCalibrations: "معايرات متأخرة",
     due: "مستحق",
     lowLabel: "منخفض:",
-    leveyJenningsTitle: "مخططات ليفي-جينينغز (تجريبي)",
-    leveyJenningsDesc: "بيانات تجريبية للعرض — قم بتوصيل بيانات ضبط الجودة الفعلية عبر تكامل LIMS للمخططات الحية.",
+    leveyJenningsTitle: "مخططات ليفي-جينينغز لضبط الجودة",
+    leveyJenningsDesc: "تعرض المخططات نتائج ضبط الجودة الداخلي المسجلة ومتوسط الهدف والانحراف المعياري المحددين لكل محلل.",
     controlSuffix: "— ضبط",
+    controlLevel: "المستوى",
+    qcInvalidTargetSD: "الانحراف المعياري المستهدف لهذا المحلل غير صالح. راجع إعدادات الهدف قبل عرض المخطط.",
     recentCalibrations: "المعايرات الأخيرة",
     noCalibrations6mo: "لا توجد سجلات معايرة في آخر 6 أشهر",
 

@@ -12,18 +12,22 @@ import {
   XCircleIcon,
   ExclamationTriangleIcon,
 } from "@/components/icons";
+import type { IQCAnalyte, IQCResult } from "@/types/labOps";
+
+const MAX_QC_CHART_POINTS = 50;
 
 /**
- * Simple inline Levey-Jennings chart (SVG)
- * Plots QC values against ±1SD, ±2SD, ±3SD limits
+ * Levey-Jennings chart plotting saved measurements against the analyte's
+ * configured target mean and standard deviation.
  */
 const LeveyJenningsChart: React.FC<{
-  values: number[];
-  mean: number;
-  sd: number;
+  analyte: IQCAnalyte;
+  results: IQCResult[];
   title: string;
-}> = ({ values, mean, sd, title }) => {
-  if (!values.length || sd === 0) return null;
+  chartLabel: string;
+}> = ({ analyte, results, title, chartLabel }) => {
+  const { targetMean: mean, targetSD: sd } = analyte;
+  if (results.length < 2 || !Number.isFinite(sd) || sd <= 0) return null;
 
   const W = 400;
   const H = 160;
@@ -34,11 +38,15 @@ const LeveyJenningsChart: React.FC<{
   const plotW = W - PAD_L - PAD_R;
   const plotH = H - PAD_T - PAD_B;
 
-  const yMin = mean - 4 * sd;
-  const yMax = mean + 4 * sd;
+  const zScores = results.map(
+    (result) => (result.measuredValue - mean) / sd,
+  );
+  const extent = Math.max(4, ...zScores.map((zScore) => Math.abs(zScore) + 0.5));
+  const yMin = mean - extent * sd;
+  const yMax = mean + extent * sd;
   const yScale = (v: number) =>
     PAD_T + plotH - ((v - yMin) / (yMax - yMin)) * plotH;
-  const xStep = values.length > 1 ? plotW / (values.length - 1) : plotW;
+  const xStep = plotW / (results.length - 1);
 
   const sdLines = [-3, -2, -1, 0, 1, 2, 3].map((n) => ({
     y: yScale(mean + n * sd),
@@ -54,11 +62,11 @@ const LeveyJenningsChart: React.FC<{
     dash: Math.abs(n) >= 2 ? "4,3" : n === 0 ? "0" : "2,2",
   }));
 
-  const points = values.map((v, i) => ({
-    x: PAD_L + (values.length === 1 ? plotW / 2 : i * xStep),
-    y: yScale(v),
-    value: v,
-    zScore: (v - mean) / sd,
+  const points = results.map((result, i) => ({
+    result,
+    x: PAD_L + i * xStep,
+    y: yScale(result.measuredValue),
+    zScore: zScores[i],
   }));
 
   return (
@@ -69,7 +77,10 @@ const LeveyJenningsChart: React.FC<{
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="w-full max-w-[420px] bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
+        role="img"
+        aria-label={`${title} ${chartLabel}`}
       >
+        <title>{`${title} ${chartLabel}`}</title>
         {/* SD reference lines */}
         {sdLines.map((line) => (
           <g key={line.label}>
@@ -99,27 +110,35 @@ const LeveyJenningsChart: React.FC<{
           <polyline
             points={points.map((p) => `${p.x},${p.y}`).join(" ")}
             fill="none"
-            stroke="#6366f1"
+            stroke="#2563eb"
             strokeWidth={1.5}
           />
         )}
         {/* Data points */}
         {points.map((p, i) => {
           const absZ = Math.abs(p.zScore);
-          const fill =
-            absZ >= 3 ? "#ef4444" : absZ >= 2 ? "#f59e0b" : "#6366f1";
-          return <circle key={i} cx={p.x} cy={p.y} r={3} fill={fill} />;
+          const fill = p.result.rejected || absZ >= 3
+            ? "#ef4444"
+            : p.result.violatedRules.length > 0 || absZ >= 2
+              ? "#f59e0b"
+              : "#2563eb";
+          return (
+            <circle key={p.result.id} cx={p.x} cy={p.y} r={3} fill={fill}>
+              <title>
+                {`${p.result.measuredAt}: ${p.result.measuredValue} ${analyte.unit} (${p.zScore.toFixed(2)} SD)`}
+              </title>
+            </circle>
+          );
         })}
       </svg>
     </div>
   );
 };
 
-// Stat cards using calibration/equipment data as proxy for QC overview
 const QCDashboardTab: React.FC = () => {
   const [calibrationLimit, setCalibrationLimit] = useState(25);
   const { t } = useTranslation();
-  const { equipment, calibrations, maintenanceLogs, reagents } =
+  const { equipment, calibrations, maintenanceLogs, reagents, iqcAnalytes, iqcResults } =
     useLabOpsStore();
 
   const today = new Date().toISOString().split("T")[0];
@@ -171,22 +190,19 @@ const QCDashboardTab: React.FC = () => {
         )
       : 100;
 
-  // Generate mock Levey-Jennings data per lab section using seed equipment
-  const ljSections = useMemo(() => {
-    const sections = [...new Set(equipment.map((e) => e.labSection))];
-    return sections.slice(0, 4).map((section) => {
-      // Generate synthetic control data for demo
-      const mean = 100;
-      const sd = 5;
-      const pts = Array.from({ length: 20 }, (_, i) => {
-        // mostly within 2SD, with occasional outliers
-        const noise = (Math.random() - 0.5) * 2 * sd;
-        const drift = i > 15 ? (i - 15) * 0.8 : 0; // simulated drift
-        return mean + noise + drift;
-      });
-      return { section, values: pts, mean, sd };
-    });
-  }, [equipment]);
+  const iqcCharts = useMemo(
+    () => iqcAnalytes
+      .filter((analyte) => analyte.active)
+      .map((analyte) => ({
+        analyte,
+        results: iqcResults
+          .filter((result) =>
+            result.analyteId === analyte.id && result.level === analyte.level)
+          .sort((a, b) => a.measuredAt.localeCompare(b.measuredAt))
+          .slice(-MAX_QC_CHART_POINTS),
+      })),
+    [iqcAnalytes, iqcResults],
+  );
 
   return (
     <div className="space-y-6">
@@ -329,17 +345,39 @@ const QCDashboardTab: React.FC = () => {
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mb-4">
           {t("leveyJenningsDesc")}
         </p>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {ljSections.map((lj) => (
-            <LeveyJenningsChart
-              key={lj.section}
-              title={`${lj.section} ${t("controlSuffix")}`}
-              values={lj.values}
-              mean={lj.mean}
-              sd={lj.sd}
-            />
-          ))}
-        </div>
+        {iqcCharts.length === 0 ? (
+          <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("iqcNoActiveAnalytesHint")}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {iqcCharts.map(({ analyte, results }) => {
+              const title = `${analyte.analyteName} — ${t("controlLevel")} ${analyte.level}`;
+              const invalidTarget = !Number.isFinite(analyte.targetSD) || analyte.targetSD <= 0;
+              return (
+                <div key={analyte.id}>
+                  {results.length >= 2 && !invalidTarget ? (
+                    <LeveyJenningsChart
+                      analyte={analyte}
+                      results={results}
+                      title={title}
+                      chartLabel={t("iqcLeveyJennings")}
+                    />
+                  ) : (
+                    <div>
+                      <p className="text-xs font-medium mb-1 dark:text-dark-brand-text-primary">
+                        {title}
+                      </p>
+                      <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                        {invalidTarget ? t("qcInvalidTargetSD") : t("iqcNoChartData")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </Card>
 
       {/* Recent calibrations */}

@@ -158,9 +158,11 @@ export const en = {
     overdueCalibrations: "Overdue Calibrations",
     due: "due",
     lowLabel: "Low:",
-    leveyJenningsTitle: "Levey-Jennings Control Charts (Demo)",
-    leveyJenningsDesc: "Synthetic data for demonstration — connect to actual QC data via LIMS integration for live charts.",
+    leveyJenningsTitle: "Levey-Jennings Control Charts",
+    leveyJenningsDesc: "Charts use recorded IQC results and each analyte's configured target mean and standard deviation.",
     controlSuffix: "— Control",
+    controlLevel: "Level",
+    qcInvalidTargetSD: "This analyte has an invalid target SD. Review its target settings before charting.",
     recentCalibrations: "Recent Calibrations",
     noCalibrations6mo: "No calibration records in last 6 months",
 
