@@ -5,6 +5,7 @@
 import type { LabOpsPersistedData } from "@/services/labOpsService";
 import {
     getLabOpsData,
+    resetLabOpsData,
     saveLabOpsDataWithRetry,
     labRecordService, labRecordStorageEnabled,
 } from "@/services/labOpsService";
@@ -125,6 +126,7 @@ export interface LabOpsState {
     saveToFirestore: (forceImmediate?: boolean) => Promise<void>;
     retrySyncNow: () => Promise<void>;
     flushPendingSaves: () => Promise<void>;
+    resetOrganizationData: (organizationId: string) => Promise<void>;
 
     // Computed helpers
     getEquipmentById: (id: string) => Equipment | undefined;
@@ -645,6 +647,58 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         if (!get().hasLoadedFromFirestore) await get().loadFromFirestore();
         else if (get().recordMode) await get().loadFromFirestore();
         else await get().saveToFirestore(true);
+    },
+    resetOrganizationData: async (organizationId) => {
+        if (!organizationId || organizationId !== useTenantStore.getState().organizationId
+            || organizationId !== get().loadedOrganizationId || !get().hasLoadedFromFirestore) {
+            throw new Error("Load Lab Operations for the active organization before resetting it");
+        }
+        if (get().recordMode) {
+            throw new Error("Reset is unavailable while record-level Lab Operations storage is active");
+        }
+
+        const generation = loadGeneration;
+        await get().flushPendingSaves();
+        if (generation !== loadGeneration || organizationId !== useTenantStore.getState().organizationId
+            || organizationId !== get().loadedOrganizationId || !get().hasLoadedFromFirestore) {
+            throw new Error("Organization changed; reload Lab Operations before resetting");
+        }
+        if (get().syncStatus === "error") {
+            throw new Error("Pending Lab Operations changes did not synchronize; retry before resetting");
+        }
+
+        await resetLabOpsData(organizationId);
+        if (organizationId !== useTenantStore.getState().organizationId) {
+            throw new Error("Organization changed after reset; reload Lab Operations");
+        }
+        loadGeneration += 1;
+        if (saveTimer) {
+            clearTimeout(saveTimer);
+            saveTimer = null;
+        }
+        queuedPayload = null;
+        set({
+            equipment: [],
+            calibrations: [],
+            maintenanceLogs: [],
+            reagents: [],
+            reagentUsageLogs: [],
+            proficiencyTests: [],
+            qualityEvents: [],
+            capaRecords: [],
+            qualityRisks: [],
+            competencyRecords: [],
+            iqcAnalytes: [],
+            iqcResults: [],
+            usageCursor: null,
+            usageHasMore: false,
+            loadingUsage: false,
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: organizationId,
+            syncStatus: "synced",
+            syncError: null,
+            lastSyncedAt: new Date().toISOString(),
+        });
     },
     flushPendingSaves: async () => {
         if (saveTimer) {

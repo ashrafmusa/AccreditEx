@@ -1,6 +1,12 @@
-import { getDocs, setDoc } from "firebase/firestore";
+import { getDocs, setDoc, writeBatch } from "firebase/firestore";
 import { TextEncoder } from "node:util";
-import { getLabOpsData, saveLabOpsData, labRecordStorageEnabled, type LabOpsPersistedData } from "@/services/labOpsService";
+import { getLabOpsData, resetLabOpsData, saveLabOpsData, labRecordStorageEnabled, type LabOpsPersistedData } from "@/services/labOpsService";
+
+const mockBatch = {
+    delete: jest.fn(),
+    set: jest.fn(),
+    commit: jest.fn(),
+};
 
 jest.mock("@/firebase/firebaseConfig", () => ({ db: {} }));
 jest.mock("@/stores/useTenantStore", () => ({
@@ -13,6 +19,7 @@ jest.mock("firebase/firestore", () => ({
     where: jest.fn((...args) => args),
     getDocs: jest.fn(),
     setDoc: jest.fn(),
+    writeBatch: jest.fn(() => mockBatch),
 }));
 Object.defineProperty(globalThis, "TextEncoder", { value: TextEncoder, configurable: true });
 
@@ -23,7 +30,12 @@ const data: LabOpsPersistedData = {
 };
 
 describe("Lab Operations persistence", () => {
-    beforeEach(() => jest.clearAllMocks());
+    beforeEach(() => {
+        jest.clearAllMocks();
+        mockBatch.delete.mockReturnThis();
+        mockBatch.set.mockReturnThis();
+        mockBatch.commit.mockResolvedValue(undefined);
+    });
 
     it("keeps production record mode off even when the environment flag is true", () => {
         // Arrange
@@ -102,5 +114,47 @@ describe("Lab Operations persistence", () => {
         const oversized = { ...data, equipment: [{ notes: "x".repeat(900_001) }] } as unknown as LabOpsPersistedData;
         await expect(saveLabOpsData(oversized)).rejects.toThrow("document limit");
         expect(setDoc).not.toHaveBeenCalled();
+    });
+
+    it("resets only matching organization documents and leaves a clean canonical record", async () => {
+        const canonicalRef = { path: "labOpsData/org-a" };
+        const legacyRef = { path: "labOpsData/legacy-org-a" };
+        jest.mocked(getDocs).mockResolvedValueOnce({
+            docs: [
+                { id: "org-a", ref: canonicalRef },
+                { id: "legacy-org-a", ref: legacyRef },
+            ],
+        } as unknown as Awaited<ReturnType<typeof getDocs>>);
+
+        await resetLabOpsData("org-a");
+
+        expect(writeBatch).toHaveBeenCalledWith({});
+        expect(mockBatch.delete).toHaveBeenCalledTimes(1);
+        expect(mockBatch.delete).toHaveBeenCalledWith(legacyRef);
+        expect(mockBatch.set).toHaveBeenCalledWith(
+            "labOpsData/org-a",
+            expect.objectContaining({
+                organizationId: "org-a",
+                equipment: [],
+                iqcResults: [],
+                reagentUsageLogs: [],
+            }),
+        );
+        expect(mockBatch.commit).toHaveBeenCalledTimes(1);
+    });
+
+    it("refuses a reset before reading when tenant context is missing", async () => {
+        await expect(resetLabOpsData("")).rejects.toThrow("active organization");
+        expect(getDocs).not.toHaveBeenCalled();
+        expect(writeBatch).not.toHaveBeenCalled();
+    });
+
+    it("refuses oversized legacy document sets rather than partially resetting them", async () => {
+        jest.mocked(getDocs).mockResolvedValueOnce({
+            docs: Array.from({ length: 500 }, (_, index) => ({ id: `legacy-org-a-${index}`, ref: {} })),
+        } as unknown as Awaited<ReturnType<typeof getDocs>>);
+
+        await expect(resetLabOpsData("org-a")).rejects.toThrow("Too many legacy");
+        expect(writeBatch).not.toHaveBeenCalled();
     });
 });

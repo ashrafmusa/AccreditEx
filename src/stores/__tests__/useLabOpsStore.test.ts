@@ -1,4 +1,4 @@
-import { getLabOpsData, saveLabOpsDataWithRetry, labRecordService, labRecordStorageEnabled } from "@/services/labOpsService";
+import { getLabOpsData, resetLabOpsData, saveLabOpsDataWithRetry, labRecordService, labRecordStorageEnabled } from "@/services/labOpsService";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import { SEED_EQUIPMENT, SEED_REAGENTS } from "@/types/labOps";
 import { SEED_IQC_RESULTS } from "@/types/labOps";
@@ -7,7 +7,7 @@ import type { LabRecordState } from "@/services/labOpsRecords";
 let mockOrganizationId = "org-a";
 
 jest.mock("@/services/labOpsService", () => ({
-    getLabOpsData: jest.fn(), saveLabOpsDataWithRetry: jest.fn(), labRecordStorageEnabled: jest.fn(() => false),
+    getLabOpsData: jest.fn(), resetLabOpsData: jest.fn(), saveLabOpsDataWithRetry: jest.fn(), labRecordStorageEnabled: jest.fn(() => false),
     labRecordService: { state: jest.fn(), page: jest.fn(), write: jest.fn(), save: jest.fn() },
 }));
 jest.mock("@/stores/useTenantStore", () => ({
@@ -17,6 +17,7 @@ jest.mock("@/stores/useTenantStore", () => ({
 describe("Lab Operations safeguards", () => {
     beforeEach(() => {
         jest.clearAllMocks();
+        jest.mocked(resetLabOpsData).mockResolvedValue(undefined);
         mockOrganizationId = "org-a";
         jest.mocked(labRecordStorageEnabled).mockReturnValue(false);
         useLabOpsStore.setState({
@@ -76,6 +77,64 @@ describe("Lab Operations safeguards", () => {
         await useLabOpsStore.getState().retrySyncNow();
         expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
         expect(useLabOpsStore.getState().hasLoadedFromFirestore).toBe(false);
+    });
+
+    it("clears only the loaded active organization's in-memory Lab Operations data after reset succeeds", async () => {
+        useLabOpsStore.setState({
+            equipment: SEED_EQUIPMENT,
+            reagents: SEED_REAGENTS,
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            syncStatus: "synced",
+        });
+
+        await useLabOpsStore.getState().resetOrganizationData("org-a");
+
+        expect(resetLabOpsData).toHaveBeenCalledWith("org-a");
+        expect(useLabOpsStore.getState().equipment).toEqual([]);
+        expect(useLabOpsStore.getState().reagents).toEqual([]);
+        expect(useLabOpsStore.getState().iqcResults).toEqual([]);
+        expect(useLabOpsStore.getState().hasLoadedFromFirestore).toBe(true);
+        expect(useLabOpsStore.getState().loadedOrganizationId).toBe("org-a");
+        expect(useLabOpsStore.getState().syncStatus).toBe("synced");
+        expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
+    });
+
+    it("rejects resetting an organization other than the loaded active tenant", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            syncStatus: "synced",
+        });
+
+        await expect(useLabOpsStore.getState().resetOrganizationData("org-b"))
+            .rejects.toThrow("active organization");
+        expect(resetLabOpsData).not.toHaveBeenCalled();
+    });
+
+    it("does not reset after pending changes fail to synchronize", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            syncStatus: "error",
+        });
+
+        await expect(useLabOpsStore.getState().resetOrganizationData("org-a"))
+            .rejects.toThrow("did not synchronize");
+        expect(resetLabOpsData).not.toHaveBeenCalled();
+    });
+
+    it("blocks reset when record-level storage is active", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: true,
+            syncStatus: "synced",
+        });
+
+        await expect(useLabOpsStore.getState().resetOrganizationData("org-a"))
+            .rejects.toThrow("record-level");
+        expect(resetLabOpsData).not.toHaveBeenCalled();
     });
 
     it("rejects an operational write before dispatch when the tenant switches, without queuing it for the new tenant", async () => {

@@ -313,6 +313,13 @@ and Competency Matrix.
   blocked until loading succeeds; Retry reloads after a load failure. Genuinely
   empty organizations start with empty arrays, not demonstration records; data
   is persisted on the first save rather than automatically writing defaults.
+- Tenant admins can reset Lab Operations from its page after downloading a
+  JSON backup and typing the exact active organization ID. The reset replaces
+  the organization's canonical aggregate with empty arrays and removes its
+  matching legacy duplicates in one Firestore batch; other organizations are
+  untouched. Keep the downloaded file secure. The UI fails closed when
+  record-level storage is active; that schema needs a separately verified
+  reset procedure.
 - Calibration history and equipment restrictions update together. Failed
   calibration never restores an asset to active status. Reagent usage and
   inventory update together and reject nonfinite, nonpositive, or excessive use.

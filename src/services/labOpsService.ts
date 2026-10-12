@@ -1,5 +1,5 @@
 import { useTenantStore } from "@/stores/useTenantStore";
-import { collection, doc, getDocs, query, setDoc, where } from "firebase/firestore";
+import { collection, doc, getDocs, query, setDoc, where, writeBatch } from "firebase/firestore";
 
 import { db } from "@/firebase/firebaseConfig";
 import { createLabRecordService } from "./labOpsRecords";
@@ -100,6 +100,46 @@ export async function saveLabOpsData(
         }, { merge: true });
     } catch (error) {
         console.error("Error saving Lab Ops data:", error);
+        throw error;
+    }
+}
+
+export async function resetLabOpsData(
+    organizationId = useTenantStore.getState().organizationId,
+): Promise<void> {
+    try {
+        const orgId = requireOrganization(organizationId);
+        const snapshot = await getDocs(query(
+            collection(db, LAB_OPS_COLLECTION),
+            where("organizationId", "==", orgId),
+        ));
+        const legacyDocs = snapshot.docs.filter((record) => record.id !== orgId);
+        if (legacyDocs.length >= 500) {
+            throw new Error("Too many legacy Lab Operations documents to reset safely; contact support");
+        }
+
+        const ref = doc(db, LAB_OPS_COLLECTION, orgId);
+        const batch = writeBatch(db);
+        legacyDocs.forEach((record) => batch.delete(record.ref));
+        batch.set(ref, {
+            equipment: [],
+            calibrations: [],
+            maintenanceLogs: [],
+            reagents: [],
+            reagentUsageLogs: [],
+            proficiencyTests: [],
+            qualityEvents: [],
+            capaRecords: [],
+            qualityRisks: [],
+            competencyRecords: [],
+            iqcAnalytes: [],
+            iqcResults: [],
+            organizationId: orgId,
+            updatedAt: new Date().toISOString(),
+        });
+        await batch.commit();
+    } catch (error) {
+        console.error("Error resetting Lab Ops data:", error);
         throw error;
     }
 }

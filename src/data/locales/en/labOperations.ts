@@ -17,6 +17,17 @@ export const en = {
     labOpsRecordSyncFailed: "Record storage could not synchronize. Reload before editing. Migration readiness, permissions or concurrent changes may need review.",
     labOpsSelectStaff: "Select a staff member",
     labOpsLoadingRequired: "Lab Operations must load successfully before records can be edited.",
+    labOpsResetOpen: "Reset Lab Operations Data",
+    labOpsResetTitle: "Start this organization's Lab Operations data over?",
+    labOpsResetWarning: "This permanently clears equipment, calibrations, maintenance, reagents, QC results, proficiency tests, quality events, CAPA, risks, competency, and usage history for the active organization. Download and securely store a backup first. Other organizations are not affected.",
+    labOpsResetRecordModeBlocked: "Reset is unavailable while record-level storage is active. Contact support to arrange a verified reset.",
+    labOpsDownloadBackup: "Download Backup",
+    labOpsResetTypeOrgId: "To confirm, type this exact organization ID: {organizationId}",
+    labOpsResetConfirm: "Permanently Reset Organization Data",
+    labOpsResetting: "Resetting…",
+    labOpsResetSuccess: "Lab Operations data was reset for this organization.",
+    labOpsResetFailed: "Lab Operations data could not be reset.",
+    labOpsBackupFailed: "A backup could not be created. No data was reset.",
 
     // ── Shared ──
     back: "← Back",

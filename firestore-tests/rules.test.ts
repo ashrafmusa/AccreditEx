@@ -54,6 +54,25 @@ describe('Firestore tenant and ownership rules', () => {
     await assertFails(getDoc(doc(clientDb('admin-b', 'Admin', 'org-b'), 'labOpsData/org-a')));
   });
 
+  it('allows tenant admins to reset only their own legacy Lab Operations data', async () => {
+    const adminDb = clientDb('admin-a', 'Admin');
+    const memberDb = clientDb('member-a', 'TeamMember');
+    await testEnv.withSecurityRulesDisabled(async context => {
+      await setDoc(doc(context.firestore(), 'labOpsData/org-a'), { organizationId: 'org-a', equipment: [{ id: 'eq-a' }] });
+      await setDoc(doc(context.firestore(), 'labOpsData/legacy-org-a'), { organizationId: 'org-a', equipment: [{ id: 'eq-legacy' }] });
+      await setDoc(doc(context.firestore(), 'labOpsData/org-b'), { organizationId: 'org-b', equipment: [{ id: 'eq-b' }] });
+    });
+
+    await assertFails(deleteDoc(doc(memberDb, 'labOpsData/legacy-org-a')));
+    await assertFails(deleteDoc(doc(clientDb('admin-b', 'Admin', 'org-b'), 'labOpsData/legacy-org-a')));
+    await assertSucceeds(deleteDoc(doc(adminDb, 'labOpsData/legacy-org-a')));
+    await assertSucceeds(setDoc(doc(adminDb, 'labOpsData/org-a'), {
+      organizationId: 'org-a',
+      equipment: [],
+    }));
+    await assertFails(deleteDoc(doc(adminDb, 'labOpsData/org-b')));
+  });
+
   it('scopes CAPA reads and writes to the active organization', async () => {
     const tenantDb = clientDb('member-a', 'TeamMember');
     await assertSucceeds(setDoc(doc(tenantDb, 'capaReports/capa-a'), {

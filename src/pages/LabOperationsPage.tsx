@@ -15,6 +15,8 @@ import {
 import { Button } from "@/components/ui";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
+import { useToast } from "@/hooks/useToast";
 import type { LabOpsTab } from "@/types/labOps";
 import React, { lazy, Suspense, useEffect, useState } from "react";
 import { useTenantStore } from "@/stores/useTenantStore";
@@ -74,6 +76,8 @@ const tabs: {
 const LabOperationsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<LabOpsTab>("equipment");
   const { t } = useTranslation();
+  const toast = useToast();
+  const { isAdmin } = useAdminGuard();
   const syncStatus = useLabOpsStore((state) => state.syncStatus);
   const syncError = useLabOpsStore((state) => state.syncError);
   const lastSyncedAt = useLabOpsStore((state) => state.lastSyncedAt);
@@ -82,6 +86,11 @@ const LabOperationsPage: React.FC = () => {
   const loadedOrganizationId = useLabOpsStore((state) => state.loadedOrganizationId);
   const hasLoaded = useLabOpsStore((state) => state.hasLoadedFromFirestore);
   const recordMode = useLabOpsStore((state) => state.recordMode);
+  const resetOrganizationData = useLabOpsStore((state) => state.resetOrganizationData);
+  const [showResetPanel, setShowResetPanel] = useState(false);
+  const [resetConfirmation, setResetConfirmation] = useState("");
+  const [backupDownloaded, setBackupDownloaded] = useState(false);
+  const [resettingData, setResettingData] = useState(false);
   useEffect(() => {
     const state = useLabOpsStore.getState();
     if (!state.hasLoadedFromFirestore || state.loadedOrganizationId !== organizationId) {
@@ -107,8 +116,79 @@ const LabOperationsPage: React.FC = () => {
           ? t("syncFailed") || "Sync failed"
           : t("idle") || "Idle";
 
+  const handleDownloadResetBackup = async () => {
+    try {
+      await useLabOpsStore.getState().flushPendingSaves();
+      const state = useLabOpsStore.getState();
+      if (state.syncStatus === "error" || !state.hasLoadedFromFirestore
+        || state.loadedOrganizationId !== organizationId) {
+        throw new Error(state.syncError || "Load and synchronize this organization's Lab Operations data before backing it up");
+      }
+      const data = {
+        equipment: state.equipment,
+        calibrations: state.calibrations,
+        maintenanceLogs: state.maintenanceLogs,
+        reagents: state.reagents,
+        reagentUsageLogs: state.reagentUsageLogs,
+        proficiencyTests: state.proficiencyTests,
+        qualityEvents: state.qualityEvents,
+        capaRecords: state.capaRecords,
+        qualityRisks: state.qualityRisks,
+        competencyRecords: state.competencyRecords,
+        iqcAnalytes: state.iqcAnalytes,
+        iqcResults: state.iqcResults,
+      };
+      const backup = {
+        format: "accreditex-lab-operations-backup",
+        version: 1,
+        organizationId,
+        exportedAt: new Date().toISOString(),
+        data,
+      };
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `lab-operations-${organizationId}-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+      setBackupDownloaded(true);
+    } catch (error) {
+      console.error("Failed to create Lab Operations backup:", error);
+      toast.error(error instanceof Error ? error.message : t("labOpsBackupFailed"));
+    }
+  };
+
+  const handleResetOrganizationData = async () => {
+    if (!organizationId || resetConfirmation !== organizationId || !backupDownloaded) return;
+    setResettingData(true);
+    try {
+      await resetOrganizationData(organizationId);
+      toast.success(t("labOpsResetSuccess"));
+      setShowResetPanel(false);
+      setResetConfirmation("");
+      setBackupDownloaded(false);
+    } catch (error) {
+      console.error("Failed to reset Lab Operations data:", error);
+      toast.error(error instanceof Error ? error.message : t("labOpsResetFailed"));
+    } finally {
+      setResettingData(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {resettingData && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+          role="status"
+          aria-live="polite"
+        >
+          <p className="rounded-lg bg-white px-4 py-3 text-sm font-medium shadow-lg dark:bg-gray-800">
+            {t("labOpsResetting")}
+          </p>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center space-x-3 rtl:space-x-reverse">
         <CogIcon className="h-8 w-8 text-brand-primary" />
@@ -148,6 +228,87 @@ const LabOperationsPage: React.FC = () => {
         <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
           {`${t("lastSynced") || "Last synced"}: ${new Date(lastSyncedAt).toLocaleString()}`}
         </p>
+      )}
+
+      {isAdmin && (
+        <div className="rounded-lg border border-red-200 dark:border-red-800 p-4">
+          {!showResetPanel ? (
+            <Button
+              variant="danger"
+              size="sm"
+              disabled={!hasLoaded || loadedOrganizationId !== organizationId || syncStatus === "saving"}
+              onClick={() => {
+                setBackupDownloaded(false);
+                setResetConfirmation("");
+                setShowResetPanel(true);
+              }}
+            >
+              {t("labOpsResetOpen")}
+            </Button>
+          ) : (
+            <div className="space-y-3">
+              <h2 className="font-semibold text-red-700 dark:text-red-300">
+                {t("labOpsResetTitle")}
+              </h2>
+              <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                {recordMode
+                  ? t("labOpsResetRecordModeBlocked")
+                  : t("labOpsResetWarning")}
+              </p>
+              {!recordMode && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!hasLoaded || loadedOrganizationId !== organizationId || syncStatus === "saving" || resettingData}
+                    onClick={() => void handleDownloadResetBackup()}
+                  >
+                    {t("labOpsDownloadBackup")}
+                  </Button>
+                  {backupDownloaded && (
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="lab-ops-reset-confirmation"
+                        className="block text-sm font-medium"
+                      >
+                        {t("labOpsResetTypeOrgId", { organizationId })}
+                      </label>
+                      <input
+                        id="lab-ops-reset-confirmation"
+                        value={resetConfirmation}
+                        onChange={(event) => setResetConfirmation(event.target.value)}
+                        autoComplete="off"
+                        className="w-full max-w-md rounded border border-red-300 px-3 py-2 text-sm dark:border-red-700 dark:bg-gray-800"
+                      />
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      disabled={!backupDownloaded || resetConfirmation !== organizationId || resettingData}
+                      onClick={() => void handleResetOrganizationData()}
+                    >
+                      {resettingData ? t("labOpsResetting") : t("labOpsResetConfirm")}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={resettingData}
+                      onClick={() => {
+                        setShowResetPanel(false);
+                        setResetConfirmation("");
+                        setBackupDownloaded(false);
+                      }}
+                    >
+                      {t("cancel")}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Tab bar */}
