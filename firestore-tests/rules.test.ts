@@ -54,6 +54,85 @@ describe('Firestore tenant and ownership rules', () => {
     await assertFails(getDoc(doc(clientDb('admin-b', 'Admin', 'org-b'), 'labOpsData/org-a')));
   });
 
+  it('allows scoped admins to preflight only absent reserved demo IDs', async () => {
+    const demoAdminDb = testEnv
+      .authenticatedContext('admin-demo', {
+        role: 'Admin',
+        organizationId: 'org-accreditex',
+      })
+      .firestore();
+    const missingBranch = doc(
+      demoAdminDb,
+      'branches/demo-accreditex-marketing-v1-branch-main',
+    );
+    const missingLabOps = doc(demoAdminDb, 'labOpsData/org-accreditex');
+    const missingLabOpsRecords = doc(
+      demoAdminDb,
+      'labOpsRecords/org-accreditex',
+    );
+
+    expect((await assertSucceeds(getDoc(missingBranch))).exists()).toBe(false);
+    expect((await assertSucceeds(getDoc(missingLabOps))).exists()).toBe(false);
+    expect((await assertSucceeds(getDoc(missingLabOpsRecords))).exists()).toBe(false);
+    await assertFails(
+      getDoc(
+        doc(
+          clientDb('admin-other', 'Admin', 'org-other'),
+          'branches/demo-accreditex-marketing-v1-branch-main',
+        ),
+      ),
+    );
+    await assertFails(
+      getDoc(
+        doc(
+          clientDb('member-demo', 'TeamMember', 'org-accreditex'),
+          'branches/demo-accreditex-marketing-v1-branch-main',
+        ),
+      ),
+    );
+
+    await testEnv.withSecurityRulesDisabled(async context => {
+      await setDoc(
+        doc(
+          context.firestore(),
+          'branches/demo-accreditex-marketing-v1-existing-other-org',
+        ),
+        { organizationId: 'org-other', name: 'Other tenant branch' },
+      );
+      await setDoc(
+        doc(
+          context.firestore(),
+          'branches/demo-accreditex-marketing-v1-existing-same-org',
+        ),
+        { organizationId: 'org-accreditex', name: 'Accreditex branch' },
+      );
+    });
+
+    await assertFails(
+      getDoc(
+        doc(
+          demoAdminDb,
+          'branches/demo-accreditex-marketing-v1-existing-other-org',
+        ),
+      ),
+    );
+    expect(
+      (
+        await assertSucceeds(
+          getDoc(
+            doc(
+              demoAdminDb,
+              'branches/demo-accreditex-marketing-v1-existing-same-org',
+            ),
+          ),
+        )
+      ).data()?.name,
+    ).toBe('Accreditex branch');
+    await assertFails(
+      getDoc(doc(demoAdminDb, 'branches/ordinary-missing-id')),
+    );
+  });
+
   it('allows tenant admins to reset only their own legacy Lab Operations data', async () => {
     const adminDb = clientDb('admin-a', 'Admin');
     const memberDb = clientDb('member-a', 'TeamMember');

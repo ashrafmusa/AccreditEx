@@ -11,6 +11,9 @@ import {
 const QCDataImportTab = lazy(
   () => import("@/components/data-hub/QCDataImportTab"),
 );
+const DemoDataSeedPanel = lazy(
+  () => import("@/components/data-hub/DemoDataSeedPanel"),
+);
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
@@ -28,6 +31,9 @@ import { useToast } from "@/hooks/useToast";
 import SettingsCard from "@/components/settings/SettingsCard";
 import { IntegrationDashboard } from "@/components/his-integration";
 import { Button } from "@/components/ui";
+import { useTenantStore } from "@/stores/useTenantStore";
+
+const DEMO_SEED_ORGANIZATION_ID = "org-accreditex";
 
 const CodeBlock: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <pre className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 text-sm overflow-x-auto">
@@ -45,6 +51,8 @@ const DataHubPage: React.FC<DataHubPageProps> = ({ setNavigation }) => {
   const [activeTab, setActiveTab] = useState<"data" | "his" | "qc">("data");
   const projects = useProjectStore((state) => state.projects);
   const users = useUserStore((state) => state.users);
+  const currentUser = useUserStore((state) => state.currentUser);
+  const organizationId = useTenantStore((state) => state.organizationId);
   const { documents, standards } = useAppStore();
 
   const handleExport = async () => {
@@ -178,6 +186,21 @@ const DataHubPage: React.FC<DataHubPageProps> = ({ setNavigation }) => {
               isFileInput
             />
           </SettingsCard>
+
+          {organizationId === DEMO_SEED_ORGANIZATION_ID &&
+            currentUser?.organizationId === organizationId &&
+            currentUser.role === "Admin" && (
+              <Suspense
+                fallback={
+                  <div className="animate-pulse h-48 rounded-xl bg-gray-100 dark:bg-gray-800" />
+                }
+              >
+                <DemoDataSeedPanel
+                  organizationId={organizationId}
+                  currentUser={currentUser}
+                />
+              </Suspense>
+            )}
 
           <div className="space-y-4">
             <Collapsible title={t("fhirFoundation")}>

@@ -52,6 +52,18 @@ export const en = {
     patientRecordUpdated: 'Patient Record Updated',
     measureReportReceived: 'MeasureReport (Quality Metric)',
     waitingForData: 'Waiting for incoming data...',
+    demoSeedTitle: 'Synthetic marketing demo data',
+    demoSeedDescription: 'Preview and add a linked synthetic dataset to the Accreditex organization. This is an add-only workflow: it will not replace existing organization records.',
+    demoSeedSafetyNotice: 'Records are visibly marked [DEMO] and contain no patient data or real staff accounts. Existing Lab Operations data is preserved and the generated QC records are appended. User-specific training completions, certificates, evaluations, notifications, billing, and live HIS/LIS connections are intentionally not fabricated.',
+    demoSeedPreview: 'Planned organization-scoped records',
+    demoSeedDownloadBackup: 'Download pre-seed backup',
+    demoSeedBackupReady: 'Pre-seed backup downloaded. Review and keep the JSON file before continuing.',
+    demoSeedConfirmation: 'Type SEED ACCREDITEX to confirm adding the synthetic dataset',
+    demoSeedRun: 'Add synthetic demo data',
+    demoSeedRefresh: 'Reload app data',
+    demoSeedSuccess: 'Demo seeding finished. Created {created} records, skipped {skipped} already-seeded records, and appended {labOps} Lab Operations records.',
+    demoSeedFailed: 'Demo seeding failed. No partial writes were committed. Details:',
+    processing: 'Processing...',
     // Date Picker
     selectDate: 'Select a date',
 };

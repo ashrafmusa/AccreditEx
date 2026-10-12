@@ -174,6 +174,23 @@ service cloud.firestore {
         )
       );
     }
+
+    // The demo seeder performs transactional ID preflight reads. This exception
+    // reveals only that an unused, reserved Accreditex demo ID is absent; an
+    // existing document must still pass its collection's normal tenant read rule.
+    function canPreflightDemoSeedId(collectionName, documentId) {
+      return isAuthenticated()
+        && isAdmin()
+        && request.auth.token.organizationId == 'org-accreditex'
+        && (
+          documentId.matches('^demo-accreditex-marketing-v1-[A-Za-z0-9-]+$')
+          || (
+            collectionName in ['labOpsData', 'labOpsRecords']
+            && documentId == 'org-accreditex'
+          )
+        )
+        && !exists(/databases/$(database)/documents/$(collectionName)/$(documentId));
+    }
     
     // =====================================================
     // COLLECTION RULES
@@ -797,6 +814,12 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow read: if isSuperAdmin();
       allow update, delete: if false;
+    }
+
+    // Missing-ID preflight is intentionally limited to one org and the
+    // reserved synthetic-demo namespace; this grants no access to existing data.
+    match /{collectionName}/{documentId} {
+      allow get: if canPreflightDemoSeedId(collectionName, documentId);
     }
   }
 }
