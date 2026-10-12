@@ -1,7 +1,11 @@
 import { authTokenOptimizer } from "@/services/authTokenOptimizer";
 import * as firebase from "firebase/app";
-import { Auth, getAuth } from "firebase/auth";
-import { enableIndexedDbPersistence, getFirestore } from "firebase/firestore";
+import { Auth, connectAuthEmulator, getAuth } from "firebase/auth";
+import {
+    connectFirestoreEmulator,
+    enableIndexedDbPersistence,
+    getFirestore,
+} from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 type ViteEnv = Record<string, string | boolean | undefined>;
@@ -32,6 +36,11 @@ const firebaseEnv = {
     appId: getEnvValue('VITE_APP_ID'),
     measurementId: getEnvValue('VITE_MEASUREMENT_ID')
 };
+const useFirebaseEmulators = getEnvValue("VITE_USE_FIREBASE_EMULATORS") === "true";
+
+if (useFirebaseEmulators && !firebaseEnv.projectId?.startsWith("demo-")) {
+    throw new Error("Firebase emulators require a demo-* project ID.");
+}
 
 const missingFirebaseEnv = Object.entries(firebaseEnv)
     .filter(([key, value]) => key !== 'measurementId' && (!value || String(value).trim() === ''))
@@ -62,12 +71,21 @@ const app = !firebase.getApps().length ? firebase.initializeApp(firebaseConfig) 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
+if (useFirebaseEmulators) {
+    connectFirestoreEmulator(db, "127.0.0.1", 8080);
+}
+
 // Lazy initialize auth - only when needed (after login page)
 let authInstance: Auth | null = null;
 
 export const getAuthInstance = (): Auth => {
     if (!authInstance) {
         authInstance = getAuth(app);
+        if (useFirebaseEmulators) {
+            connectAuthEmulator(authInstance, "http://127.0.0.1:9099", {
+                disableWarnings: true,
+            });
+        }
         // Initialize auth token optimizer only after auth is ready
         authTokenOptimizer.initialize(authInstance);
     }
@@ -77,15 +95,16 @@ export const getAuthInstance = (): Auth => {
 export const auth = getAuthInstance();
 
 // Enable offline persistence for better reliability
-try {
-    enableIndexedDbPersistence(db).catch((err) => {
-        if (err.code === 'failed-precondition') {
-            console.warn('Multiple tabs open, persistence disabled');
-        } else if (err.code === 'unimplemented') {
-            console.warn('Browser does not support persistence');
-        }
-    });
-} catch (error) {
-    // Handle cases where persistence is already enabled
+if (!useFirebaseEmulators) {
+    try {
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.warn('Multiple tabs open, persistence disabled');
+            } else if (err.code === 'unimplemented') {
+                console.warn('Browser does not support persistence');
+            }
+        });
+    } catch (error) {
+        // Handle cases where persistence is already enabled
+    }
 }
-

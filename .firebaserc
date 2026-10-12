@@ -6,6 +6,11 @@
         "accreditex": [
           "accreditex"
         ]
+      },
+      "storage": {
+        "accreditex": [
+          "accreditex-79c08.firebasestorage.app"
+        ]
       }
     }
   },

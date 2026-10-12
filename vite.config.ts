@@ -5,8 +5,15 @@ import { defineConfig, loadEnv } from 'vite';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   const productionEnv = loadEnv('production', '.', '');
+  const allowFirebaseEmulatorConnections =
+    mode !== 'production' &&
+    process.env.VITE_USE_FIREBASE_EMULATORS === 'true' &&
+    process.env.VITE_PROJECT_ID?.startsWith('demo-') === true;
 
   const getEnv = (key: string): string => {
+    if (process.env[key] !== undefined) {
+      return process.env[key] ?? '';
+    }
     return env[key] || productionEnv[key] || '';
   };
 
@@ -15,7 +22,22 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: 'firebase-emulator-csp',
+        transformIndexHtml(html) {
+          if (!allowFirebaseEmulatorConnections) {
+            return html;
+          }
+
+          return html.replace(
+            /connect-src 'self'/,
+            "connect-src 'self' http://127.0.0.1:8080 http://127.0.0.1:9099 http://127.0.0.1:9199 ws://127.0.0.1:8080",
+          ).replace(/\s*upgrade-insecure-requests;/, "");
+        },
+      },
+    ],
     define: {
       'process.env.NODE_ENV': JSON.stringify(mode),
       // Production activation requires a separately reviewed rollout change, not an incidental .env flag.

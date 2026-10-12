@@ -32,7 +32,9 @@ service firebase.storage {
     }
 
     function isTenantActive() {
-      return request.auth.token.organizationId != null;
+      return isAuthenticated()
+        && request.auth.token.keys().hasAny(['organizationId'])
+        && request.auth.token.organizationId != null;
     }
     
     // Tenant isolation: verify the requesting user belongs to the
@@ -121,8 +123,8 @@ service firebase.storage {
     // =====================================================
     // LEGACY PATHS (backward compatibility)
     // These match the old flat paths without orgId prefix.
-    // Read-only access is preserved for migration; new writes
-    // must use the tenant-isolated paths above.
+    // Shared reference files remain broadly readable; tenant-specific
+    // project/report files require migration to tenant-prefixed paths.
     // =====================================================
     
     // Program documents - accessible by all authenticated users, managed by admin
@@ -141,21 +143,24 @@ service firebase.storage {
     
     // User profile documents - accessible by owner and admin
     match /documents/users/{userId}/{allFiles=**} {
-      allow read: if isAuthenticated() && (request.auth.uid == userId || isAdmin());
+      allow read: if isAuthenticated() && (
+        request.auth.uid == userId ||
+        (isAdmin() && !isTenantActive())
+      );
       allow write: if !isTenantActive() && (request.auth.uid == userId || isAdmin()) && isValidFileSize() && (isAllowedDocumentType() || isAllowedImageType());
       allow delete: if isAdmin() && !isTenantActive();
     }
     
     // Project documents - accessible by project members and admin
     match /documents/projects/{projectId}/{allFiles=**} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && !isTenantActive();
       allow write: if !isTenantActive() && (isAdmin() || isProjectLead()) && isValidDocumentUpload();
       allow delete: if isAdmin() && !isTenantActive();
     }
     
     // Reports - accessible by authenticated users, write restricted to leads+
     match /reports/{projectId}/{allFiles=**} {
-      allow read: if isAuthenticated();
+      allow read: if isAuthenticated() && !isTenantActive();
       allow write: if !isTenantActive() && isProjectLead() && isValidDocumentUpload();
       allow delete: if isAdmin() && !isTenantActive();
     }

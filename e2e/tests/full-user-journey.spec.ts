@@ -129,29 +129,13 @@ async function waitForDashboard(page: Page) {
 }
 
 async function logout(page: Page) {
-  // Try avatar/profile button → logout menu item
-  const avatar = page
-    .locator('button[aria-label*="profile"], button[aria-label*="account"], button[aria-label*="user"]')
-    .first();
-  if (await avatar.isVisible({ timeout: 3000 }).catch(() => false)) {
-    await avatar.click();
-    const logoutBtn = page
-      .getByRole("menuitem", { name: /logout|sign out|تسجيل الخروج/i })
-      .first();
-    if (await logoutBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await logoutBtn.click();
-      await page
-        .locator('input[type="email"]')
-        .waitFor({ state: "visible", timeout: 15000 });
-      return;
-    }
-  }
-  // Fallback: clear storage and reload to logged-out state
-  await page.evaluate(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+  await page.locator("#user-menu-button").click();
+  await page
+    .getByRole("menuitem", { name: /logout|sign out|تسجيل الخروج/i })
+    .click();
+  await expect(page.getByLabel(/email address/i)).toBeVisible({
+    timeout: 15000,
   });
-  await page.goto("/login", { waitUntil: "domcontentloaded", timeout: 30000 });
 }
 
 // ─── 1. Landing Page ─────────────────────────────────────────────────────────
@@ -180,9 +164,9 @@ test.describe("1. Landing Page", () => {
       .first();
     await expect(loginLink).toBeVisible({ timeout: 30000 });
     await loginLink.click();
-    await page
-      .locator('input[type="email"]')
-      .waitFor({ state: "visible", timeout: 20000 });
+    await expect(page.getByLabel(/email address/i)).toBeVisible({
+      timeout: 20000,
+    });
     expect(page.url()).toContain("/login");
   });
 
@@ -331,12 +315,6 @@ test.describe("3. Admin Role — Full Dashboard Journey", () => {
     await loginAs(page, email, password);
     await waitForDashboard(page);
     await logout(page);
-    // After logout, should be on login or landing
-    await expect(
-      page
-        .locator('input[type="email"], [href="/login"]')
-        .first(),
-    ).toBeVisible({ timeout: 15000 });
   });
 });
 
@@ -613,16 +591,9 @@ test.describe("9. Security — Invalid Login Attempts", () => {
       .first()
       .fill("WrongPassword999!");
     await page.getByRole("button", { name: /^login$/i }).click();
-    const authError = page
-      .locator(
-        '[role="alert"], [aria-live="assertive"], [aria-live="polite"], .error, .error-message, [data-error], .text-destructive',
-      )
-      .filter({
-        hasText:
-          /invalid|incorrect|wrong password|wrong|credentials|auth|user|password|غير صالح|خطأ/i,
-      })
-      .first();
-    await expect(authError).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/invalid email or password\./i)).toBeVisible({
+      timeout: 15000,
+    });
   });
 
   test("shows error for non-existent email", async ({ page }) => {
@@ -640,15 +611,8 @@ test.describe("9. Security — Invalid Login Attempts", () => {
       .first()
       .fill("SomePassword123!");
     await page.getByRole("button", { name: /^login$/i }).click();
-    const authError = page
-      .locator(
-        '[role="alert"], [aria-live="assertive"], [aria-live="polite"], .error, .error-message, [data-error], .text-destructive',
-      )
-      .filter({
-        hasText:
-          /invalid|not found|no user|user not found|credentials|email|auth|غير صالح|خطأ/i,
-      })
-      .first();
-    await expect(authError).toBeVisible({ timeout: 15000 });
+    await expect(page.getByText(/invalid email or password\./i)).toBeVisible({
+      timeout: 15000,
+    });
   });
 });

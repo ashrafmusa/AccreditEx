@@ -21,6 +21,7 @@ let initPromise: Promise<Analytics | null> | null = null;
 async function getAnalyticsInstance(): Promise<Analytics | null> {
     if (analyticsInstance) return analyticsInstance;
     if (initPromise) return initPromise;
+    if (import.meta.env.VITE_USE_FIREBASE_EMULATORS === "true") return null;
 
     initPromise = (async () => {
         try {

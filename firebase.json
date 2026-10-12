@@ -104,7 +104,7 @@
   },
   "storage": [
     {
-      "bucket": "accreditex-79c08.firebasestorage.app",
+      "target": "accreditex",
       "rules": "storage.rules"
     }
   ],
@@ -114,5 +114,20 @@
       "codebase": "default",
       "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"]
     }
-  ]
+  ],
+  "emulators": {
+    "auth": {
+      "port": 9099
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "storage": {
+      "port": 9199
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
 }
