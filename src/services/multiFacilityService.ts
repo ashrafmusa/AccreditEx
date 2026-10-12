@@ -10,7 +10,6 @@ import type { Branch } from "@/types";
 import {
     collection,
     getDocs,
-    orderBy,
     query,
     where,
 } from "firebase/firestore";
@@ -52,14 +51,12 @@ export interface OrganizationFacilityReport {
 export async function getOrganizationBranches(orgId: string): Promise<Branch[]> {
     if (!orgId) return [];
     const branchesRef = collection(db, "branches");
-    const q = query(
-        branchesRef,
-        where("organizationId", "==", orgId),
-        where("isActive", "==", true),
-        orderBy("name", "asc"),
-    );
+    const q = query(branchesRef, where("organizationId", "==", orgId));
     const snap = await getDocs(q);
-    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Branch));
+    return snap.docs
+        .map((d) => ({ id: d.id, ...d.data() } as Branch))
+        .filter((branch) => branch.isActive)
+        .sort((left, right) => left.name.localeCompare(right.name));
 }
 
 /**
