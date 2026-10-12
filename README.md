@@ -47,6 +47,7 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 -   **Training & Competency**: Full LMS with quiz-based training, certificate generation, CE credit tracking, skill matrices, learning paths, and competency gap analysis. My Training summarizes completion and overdue assignments, prioritizes nearest due dates, and supports course search.
 -   **Analytics Hub**: Multi-format reporting (PDF, Excel, CSV, JSON), AI-powered quality insights, PDCA cycle tracking, and executive briefings.
+-   **Multi-Facility Dashboard**: Organization-scoped facility compliance metrics with sorting, manual refresh, and explicit empty/error states; facility values are only shown when loaded from organization data.
 
 #### SMCS data reconciliation
 

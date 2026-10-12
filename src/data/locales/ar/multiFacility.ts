@@ -6,6 +6,7 @@ export const ar = {
     multiFacilityNoBranchesHint: "أضف الفروع في الإعدادات ← المؤسسة ← الفروع لعرض تحليلات المنشآت.",
     multiFacilityLoading: "جارٍ تحميل بيانات المنشآت…",
     multiFacilityError: "فشل في تحميل بيانات المنشآت",
+    mfNoOrganization: "اختر مؤسسة لعرض تحليلات المنشآت.",
 
     // ── Summary Cards ──
     mfFacilities: "المنشآت",

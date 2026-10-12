@@ -6,6 +6,7 @@ export const en = {
     multiFacilityNoBranchesHint: "Add branches in Settings → Organization → Branches to see cross-facility analytics.",
     multiFacilityLoading: "Loading facility data…",
     multiFacilityError: "Failed to load facility data",
+    mfNoOrganization: "Select an organization to view facility analytics.",
 
     // ── Summary Cards ──
     mfFacilities: "Facilities",

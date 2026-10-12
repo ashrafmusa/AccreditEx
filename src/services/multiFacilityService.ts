@@ -51,19 +51,15 @@ export interface OrganizationFacilityReport {
  */
 export async function getOrganizationBranches(orgId: string): Promise<Branch[]> {
     if (!orgId) return [];
-    try {
-        const branchesRef = collection(db, "branches");
-        const q = query(
-            branchesRef,
-            where("organizationId", "==", orgId),
-            where("isActive", "==", true),
-            orderBy("name", "asc"),
-        );
-        const snap = await getDocs(q);
-        return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Branch));
-    } catch {
-        return [];
-    }
+    const branchesRef = collection(db, "branches");
+    const q = query(
+        branchesRef,
+        where("organizationId", "==", orgId),
+        where("isActive", "==", true),
+        orderBy("name", "asc"),
+    );
+    const snap = await getDocs(q);
+    return snap.docs.map((d) => ({ id: d.id, ...d.data() } as Branch));
 }
 
 /**
@@ -78,14 +74,10 @@ export async function getFacilityMetrics(
 
     // Fetch all projects for this org
     let projectDocs: Array<{ branchId?: string; updatedAt?: string; status?: string; checklistItems?: Array<{ status: string }> }> = [];
-    try {
-        const projectsRef = collection(db, "projects");
-        const q = query(projectsRef, where("organizationId", "==", orgId));
-        const snap = await getDocs(q);
-        projectDocs = snap.docs.map((d) => d.data() as typeof projectDocs[0]);
-    } catch {
-        projectDocs = [];
-    }
+    const projectsRef = collection(db, "projects");
+    const q = query(projectsRef, where("organizationId", "==", orgId));
+    const snap = await getDocs(q);
+    projectDocs = snap.docs.map((d) => d.data() as typeof projectDocs[0]);
 
     // Build metrics per branch
     return branches.map((branch) => {

@@ -4,6 +4,7 @@
  */
 import { useTheme } from "@/components/common/ThemeProvider";
 import {
+  ArrowPathIcon,
   BuildingOffice2Icon,
   ChartBarIcon,
   ExclamationTriangleIcon,
@@ -12,7 +13,6 @@ import {
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   getOrganizationFacilityReport,
-  type FacilityMetrics,
   type OrganizationFacilityReport,
 } from "@/services/multiFacilityService";
 import { useTenantStore } from "@/stores/useTenantStore";
@@ -109,63 +109,6 @@ const ComplianceTooltip = ({
   );
 };
 
-// ── Seed / Demo Data for preview when no Firestore branches exist ───────────
-
-const DEMO_METRICS: FacilityMetrics[] = [
-  {
-    branchId: "demo-1",
-    branchName: "Main Hospital",
-    location: "Riyadh, Central",
-    activeProjects: 5,
-    totalChecklistItems: 120,
-    compliantItems: 102,
-    partialItems: 12,
-    nonCompliantItems: 6,
-    complianceRate: 85,
-    openFindings: 18,
-    lastUpdated: new Date(Date.now() - 86400000 * 2).toISOString(),
-  },
-  {
-    branchId: "demo-2",
-    branchName: "East Wing Clinic",
-    location: "Riyadh, East",
-    activeProjects: 3,
-    totalChecklistItems: 80,
-    compliantItems: 56,
-    partialItems: 16,
-    nonCompliantItems: 8,
-    complianceRate: 70,
-    openFindings: 24,
-    lastUpdated: new Date(Date.now() - 86400000 * 5).toISOString(),
-  },
-  {
-    branchId: "demo-3",
-    branchName: "North Lab Center",
-    location: "Riyadh, North",
-    activeProjects: 4,
-    totalChecklistItems: 95,
-    compliantItems: 88,
-    partialItems: 5,
-    nonCompliantItems: 2,
-    complianceRate: 93,
-    openFindings: 7,
-    lastUpdated: new Date(Date.now() - 86400000 * 1).toISOString(),
-  },
-  {
-    branchId: "demo-4",
-    branchName: "South Polyclinic",
-    location: "Riyadh, South",
-    activeProjects: 2,
-    totalChecklistItems: 60,
-    compliantItems: 36,
-    partialItems: 14,
-    nonCompliantItems: 10,
-    complianceRate: 60,
-    openFindings: 24,
-    lastUpdated: new Date(Date.now() - 86400000 * 10).toISOString(),
-  },
-];
-
 // ── Main Page ──────────────────────────────────────────────────────────────
 
 const MultiFacilityDashboardPage: React.FC = () => {
@@ -174,10 +117,10 @@ const MultiFacilityDashboardPage: React.FC = () => {
   const { currentOrganization, organizationId } = useTenantStore();
 
   const [report, setReport] = useState<OrganizationFacilityReport | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<"compliance" | "name">("compliance");
-  const [isDemo, setIsDemo] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   // Load data
   useEffect(() => {
@@ -185,28 +128,13 @@ const MultiFacilityDashboardPage: React.FC = () => {
 
     const load = async () => {
       if (!organizationId) {
-        // No org → show demo data
-        setIsDemo(true);
-        setReport({
-          organizationId: "demo",
-          organizationName: "Demo Organization",
-          branches: [],
-          facilityMetrics: DEMO_METRICS,
-          averageCompliance: Math.round(
-            DEMO_METRICS.reduce((s, m) => s + m.complianceRate, 0) /
-              DEMO_METRICS.length,
-          ),
-          topPerformerName: "North Lab Center",
-          needsAttentionName: "South Polyclinic",
-          totalOpenFindings: DEMO_METRICS.reduce(
-            (s, m) => s + m.openFindings,
-            0,
-          ),
-          generatedAt: new Date().toISOString(),
-        });
+        setReport(null);
+        setError(null);
+        setLoading(false);
         return;
       }
 
+      setReport(null);
       setLoading(true);
       setError(null);
       try {
@@ -214,32 +142,10 @@ const MultiFacilityDashboardPage: React.FC = () => {
           organizationId,
           currentOrganization?.name ?? "Organization",
         );
-        if (!cancelled) {
-          if (r.facilityMetrics.length === 0) {
-            // No branches in Firestore — show demo data with notice
-            setIsDemo(true);
-            setReport({
-              ...r,
-              facilityMetrics: DEMO_METRICS,
-              averageCompliance: Math.round(
-                DEMO_METRICS.reduce((s, m) => s + m.complianceRate, 0) /
-                  DEMO_METRICS.length,
-              ),
-              topPerformerName: "North Lab Center",
-              needsAttentionName: "South Polyclinic",
-              totalOpenFindings: DEMO_METRICS.reduce(
-                (s, m) => s + m.openFindings,
-                0,
-              ),
-            });
-          } else {
-            setIsDemo(false);
-            setReport(r);
-          }
-        }
-      } catch {
-        if (!cancelled)
-          setError("Failed to load facility data. Please try again.");
+        if (!cancelled) setReport(r);
+      } catch (loadError) {
+        console.error("Failed to load multi-facility report:", loadError);
+        if (!cancelled) setError("multiFacilityError");
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -249,7 +155,7 @@ const MultiFacilityDashboardPage: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [organizationId, currentOrganization?.name]);
+  }, [organizationId, currentOrganization?.name, refreshKey]);
 
   const ct = getChartTheme(theme);
 
@@ -282,6 +188,17 @@ const MultiFacilityDashboardPage: React.FC = () => {
           </div>
         </div>
         <div className="sm:ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setRefreshKey((key) => key + 1)}
+            disabled={loading || !organizationId}
+            className="inline-flex items-center gap-2 rounded-lg border border-brand-border dark:border-dark-brand-border px-3 py-1.5 text-sm text-brand-text-primary dark:text-dark-brand-text-primary disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <ArrowPathIcon
+              className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+            />
+            {t("mfRefresh")}
+          </button>
           <select
             value={sortKey}
             onChange={(e) =>
@@ -295,21 +212,20 @@ const MultiFacilityDashboardPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Demo banner */}
-      {isDemo && !loading && (
-        <div className="flex items-start gap-2 rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
-          <ExclamationTriangleIcon className="h-4 w-4 mt-0.5 shrink-0" />
-          <div>
-            <span className="font-medium">Demo data — </span>
-            {t("multiFacilityNoBranchesHint")}
-          </div>
-        </div>
-      )}
-
       {/* Error */}
       {error && (
-        <div className="rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300">
-          {error}
+        <div
+          role="alert"
+          className="flex items-center justify-between gap-4 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-700 dark:text-red-300"
+        >
+          {t(error)}
+          <button
+            type="button"
+            onClick={() => setRefreshKey((key) => key + 1)}
+            className="shrink-0 font-semibold underline"
+          >
+            {t("mfRefresh")}
+          </button>
         </div>
       )}
 
@@ -325,7 +241,32 @@ const MultiFacilityDashboardPage: React.FC = () => {
         </div>
       )}
 
-      {report && !loading && (
+      {!loading && !error && !organizationId && (
+        <div
+          role="status"
+          className="rounded-xl border border-brand-border dark:border-dark-brand-border bg-brand-surface dark:bg-dark-brand-surface p-6 text-center"
+        >
+          <p className="font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
+            {t("mfNoOrganization")}
+          </p>
+        </div>
+      )}
+
+      {report && !loading && report.facilityMetrics.length === 0 && (
+        <div
+          role="status"
+          className="rounded-xl border border-brand-border dark:border-dark-brand-border bg-brand-surface dark:bg-dark-brand-surface p-6 text-center"
+        >
+          <p className="font-medium text-brand-text-primary dark:text-dark-brand-text-primary">
+            {t("multiFacilityNoBranches")}
+          </p>
+          <p className="mt-1 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("multiFacilityNoBranchesHint")}
+          </p>
+        </div>
+      )}
+
+      {report && !loading && report.facilityMetrics.length > 0 && (
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
