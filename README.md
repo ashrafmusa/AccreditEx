@@ -23,6 +23,11 @@ AccreditEx is a modern, AI-powered healthcare accreditation management platform 
 
 ## Key Features
 
+### Public customer experience
+- The landing, login, and trial-registration pages share responsive navigation and English/Arabic language switching. Landing content emphasizes connected quality workflows and PDSA, with an explicitly illustrative workflow rather than fabricated customer metrics. Investor information remains at `/pitch`.
+- Demo requests use the existing service with keyboard-accessible modal behavior, labeled fields, explicit submission errors, and privacy guidance. Login includes a working password-visibility control and separate guidance for existing organization members versus new trial administrators.
+- Trial registration retains the existing 14-day Professional provisioning flow, with associated field labels, translated validation, and actionable policy links. Country-specific compliance and accreditation are not promised by the public pages.
+
 ### Core Platform (46 Pages)
 -   **Role-Based Dashboards**: Admin, Project Lead, Team Member, and Auditor views with real-time compliance KPIs.
     - **Action-first journey**: Every role and organization dashboard starts with up to three permission-aware next actions and a requirements → projects → evidence → audit navigation path. Counts use loaded, explicitly organization-owned records; they are not a certification or verified progress indicator. Overdue personal tasks, pending document reviews, unfinished CAPA, and audit plans open the relevant existing workspace. Empty organizations offer project creation only to authorized users.
@@ -237,7 +242,7 @@ The application uses Firebase Authentication, Cloud Firestore, and Cloud Storage
 - Firestore rules are in `firestore.rules`; composite indexes are in `firestore.indexes.json`.
 - A read-only-by-default migration tool is available as `npm run db:classify-shared-data`. It reports eligible legacy reference records without modifying them. Applying it requires both `--apply` and a matching `--confirm-project=<projectId>` argument; review the dry-run and target a development/staging project before applying.
 - Firestore authorization tests run with `npm run test:firestore`; this starts the Firestore Emulator and requires Java 17 or later.
-- `npm run test:e2e:emulator` runs the full Chromium user-journey suite against the `demo-accreditex-e2e` Auth/Firestore emulators, using synthetic users for role dashboards, onboarding, navigation, and login/logout flows. The setup also verifies direct client Auth and Firestore profile access. Set `E2E_TEST_GREP` to a Playwright grep expression to run a focused subset. Its separate `firestore-e2e.rules` is intentionally permissive for app-flow testing; it is not production policy and does not test tenant authorization. Use `npm run test:firestore` for Firestore/Storage authorization rules coverage.
+- `npm run test:e2e:emulator` runs the full Chromium user-journey and public-experience suites against the `demo-accreditex-e2e` Auth/Firestore emulators, using synthetic users for role dashboards, onboarding, navigation, and login/logout flows. Public checks cover mobile layouts, Arabic navigation, demo dialog keyboard behavior, password visibility, and registration validation. The setup also verifies direct client Auth and Firestore profile access. Set `E2E_TEST_GREP` to a Playwright grep expression to run a focused subset. Its separate `firestore-e2e.rules` is intentionally permissive for app-flow testing; it is not production policy and does not test tenant authorization. Use `npm run test:firestore` for Firestore/Storage authorization rules coverage.
 
 Do not reset a database by deleting collections in the Firebase Console. Use a disposable emulator or staging project for reset/reseed workflows; production data changes require a reviewed, backed-up migration.
 

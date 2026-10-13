@@ -24,7 +24,7 @@ const Modal: FC<ModalProps> = ({
   size = "md",
   maxHeight,
 }) => {
-  const { dir } = useTranslation();
+  const { dir, t } = useTranslation();
   const modalRef = useRef<HTMLDivElement>(null);
 
   useFocusTrap(modalRef as React.RefObject<HTMLElement>, isOpen);
@@ -89,7 +89,7 @@ const Modal: FC<ModalProps> = ({
           <button
             onClick={onClose}
             className="p-1 rounded-full text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-            aria-label="Close modal"
+            aria-label={t("close")}
             type="button"
           >
             <XMarkIcon className="w-5 h-5" />

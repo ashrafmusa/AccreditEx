@@ -160,13 +160,24 @@ const AppManager: React.FC = () => {
     view: "dashboard",
   });
 
-  // Use the document title hook for SEO
-  useDocumentTitle(navigation);
+  const currentUser = useUserStore((state) => state.currentUser);
+  const location = useLocation();
+
+  // Use public titles before sign-in and workspace titles after authentication.
+  useDocumentTitle(
+    navigation,
+    currentUser || location.pathname === "/pitch"
+      ? undefined
+      : location.pathname === "/login"
+        ? "login"
+        : location.pathname === "/register"
+          ? "register"
+          : "landing",
+  );
 
   // Initialize push notifications on native platforms
   usePushNotifications();
 
-  const currentUser = useUserStore((state) => state.currentUser);
   const [authChecked, setAuthChecked] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState<boolean>(
     () => !localStorage.getItem("accreditex-onboarding-complete"),
@@ -174,7 +185,6 @@ const AppManager: React.FC = () => {
   const [showProgramSelector, setShowProgramSelector] =
     useState<boolean>(false);
 
-  const location = useLocation();
   const navigate = useNavigate();
 
   useFirebaseAuth(); // This hook handles user state

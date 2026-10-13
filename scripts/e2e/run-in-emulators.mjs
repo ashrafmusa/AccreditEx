@@ -159,6 +159,8 @@ try {
     cliPath,
     "test",
     "e2e/tests/full-user-journey.spec.ts",
+    "e2e/tests/public-experience.spec.ts",
+    "e2e/tests/landing-demo-flow.spec.ts",
     "--project=chromium",
     "--workers=1",
     "--reporter=line",

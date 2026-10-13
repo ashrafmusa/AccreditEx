@@ -1,35 +1,30 @@
-/**
- * RegistrationPage — Self-service free trial sign-up
- *
- * Creates a Firebase Auth account + Organization + User doc in one flow.
- * After successful submission the onAuthStateChanged listener takes over
- * and transitions the user directly into the app → onboarding wizard.
- */
-
+import PublicPageHeader from "@/components/common/PublicPageHeader";
+import { CheckCircleIcon } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
-    selfRegister,
-    type SelfRegistrationData,
+  selfRegister,
+  type SelfRegistrationData,
 } from "@/services/registrationService";
 import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
 import type { Organization, User } from "@/types";
 import { UserRole } from "@/types";
-import { motion } from "framer-motion";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
-const ORG_TYPES: { value: Organization["type"]; label: string }[] = [
-  { value: "hospital", label: "Hospital / Medical Center" },
-  { value: "clinic", label: "Clinic / Polyclinic" },
-  { value: "laboratory", label: "Laboratory / Diagnostic Center" },
-  { value: "group", label: "Hospital Group / Health Network" },
-  { value: "other", label: "Other Healthcare Organization" },
+const organizationTypes: Organization["type"][] = [
+  "hospital",
+  "clinic",
+  "laboratory",
+  "group",
+  "other",
 ];
+const inputClass =
+  "w-full rounded-xl border border-brand-border bg-brand-background px-4 py-3 text-sm text-brand-text-primary outline-none focus:ring-2 focus:ring-brand-primary dark:border-dark-brand-border dark:bg-dark-brand-background dark:text-dark-brand-text-primary";
 
 const RegistrationPage: React.FC = () => {
-  const navigate = useNavigate();
+  const { t, dir } = useTranslation();
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
-
   const [form, setForm] = useState<SelfRegistrationData>({
     fullName: "",
     email: "",
@@ -41,23 +36,24 @@ const RegistrationPage: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
   const update = (field: keyof SelfRegistrationData, value: string) =>
     setForm((prev) => ({ ...prev, [field]: value }));
 
   const validate = (): string | null => {
-    if (!form.fullName.trim()) return "Full name is required.";
-    if (!form.email.trim() || !form.email.includes("@"))
-      return "A valid work email is required.";
-    if (form.password.length < 8)
-      return "Password must be at least 8 characters.";
-    if (form.password !== confirmPassword) return "Passwords do not match.";
-    if (!form.organizationName.trim()) return "Organization name is required.";
+    if (!form.fullName.trim()) return t("public_register_nameError");
+    if (
+      !form.email.trim() ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())
+    )
+      return t("public_register_emailError");
+    if (form.password.length < 8) return t("public_register_passwordError");
+    if (form.password !== confirmPassword) return t("public_register_mismatch");
+    if (!form.organizationName.trim()) return t("public_register_orgError");
     return null;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     const validationError = validate();
     if (validationError) {
       setError(validationError);
@@ -66,288 +62,272 @@ const RegistrationPage: React.FC = () => {
     setLoading(true);
     setError("");
     try {
-      const result = await selfRegister(form);
-      // Manually hydrate the Zustand store immediately after docs are written.
-      // onAuthStateChanged fires before the setDoc calls complete (race condition),
-      // so we cannot rely on it for the initial navigation after registration.
-      const now = new Date().toISOString();
+      const data = {
+        ...form,
+        fullName: form.fullName.trim(),
+        email: form.email.toLowerCase().trim(),
+        organizationName: form.organizationName.trim(),
+        country: form.country?.trim(),
+      };
+      const result = await selfRegister(data);
+      // Auth fires before profile creation; hydrate only after registration writes succeed.
       const userProfile: User = {
         id: result.userId,
-        name: form.fullName,
-        email: form.email.toLowerCase().trim(),
+        name: data.fullName,
+        email: data.email,
         role: UserRole.Admin,
         organizationId: result.orgId,
         isActive: true,
-        createdAt: now,
+        createdAt: new Date().toISOString(),
       };
       setCurrentUser(userProfile);
       useTenantStore.getState().loadOrganizationForUser(result.orgId);
-      // Navigation is handled by App.tsx once currentUser is set.
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      if (msg.includes("email-already-in-use")) {
-        setError(
-          "An account with this email already exists. Please log in instead.",
-        );
-      } else if (msg.includes("weak-password")) {
-        setError("Password is too weak. Please choose a stronger password.");
-      } else if (msg.includes("permission-denied")) {
-        setError(
-          "Unable to create your organization. Please try again or contact support.",
-        );
-      } else {
-        setError("Something went wrong. Please try again.");
-      }
+      setError(
+        t(
+          msg.includes("email-already-in-use")
+            ? "public_register_exists"
+            : msg.includes("weak-password")
+              ? "public_register_weak"
+              : msg.includes("permission-denied")
+                ? "public_register_denied"
+                : "public_register_error",
+        ),
+      );
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 py-12">
-      {/* Background grid */}
-      <div
-        className="fixed inset-0 opacity-[0.03] pointer-events-none"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(255,255,255,.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.5) 1px, transparent 1px)",
-          backgroundSize: "60px 60px",
-        }}
-      />
-      {/* Radial glow */}
-      <div
-        className="fixed inset-0 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse 600px 600px at 30% 50%, rgba(0,137,123,0.1) 0%, transparent 70%)",
-        }}
-      />
-
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative w-full max-w-lg"
+    <div
+      dir={dir}
+      className="min-h-screen bg-brand-background text-brand-text-primary dark:bg-dark-brand-background dark:text-dark-brand-text-primary"
+    >
+      <PublicPageHeader />
+      <main
+        id="public-main"
+        tabIndex={-1}
+        className="mx-auto grid max-w-7xl items-start gap-12 px-4 py-12 sm:px-6 lg:grid-cols-2 lg:py-16"
       >
-        {/* Logo + headline */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-primary/15 border border-brand-primary/30 text-brand-primary text-sm font-semibold mb-6">
-            <span className="relative flex h-1.5 w-1.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-primary opacity-75" />
-              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-brand-primary" />
-            </span>
-            14-Day Free Trial — No Card Required
-          </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            Start Your Free Trial
-          </h1>
-          <p className="text-white/60 mt-2 text-sm">
-            Full Professional access for 14 days. No credit card needed.
+        <section className="lg:sticky lg:top-10">
+          <p className="text-sm font-semibold uppercase tracking-wider text-brand-primary">
+            {t("public_register_badge")}
           </p>
-        </div>
-
-        {/* Card */}
-        <div className="bg-white/5 border border-white/10 rounded-2xl p-8 backdrop-blur-sm shadow-2xl">
-          {error && (
-            <div className="mb-5 p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-            {/* Full name */}
-            <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">
-                Full Name
-              </label>
-              <input
-                type="text"
-                autoComplete="name"
-                value={form.fullName}
-                onChange={(e) => update("fullName", e.target.value)}
-                placeholder="Dr. Sarah Al-Rashidi"
-                className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
-                required
-              />
-            </div>
-
-            {/* Work email */}
-            <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">
-                Work Email
-              </label>
-              <input
-                type="email"
-                autoComplete="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-                placeholder="sarah@hospital.com"
-                className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
-                required
-              />
-            </div>
-
-            {/* Password */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  value={form.password}
-                  onChange={(e) => update("password", e.target.value)}
-                  placeholder="Min. 8 characters"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
-                  required
+          <h1 className="mt-4 text-4xl font-bold leading-tight">
+            {t("public_register_title")}
+          </h1>
+          <p className="mt-5 max-w-lg text-lg leading-relaxed text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("public_register_body")}
+          </p>
+          <h2 className="mt-8 text-lg font-semibold">
+            {t("public_register_included")}
+          </h2>
+          <ul className="mt-5 space-y-4">
+            {["evidence", "audit", "risk", "training"].map((key) => (
+              <li key={key} className="flex items-center gap-3">
+                <CheckCircleIcon
+                  aria-hidden="true"
+                  className="h-5 w-5 shrink-0 text-brand-primary"
                 />
+                {t(`public_cap_${key}`)}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-8 max-w-lg rounded-2xl border border-brand-primary/20 bg-brand-primary/5 p-5 text-sm leading-relaxed">
+            {t("public_register_guidance")}
+          </p>
+          <p className="mt-6 text-sm">
+            {t("public_register_existing")}{" "}
+            <Link
+              to="/login"
+              className="font-semibold text-brand-primary underline underline-offset-4"
+            >
+              {t("landing_nav_login")}
+            </Link>
+          </p>
+        </section>
+        <section
+          aria-label={t("public_register_form")}
+          className="rounded-3xl border border-brand-border bg-brand-surface p-6 shadow-xl shadow-brand-primary/5 dark:border-dark-brand-border dark:bg-dark-brand-surface sm:p-8"
+        >
+          <h2 className="text-2xl font-bold">{t("public_register_form")}</h2>
+          <p className="mt-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+            {t("public_trial_note")}
+          </p>
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            aria-busy={loading}
+            aria-describedby={error ? "registration-error" : undefined}
+            className="mt-6 space-y-5"
+          >
+            {error && (
+              <p
+                id="registration-error"
+                role="alert"
+                className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+              >
+                {error}
+              </p>
+            )}
+            <fieldset disabled={loading} className="space-y-5">
+              {(["fullName", "email"] as const).map((field) => (
+                <div key={field}>
+                  <label
+                    htmlFor={`register-${field}`}
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    {t(
+                      field === "fullName"
+                        ? "landing_demo_name"
+                        : "landing_demo_email",
+                    )}{" "}
+                    *
+                  </label>
+                  <input
+                    id={`register-${field}`}
+                    name={field}
+                    type={field === "email" ? "email" : "text"}
+                    autoComplete={field === "email" ? "email" : "name"}
+                    value={form[field]}
+                    onChange={(e) => update(field, e.target.value)}
+                    required
+                    className={inputClass}
+                  />
+                </div>
+              ))}
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="register-password"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    {t("password")} *
+                  </label>
+                  <input
+                    id="register-password"
+                    type="password"
+                    autoComplete="new-password"
+                    minLength={8}
+                    value={form.password}
+                    onChange={(e) => update("password", e.target.value)}
+                    required
+                    aria-describedby="password-guidance"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="register-confirm"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    {t("public_register_confirm")} *
+                  </label>
+                  <input
+                    id="register-confirm"
+                    type="password"
+                    autoComplete="new-password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className={inputClass}
+                  />
+                </div>
               </div>
+              <p
+                id="password-guidance"
+                className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary"
+              >
+                {t("public_register_passwordHelp")}
+              </p>
               <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5">
-                  Confirm Password
-                </label>
-                <input
-                  type="password"
-                  autoComplete="new-password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat password"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
-                  required
-                />
-              </div>
-            </div>
-
-            {/* Organization name */}
-            <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5">
-                Organization Name
-              </label>
-              <input
-                type="text"
-                autoComplete="organization"
-                value={form.organizationName}
-                onChange={(e) => update("organizationName", e.target.value)}
-                placeholder="King Fahad Medical City"
-                className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
-                required
-              />
-            </div>
-
-            {/* Organization type + Country */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5">
-                  Organization Type
-                </label>
-                <select
-                  value={form.organizationType}
-                  onChange={(e) =>
-                    update(
-                      "organizationType",
-                      e.target.value as Organization["type"],
-                    )
-                  }
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-800 border border-white/15 text-white text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
+                <label
+                  htmlFor="register-org"
+                  className="mb-2 block text-sm font-medium"
                 >
-                  {ORG_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-white/60 mb-1.5">
-                  Country (optional)
+                  {t("public_register_org")} *
                 </label>
                 <input
-                  type="text"
-                  autoComplete="country-name"
-                  value={form.country}
-                  onChange={(e) => update("country", e.target.value)}
-                  placeholder="Saudi Arabia"
-                  className="w-full px-4 py-2.5 rounded-xl bg-white/8 border border-white/15 text-white placeholder-white/30 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/60 focus:border-brand-primary/40 transition"
+                  id="register-org"
+                  autoComplete="organization"
+                  value={form.organizationName}
+                  onChange={(e) => update("organizationName", e.target.value)}
+                  required
+                  className={inputClass}
                 />
               </div>
-            </div>
-
-            {/* Submit */}
+              <div className="grid gap-5 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="register-type"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    {t("public_register_type")}
+                  </label>
+                  <select
+                    id="register-type"
+                    value={form.organizationType}
+                    onChange={(e) => update("organizationType", e.target.value)}
+                    className={inputClass}
+                  >
+                    {organizationTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {t(`public_org_${type}`)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label
+                    htmlFor="register-country"
+                    className="mb-2 block text-sm font-medium"
+                  >
+                    {t("public_register_country")}
+                  </label>
+                  <input
+                    id="register-country"
+                    autoComplete="country-name"
+                    value={form.country}
+                    onChange={(e) => update("country", e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+              </div>
+            </fieldset>
+            <p className="text-xs leading-relaxed text-brand-text-secondary dark:text-dark-brand-text-secondary">
+              {t("public_register_legal")}{" "}
+              <a
+                href="/terms-of-service.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                {t("landing_footer_terms")}
+              </a>{" "}
+              {t("public_and")}{" "}
+              <a
+                href="/privacy-policy.html"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                {t("landing_footer_privacy")}
+              </a>
+              .
+            </p>
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3.5 rounded-xl bg-linear-to-r from-brand-primary to-brand-primary/80 text-white font-semibold text-sm shadow-xl shadow-teal-600/25 hover:shadow-teal-600/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2"
+              className="w-full rounded-xl bg-brand-primary px-6 py-3 font-semibold text-white hover:bg-brand-primary/90 disabled:opacity-60"
             >
-              {loading ? (
-                <>
-                  <svg
-                    className="animate-spin h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
-                  </svg>
-                  Creating your account…
-                </>
-              ) : (
-                "Start My Free Trial →"
+              {t(
+                loading ? "public_register_creating" : "public_register_submit",
               )}
             </button>
           </form>
-
-          {/* What's included */}
-          <div className="mt-6 pt-5 border-t border-white/10">
-            <p className="text-xs font-medium text-white/40 mb-3 text-center">
-              INCLUDED IN YOUR 14-DAY TRIAL
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                "Unlimited projects",
-                "Document control",
-                "Risk & CAPA management",
-                "AI assistant (21+ tools)",
-                "Audit hub",
-                "Analytics & reports",
-              ].map((feature) => (
-                <div
-                  key={feature}
-                  className="flex items-center gap-1.5 text-xs text-white/60"
-                >
-                  <span className="text-brand-primary">✓</span> {feature}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Footer links */}
-        <div className="text-center mt-6 space-y-2">
-          <p className="text-sm text-white/50">
-            Already have an account?{" "}
-            <button
-              onClick={() => navigate("/login")}
-              className="text-brand-primary hover:text-brand-primary/80 font-medium transition"
-            >
-              Sign in
-            </button>
-          </p>
-          <p className="text-xs text-white/30">
-            By signing up you agree to our Terms of Service and Privacy Policy.
-          </p>
-        </div>
-      </motion.div>
+        </section>
+      </main>
     </div>
   );
 };
