@@ -659,14 +659,15 @@ export class AIAgentService {
         findings?: string;
     }): Promise<string> {
         try {
-            const prompt = `Generate a detailed action plan for the following non-compliant checklist item:
+            // Chat responses with workspace context have a ~1,024-token output budget; keep the plan concise.
+            const prompt = `Generate a concise action plan for the following non-compliant checklist item:
 
 Standard: ${context.standardId}
 Item: ${context.item}
 Current Status: ${context.status}
 ${context.findings ? `Findings: ${context.findings}` : ''}
 
-Provide a clear, actionable plan with specific steps to achieve compliance.`;
+Provide 3-5 numbered corrective actions, each with an owner, a timeline, and the evidence that proves completion. Keep the whole plan under 350 words.`;
 
             const response = await this.chat(prompt, true);
             return response.response;

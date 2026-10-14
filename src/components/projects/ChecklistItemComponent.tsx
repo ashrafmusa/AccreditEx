@@ -317,12 +317,17 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
 
     setIsGeneratingAI(true);
     try {
-      const actionPlan = await aiAgentService.generateActionPlan({
+      const result = await aiAgentService.generateActionPlanDedicated({
         standardId: item.standardId,
         item: item.item,
         status: item.status,
         findings: item.notes,
       });
+      const actionPlan =
+        typeof result?.action_plan === "string" ? result.action_plan.trim() : "";
+      if (!actionPlan) {
+        throw new Error("AI returned an empty action plan");
+      }
 
       setEditedItem({ ...item, actionPlan });
       setIsEditing(true);

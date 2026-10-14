@@ -374,6 +374,18 @@ describe('AIAgentService', () => {
 
             expect(result).toBeDefined();
         });
+
+        it('keeps the chat fallback action plan prompt within the chat output budget', async () => {
+            // Arrange
+            const chat = jest.spyOn(service, 'chat').mockResolvedValueOnce({ response: '1. Assign owner and fix labels.', thread_id: '', timestamp: '' });
+            (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, status: 503 });
+            // Act
+            const result = await service.generateActionPlanDedicated({ standardId: 'PILOT-1', item: 'Specimen labels', status: 'Non-compliant' });
+            // Assert
+            expect(chat.mock.calls[0][0]).toContain('concise action plan');
+            expect(chat.mock.calls[0][0]).toContain('under 350 words');
+            expect(result.action_plan).toBe('1. Assign owner and fix labels.');
+        });
     });
 
     describe('Root Cause Analysis', () => {
