@@ -106,6 +106,38 @@ export const en = {
   projectTeamRemoved:
     "Team member removed. Requirement assignments are unchanged.",
   projectTeamLeadRequired: "The project lead cannot be removed from the team.",
+  omanLabSelfContainedNotice:
+    "This project uses a separate Oman private-laboratory inspection preparation checklist. It will not add hospital OHAS standards or claim an OHAS crosswalk. The program selection is used only for project grouping.",
+  omanLabTemplateCaveat:
+    "The checklist is adapted for preparation from the March 2026 private-laboratory form supplied for the pilot. Internal PILOT references are not MOH clause numbers. Confirm scope and the current official form with MOH; this template is not an approved inspection scorecard.",
+  omanLabScorecardTitle: "Oman private-laboratory inspection scorecard",
+  omanLabScorecardDisclaimer:
+    "Internal preparation aid only—not MOH approval, inspection results, certification, or verified readiness. Confirm applicability and evidence with the current official form and MOH.",
+  omanLabScoredResult: "Score among assessed applicable items",
+  omanLabNoRatings: "Not rated",
+  omanLabPoints: "{earned} of {maximum} possible points assessed",
+  omanLabAssessmentCoverage: "Assessment coverage",
+  omanLabAssessedCount: "{assessed} of {applicable} applicable items rated",
+  omanLabFullyMet: "Fully met (1)",
+  omanLabPartiallyMet: "Partially met (0.5)",
+  omanLabNotMet: "Not met (0)",
+  omanLabNotApplicable: "Not applicable",
+  omanLabPilotReadinessMeasures:
+    "Pilot follow-up: {unassessed} items remain unrated; {unassigned} open items have no owner; {missingPlans} partial/not-met items have no action plan.",
+  omanLabPilotRetrievalTarget:
+    "Mock-inspection target: compare evidence retrieval time with Falak’s baseline and aim for at least 20% less time. Record the baseline and mock-review time in project notes.",
+  omanLabBaselineRetrieval: "Baseline evidence retrieval time",
+  omanLabPilotRetrieval: "Mock-inspection evidence retrieval time",
+  omanLabMinutes: "minutes",
+  omanLabSavePilotMetrics: "Save pilot measurements",
+  omanLabPilotMetricsInvalid:
+    "Enter a baseline greater than zero and a mock-inspection time of zero or more.",
+  omanLabPilotMetricsSaved: "Pilot measurements saved.",
+  omanLabRetrievalImprovement:
+    "Evidence retrieval time changed by {percent}% versus baseline (positive means faster).",
+  omanLabScoreMethod:
+    "Score method: Fully Met = 1; Partially Met = 0.5; Not Met = 0. Not Started and Not Applicable are excluded from the scored denominator. This is an internal calculation, not the MOH form’s official result.",
+  projectEvidenceChecklist: "Suggested evidence to review",
   projectActivityBy: "by {name}",
   projectDetailLoadError:
     "Unable to load this project. Retry to restore live updates.",

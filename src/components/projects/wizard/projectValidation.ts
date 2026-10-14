@@ -68,8 +68,11 @@ export const validateProgram = (programId: string): string | null => {
 /**
  * Validate standards selection (Step 2)
  */
-export const validateStandards = (standardIds: string[]): string | null => {
-  if (standardIds.length === 0) {
+export const validateStandards = (
+  standardIds: string[],
+  selfContainedChecklist = false,
+): string | null => {
+  if (standardIds.length === 0 && !selfContainedChecklist) {
     return "setupStandardsRequired";
   }
 
@@ -173,13 +176,17 @@ export const validateStep1 = (data: {
 export const validateStep2 = (data: {
   programId: string;
   standardIds: string[];
+  selfContainedChecklist?: boolean;
 }): ValidationResult => {
   const errors: Record<string, string> = {};
 
   const programError = validateProgram(data.programId);
   if (programError) errors.programId = programError;
 
-  const standardsError = validateStandards(data.standardIds);
+  const standardsError = validateStandards(
+    data.standardIds,
+    data.selfContainedChecklist,
+  );
   if (standardsError) errors.standardIds = standardsError;
 
   return {
@@ -228,6 +235,7 @@ export const validateAllSteps = (
     leadId: string;
     startDate: Date | undefined;
     endDate: Date | undefined;
+    selfContainedChecklist?: boolean;
   },
   allowPast = false,
 ): ValidationResult => {
@@ -244,7 +252,10 @@ export const validateAllSteps = (
   const programError = validateProgram(data.programId);
   if (programError) errors.programId = programError;
 
-  const standardsError = validateStandards(data.standardIds);
+  const standardsError = validateStandards(
+    data.standardIds,
+    data.selfContainedChecklist,
+  );
   if (standardsError) errors.standardIds = standardsError;
 
   // Step 3

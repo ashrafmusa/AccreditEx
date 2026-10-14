@@ -26,6 +26,7 @@ interface Step2ProgramStandardsProps {
   templates?: ProjectTemplate[];
   lockedProgram?: boolean;
   conflictingIds?: string[];
+  selfContainedChecklist?: boolean;
 }
 
 export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
@@ -39,6 +40,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
   templates = [],
   lockedProgram = false,
   conflictingIds = [],
+  selfContainedChecklist = false,
 }) => {
   const { t, lang } = useTranslation();
 
@@ -98,6 +100,9 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
       standardIds: [],
       templateId: keepGenericTemplate ? data.templateId : null,
       checklistItems: keepGenericTemplate ? data.checklistItems : [],
+      selfContainedChecklist: keepGenericTemplate
+        ? data.selfContainedChecklist
+        : false,
     });
     setStandardSearch("");
     touchField("programId");
@@ -228,7 +233,14 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
           <p className="mt-1 break-words">{conflictingIds.join(", ")}</p>
         </div>
       )}
-      {data.programId && (relevantStandards.length > 0 || standardSearch) && (
+      {data.programId && selfContainedChecklist && (
+        <div className="rounded-lg border border-amber-300 dark:border-amber-700 p-3 text-sm text-amber-900 dark:text-amber-100">
+          {t("omanLabSelfContainedNotice")}
+        </div>
+      )}
+      {data.programId &&
+        !selfContainedChecklist &&
+        (relevantStandards.length > 0 || standardSearch) && (
         <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
           <div className="flex items-center justify-between mb-3">
             <div>

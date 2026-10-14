@@ -5,6 +5,8 @@ export interface ProjectTemplate {
   name: string;
   description: string;
   programId: string;
+  inspectionProfile?: "oman-private-lab-2026";
+  selfContainedChecklist?: boolean;
   category: 'accreditation' | 'compliance' | 'quality' | 'custom';
   checklist: ChecklistItemTemplate[];
   defaultPDCACycles?: PDCACycleTemplate[];
@@ -20,6 +22,7 @@ export interface ChecklistItemTemplate {
   requiredEvidence: string[];
   estimatedHours: number;
   priority?: 'high' | 'medium' | 'low';
+  standardId?: string;
 }
 
 export interface PDCACycleTemplate {

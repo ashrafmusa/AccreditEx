@@ -40,6 +40,7 @@ interface Step4ReviewConfirmProps {
   templates: ProjectTemplate[];
   departments: Department[];
   checklist: ChecklistItem[];
+  selfContainedChecklist?: boolean;
 }
 
 export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
@@ -51,6 +52,7 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
   templates,
   departments,
   checklist,
+  selfContainedChecklist = false,
 }) => {
   const { t } = useTranslation();
   const { lang } = useContext(LanguageContext);
@@ -94,6 +96,11 @@ export const Step4ReviewConfirm: React.FC<Step4ReviewConfirmProps> = ({
 
   return (
     <div className="space-y-6">
+      {selfContainedChecklist && (
+        <p className="rounded-lg border border-amber-300 dark:border-amber-700 p-3 text-sm text-amber-900 dark:text-amber-100">
+          {t("omanLabTemplateCaveat")}
+        </p>
+      )}
       <div className="text-center">
         <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircleIcon className="w-10 h-10 text-green-600 dark:text-green-400" />

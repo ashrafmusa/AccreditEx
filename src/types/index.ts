@@ -747,6 +747,11 @@ export interface Project {
   standardIds?: string[];
   departmentId?: string;
   departmentIds?: string[];
+  inspectionProfile?: "oman-private-lab-2026";
+  inspectionPilotMetrics?: {
+    baselineEvidenceRetrievalMinutes: number;
+    pilotEvidenceRetrievalMinutes: number;
+  };
 }
 
 export interface Comment {
@@ -934,6 +939,8 @@ export interface ChecklistItem {
   comments: Comment[];
   departmentId?: string;
   linkedFhirResources?: LinkedFhirResource[];
+  category?: string;
+  requiredEvidence?: string[];
 }
 
 export interface LinkedFhirResource {

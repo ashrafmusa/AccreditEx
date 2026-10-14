@@ -104,6 +104,38 @@ export const ar = {
   projectTeamAdded: "تمت إضافة عضو الفريق.",
   projectTeamRemoved: "تمت إزالة عضو الفريق. لم تتغير تعيينات المتطلبات.",
   projectTeamLeadRequired: "لا يمكن إزالة مسؤول المشروع من الفريق.",
+  omanLabSelfContainedNotice:
+    "يستخدم هذا المشروع قائمة تحضيرية منفصلة لتفتيش المختبرات الخاصة في عُمان. لن تُضاف معايير OHAS الخاصة بالمستشفيات ولن يُدّعى وجود مواءمة معها. يُستخدم اختيار البرنامج لتنظيم المشروع فقط.",
+  omanLabTemplateCaveat:
+    "تم إعداد القائمة للتحضير بالاستناد إلى نموذج المختبرات الخاصة لشهر مارس 2026 الذي قُدّم للتجربة. مراجع PILOT داخلية وليست أرقام بنود وزارة الصحة. أكّد النطاق والنموذج الرسمي الحالي مع الوزارة؛ هذا القالب ليس بطاقة تفتيش معتمدة.",
+  omanLabScorecardTitle: "بطاقة متابعة تفتيش المختبر الخاص في عُمان",
+  omanLabScorecardDisclaimer:
+    "أداة تحضيرية داخلية فقط، وليست موافقة من وزارة الصحة أو نتائج تفتيش أو شهادة أو جاهزية تم التحقق منها. أكّد الانطباق والأدلة باستخدام النموذج الرسمي الحالي والوزارة.",
+  omanLabScoredResult: "النتيجة للبنود المنطبقة التي تم تقييمها",
+  omanLabNoRatings: "لم يتم التقييم",
+  omanLabPoints: "تم تقييم {earned} من {maximum} نقطة ممكنة",
+  omanLabAssessmentCoverage: "تغطية التقييم",
+  omanLabAssessedCount: "تم تقييم {assessed} من أصل {applicable} بنداً منطبقاً",
+  omanLabFullyMet: "مستوفى بالكامل (1)",
+  omanLabPartiallyMet: "مستوفى جزئياً (0.5)",
+  omanLabNotMet: "غير مستوفى (0)",
+  omanLabNotApplicable: "غير منطبق",
+  omanLabPilotReadinessMeasures:
+    "متابعة التجربة: {unassessed} بنداً لم يُقيّم؛ {unassigned} من البنود المفتوحة بلا مسؤول؛ {missingPlans} من البنود المستوفاة جزئياً أو غير المستوفاة بلا خطة عمل.",
+  omanLabPilotRetrievalTarget:
+    "هدف التفتيش التجريبي: قارن وقت استرجاع الأدلة بخط أساس Falak واستهدف خفضه بما لا يقل عن 20٪. سجّل وقت خط الأساس والمراجعة التجريبية في ملاحظات المشروع.",
+  omanLabBaselineRetrieval: "وقت استرجاع الأدلة الأساسي",
+  omanLabPilotRetrieval: "وقت استرجاع الأدلة في التفتيش التجريبي",
+  omanLabMinutes: "دقيقة",
+  omanLabSavePilotMetrics: "حفظ قياسات التجربة",
+  omanLabPilotMetricsInvalid:
+    "أدخل وقتاً أساسياً أكبر من صفر ووقتاً للتفتيش التجريبي يساوي صفراً أو أكثر.",
+  omanLabPilotMetricsSaved: "تم حفظ قياسات التجربة.",
+  omanLabRetrievalImprovement:
+    "تغير وقت استرجاع الأدلة بنسبة {percent}٪ مقارنة بخط الأساس (القيمة الموجبة تعني وقتاً أسرع).",
+  omanLabScoreMethod:
+    "طريقة الحساب: مستوفى بالكامل = 1؛ مستوفى جزئياً = 0.5؛ غير مستوفى = 0. لا تدخل حالتا لم يبدأ وغير منطبق في مقام النتيجة. هذا حساب داخلي وليس النتيجة الرسمية لنموذج الوزارة.",
+  projectEvidenceChecklist: "الأدلة المقترحة للمراجعة",
   projectActivityBy: "بواسطة {name}",
   projectDetailLoadError:
     "تعذر تحميل المشروع. أعد المحاولة لاستعادة التحديثات المباشرة.",

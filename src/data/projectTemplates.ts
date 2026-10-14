@@ -1,5 +1,6 @@
 import { ProjectTemplate } from '@/types/templates';
 import { AccreditationProgram } from '@/types';
+import { omanPrivateLabInspectionTemplate } from './omanPrivateLabInspectionTemplate';
 
 // Template definitions with program name identifiers (not IDs)
 const baseTemplates = [
@@ -638,7 +639,7 @@ const baseTemplates = [
  * This ensures templates always reference valid program IDs
  */
 export const generateProjectTemplates = (accreditationPrograms: AccreditationProgram[]): ProjectTemplate[] => {
-  return baseTemplates.map(template => {
+  const generated = baseTemplates.map(template => {
     // Find matching program by name (case-insensitive)
     const matchingProgram = template.programName
       ? accreditationPrograms.find(
@@ -655,6 +656,23 @@ export const generateProjectTemplates = (accreditationPrograms: AccreditationPro
       defaultPDCACycles: 'defaultPDCACycles' in template && template.defaultPDCACycles ? [...template.defaultPDCACycles] : undefined // Make mutable
     } as unknown as ProjectTemplate;
   });
+  const omanProgram = accreditationPrograms.find(
+    (program) =>
+      program.id === omanPrivateLabInspectionTemplate.programId ||
+      program.name.toLowerCase() === "ohas",
+  );
+  if (omanProgram) {
+    generated.push({
+      ...omanPrivateLabInspectionTemplate,
+      programId: omanProgram.id,
+      checklist: omanPrivateLabInspectionTemplate.checklist.map((item) => ({
+        ...item,
+        requiredEvidence: [...item.requiredEvidence],
+      })),
+      tags: [...(omanPrivateLabInspectionTemplate.tags || [])],
+    });
+  }
+  return generated;
 };
 
 /**

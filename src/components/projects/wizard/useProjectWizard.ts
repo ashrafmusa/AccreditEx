@@ -22,6 +22,7 @@ export interface WizardData {
   endDate: Date | undefined;
   checklistItems: (ChecklistItem | ChecklistItemTemplate)[];
   aiEnhanced: boolean;
+  selfContainedChecklist?: boolean;
 }
 
 const freshData = (): WizardData => ({
@@ -38,6 +39,7 @@ const freshData = (): WizardData => ({
   endDate: undefined,
   checklistItems: [],
   aiEnhanced: false,
+  selfContainedChecklist: false,
 });
 
 function restoreDraft(text: string): WizardData {
@@ -67,6 +69,7 @@ function restoreDraft(text: string): WizardData {
   for (const key of arrays) data[key] = draft[key] as string[];
   data.templateId =
     typeof draft.templateId === "string" ? draft.templateId : null;
+  data.selfContainedChecklist = draft.selfContainedChecklist === true;
   if (draft.teamMemberRoles && typeof draft.teamMemberRoles === "object") {
     data.teamMemberRoles = Object.fromEntries(
       Object.entries(draft.teamMemberRoles).filter(
@@ -211,6 +214,7 @@ export const useProjectWizard = ({
       programId: template.programId,
       standardIds: [],
       checklistItems: template.checklist,
+      selfContainedChecklist: template.selfContainedChecklist === true,
       endDate:
         data.startDate && template.estimatedDuration
           ? new Date(

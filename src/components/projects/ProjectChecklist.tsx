@@ -11,6 +11,7 @@ import { statusToTranslationKey } from "@/utils/complianceUtils";
 import React, { useCallback, useMemo, useState } from "react";
 import { CheckCircleIcon, SearchIcon, UsersIcon, XMarkIcon } from "../icons";
 import ChecklistItemComponent from "./ChecklistItemComponent";
+import OmanLabInspectionScorecard from "./OmanLabInspectionScorecard";
 
 /** Safely resolves a department name that may be LocalizedString or plain string */
 const resolveName = (name: unknown, lang = "en"): string => {
@@ -36,6 +37,7 @@ interface ProjectChecklistProps {
 
 const ProjectChecklist: React.FC<ProjectChecklistProps> = ({
   project: _project,
+  onUpdateProject,
   readOnly = false,
 }) => {
   // Normalize: checklist may be absent on newly-created projects from Firestore
@@ -118,6 +120,12 @@ const ProjectChecklist: React.FC<ProjectChecklistProps> = ({
     updates: Partial<ChecklistItem>,
   ) => {
     await updateChecklistItem(project.id, itemId, updates);
+  };
+
+  const saveInspectionPilotMetrics = async (
+    metrics: NonNullable<Project["inspectionPilotMetrics"]>,
+  ) => {
+    await onUpdateProject({ ...project, inspectionPilotMetrics: metrics });
   };
 
   const handleAIGapAnalysis = async () => {
@@ -927,7 +935,14 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
           )}
         </div>
       )}
-      {checklistStats && (
+      {project.inspectionProfile === "oman-private-lab-2026" ? (
+        <OmanLabInspectionScorecard
+          project={project}
+          readOnly={readOnly}
+          onSavePilotMetrics={saveInspectionPilotMetrics}
+        />
+      ) : (
+        checklistStats && (
         <div className="bg-brand-surface dark:bg-dark-brand-surface p-4 rounded-lg shadow-sm border border-brand-border dark:border-dark-brand-border">
           <div className="flex items-center justify-between mb-2">
             <span className="text-sm font-semibold text-gray-900 dark:text-white">
@@ -999,6 +1014,7 @@ Respond ONLY with a valid JSON array. No markdown, no explanation:
             )}
           </div>
         </div>
+        )
       )}
 
       {/* Per-Department Progress Breakdown (collapsible) */}

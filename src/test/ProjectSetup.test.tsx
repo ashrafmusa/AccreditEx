@@ -400,6 +400,7 @@ describe("Project setup integrity", () => {
       standardIds: [],
       templateId: null,
       checklistItems: [],
+      selfContainedChecklist: false,
     });
   });
   it("requires reviewing and applying valid AI dates and preserves existing dates on invalid output", async () => {

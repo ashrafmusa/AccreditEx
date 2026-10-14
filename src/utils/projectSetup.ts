@@ -66,7 +66,7 @@ export function buildProjectChecklist(
     ? []
     : templateItems.map((item) => ({
         id: crypto.randomUUID(),
-        standardId: "",
+        standardId: "standardId" in item ? item.standardId || "" : "",
         item: "item" in item ? item.item : item.title,
         status: ComplianceStatus.NotStarted,
         assignedTo: "",
@@ -75,6 +75,10 @@ export function buildProjectChecklist(
         notes: "description" in item ? item.description : "",
         evidenceFiles: [],
         comments: [],
+        ...("category" in item ? { category: item.category } : {}),
+        ...("requiredEvidence" in item
+          ? { requiredEvidence: item.requiredEvidence }
+          : {}),
       }));
   return [...existingItems, ...created, ...templateChecklist];
 }

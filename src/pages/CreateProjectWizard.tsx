@@ -279,6 +279,9 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
           ]),
         ],
         checklist,
+        ...(selectedTemplate?.inspectionProfile
+          ? { inspectionProfile: selectedTemplate.inspectionProfile }
+          : {}),
       };
       let savedId: string;
       if (existingProject) {
@@ -423,6 +426,9 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
                 {...shared}
                 programs={programs}
                 allStandards={standards}
+                selfContainedChecklist={Boolean(
+                  selectedTemplate?.selfContainedChecklist,
+                )}
                 templates={templates}
                 lockedProgram={isEditMode}
                 conflictingIds={resolvedStandards.conflicts
@@ -448,6 +454,9 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
                 templates={templates}
                 departments={departments}
                 checklist={checklist}
+                selfContainedChecklist={Boolean(
+                  selectedTemplate?.selfContainedChecklist,
+                )}
               />
             )}
             {currentStep === 3 && Object.keys(errors).length > 0 && (

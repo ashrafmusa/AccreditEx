@@ -1168,6 +1168,19 @@ Action Plan: ${item.actionPlan || "None"}`;
             )}
           </div>
 
+          {item.requiredEvidence && item.requiredEvidence.length > 0 && (
+            <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-3">
+              <h4 className="text-sm font-medium mb-2">
+                {t("projectEvidenceChecklist")}
+              </h4>
+              <ul className="list-disc ltr:pl-5 rtl:pr-5 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+                {item.requiredEvidence.map((evidence, index) => (
+                  <li key={`${index}-${evidence}`}>{evidence}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
           {/* Status Selection */}
           {isEditing && (
             <div>
