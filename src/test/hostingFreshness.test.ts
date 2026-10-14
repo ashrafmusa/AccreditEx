@@ -23,18 +23,23 @@ describe("Frontend release freshness", () => {
     expect(fetchMock).toHaveBeenNthCalledWith(2, asset, {});
   });
 
-  it("configures route revalidation with explicit asset and service-worker policies", () => {
+  it("configures route revalidation with explicit asset and service-worker policies on every hosting site", () => {
     // Arrange
+    type HostingSite = { target?: string; headers: { source: string; headers: { key: string; value: string }[] }[] };
     const config = JSON.parse(readFileSync(join(process.cwd(), "firebase.json"), "utf8")) as {
-      hosting: { headers: { source: string; headers: { key: string; value: string }[] }[] };
+      hosting: HostingSite | HostingSite[];
     };
-    const rules = config.hosting.headers;
-    const cacheValue = (source: string) => rules.find(rule => rule.source === source)?.headers.find(header => header.key === "Cache-Control")?.value;
+    const sites = Array.isArray(config.hosting) ? config.hosting : [config.hosting];
     // Assert
-    expect(cacheValue("**")).toBe("no-cache, no-store, must-revalidate");
-    expect(cacheValue("**/*.@(js|css)")).toBe("max-age=31536000");
-    expect(cacheValue("/service-worker.js")).toBe("no-cache, no-store, must-revalidate");
-    expect(rules.findIndex(rule => rule.source === "/service-worker.js"))
-      .toBeGreaterThan(rules.findIndex(rule => rule.source === "**/*.@(js|css)"));
+    expect(sites.map(site => site.target)).toEqual(expect.arrayContaining(["accreditex", "accreditex-default"]));
+    for (const site of sites) {
+      const rules = site.headers;
+      const cacheValue = (source: string) => rules.find(rule => rule.source === source)?.headers.find(header => header.key === "Cache-Control")?.value;
+      expect(cacheValue("**")).toBe("no-cache, no-store, must-revalidate");
+      expect(cacheValue("**/*.@(js|css)")).toBe("max-age=31536000");
+      expect(cacheValue("/service-worker.js")).toBe("no-cache, no-store, must-revalidate");
+      expect(rules.findIndex(rule => rule.source === "/service-worker.js"))
+        .toBeGreaterThan(rules.findIndex(rule => rule.source === "**/*.@(js|css)"));
+    }
   });
 });
