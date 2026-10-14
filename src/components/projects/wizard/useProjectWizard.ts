@@ -69,7 +69,8 @@ function restoreDraft(text: string): WizardData {
   for (const key of arrays) data[key] = draft[key] as string[];
   data.templateId =
     typeof draft.templateId === "string" ? draft.templateId : null;
-  data.selfContainedChecklist = draft.selfContainedChecklist === true;
+  data.selfContainedChecklist =
+    data.templateId !== null && draft.selfContainedChecklist === true;
   if (draft.teamMemberRoles && typeof draft.teamMemberRoles === "object") {
     data.teamMemberRoles = Object.fromEntries(
       Object.entries(draft.teamMemberRoles).filter(

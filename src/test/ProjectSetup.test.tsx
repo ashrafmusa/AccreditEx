@@ -12,7 +12,9 @@ import {
   useProjectWizard,
   WizardData,
 } from "@/components/projects/wizard/useProjectWizard";
+import { Step1TemplateBasics } from "@/components/projects/wizard/Step1TemplateBasics";
 import { Step2ProgramStandards } from "@/components/projects/wizard/Step2ProgramStandards";
+import { omanPrivateLabInspectionTemplate } from "@/data/omanPrivateLabInspectionTemplate";
 import { Step3TeamTimeline } from "@/components/projects/wizard/Step3TeamTimeline";
 import { aiAgentService } from "@/services/aiAgentService";
 import {
@@ -647,5 +649,80 @@ describe("Project setup integrity", () => {
       }),
     );
     expect(addProject).not.toHaveBeenCalled();
+  });
+  it("clears the pilot self-contained flag when starting from scratch", () => {
+    // Arrange
+    const update = jest.fn();
+    render(
+      <Step1TemplateBasics
+        data={{
+          ...validData(),
+          projectName: "",
+          selfContainedChecklist: true,
+        }}
+        updateData={update}
+        validationErrors={{}}
+        touched={{}}
+        touchField={jest.fn()}
+        templates={[omanPrivateLabInspectionTemplate]}
+        applyTemplate={jest.fn()}
+      />,
+    );
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: /scratch/i }));
+    // Assert
+    expect(update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        templateId: null,
+        selfContainedChecklist: false,
+      }),
+    );
+  });
+  it("keeps an Oman pilot project self-contained when editing without loaded templates", async () => {
+    // Arrange
+    const checklist = buildProjectChecklist(
+      "ohas",
+      [],
+      standards,
+      omanPrivateLabInspectionTemplate.checklist.slice(0, 2),
+    );
+    projects = [
+      {
+        id: "pilot-project",
+        organizationId: "org-a",
+        name: "Pilot inspection",
+        programId: "ohas",
+        status: ProjectStatus.InProgress,
+        projectLead: user,
+        startDate: new Date(2020, 0, 1).toISOString(),
+        checklist,
+        progress: 0,
+        createdAt: "",
+        updatedAt: "",
+        inspectionProfile: "oman-private-lab-2026",
+      },
+    ];
+    render(
+      <CreateProjectWizard projectId="pilot-project" setNavigation={navigate} />,
+    );
+    // Act
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    const standardsPicker = screen.queryByRole("checkbox", { name: /LAB.2/ });
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+    fireEvent.click(screen.getByRole("button", { name: /save changes/i }));
+    // Assert
+    expect(standardsPicker).toBeNull();
+    await waitFor(() => expect(updateProject).toHaveBeenCalled());
+    expect(updateProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        checklist: [
+          expect.objectContaining({ id: checklist[0].id }),
+          expect.objectContaining({ id: checklist[1].id }),
+        ],
+        selfContainedChecklist: true,
+        templateId: omanPrivateLabInspectionTemplate.id,
+      }),
+    );
   });
 });

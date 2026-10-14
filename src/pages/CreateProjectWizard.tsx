@@ -24,6 +24,11 @@ import {
   resolveProjectStandards,
 } from "@/utils/projectSetup";
 import { validateAllSteps } from "@/components/projects/wizard/projectValidation";
+import { omanPrivateLabInspectionTemplate } from "@/data/omanPrivateLabInspectionTemplate";
+
+const projectIsSelfContained = (project: Project): boolean =>
+  project.selfContainedChecklist === true ||
+  project.inspectionProfile === "oman-private-lab-2026";
 
 interface Props {
   setNavigation?: (state: NavigationState) => void;
@@ -127,6 +132,12 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
               ? new Date(existingProject.endDate)
               : undefined,
             checklistItems: existingProject.checklist,
+            templateId:
+              existingProject.templateId ??
+              (existingProject.inspectionProfile === "oman-private-lab-2026"
+                ? omanPrivateLabInspectionTemplate.id
+                : null),
+            selfContainedChecklist: projectIsSelfContained(existingProject),
           }
         : undefined,
     [existingProject],
@@ -152,6 +163,10 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
     (template) =>
       template.id === data.templateId &&
       (!template.programId || template.programId === data.programId),
+  );
+  const selfContainedChecklist = Boolean(
+    selectedTemplate?.selfContainedChecklist ||
+      (existingProject && projectIsSelfContained(existingProject)),
   );
   const referenceErrors: Record<string, string> = {};
   if (!programs.some((program) => program.id === data.programId))
@@ -195,7 +210,7 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
     data.departmentIds.some((id) => !departments.some((dept) => dept.id === id))
   )
     referenceErrors.departmentIds = "setupDepartmentsUnavailable";
-  if (data.templateId && !selectedTemplate)
+  if (data.templateId && !selectedTemplate && !isEditMode)
     referenceErrors.templateId = "setupTemplateUnavailable";
   const stepFields = [
     ["projectName", "description", "templateId"],
@@ -279,6 +294,8 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
           ]),
         ],
         checklist,
+        ...(data.templateId ? { templateId: data.templateId } : {}),
+        ...(selfContainedChecklist ? { selfContainedChecklist: true } : {}),
         ...(selectedTemplate?.inspectionProfile
           ? { inspectionProfile: selectedTemplate.inspectionProfile }
           : {}),
@@ -426,9 +443,8 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
                 {...shared}
                 programs={programs}
                 allStandards={standards}
-                selfContainedChecklist={Boolean(
-                  selectedTemplate?.selfContainedChecklist,
-                )}
+                selfContainedChecklist={selfContainedChecklist}
+
                 templates={templates}
                 lockedProgram={isEditMode}
                 conflictingIds={resolvedStandards.conflicts
@@ -454,9 +470,8 @@ const ProjectSetup: React.FC<Props> = ({ setNavigation, projectId }) => {
                 templates={templates}
                 departments={departments}
                 checklist={checklist}
-                selfContainedChecklist={Boolean(
-                  selectedTemplate?.selfContainedChecklist,
-                )}
+                selfContainedChecklist={selfContainedChecklist}
+
               />
             )}
             {currentStep === 3 && Object.keys(errors).length > 0 && (

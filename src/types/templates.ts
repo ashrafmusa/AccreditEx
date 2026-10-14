@@ -3,7 +3,9 @@ import { ChecklistItem, PDCACycle } from '../types';
 export interface ProjectTemplate {
   id: string;
   name: string;
+  nameAr?: string;
   description: string;
+  descriptionAr?: string;
   programId: string;
   inspectionProfile?: "oman-private-lab-2026";
   selfContainedChecklist?: boolean;

@@ -5,6 +5,9 @@
       "hosting": {
         "accreditex": [
           "accreditex"
+        ],
+        "accreditex-default": [
+          "accreditex-79c08"
         ]
       },
       "storage": {

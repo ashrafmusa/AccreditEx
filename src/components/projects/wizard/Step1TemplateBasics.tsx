@@ -147,7 +147,12 @@ Return ONLY the description text, no headers or formatting.`;
    * Start from scratch
    */
   const handleStartFromScratch = () => {
-    updateData({ templateId: null, checklistItems: [], standardIds: [] });
+    updateData({
+      templateId: null,
+      checklistItems: [],
+      standardIds: [],
+      selfContainedChecklist: false,
+    });
     setShowTemplates(false);
   };
 
@@ -199,7 +204,7 @@ Return ONLY the description text, no headers or formatting.`;
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-lg text-brand-text-primary dark:text-dark-brand-text-primary">
-                    {template.name}
+                    {(lang === "ar" && template.nameAr) || template.name}
                   </h3>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
                     {template.category}
@@ -207,7 +212,8 @@ Return ONLY the description text, no headers or formatting.`;
                 </div>
               </div>
               <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mb-3">
-                {template.description ||
+                {(lang === "ar" && template.descriptionAr) ||
+                  template.description ||
                   `${t("includes")} ${template.checklist.length} ${t("checklistItems")}`}
               </p>
               <div className="flex items-center gap-3 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">

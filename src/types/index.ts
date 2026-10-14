@@ -748,6 +748,8 @@ export interface Project {
   departmentId?: string;
   departmentIds?: string[];
   inspectionProfile?: "oman-private-lab-2026";
+  templateId?: string;
+  selfContainedChecklist?: boolean;
   inspectionPilotMetrics?: {
     baselineEvidenceRetrievalMinutes: number;
     pilotEvidenceRetrievalMinutes: number;

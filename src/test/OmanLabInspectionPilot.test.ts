@@ -4,6 +4,10 @@ import { ChecklistItem, ComplianceStatus } from "@/types";
 import { validateStep2 } from "@/components/projects/wizard/projectValidation";
 import { buildProjectChecklist } from "@/utils/projectSetup";
 import {
+  localizeOmanPilotItem,
+  omanPrivateLabInspectionItemsAr,
+} from "@/data/omanPrivateLabInspectionTemplateAr";
+import {
   omanLabInspectionRating,
   omanLabInspectionScore,
 } from "@/utils/omanLabInspectionScoring";
@@ -120,5 +124,50 @@ describe("Oman private-laboratory inspection pilot", () => {
     expect(
       omanLabInspectionRating(ComplianceStatus.NotApplicable),
     ).toBeNull();
+  });
+  it("provides Arabic text for every pilot item with matching evidence counts", () => {
+    // Arrange
+    const items = omanPrivateLabInspectionTemplate.checklist;
+
+    // Act
+    const missing = items.filter((item) => {
+      const arabic = omanPrivateLabInspectionItemsAr[item.standardId ?? ""];
+      return (
+        !arabic ||
+        arabic.requiredEvidence.length !== (item.requiredEvidence ?? []).length
+      );
+    });
+
+    // Assert
+    expect(missing.map((item) => item.standardId)).toEqual([]);
+  });
+
+  it("shows Arabic for untouched pilot items but keeps user-edited text", () => {
+    // Arrange
+    const [checklistItem] = buildProjectChecklist(
+      "prog-ohap",
+      [],
+      [],
+      omanPrivateLabInspectionTemplate.checklist.slice(0, 1),
+      [],
+    );
+    const arabic =
+      omanPrivateLabInspectionItemsAr[checklistItem.standardId];
+
+    // Act
+    const untouched = localizeOmanPilotItem(checklistItem, "ar");
+    const edited = localizeOmanPilotItem(
+      { ...checklistItem, notes: "Local note" },
+      "ar",
+    );
+    const english = localizeOmanPilotItem(checklistItem, "en");
+
+    // Assert
+    expect(untouched.item).toBe(arabic.title);
+    expect(untouched.notes).toBe(arabic.description);
+    expect(untouched.requiredEvidence).toEqual(arabic.requiredEvidence);
+    expect(edited.notes).toBe("Local note");
+    expect(edited.item).toBe(arabic.title);
+    expect(english.item).toBe(checklistItem.item);
   });
 });

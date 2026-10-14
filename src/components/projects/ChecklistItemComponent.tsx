@@ -8,6 +8,7 @@ import {
 } from "@/components/icons";
 import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
+import { localizeOmanPilotItem } from "@/data/omanPrivateLabInspectionTemplateAr";
 import { aiAgentService } from "@/services/aiAgentService";
 import { suggestReusableEvidenceForChecklistItem } from "@/services/crossStandardMappingService";
 import { useAppStore } from "@/stores/useAppStore";
@@ -55,7 +56,8 @@ const ChecklistItemComponent: React.FC<ChecklistItemComponentProps> = ({
     evidenceFiles: rawItem.evidenceFiles ?? [],
     comments: rawItem.comments ?? [],
   };
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const display = localizeOmanPilotItem(item, lang);
   const { currentUser } = useUserStore();
   const { createPDCACycle, createCAPA } = useProjectStore();
   const { standards, documents } = useAppStore();
@@ -702,7 +704,7 @@ Action Plan: ${item.actionPlan || "None"}`;
                   onClick={(e) => e.stopPropagation()}
                 />
               ) : (
-                item.item
+                display.item
               )}
             </h3>
             <span
@@ -1168,18 +1170,18 @@ Action Plan: ${item.actionPlan || "None"}`;
               />
             ) : (
               <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
-                {item.notes || "-"}
+                {display.notes || "-"}
               </p>
             )}
           </div>
 
-          {item.requiredEvidence && item.requiredEvidence.length > 0 && (
+          {display.requiredEvidence && display.requiredEvidence.length > 0 && (
             <div className="rounded-lg border border-brand-border dark:border-dark-brand-border p-3">
               <h4 className="text-sm font-medium mb-2">
                 {t("projectEvidenceChecklist")}
               </h4>
               <ul className="list-disc ltr:pl-5 rtl:pr-5 space-y-1 text-sm text-gray-700 dark:text-gray-300">
-                {item.requiredEvidence.map((evidence, index) => (
+                {display.requiredEvidence.map((evidence, index) => (
                   <li key={`${index}-${evidence}`}>{evidence}</li>
                 ))}
               </ul>

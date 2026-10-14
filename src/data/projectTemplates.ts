@@ -1,6 +1,10 @@
 import { ProjectTemplate } from '@/types/templates';
 import { AccreditationProgram } from '@/types';
 import { omanPrivateLabInspectionTemplate } from './omanPrivateLabInspectionTemplate';
+import {
+  omanPrivateLabInspectionTemplateDescriptionAr,
+  omanPrivateLabInspectionTemplateNameAr,
+} from './omanPrivateLabInspectionTemplateAr';
 
 // Template definitions with program name identifiers (not IDs)
 const baseTemplates = [
@@ -664,6 +668,8 @@ export const generateProjectTemplates = (accreditationPrograms: AccreditationPro
   if (omanProgram) {
     generated.push({
       ...omanPrivateLabInspectionTemplate,
+      nameAr: omanPrivateLabInspectionTemplateNameAr,
+      descriptionAr: omanPrivateLabInspectionTemplateDescriptionAr,
       programId: omanProgram.id,
       checklist: omanPrivateLabInspectionTemplate.checklist.map((item) => ({
         ...item,
