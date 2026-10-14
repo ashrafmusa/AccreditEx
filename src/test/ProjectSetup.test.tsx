@@ -256,6 +256,28 @@ describe("Project setup integrity", () => {
     // Assert
     expect(quickStart?.programId).toBe("");
   });
+  it("shows catalogue conflicts for standards projects but not for self-contained pilot checklists", () => {
+    // Arrange
+    const props = {
+      data: { ...validData() },
+      updateData: jest.fn(),
+      validationErrors: {},
+      touched: {},
+      touchField: jest.fn(),
+      programs: [{ id: "ohas", name: "OHAS", description: { en: "", ar: "" } }],
+      allStandards: standards,
+      conflictingIds: ["OHAS.SMCS.22"],
+    };
+    // Act
+    const view = render(<Step2ProgramStandards {...props} />);
+    const standardsWarning = screen.queryByText("OHAS.SMCS.22");
+    view.rerender(
+      <Step2ProgramStandards {...props} selfContainedChecklist />,
+    );
+    // Assert
+    expect(standardsWarning).not.toBeNull();
+    expect(screen.queryByText("OHAS.SMCS.22")).toBeNull();
+  });
   it("collapses identical source duplicates and blocks conflicting identifiers instead of guessing their text", () => {
     // Arrange
     const records = [

@@ -224,7 +224,7 @@ export const Step2ProgramStandards: React.FC<Step2ProgramStandardsProps> = ({
       </div>
 
       {/* Standards Selection (Conditional) */}
-      {data.programId && conflictingIds.length > 0 && (
+      {data.programId && !selfContainedChecklist && conflictingIds.length > 0 && (
         <div
           role="alert"
           className="rounded-lg border border-amber-300 dark:border-amber-700 p-3 text-sm"
