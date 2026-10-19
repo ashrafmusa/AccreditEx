@@ -22,6 +22,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   const [notifications, setNotifications] = useState<EnhancedNotification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const userId = currentUser?.id;
 
@@ -45,16 +46,35 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
       return;
     }
 
-    updateNotifications();
-    setLoading(false);
-
-    // Subscribe to changes
+    let active = true;
     const unsubscribe = notificationService.subscribe(() => {
       updateNotifications();
     });
+    setLoading(true);
+    setError(null);
+    notificationService
+      .hydrateNotifications(userId)
+      .then(() => {
+        if (active) updateNotifications();
+      })
+      .catch((loadError: unknown) => {
+        console.error('[useNotifications] Failed to load notifications:', loadError);
+        if (active) setError('notificationLoadFailed');
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-    return unsubscribe;
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [userId, updateNotifications]);
+
+  const reportMutationError = useCallback((operation: string, error: unknown) => {
+    console.error(`[useNotifications] ${operation} failed:`, error);
+    setError('notificationActionFailed');
+  }, []);
 
   // Auto cleanup expired notifications
   useEffect(() => {
@@ -68,52 +88,83 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   }, [options.autoCleanup, options.cleanupIntervalMs]);
 
   // Mark notification as read
-  const markAsRead = useCallback((notificationId: string) => {
-    notificationService.markAsRead(notificationId);
-    updateNotifications();
-  }, [updateNotifications]);
+  const markAsRead = useCallback(async (notificationId: string) => {
+    try {
+      await notificationService.markAsRead(notificationId);
+      updateNotifications();
+    } catch (error) {
+      reportMutationError('Mark as read', error);
+    }
+  }, [reportMutationError, updateNotifications]);
 
   // Mark all as read
-  const markAllAsRead = useCallback(() => {
+  const markAllAsRead = useCallback(async () => {
     if (!userId) return 0;
-    const count = notificationService.markAllAsRead(userId);
-    updateNotifications();
-    return count;
-  }, [userId, updateNotifications]);
+    try {
+      const count = await notificationService.markAllAsRead(userId);
+      updateNotifications();
+      return count;
+    } catch (error) {
+      reportMutationError('Mark all as read', error);
+      return 0;
+    }
+  }, [userId, reportMutationError, updateNotifications]);
 
   // Mark bulk as read
-  const markBulkAsRead = useCallback((ids: string[]) => {
-    notificationService.markBulkAsRead(ids);
-    updateNotifications();
-  }, [updateNotifications]);
+  const markBulkAsRead = useCallback(async (ids: string[]) => {
+    try {
+      await notificationService.markBulkAsRead(ids);
+      updateNotifications();
+    } catch (error) {
+      reportMutationError('Bulk mark as read', error);
+    }
+  }, [reportMutationError, updateNotifications]);
 
   // Archive notification
-  const archive = useCallback((notificationId: string) => {
-    notificationService.archiveNotification(notificationId);
-    updateNotifications();
-  }, [updateNotifications]);
+  const archive = useCallback(async (notificationId: string) => {
+    try {
+      await notificationService.archiveNotification(notificationId);
+      updateNotifications();
+    } catch (error) {
+      reportMutationError('Archive', error);
+    }
+  }, [reportMutationError, updateNotifications]);
 
   // Delete notification
-  const remove = useCallback((notificationId: string) => {
-    notificationService.deleteNotification(notificationId);
-    updateNotifications();
-  }, [updateNotifications]);
+  const remove = useCallback(async (notificationId: string) => {
+    try {
+      await notificationService.deleteNotification(notificationId);
+      updateNotifications();
+    } catch (error) {
+      reportMutationError('Delete', error);
+    }
+  }, [reportMutationError, updateNotifications]);
 
   // Clear all
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback(async () => {
     if (!userId) return 0;
-    const count = notificationService.clearAll(userId);
-    updateNotifications();
-    return count;
-  }, [userId, updateNotifications]);
+    try {
+      const count = await notificationService.clearAll(userId);
+      updateNotifications();
+      return count;
+    } catch (error) {
+      reportMutationError('Clear all', error);
+      return 0;
+    }
+  }, [userId, reportMutationError, updateNotifications]);
 
   // Clear archived
-  const clearArchived = useCallback(() => {
+  const clearArchived = useCallback(async () => {
     if (!userId) return 0;
-    const count = notificationService.clearArchived(userId);
-    updateNotifications();
-    return count;
-  }, [userId, updateNotifications]);
+    try {
+      const count = await notificationService.clearArchived(userId);
+      updateNotifications();
+      return count;
+    } catch (error) {
+      reportMutationError('Clear archived', error);
+      return 0;
+    }
+  }, [userId, reportMutationError, updateNotifications]);
 
   // Get filtered notifications
   const getFiltered = useCallback((filter: NotificationFilter, limit?: number) => {
@@ -155,9 +206,14 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   const create = useCallback(
     (title: string, message: string, notificationOptions: any = {}) => {
       if (!userId) return null;
-      return notificationService.createNotification(userId, title, message, notificationOptions);
+      return notificationService
+        .createNotification(userId, title, message, notificationOptions)
+        .catch((error: unknown) => {
+          reportMutationError('Create', error);
+          return null;
+        });
     },
-    [userId]
+    [userId, reportMutationError]
   );
 
   return {
@@ -165,6 +221,7 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     notifications,
     unreadCount,
     loading,
+    error,
 
     // Actions
     markAsRead,

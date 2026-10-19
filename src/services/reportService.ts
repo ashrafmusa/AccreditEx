@@ -12,6 +12,7 @@ import { cloudinaryService } from './cloudinaryService';
 import { getTenantStamp } from '@/utils/tenantQuery';
 import { aiAgentService } from './aiAgentService';
 import { projectWorkSummary } from '@/utils/projectJourney';
+import { calculateChecklistCompliance } from '@/utils/complianceUtils';
 
 interface ReportGenerationOptions {
   projectId: string;
@@ -33,6 +34,9 @@ export const generateAIComplianceReport = async (
   options: ReportGenerationOptions
 ): Promise<AppDocument> => {
   const { project, reportType, userName } = options;
+  const checklistCompliance = calculateChecklistCompliance(
+    project.checklist ?? [],
+  );
 
   // Prepare comprehensive project data for AI analysis
   const projectData = {
@@ -41,10 +45,22 @@ export const generateAIComplianceReport = async (
     progress: project.progress,
     programId: project.programId,
     totalStandards: project.checklist?.length || 0,
+    applicableStandards: checklistCompliance.applicableCount,
+    complianceRate: checklistCompliance.complianceRate,
+    isAllNotApplicable: checklistCompliance.isAllNotApplicable,
     compliantStandards: project.checklist?.filter(item => item.status === ComplianceStatus.Compliant).length || 0,
     nonCompliantStandards: project.checklist?.filter(item => item.status === ComplianceStatus.NonCompliant).length || 0,
     partiallyCompliantStandards: project.checklist?.filter(item => item.status === ComplianceStatus.PartiallyCompliant).length || 0,
     notApplicableStandards: project.checklist?.filter(item => item.status === ComplianceStatus.NotApplicable).length || 0,
+    compliantPercent: checklistCompliance.applicableCount
+      ? (checklistCompliance.compliantCount / checklistCompliance.applicableCount) * 100
+      : 0,
+    partiallyCompliantPercent: checklistCompliance.applicableCount
+      ? (checklistCompliance.partiallyCompliantCount / checklistCompliance.applicableCount) * 100
+      : 0,
+    nonCompliantPercent: checklistCompliance.applicableCount
+      ? (checklistCompliance.nonCompliantCount / checklistCompliance.applicableCount) * 100
+      : 0,
     openCAPAs: projectWorkSummary(project).openCapa,
     completedCAPAs: (project.capaReports?.length || 0) - projectWorkSummary(project).openCapa,
     mockSurveysCompleted: project.mockSurveys?.filter(survey => survey.status === 'Completed').length || 0,
@@ -181,9 +197,9 @@ Generate a comprehensive ${reportType === 'complianceSummary' ? 'Compliance Summ
 
 **Compliance Statistics:**
 - Total Standards: ${data.totalStandards}
-- Compliant: ${data.compliantStandards} (${((data.compliantStandards / data.totalStandards) * 100).toFixed(1)}%)
-- Partially Compliant: ${data.partiallyCompliantStandards} (${((data.partiallyCompliantStandards / data.totalStandards) * 100).toFixed(1)}%)
-- Non-Compliant: ${data.nonCompliantStandards} (${((data.nonCompliantStandards / data.totalStandards) * 100).toFixed(1)}%)
+- Compliant: ${data.compliantStandards} (${data.compliantPercent.toFixed(1)}%)
+- Partially Compliant: ${data.partiallyCompliantStandards} (${data.partiallyCompliantPercent.toFixed(1)}%)
+- Non-Compliant: ${data.nonCompliantStandards} (${data.nonCompliantPercent.toFixed(1)}%)
 - Not Applicable: ${data.notApplicableStandards}
 
 **Quality Improvement:**
@@ -248,27 +264,7 @@ Generate the complete report now.
  * Calculate overall compliance score
  */
 function calculateComplianceScore(project: Project): number {
-  if (!project.checklist || project.checklist.length === 0) return 0;
-
-  const weights: Record<ComplianceStatus, number> = {
-    [ComplianceStatus.Compliant]: 1.0,
-    [ComplianceStatus.PartiallyCompliant]: 0.5,
-    [ComplianceStatus.NonCompliant]: 0.0,
-    [ComplianceStatus.NotApplicable]: 0.0, // Not counted
-    [ComplianceStatus.NotStarted]: 0.0
-  };
-
-  const applicableItems = project.checklist.filter(
-    item => item.status !== ComplianceStatus.NotApplicable
-  );
-
-  if (applicableItems.length === 0) return 0;
-
-  const totalScore = applicableItems.reduce((sum, item) => {
-    return sum + (weights[item.status] || 0);
-  }, 0);
-
-  return (totalScore / applicableItems.length) * 100;
+  return calculateChecklistCompliance(project.checklist ?? []).complianceRate;
 }
 
 /**
@@ -342,12 +338,12 @@ function generateFallbackReport(
 
 ## Executive Summary
 
-This report provides a comprehensive overview of the compliance status for ${project.name}. The project currently maintains an overall compliance level of ${complianceScore.toFixed(1)}%, with ${data.compliantStandards} out of ${data.totalStandards} applicable standards fully compliant.
+This report provides a comprehensive overview of the compliance status for ${project.name}. The project currently maintains an overall compliance level of ${complianceScore.toFixed(1)}%, with ${data.compliantStandards} out of ${data.applicableStandards} applicable standards fully compliant.${data.isAllNotApplicable ? ' All checklist items are marked Not Applicable.' : ''}
 
 ### Key Metrics:
-- **Compliant Standards:** ${data.compliantStandards} (${((data.compliantStandards / data.totalStandards) * 100).toFixed(1)}%)
-- **Partially Compliant:** ${data.partiallyCompliantStandards} (${((data.partiallyCompliantStandards / data.totalStandards) * 100).toFixed(1)}%)
-- **Non-Compliant:** ${data.nonCompliantStandards} (${((data.nonCompliantStandards / data.totalStandards) * 100).toFixed(1)}%)
+- **Compliant Standards:** ${data.compliantStandards} (${data.compliantPercent.toFixed(1)}%)
+- **Partially Compliant:** ${data.partiallyCompliantStandards} (${data.partiallyCompliantPercent.toFixed(1)}%)
+- **Non-Compliant:** ${data.nonCompliantStandards} (${data.nonCompliantPercent.toFixed(1)}%)
 - **Open CAPAs:** ${data.openCAPAs}
 - **Mock Surveys:** ${data.mockSurveysCompleted}
 
@@ -448,7 +444,7 @@ ${data.openCAPAs > 0 ?
 **Note:** This is an automated compliance report. For detailed analysis, please review individual standards and CAPA reports.
   `.trim();
 
-  const summary = `Project ${project.name} maintains ${complianceScore.toFixed(1)}% compliance with ${data.compliantStandards} of ${data.totalStandards} standards fully compliant. ${data.nonCompliantStandards > 0 ? `${data.nonCompliantStandards} standards require immediate attention. ` : ''}${data.openCAPAs > 0 ? `${data.openCAPAs} CAPA reports are pending completion.` : 'All CAPA reports completed.'}`;
+  const summary = `Project ${project.name} maintains ${complianceScore.toFixed(1)}% compliance with ${data.compliantStandards} of ${data.applicableStandards} applicable standards fully compliant. ${data.nonCompliantStandards > 0 ? `${data.nonCompliantStandards} standards require immediate attention. ` : ''}${data.openCAPAs > 0 ? `${data.openCAPAs} CAPA reports are pending completion.` : 'All CAPA reports completed.'}`;
 
   const recommendations = [
     data.nonCompliantStandards > 0 ? `Address ${data.nonCompliantStandards} non-compliant standards immediately` : null,

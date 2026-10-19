@@ -11,6 +11,7 @@
 import React, { useState } from "react";
 import { useCustomization } from "@/hooks/useCustomization";
 import { useUserStore } from "@/stores/useUserStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import { CUSTOMIZATION_PRESETS } from "@/types/customization";
 import {
   Settings,
@@ -27,11 +28,13 @@ import {
 
 export const CustomizationPanel: React.FC = () => {
   const { currentUser } = useUserStore();
+  const { t } = useTranslation();
   const {
     customization,
     presets,
     isLoading,
     error,
+    loadCustomization,
     updateTheme,
     updateLayout,
     updateFeatures,
@@ -49,7 +52,7 @@ export const CustomizationPanel: React.FC = () => {
   >("theme");
   const [isSaving, setIsSaving] = useState(false);
 
-  if (isLoading || !customization) {
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -57,10 +60,31 @@ export const CustomizationPanel: React.FC = () => {
     );
   }
 
+  if (!customization) {
+    return (
+      <div className="max-w-2xl mx-auto p-6 space-y-4" role="alert">
+        <p className="text-red-700 dark:text-red-300">
+          {error || t("customizationLoadFailed")}
+        </p>
+        {currentUser && (
+          <button
+            type="button"
+            onClick={() => void loadCustomization(currentUser.id)}
+            className="px-4 py-2 rounded-lg bg-brand-primary text-white"
+          >
+            {t("retry")}
+          </button>
+        )}
+      </div>
+    );
+  }
+
   const handleFileImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      importCustomization(file);
+      void importCustomization(file).catch(() => {
+        // The hook records the persistence error for display in this panel.
+      });
     }
   };
 
@@ -99,7 +123,11 @@ export const CustomizationPanel: React.FC = () => {
           </label>
 
           <button
-            onClick={resetCustomization}
+            onClick={() => {
+              void resetCustomization().catch(() => {
+                // The store records the persistence error for display in this panel.
+              });
+            }}
             className="px-4 py-2 bg-red-100 hover:bg-red-200 dark:bg-red-900 dark:hover:bg-red-800 text-red-700 dark:text-red-200 rounded-lg flex items-center gap-2 transition-colors"
           >
             <RotateCcw className="w-4 h-4" />
@@ -125,7 +153,11 @@ export const CustomizationPanel: React.FC = () => {
           {CUSTOMIZATION_PRESETS.map((preset) => (
             <button
               key={preset.id}
-              onClick={() => applyPreset(preset.id)}
+              onClick={() => {
+                void applyPreset(preset.id).catch(() => {
+                  // The store records the persistence error for display in this panel.
+                });
+              }}
               className={`p-4 rounded-lg border-2 transition-all hover:shadow-md ${
                 customization.preset === preset.id
                   ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"

@@ -4,6 +4,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { UserRole } from "@/types";
 import type { AIAction, CreateCapaAction, CreateRiskAction } from "@/utils/aiActions";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type Status = "idle" | "saving" | "done" | "error";
 
@@ -16,6 +17,7 @@ export default function AIActionCard({ action }: { action: AIAction }) {
 }
 
 function CapaCard({ action }: { action: CreateCapaAction }) {
+  const { t } = useTranslation();
   const projects = useProjectStore((s) => s.projects);
   const createCAPA = useProjectStore((s) => s.createCAPA);
   const currentUser = useUserStore((s) => s.currentUser);
@@ -64,35 +66,35 @@ function CapaCard({ action }: { action: CreateCapaAction }) {
   return (
     <div className="mt-2 rounded-md border border-sky-300 dark:border-sky-700 bg-white dark:bg-gray-800 p-3 text-sm">
       <p className="font-semibold text-gray-900 dark:text-white">
-        Suggested CAPA: {action.title}
+        {t("aiSuggestedCapa")}: {action.title}
       </p>
       {action.rootCause && (
         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap">
-          Root cause: {action.rootCause}
+          {t("aiRootCause")}: {action.rootCause}
         </p>
       )}
       <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap">
-        Corrective: {action.correctiveAction}
+        {t("aiCorrective")}: {action.correctiveAction}
       </p>
       {action.preventiveAction && (
         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1 whitespace-pre-wrap">
-          Preventive: {action.preventiveAction}
+          {t("aiPreventive")}: {action.preventiveAction}
         </p>
       )}
-      <p className="text-xs text-gray-500 mt-1">Due in {action.dueInDays} days</p>
+      <p className="text-xs text-gray-500 mt-1">{t("aiDueInDays", { days: action.dueInDays })}</p>
       {status === "done" ? (
         <p className="mt-2 text-xs font-medium text-green-600">
-          CAPA created.
+          {t("aiCapaCreated")}
         </p>
       ) : canWrite ? (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <select
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
-            aria-label="Project"
+            aria-label={t("projects")}
             className="max-w-[12rem] rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-2 py-1 text-xs"
           >
-            <option value="">Select project…</option>
+            <option value="">{t("aiSelectProject")}</option>
             {active.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.name}
@@ -105,17 +107,17 @@ function CapaCard({ action }: { action: CreateCapaAction }) {
             disabled={!projectId || status === "saving"}
             className="rounded bg-sky-500 px-3 py-1 text-xs font-medium text-white hover:bg-sky-600 disabled:opacity-50"
           >
-            {status === "saving" ? "Creating…" : "Create CAPA"}
+            {status === "saving" ? t("aiCreating") : t("aiCreateCapa")}
           </button>
         </div>
       ) : (
         <p className="mt-2 text-xs text-gray-500">
-          Your role can't create CAPAs.
+          {t("aiRoleCannotCreateCapas")}
         </p>
       )}
       {status === "error" && (
         <p className="mt-1 text-xs text-red-600">
-          Could not save. Please try again.
+          {t("aiSaveFailed")}
         </p>
       )}
     </div>
@@ -123,6 +125,7 @@ function CapaCard({ action }: { action: CreateCapaAction }) {
 }
 
 function RiskCard({ action }: { action: CreateRiskAction }) {
+  const { t } = useTranslation();
   const addRisk = useAppStore((s) => s.addRisk);
   const currentUser = useUserStore((s) => s.currentUser);
   const [status, setStatus] = useState<Status>("idle");
@@ -155,19 +158,19 @@ function RiskCard({ action }: { action: CreateRiskAction }) {
   return (
     <div className="mt-2 rounded-md border border-sky-300 dark:border-sky-700 bg-white dark:bg-gray-800 p-3 text-sm">
       <p className="font-semibold text-gray-900 dark:text-white">
-        Suggested risk: {action.title}
+        {t("aiSuggestedRisk")}: {action.title}
       </p>
       <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-        Likelihood {action.likelihood}/5 · Impact {action.impact}/5
+        {t("aiLikelihoodImpact", { likelihood: action.likelihood, impact: action.impact })}
       </p>
       {action.mitigationPlan && (
         <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-          Mitigation: {action.mitigationPlan}
+          {t("aiMitigation")}: {action.mitigationPlan}
         </p>
       )}
       {status === "done" ? (
         <p className="mt-2 text-xs font-medium text-green-600">
-          Added to the Risk Register.
+          {t("aiAddedToRiskRegister")}
         </p>
       ) : canWrite ? (
         <button
@@ -176,16 +179,16 @@ function RiskCard({ action }: { action: CreateRiskAction }) {
           disabled={status === "saving"}
           className="mt-2 rounded bg-sky-500 px-3 py-1 text-xs font-medium text-white hover:bg-sky-600 disabled:opacity-50"
         >
-          {status === "saving" ? "Adding…" : "Add to Risk Register"}
+          {status === "saving" ? t("aiAdding") : t("aiAddToRiskRegister")}
         </button>
       ) : (
         <p className="mt-2 text-xs text-gray-500">
-          Your role can't create risks.
+          {t("aiRoleCannotCreateRisks")}
         </p>
       )}
       {status === "error" && (
         <p className="mt-1 text-xs text-red-600">
-          Could not save. Please try again.
+          {t("aiSaveFailed")}
         </p>
       )}
     </div>

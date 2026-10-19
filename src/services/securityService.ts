@@ -326,12 +326,60 @@ export class SecurityService {
 
   // Data protection and encryption
   async encryptData(data: string, key: string): Promise<string> {
-    // Simple encryption for demonstration (in real app, use proper encryption)
-    return btoa(data);
+    if (!key) throw new Error('Encryption key is required');
+    const iv = globalThis.crypto.getRandomValues(new Uint8Array(12));
+    const keyMaterial = await globalThis.crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(key),
+    );
+    const cryptoKey = await globalThis.crypto.subtle.importKey(
+      'raw',
+      keyMaterial,
+      { name: 'AES-GCM' },
+      false,
+      ['encrypt'],
+    );
+    const ciphertext = await globalThis.crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      cryptoKey,
+      new TextEncoder().encode(data),
+    );
+    const encode = (bytes: Uint8Array) =>
+      btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join(''))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    return `v1.${encode(iv)}.${encode(new Uint8Array(ciphertext))}`;
   }
 
   async decryptData(encrypted: string, key: string): Promise<string> {
-    return atob(encrypted);
+    if (!key) throw new Error('Encryption key is required');
+    const [version, encodedIv, encodedCiphertext] = encrypted.split('.');
+    if (version !== 'v1' || !encodedIv || !encodedCiphertext) {
+      throw new Error('Unsupported encrypted data format');
+    }
+    const decode = (value: string) => {
+      const base64 = value.replace(/-/g, '+').replace(/_/g, '/');
+      const decoded = atob(base64 + '='.repeat((4 - (base64.length % 4)) % 4));
+      return Uint8Array.from(decoded, (character) => character.charCodeAt(0));
+    };
+    const keyMaterial = await globalThis.crypto.subtle.digest(
+      'SHA-256',
+      new TextEncoder().encode(key),
+    );
+    const cryptoKey = await globalThis.crypto.subtle.importKey(
+      'raw',
+      keyMaterial,
+      { name: 'AES-GCM' },
+      false,
+      ['decrypt'],
+    );
+    const plaintext = await globalThis.crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: decode(encodedIv) },
+      cryptoKey,
+      decode(encodedCiphertext),
+    );
+    return new TextDecoder().decode(plaintext);
   }
 
   // Audit trail management
@@ -372,8 +420,9 @@ export class SecurityService {
   }
 
   async verifyTwoFactorAuth(userId: string, code: string): Promise<boolean> {
-    // Implementation for 2FA verification
-    return true; // Mock implementation
+    void userId;
+    void code;
+    throw new Error('Two-factor authentication is not configured');
   }
 }
 

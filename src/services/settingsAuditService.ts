@@ -1,6 +1,7 @@
 import { SettingsAuditLog } from '@/types';
 import { collection, addDoc, query, orderBy, limit, getDocs, where, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'settings_audit_logs';
 
@@ -28,6 +29,7 @@ export const logSettingsChange = async (
 
         await addDoc(collection(db, COLLECTION_NAME), {
             ...logEntry,
+            ...getTenantStamp(),
             createdAt: Timestamp.now(),
         });
     } catch (error) {
@@ -44,7 +46,7 @@ export const getAuditLogs = async (options?: {
     endDate?: Date;
 }): Promise<SettingsAuditLog[]> => {
     try {
-        let q = query(collection(db, COLLECTION_NAME));
+        let q = getTenantQuery(COLLECTION_NAME);
 
         if (options?.userId) {
             q = query(q, where('userId', '==', options.userId));

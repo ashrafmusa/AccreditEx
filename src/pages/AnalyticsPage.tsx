@@ -15,13 +15,15 @@ import TaskDistributionByUserChart from "@/components/analytics/TaskDistribution
 import StatCard from "@/components/common/StatCard";
 
 import AnalyticsAIWidget from "@/components/analytics/AnalyticsAIWidget";
+import { calculateChecklistCompliance } from "@/utils/complianceUtils";
+import { getLocalizedValue } from "@/utils/localization";
 
 interface AnalyticsPageProps {
   setNavigation: (state: NavigationState) => void;
 }
 
 const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { projects } = useProjectStore();
   const { users } = useUserStore();
   const { departments, accreditationPrograms } = useAppStore();
@@ -53,11 +55,9 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
       (p) => p.status === "In Progress",
     ).length;
     const totalTasks = allChecklistItems.length;
-    const compliantTasks = allChecklistItems.filter(
-      (i) => i.status === "Compliant",
-    ).length;
-    const complianceRate =
-      totalTasks > 0 ? Math.round((compliantTasks / totalTasks) * 100) : 0;
+    const complianceRate = Math.round(
+      calculateChecklistCompliance(allChecklistItems).complianceRate,
+    );
 
     // Calculate real CAPA resolution rate from project data
     const allCapas = filteredProjects.flatMap((p) => p.capaReports || []);
@@ -134,7 +134,7 @@ const AnalyticsPage: React.FC<AnalyticsPageProps> = ({ setNavigation }) => {
             </option>
             {departments.map((d) => (
               <option key={d.id} value={d.id}>
-                {d.name.en || d.name.ar}
+                {getLocalizedValue(d.name, lang)}
               </option>
             ))}
           </select>

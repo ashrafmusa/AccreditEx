@@ -1,4 +1,4 @@
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, runTransaction } from 'firebase/firestore';
 import { db, auth } from '@/firebase/firebaseConfig';
 import { freeTierMonitor } from '@/services/freeTierMonitor';
 import { AppDocument } from '@/types';
@@ -34,6 +34,60 @@ export const addDocument = async (document: Omit<AppDocument, 'id'>): Promise<Ap
         console.error('Firebase addDocument error:', (error as Error).message);
         throw error;
     }
+};
+
+export const addDocumentWithProjectEvidence = async (
+    document: Omit<AppDocument, 'id'>,
+    projectId: string,
+    checklistItemId: string,
+): Promise<AppDocument> => {
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        throw new Error('User not authenticated. Please log in to upload documents.');
+    }
+
+    const documentRef = doc(documentsCollection);
+    const projectRef = doc(db, 'projects', projectId);
+    const cleanDocument = Object.fromEntries(
+        Object.entries(document).filter(([, value]) => value !== undefined),
+    );
+
+    await runTransaction(db, async (transaction) => {
+        const projectSnapshot = await transaction.get(projectRef);
+        if (!projectSnapshot.exists()) {
+            throw new Error('Project not found');
+        }
+
+        const projectData = projectSnapshot.data();
+        if (!Array.isArray(projectData.checklist)) {
+            throw new Error('Project checklist is unavailable');
+        }
+
+        let itemFound = false;
+        const checklist = projectData.checklist.map((item: Record<string, unknown>) => {
+            if (item.id !== checklistItemId) return item;
+            itemFound = true;
+            const evidenceFiles = Array.isArray(item.evidenceFiles)
+                ? item.evidenceFiles.filter((value): value is string => typeof value === 'string')
+                : [];
+            return {
+                ...item,
+                evidenceFiles: [...new Set([...evidenceFiles, documentRef.id])],
+            };
+        });
+        if (!itemFound) {
+            throw new Error('Checklist item not found');
+        }
+
+        transaction.set(documentRef, { ...cleanDocument, ...getTenantStamp() });
+        transaction.update(projectRef, {
+            checklist,
+            updatedAt: new Date().toISOString(),
+        });
+    });
+
+    freeTierMonitor.recordWrite(2);
+    return { id: documentRef.id, ...document } as AppDocument;
 };
 
 export const updateDocument = async (document: AppDocument): Promise<void> => {

@@ -785,6 +785,7 @@ export interface Risk {
   residualLikelihood?: number;
   residualImpact?: number;
   department?: string;
+  rcaData?: RootCauseAnalysisData;
 }
 
 export interface IncidentReport {
@@ -1022,6 +1023,7 @@ export interface TracerCheckpoint {
 
 export interface TracerTemplate {
   id: string;
+  organizationId?: string;
   name: string;
   tracerType: TracerType;
   description: string;
@@ -1032,6 +1034,7 @@ export interface TracerTemplate {
 
 export interface TracerSession {
   id: string;
+  organizationId?: string;
   templateId: string;
   tracerType: TracerType;
   title: string;
@@ -1094,6 +1097,7 @@ export interface CAPAReport {
   description?: string;
   checklistItemId: string;
   sourceProjectId?: string;
+  sourceIncidentId?: string;
   sourceStandardId?: string;
   assignedTo?: string;
   dueDate?: string;

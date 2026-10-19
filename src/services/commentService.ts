@@ -7,12 +7,10 @@ import {
     addDoc,
     collection,
     deleteDoc,
-    doc,
     getDocs,
     increment,
     onSnapshot,
     orderBy,
-    query,
     Timestamp,
     updateDoc,
     where,
@@ -24,8 +22,17 @@ import type {
     CreateCommentRequest,
     UpdateCommentRequest,
 } from '../types/comments';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COMMENTS_COLLECTION = 'comments';
+
+const getScopedCommentSnapshot = (commentId: string) =>
+    getDocs(
+        getTenantQuery(
+            COMMENTS_COLLECTION,
+            where('__name__', '==', commentId),
+        ),
+    );
 
 /**
  * Create a new comment
@@ -38,8 +45,15 @@ export async function createComment(
     userAvatar?: string
 ): Promise<Comment> {
     const commentsRef = collection(db, COMMENTS_COLLECTION);
+    const parentSnapshot = request.parentCommentId
+        ? await getScopedCommentSnapshot(request.parentCommentId)
+        : null;
+    if (request.parentCommentId && (!parentSnapshot || parentSnapshot.empty)) {
+        throw new Error(`Parent comment ${request.parentCommentId} was not found in this organization.`);
+    }
 
     const commentData = {
+        ...getTenantStamp(),
         documentId: request.documentId,
         author: {
             id: userId,
@@ -61,9 +75,8 @@ export async function createComment(
     const docRef = await addDoc(commentsRef, commentData);
 
     // If this is a reply, increment parent's reply count
-    if (request.parentCommentId) {
-        const parentRef = doc(db, COMMENTS_COLLECTION, request.parentCommentId);
-        await updateDoc(parentRef, {
+    if (parentSnapshot && !parentSnapshot.empty) {
+        await updateDoc(parentSnapshot.docs[0].ref, {
             replyCount: increment(1),
         });
     }
@@ -83,8 +96,9 @@ export async function createComment(
 export async function updateComment(
     request: UpdateCommentRequest
 ): Promise<void> {
-    const commentRef = doc(db, COMMENTS_COLLECTION, request.commentId);
-    await updateDoc(commentRef, {
+    const commentSnapshot = await getScopedCommentSnapshot(request.commentId);
+    if (commentSnapshot.empty) throw new Error(`Comment ${request.commentId} not found in this organization.`);
+    await updateDoc(commentSnapshot.docs[0].ref, {
         content: request.content,
         mentions: request.mentions || [],
         updatedAt: Timestamp.now(),
@@ -96,32 +110,32 @@ export async function updateComment(
  * Delete comment
  */
 export async function deleteComment(commentId: string): Promise<void> {
-    const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-    const commentSnap = await getDocs(
-        query(collection(db, COMMENTS_COLLECTION), where('__name__', '==', commentId))
-    );
+    const commentSnap = await getScopedCommentSnapshot(commentId);
+    if (commentSnap.empty) throw new Error(`Comment ${commentId} not found in this organization.`);
+    const commentRef = commentSnap.docs[0].ref;
 
-    if (!commentSnap.empty) {
-        const comment = commentSnap.docs[0].data();
+    const comment = commentSnap.docs[0].data();
 
-        // If has parent, decrement parent's reply count
-        if (comment.parentCommentId) {
-            const parentRef = doc(db, COMMENTS_COLLECTION, comment.parentCommentId);
-            await updateDoc(parentRef, {
-                replyCount: increment(-1),
-            });
+    // If has parent, decrement parent's reply count
+    if (comment.parentCommentId) {
+        const parentSnapshot = await getScopedCommentSnapshot(comment.parentCommentId);
+        if (parentSnapshot.empty) {
+            throw new Error(`Parent comment ${comment.parentCommentId} not found in this organization.`);
         }
-
-        // Delete all replies first
-        const repliesQuery = query(
-            collection(db, COMMENTS_COLLECTION),
-            where('parentCommentId', '==', commentId)
-        );
-        const repliesSnap = await getDocs(repliesQuery);
-        await Promise.all(
-            repliesSnap.docs.map((replyDoc) => deleteDoc(replyDoc.ref))
-        );
+        await updateDoc(parentSnapshot.docs[0].ref, {
+            replyCount: increment(-1),
+        });
     }
+
+    // Delete all replies first
+    const repliesQuery = getTenantQuery(
+        COMMENTS_COLLECTION,
+        where('parentCommentId', '==', commentId)
+    );
+    const repliesSnap = await getDocs(repliesQuery);
+    await Promise.all(
+        repliesSnap.docs.map((replyDoc) => deleteDoc(replyDoc.ref))
+    );
 
     await deleteDoc(commentRef);
 }
@@ -134,26 +148,21 @@ export async function toggleCommentResolution(
     userId: string,
     userName: string
 ): Promise<void> {
-    const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-    const commentSnap = await getDocs(
-        query(collection(db, COMMENTS_COLLECTION), where('__name__', '==', commentId))
-    );
+    const commentSnap = await getScopedCommentSnapshot(commentId);
+    if (commentSnap.empty) throw new Error(`Comment ${commentId} not found in this organization.`);
+    const comment = commentSnap.docs[0].data();
+    const isCurrentlyResolved = comment.isResolved || false;
 
-    if (!commentSnap.empty) {
-        const comment = commentSnap.docs[0].data();
-        const isCurrentlyResolved = comment.isResolved || false;
-
-        await updateDoc(commentRef, {
-            isResolved: !isCurrentlyResolved,
-            resolvedBy: !isCurrentlyResolved
-                ? {
-                    id: userId,
-                    name: userName,
-                    resolvedAt: Timestamp.now(),
-                }
-                : null,
-        });
-    }
+    await updateDoc(commentSnap.docs[0].ref, {
+        isResolved: !isCurrentlyResolved,
+        resolvedBy: !isCurrentlyResolved
+            ? {
+                id: userId,
+                name: userName,
+                resolvedAt: Timestamp.now(),
+            }
+            : null,
+    });
 }
 
 /**
@@ -164,21 +173,17 @@ export async function addReaction(
     emoji: string,
     userId: string
 ): Promise<void> {
-    const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-    const commentSnap = await getDocs(
-        query(collection(db, COMMENTS_COLLECTION), where('__name__', '==', commentId))
-    );
+    const commentSnap = await getScopedCommentSnapshot(commentId);
+    if (commentSnap.empty) throw new Error(`Comment ${commentId} not found in this organization.`);
 
-    if (!commentSnap.empty) {
-        const comment = commentSnap.docs[0].data();
-        const reactions = comment.reactions || {};
-        const userIds = reactions[emoji] || [];
+    const comment = commentSnap.docs[0].data();
+    const reactions = comment.reactions || {};
+    const userIds = reactions[emoji] || [];
 
-        if (!userIds.includes(userId)) {
-            userIds.push(userId);
-            reactions[emoji] = userIds;
-            await updateDoc(commentRef, { reactions });
-        }
+    if (!userIds.includes(userId)) {
+        userIds.push(userId);
+        reactions[emoji] = userIds;
+        await updateDoc(commentSnap.docs[0].ref, { reactions });
     }
 }
 
@@ -190,25 +195,21 @@ export async function removeReaction(
     emoji: string,
     userId: string
 ): Promise<void> {
-    const commentRef = doc(db, COMMENTS_COLLECTION, commentId);
-    const commentSnap = await getDocs(
-        query(collection(db, COMMENTS_COLLECTION), where('__name__', '==', commentId))
-    );
+    const commentSnap = await getScopedCommentSnapshot(commentId);
+    if (commentSnap.empty) throw new Error(`Comment ${commentId} not found in this organization.`);
 
-    if (!commentSnap.empty) {
-        const comment = commentSnap.docs[0].data();
-        const reactions = comment.reactions || {};
-        const userIds = reactions[emoji] || [];
+    const comment = commentSnap.docs[0].data();
+    const reactions = comment.reactions || {};
+    const userIds = reactions[emoji] || [];
 
-        const filteredIds = userIds.filter((id: string) => id !== userId);
-        if (filteredIds.length > 0) {
-            reactions[emoji] = filteredIds;
-        } else {
-            delete reactions[emoji];
-        }
-
-        await updateDoc(commentRef, { reactions });
+    const filteredIds = userIds.filter((id: string) => id !== userId);
+    if (filteredIds.length > 0) {
+        reactions[emoji] = filteredIds;
+    } else {
+        delete reactions[emoji];
     }
+
+    await updateDoc(commentSnap.docs[0].ref, { reactions });
 }
 
 /**
@@ -217,8 +218,8 @@ export async function removeReaction(
 export async function getDocumentComments(
     documentId: string
 ): Promise<Comment[]> {
-    const commentsQuery = query(
-        collection(db, COMMENTS_COLLECTION),
+    const commentsQuery = getTenantQuery(
+        COMMENTS_COLLECTION,
         where('documentId', '==', documentId),
         orderBy('createdAt', 'asc')
     );
@@ -245,8 +246,8 @@ export function subscribeToDocumentComments(
     documentId: string,
     callback: (comments: Comment[]) => void
 ): () => void {
-    const commentsQuery = query(
-        collection(db, COMMENTS_COLLECTION),
+    const commentsQuery = getTenantQuery(
+        COMMENTS_COLLECTION,
         where('documentId', '==', documentId),
         orderBy('createdAt', 'asc')
     );
@@ -301,8 +302,8 @@ export function buildCommentThreads(comments: Comment[]): CommentThread[] {
 export async function getUnresolvedCommentCount(
     documentId: string
 ): Promise<number> {
-    const commentsQuery = query(
-        collection(db, COMMENTS_COLLECTION),
+    const commentsQuery = getTenantQuery(
+        COMMENTS_COLLECTION,
         where('documentId', '==', documentId),
         where('isResolved', '==', false),
         where('parentCommentId', '==', null) // Only root comments

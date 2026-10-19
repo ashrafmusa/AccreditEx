@@ -144,5 +144,103 @@ export function createLabRecordService(db: Firestore) {
                 }
             }
         },
+        async writeMany<K extends LabLogKind>(
+            org: string,
+            kind: K,
+            records: LabLog<K>[],
+            revision: number,
+        ): Promise<LabRecordState> {
+            if (!LAB_LOG_KINDS.includes(kind) || records.length === 0 || records.length > 400) {
+                throw new Error("Invalid Lab Operations bulk write");
+            }
+            const cleaned = records.map((record) => {
+                const clean = JSON.parse(canonical(record)) as LabLog<K>;
+                validId(clean.id);
+                return { record: clean, sortAt: labLogDate(kind, clean) };
+            });
+            const ids = new Set(cleaned.map(({ record }) => record.id));
+            if (ids.size !== cleaned.length) throw new Error("Duplicate Lab Operations record IDs");
+            return runTransaction(db, async (tx) => {
+                const rootRef = root(org);
+                const rootSnapshot = await tx.get(rootRef);
+                const state = requireReady(rootSnapshot.data() as LabRecordState | undefined, org);
+                if (state.revision !== revision) {
+                    throw new Error("Lab records changed; reload before importing");
+                }
+                const recordRefs = cleaned.map(({ record }) =>
+                    doc(collection(rootRef, kind), validId(record.id)),
+                );
+                const snapshots = await Promise.all(recordRefs.map((ref) => tx.get(ref)));
+                if (snapshots.some((snapshot) => snapshot.exists())) {
+                    throw new Error("One or more imported Lab record IDs already exist");
+                }
+                recordRefs.forEach((ref, index) => {
+                    tx.set(ref, {
+                        organizationId: org,
+                        ...cleaned[index],
+                    });
+                });
+                const nextState = { ...state, revision: state.revision + 1 };
+                tx.update(rootRef, {
+                    revision: nextState.revision,
+                    lastOperation: {
+                        kind,
+                        id: "bulk-import",
+                        ids: records.map((record) => record.id),
+                        count: records.length,
+                    },
+                });
+                return nextState;
+            });
+        },
+        async writeIQCResultWithMetadata(
+            org: string,
+            result: LabLog<"iqcResults">,
+            data: LabOpsPersistedData,
+            revision: number,
+            previous?: LabLog<"iqcResults">,
+        ): Promise<number> {
+            const clean = JSON.parse(canonical(result)) as LabLog<"iqcResults">;
+            const cleanData = JSON.parse(canonical(labMetadata(data))) as Omit<
+                LabRecordState, "organizationId" | "revision" | "ready"
+            >;
+            return runTransaction(db, async (tx) => {
+                const rootRef = root(org);
+                const logRef = doc(collection(rootRef, "iqcResults"), validId(clean.id));
+                const [rootSnapshot, logSnapshot] = await Promise.all([
+                    tx.get(rootRef),
+                    tx.get(logRef),
+                ]);
+                const state = requireReady(rootSnapshot.data() as LabRecordState | undefined, org);
+                const storedResult = logSnapshot.data()?.record as LabLog<"iqcResults"> | undefined;
+
+                if (storedResult && canonical(storedResult) === canonical(clean)) {
+                    return state.revision;
+                }
+                if (state.revision !== revision) {
+                    throw new Error("Lab records changed; reload before logging");
+                }
+                if (previous) {
+                    if (!storedResult || canonical(storedResult) !== canonical(previous)) {
+                        throw new Error("IQC result changed; reload before creating its quality event");
+                    }
+                } else if (storedResult) {
+                    throw new Error("Conflicting Lab record ID; reload before retrying");
+                }
+
+                const nextRevision = state.revision + 1;
+                tx.set(logRef, {
+                    organizationId: org,
+                    record: clean,
+                    sortAt: logSnapshot.data()?.sortAt ?? labLogDate("iqcResults", clean),
+                });
+                tx.update(rootRef, {
+                    ...cleanData,
+                    revision: nextRevision,
+                    lastOperation: { kind: "iqcResults", id: clean.id },
+                });
+                return nextRevision;
+            });
+        },
     };
 }

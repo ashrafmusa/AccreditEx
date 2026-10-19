@@ -20,6 +20,7 @@ import {
 import { ProjectTemplate } from "@/types/templates";
 import { isEligibleProjectLead } from "@/utils/roleAccess";
 import React, { useEffect, useState } from "react";
+import { getLocalizedValue } from "@/utils/localization";
 
 interface CreateProjectPageProps {
   navigation:
@@ -32,7 +33,7 @@ const CreateProjectPage: React.FC<CreateProjectPageProps> = ({
   navigation,
   setNavigation,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const { addProject, projects, updateProject } = useProjectStore();
   const { users } = useUserStore();
   const {
@@ -714,7 +715,7 @@ Process all items shown. Be specific to healthcare accreditation standards.`;
               </option>
               {(useAppStore.getState().departments || []).map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.name.en || d.name.ar}
+                  {getLocalizedValue(d.name, lang)}
                 </option>
               ))}
             </select>
@@ -751,7 +752,7 @@ Process all items shown. Be specific to healthcare accreditation standards.`;
                       className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
                     />
                     <span className="text-sm text-gray-900 dark:text-white">
-                      {d.name.en || d.name.ar}
+                      {getLocalizedValue(d.name, lang)}
                     </span>
                   </label>
                 ))}

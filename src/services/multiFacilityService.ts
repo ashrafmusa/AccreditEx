@@ -6,7 +6,8 @@
  */
 
 import { db } from "@/firebase/firebaseConfig";
-import type { Branch } from "@/types";
+import { ComplianceStatus, type Branch, type ChecklistItem } from "@/types";
+import { calculateChecklistCompliance } from "@/utils/complianceUtils";
 import {
     collection,
     getDocs,
@@ -70,7 +71,13 @@ export async function getFacilityMetrics(
     if (!orgId || branches.length === 0) return [];
 
     // Fetch all projects for this org
-    let projectDocs: Array<{ branchId?: string; updatedAt?: string; status?: string; checklistItems?: Array<{ status: string }> }> = [];
+    let projectDocs: Array<{
+        branchId?: string;
+        updatedAt?: string;
+        status?: string;
+        checklist?: Pick<ChecklistItem, "status">[];
+        checklistItems?: Pick<ChecklistItem, "status">[];
+    }> = [];
     const projectsRef = collection(db, "projects");
     const q = query(projectsRef, where("organizationId", "==", orgId));
     const snap = await getDocs(q);
@@ -88,15 +95,19 @@ export async function getFacilityMetrics(
         let nonCompliant = 0;
         let openFindings = 0;
         let lastUpdated: string | null = null;
+        const branchItems: Pick<ChecklistItem, "status">[] = [];
 
         for (const proj of branchProjects) {
-            const items: Array<{ status: string }> = proj.checklistItems ?? [];
+            const items = proj.checklist ?? proj.checklistItems ?? [];
+            branchItems.push(...items);
             total += items.length;
-            compliant += items.filter((i) => i.status === "compliant").length;
-            partial += items.filter((i) => i.status === "partiallyCompliant").length;
-            nonCompliant += items.filter((i) => i.status === "nonCompliant").length;
+            compliant += items.filter((i) => i.status === ComplianceStatus.Compliant).length;
+            partial += items.filter((i) => i.status === ComplianceStatus.PartiallyCompliant).length;
+            nonCompliant += items.filter((i) => i.status === ComplianceStatus.NonCompliant).length;
             openFindings += items.filter(
-                (i) => i.status === "nonCompliant" || i.status === "partiallyCompliant",
+                (i) =>
+                    i.status === ComplianceStatus.NonCompliant ||
+                    i.status === ComplianceStatus.PartiallyCompliant,
             ).length;
 
             if (proj.updatedAt) {
@@ -106,8 +117,9 @@ export async function getFacilityMetrics(
             }
         }
 
-        const complianceRate =
-            total > 0 ? Math.round((compliant / total) * 100) : 0;
+        const complianceRate = Math.round(
+            calculateChecklistCompliance(branchItems).complianceRate,
+        );
 
         return {
             branchId: branch.id,

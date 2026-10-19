@@ -1215,7 +1215,10 @@ export function checkCompetencyAuthorization(
     };
 }
 
-export function applyWestgardRules(history: IQCResult[], z: number): WestgardRule[] {
+export function applyWestgardRules(
+    history: Pick<IQCResult, "sdFromMean">[],
+    z: number,
+): WestgardRule[] {
     const violations: WestgardRule[] = [];
 
     if (Math.abs(z) > 2) violations.push("1_2s");

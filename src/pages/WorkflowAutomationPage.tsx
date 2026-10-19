@@ -206,6 +206,7 @@ const WorkflowAutomationPage: React.FC = () => {
     fetchWorkflows,
     fetchExecutionLogs,
     addWorkflow,
+    updateWorkflow,
     deleteWorkflow,
     toggleWorkflowStatus,
     initializeEngine,
@@ -344,10 +345,7 @@ const WorkflowAutomationPage: React.FC = () => {
       conditions: builder.conditions,
     };
 
-    const workflowDef: WorkflowDefinition = {
-      id:
-        editingId ||
-        `wf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    const editableFields = {
       name: builder.name,
       description: builder.description,
       trigger: {
@@ -357,18 +355,30 @@ const WorkflowAutomationPage: React.FC = () => {
       },
       conditionGroup,
       actions: builder.actions,
-      status: "draft",
       category: builder.category,
       isTemplate: false,
-      createdBy: currentUser?.id || "system",
-      createdAt: now,
-      updatedAt: now,
-      executionCount: 0,
     };
 
-    await addWorkflow(workflowDef);
-    resetBuilder();
-  }, [builder, editingId, currentUser, addWorkflow, resetBuilder]);
+    try {
+      if (editingId) {
+        await updateWorkflow(editingId, editableFields);
+      } else {
+        const workflowDef: WorkflowDefinition = {
+          ...editableFields,
+          id: `wf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          status: "draft",
+          createdBy: currentUser?.id || "system",
+          createdAt: now,
+          updatedAt: now,
+          executionCount: 0,
+        };
+        await addWorkflow(workflowDef);
+      }
+      resetBuilder();
+    } catch {
+      toast.error(t("workflowSaveFailed") || "Workflow could not be saved. Please retry.");
+    }
+  }, [builder, editingId, currentUser, addWorkflow, updateWorkflow, resetBuilder, toast, t]);
 
   const handleEditWorkflow = useCallback((wf: WorkflowDefinition) => {
     setBuilder({
@@ -1376,6 +1386,12 @@ function getDefaultConfig(type: ActionType): Record<string, unknown> {
         assignToRoles: ["Admin"],
         priority: "normal",
       };
+    case "create_capa":
+      return {
+        title: "CAPA: {{entity.description}}",
+        description: "{{entity.description}}",
+        assignToRoles: [],
+      };
     case "change_status":
       return { targetStatus: "" };
     case "escalate":
@@ -1473,6 +1489,40 @@ const ActionConfigFields: React.FC<{
         </div>
       );
 
+    case "create_capa":
+      return (
+        <div className="space-y-2">
+          <Input
+            value={String(config.title || "")}
+            onChange={(e) => updateConfig("title", e.target.value)}
+            placeholder={t("workflowCapaTitlePlaceholder")}
+            className="text-xs"
+          />
+          <TextArea
+            value={String(config.description || "")}
+            onChange={(e) => updateConfig("description", e.target.value)}
+            placeholder={t("workflowCapaDescriptionPlaceholder")}
+            rows={2}
+            className="text-xs"
+          />
+          <Input
+            value={String(config.assignToRoles || "")}
+            onChange={(e) =>
+              updateConfig(
+                "assignToRoles",
+                e.target.value
+                  .split(",")
+                  .map((role) => role.trim())
+                  .filter(Boolean),
+              )
+            }
+            placeholder={t("assignToRolesPlaceholder")}
+            className="text-xs"
+          />
+          <p className="text-xs text-gray-500">{t("workflowSingleAssigneeHint")}</p>
+        </div>
+      );
+
     case "change_status":
       return (
         <Input
@@ -1516,6 +1566,27 @@ const ActionConfigFields: React.FC<{
           rows={2}
           className="text-xs"
         />
+      );
+
+    case "assign_user":
+      return (
+        <div className="space-y-2">
+          <Input
+            value={String(config.roles || "")}
+            onChange={(e) =>
+              updateConfig(
+                "roles",
+                e.target.value
+                  .split(",")
+                  .map((role) => role.trim())
+                  .filter(Boolean),
+              )
+            }
+            placeholder={t("assignToRolesPlaceholder")}
+            className="text-xs"
+          />
+          <p className="text-xs text-gray-500">{t("workflowSingleAssigneeHint")}</p>
+        </div>
       );
 
     case "set_field":

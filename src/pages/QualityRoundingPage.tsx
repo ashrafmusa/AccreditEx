@@ -38,6 +38,7 @@ import {
   PlayIcon,
   ArrowLeftIcon,
 } from "@/components/icons";
+import { getLocalizedValue } from "@/utils/localization";
 
 type RoundingTab = "templates" | "rounds" | "analytics";
 type PageMode =
@@ -90,13 +91,14 @@ const severityColors: Record<RoundingFindingSeverity, string> = {
 };
 
 export default function QualityRoundingPage() {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
   const currentUser = useUserStore((s) => s.currentUser);
   const departments = useAppStore((s) => s.departments);
 
   const [activeTab, setActiveTab] = useState<RoundingTab>("templates");
   const [mode, setMode] = useState<PageMode>("list");
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   // Data
   const [templates, setTemplates] = useState<RoundingTemplate[]>([]);
@@ -134,6 +136,7 @@ export default function QualityRoundingPage() {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
+    setLoadError(false);
     try {
       const [t, r] = await Promise.all([
         getRoundingTemplates(),
@@ -143,6 +146,7 @@ export default function QualityRoundingPage() {
       setRounds(r);
     } catch (e) {
       console.error("Failed to fetch rounding data:", e);
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -502,8 +506,8 @@ export default function QualityRoundingPage() {
           >
             <option value="">{t("selectDepartment")}</option>
             {departments.map((d) => (
-              <option key={d.id} value={d.name.en || d.name.ar}>
-                {d.name.en || d.name.ar}
+              <option key={d.id} value={getLocalizedValue(d.name, "en")}>
+                {getLocalizedValue(d.name, lang)}
               </option>
             ))}
           </select>
@@ -649,8 +653,8 @@ export default function QualityRoundingPage() {
           >
             <option value="">{t("selectDepartment")}</option>
             {departments.map((d) => (
-              <option key={d.id} value={d.name.en || d.name.ar}>
-                {d.name.en || d.name.ar}
+              <option key={d.id} value={getLocalizedValue(d.name, "en")}>
+                {getLocalizedValue(d.name, lang)}
               </option>
             ))}
           </select>
@@ -1342,6 +1346,15 @@ export default function QualityRoundingPage() {
           {t("qualityRoundingDescription")}
         </p>
       </div>
+
+      {loadError && (
+        <div role="alert" className="flex items-center justify-between rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          <span>{t("reportDataLoadFailed")}</span>
+          <button onClick={fetchData} className="font-semibold underline">
+            {t("retry")}
+          </button>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="flex border-b border-gray-200">

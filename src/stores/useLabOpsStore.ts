@@ -115,8 +115,12 @@ export interface LabOpsState {
     iqcResults: IQCResult[];
     addIQCAnalyte: (analyte: IQCAnalyte) => void;
     updateIQCAnalyte: (analyte: IQCAnalyte) => void;
-    addIQCResult: (result: IQCResult) => void | Promise<void>;
-    updateIQCResult: (result: IQCResult) => void | Promise<void>;
+    logIQCResultWithSideEffects: (
+        result: IQCResult,
+        qualityEvent?: QualityEvent,
+        previousResult?: IQCResult,
+    ) => Promise<IQCResult>;
+    importIQCResults: (results: IQCResult[]) => Promise<void>;
     getIQCResultsForAnalyte: (analyteId: string) => IQCResult[];
     addCompetencyRecord: (record: CompetencyRecord) => void;
     updateCompetencyRecord: (record: CompetencyRecord) => void;
@@ -516,17 +520,218 @@ export const useLabOpsStore = create<LabOpsState>((set, get) => ({
         }));
         void get().saveToFirestore();
     },
-    addIQCResult: (result) => {
-        if (get().recordMode) return writeOperationalRecord(get, set, "iqcResults", result);
-        set((s) => ({ iqcResults: [...s.iqcResults, result] }));
-        void get().saveToFirestore();
+    logIQCResultWithSideEffects: async (result, qualityEvent, previousResult) => {
+        const organizationId = get().loadedOrganizationId;
+        const generation = loadGeneration;
+        if (!organizationId || !get().hasLoadedFromFirestore
+            || organizationId !== useTenantStore.getState().organizationId) {
+            throw new Error("Load Lab Operations for the active organization before logging");
+        }
+
+        await get().flushPendingSaves();
+        if (generation !== loadGeneration || organizationId !== useTenantStore.getState().organizationId) {
+            throw new Error("Organization changed before the QC result could be saved");
+        }
+        if (get().syncStatus === "error") {
+            throw new Error(get().syncError || "Reload Lab Operations before logging");
+        }
+
+        const current = get();
+        const existingResult = current.iqcResults.find((record) => record.id === result.id);
+        if (previousResult) {
+            if (!existingResult || JSON.stringify(existingResult) !== JSON.stringify(previousResult)) {
+                throw new Error("IQC result changed; reload before creating its quality event");
+            }
+        } else if (existingResult) {
+            throw new Error("This IQC result has already been logged");
+        }
+        if (qualityEvent && current.qualityEvents.some((record) => record.id === qualityEvent.id
+            && JSON.stringify(record) !== JSON.stringify(qualityEvent))) {
+            throw new Error("Conflicting quality-event identifier");
+        }
+
+        const now = result.createdAt;
+        let resultToSave = { ...result };
+        let nextData = toPersistedData(current);
+        const nextIQCResults = previousResult
+            ? current.iqcResults.map((record) => record.id === result.id ? resultToSave : record)
+            : [...current.iqcResults, resultToSave];
+        let nextQualityEvents = current.qualityEvents;
+        let nextCAPARecords = current.capaRecords;
+        let nextQualityRisks = current.qualityRisks;
+        let nextReagents = current.reagents;
+
+        if (qualityEvent) {
+            resultToSave = { ...resultToSave, linkedQualityEventId: qualityEvent.id };
+            nextQualityEvents = current.qualityEvents.some((record) => record.id === qualityEvent.id)
+                ? current.qualityEvents.map((record) => record.id === qualityEvent.id ? qualityEvent : record)
+                : [...current.qualityEvents, qualityEvent];
+        }
+        if (!previousResult && resultToSave.rejected && resultToSave.reagentLot) {
+            const reagent = current.reagents.find((record) =>
+                record.lotNumber === resultToSave.reagentLot
+                && record.labSection.toLowerCase() === resultToSave.labSection.toLowerCase());
+            if (reagent) {
+                const riskId = `${resultToSave.id}-risk`;
+                const capaId = `${resultToSave.id}-capa`;
+                const createdAt = new Date(now);
+                if (!Number.isFinite(createdAt.getTime())) throw new Error("Invalid IQC result creation date");
+                const dueDate = new Date(createdAt.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+                const risk: QualityRiskRecord = {
+                    id: riskId,
+                    relatedCapaId: capaId,
+                    title: `Supplier-linked IQC instability: ${resultToSave.analyteCode} lot ${resultToSave.reagentLot}`,
+                    hazard: "Potential reagent lot instability causing analytical drift",
+                    potentialHarm: "Delayed reporting, inaccurate patient results, and increased rerun burden",
+                    labSection: resultToSave.labSection,
+                    owner: "Quality Manager",
+                    likelihood: 4,
+                    impact: 5,
+                    riskScore: 20,
+                    riskLevel: "critical",
+                    status: "open",
+                    relatedSupplierId: reagent.supplierId,
+                    relatedSupplierName: reagent.supplierName,
+                    relatedReagentLot: reagent.lotNumber,
+                    mitigationPlan: "Quarantine impacted lot, verify alternate lot performance, and complete supplier CAPA follow-up.",
+                    createdAt: now,
+                    updatedAt: now,
+                };
+                const capa: CAPARecord = {
+                    id: capaId,
+                    title: `CAPA: Investigate ${resultToSave.reagentLot} IQC rejection trend`,
+                    owner: "Section Supervisor",
+                    dueDate,
+                    status: "open",
+                    actionPlan: "Quarantine lot, repeat QC with alternate lot, perform calibration verification, notify supplier, and document disposition decision.",
+                    effectivenessCriteria: "Three consecutive in-control runs with no reject Westgard rules and documented supplier response.",
+                    createdAt: now,
+                    updatedAt: now,
+                };
+                resultToSave = { ...resultToSave, linkedRiskRecordId: riskId, linkedCapaId: capaId };
+                nextQualityRisks = [...current.qualityRisks, risk];
+                nextCAPARecords = [...current.capaRecords, capa];
+                nextReagents = current.reagents.map((record) => record.id !== reagent.id ? record : {
+                    ...record,
+                    status: "quarantine",
+                    qualityFlag: "under_investigation",
+                    notes: `${record.notes ? `${record.notes} | ` : ""}Auto-flagged from IQC reject (${resultToSave.id}).`,
+                    updatedAt: now,
+                });
+            }
+        }
+        nextData = {
+            ...nextData,
+            iqcResults: previousResult
+                ? nextIQCResults.map((record) => record.id === resultToSave.id ? resultToSave : record)
+                : [...current.iqcResults, resultToSave],
+            qualityEvents: nextQualityEvents,
+            capaRecords: nextCAPARecords,
+            qualityRisks: nextQualityRisks,
+            reagents: nextReagents,
+        };
+
+        set({ syncStatus: "saving", syncError: null });
+        try {
+            let recordRevision = current.recordRevision;
+            if (current.recordMode) {
+                recordRevision = await labRecordService.writeIQCResultWithMetadata(
+                    organizationId,
+                    resultToSave,
+                    nextData,
+                    current.recordRevision,
+                    previousResult,
+                );
+            } else {
+                await saveLabOpsDataWithRetry(nextData, 3, 500, organizationId);
+            }
+            if (generation !== loadGeneration || organizationId !== useTenantStore.getState().organizationId) {
+                throw new Error("Organization changed while the QC result was being saved");
+            }
+            set({
+                ...nextData,
+                recordRevision,
+                syncStatus: "synced",
+                syncError: null,
+                lastSyncedAt: new Date().toISOString(),
+            });
+            return resultToSave;
+        } catch (error) {
+            if (generation === loadGeneration && organizationId === useTenantStore.getState().organizationId) {
+                set({
+                    syncStatus: "error",
+                    syncError: error instanceof Error ? error.message : "QC result could not be saved",
+                });
+            }
+            throw error;
+        }
     },
-    updateIQCResult: (result) => {
-        if (get().recordMode) return writeOperationalRecord(get, set, "iqcResults", result, get().iqcResults.find((r) => r.id === result.id));
-        set((s) => ({
-            iqcResults: s.iqcResults.map((r) => (r.id === result.id ? result : r)),
-        }));
-        void get().saveToFirestore();
+    importIQCResults: async (results) => {
+        if (results.length === 0 || results.length > 400) {
+            throw new Error("Import between 1 and 400 QC records at a time");
+        }
+        const organizationId = get().loadedOrganizationId;
+        const generation = loadGeneration;
+        if (!organizationId || !get().hasLoadedFromFirestore
+            || organizationId !== useTenantStore.getState().organizationId) {
+            throw new Error("Load Lab Operations for the active organization before importing");
+        }
+        await get().flushPendingSaves();
+        if (generation !== loadGeneration || organizationId !== useTenantStore.getState().organizationId) {
+            throw new Error("Organization changed before the QC import could be saved");
+        }
+        const current = get();
+        const incomingIds = new Set(results.map((result) => result.id));
+        if (incomingIds.size !== results.length
+            || current.iqcResults.some((result) => incomingIds.has(result.id))) {
+            throw new Error("QC import contains duplicate result identifiers");
+        }
+        const nextResults = [...current.iqcResults, ...results];
+        if (current.recordMode) {
+            set({ syncStatus: "saving", syncError: null });
+            try {
+                const nextState = await labRecordService.writeMany(
+                    organizationId,
+                    "iqcResults",
+                    results,
+                    current.recordRevision,
+                );
+                if (generation !== loadGeneration
+                    || organizationId !== useTenantStore.getState().organizationId) {
+                    throw new Error("Organization changed while the QC import was being saved");
+                }
+                set({
+                    iqcResults: nextResults,
+                    recordRevision: nextState.revision,
+                    syncStatus: "synced",
+                    syncError: null,
+                    lastSyncedAt: new Date().toISOString(),
+                });
+            } catch (error) {
+                if (generation === loadGeneration
+                    && organizationId === useTenantStore.getState().organizationId) {
+                    set({
+                        syncStatus: "error",
+                        syncError: error instanceof Error ? error.message : "QC import failed",
+                    });
+                }
+                throw error;
+            }
+            return;
+        }
+        set({ iqcResults: nextResults, syncStatus: "saving", syncError: null });
+        await get().saveToFirestore(true);
+        const latest = get();
+        if (generation !== loadGeneration
+            || organizationId !== useTenantStore.getState().organizationId) {
+            throw new Error("Organization changed while the QC import was being saved");
+        }
+        if (latest.syncStatus !== "synced") {
+            set({
+                iqcResults: get().iqcResults.filter((result) => !incomingIds.has(result.id)),
+            });
+            throw new Error(latest.syncError || "QC import could not be saved");
+        }
     },
     getIQCResultsForAnalyte: (analyteId) =>
         get()

@@ -1,6 +1,7 @@
 import React, { useMemo, useEffect, useCallback } from "react";
 import { AppDocument } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
+import { getLocalizedValue } from "@/utils/localization";
 import { useSanitizedHTML } from "../../hooks/useSanitizedHTML";
 import { XMarkIcon } from "../icons";
 
@@ -86,7 +87,7 @@ const DocumentVersionComparisonModal: React.FC<
               className="text-xl font-semibold dark:text-dark-brand-text-primary"
             >
               {t("compareVersions") || "Compare Versions"}:{" "}
-              {document.name[lang]}
+              {getLocalizedValue(document.name, lang)}
             </h3>
             <p className="text-sm text-gray-500">
               {t("sideBySideComparison") || "Side-by-side comparison"}

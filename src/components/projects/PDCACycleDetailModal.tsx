@@ -47,7 +47,7 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
     generateSuggestions,
     isLoading: isLoadingSuggestions,
   } = usePDCASuggestions();
-  const { documents, addControlledDocument } = useAppStore();
+  const { documents, addControlledDocument, updateDocument } = useAppStore();
   const toast = useToast();
   const [activeTab, setActiveTab] = useState<PDCAStage | "History">("Plan");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
@@ -566,7 +566,10 @@ const PDCACycleDetailModal: React.FC<PDCACycleDetailModalProps> = ({
           isOpen={!!viewingDoc}
           onClose={() => setViewingDoc(null)}
           document={viewingDoc}
-          onSave={(doc) => setViewingDoc(null)}
+          onSave={async (doc) => {
+            await updateDocument(doc);
+            setViewingDoc(null);
+          }}
           standards={[]}
         />
       )}

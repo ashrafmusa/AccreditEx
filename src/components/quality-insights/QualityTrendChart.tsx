@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useTheme } from "@/components/common/ThemeProvider";
-import { Project, Risk } from "@/types";
+import type { MonthlyQualityOutcomeSnapshot } from "@/services/qualityOutcomeIntelligenceService";
 import {
   getChartTheme,
   ChartTooltip,
@@ -20,73 +20,38 @@ import {
 } from "@/utils/chartTheme";
 
 interface QualityTrendChartProps {
-  projects: Project[];
-  risks: Risk[];
+  snapshots: MonthlyQualityOutcomeSnapshot[];
+  historyError: boolean;
 }
 
 const QualityTrendChart: React.FC<QualityTrendChartProps> = ({
-  projects,
-  risks,
+  snapshots,
+  historyError,
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
 
-  // Generate trend data based on current metrics
-  // In a real app, this would come from historical snapshots
   const data = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-
-    // Calculate current metrics
-    const totalProjects = projects.length || 1;
-    const completedProjects = projects.filter(
-      (p) => p.status === "Completed",
-    ).length;
-    const activeProjects = projects.filter(
-      (p) => p.status === "In Progress",
-    ).length;
-    const currentCompliance = Math.round(
-      ((completedProjects + activeProjects) / totalProjects) * 100,
-    );
-
-    const totalRisks = risks.length || 1;
-    const mitigatedRisks = risks.filter(
-      (r) => r.status === "Mitigated" || r.status === "Closed",
-    ).length;
-    const currentRiskControl = Math.round((mitigatedRisks / totalRisks) * 100);
-
-    const currentScore = Math.round(
-      currentCompliance * 0.6 + currentRiskControl * 0.4,
-    );
-
-    // Simulate historical trend with some variance
-    return months.map((month, index) => {
-      // Create a slight upward trend ending at current values
-      const variance = (5 - index) * 2; // Higher variance in past months
-      const randomFluctuation = Math.random() * 5 - 2.5;
-
-      return {
-        month,
-        score: Math.min(
-          100,
-          Math.max(0, Math.round(currentScore - variance + randomFluctuation)),
-        ),
-        compliance: Math.min(
-          100,
-          Math.max(
-            0,
-            Math.round(currentCompliance - variance + randomFluctuation),
-          ),
-        ),
-        risk: Math.min(
-          100,
-          Math.max(
-            0,
-            Math.round(currentRiskControl - variance + randomFluctuation),
-          ),
-        ),
-      };
+    return snapshots.flatMap((snapshot) => {
+      if (
+        typeof snapshot.qualityScore !== "number" ||
+        typeof snapshot.complianceRate !== "number"
+      ) {
+        return [];
+      }
+      const date = new Date(`${snapshot.monthKey}-01T12:00:00`);
+      return [
+        {
+          month: date.toLocaleDateString(undefined, {
+            month: "short",
+            year: "2-digit",
+          }),
+          score: snapshot.qualityScore,
+          compliance: snapshot.complianceRate,
+        },
+      ];
     });
-  }, [projects, risks]);
+  }, [snapshots]);
 
   const ct = getChartTheme(theme);
 
@@ -124,62 +89,72 @@ const QualityTrendChart: React.FC<QualityTrendChartProps> = ({
         </div>
       </div>
 
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart
-            data={data}
-            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-          >
-            <defs>
-              <AreaGradientDef id="colorScore" color={CHART_COLORS.primary} />
-              <AreaGradientDef
-                id="colorCompliance"
-                color={CHART_COLORS.success}
+      {historyError ? (
+        <p className="py-12 text-center text-sm text-red-600 dark:text-red-400">
+          {t("qualityTrendSaveFailed")}
+        </p>
+      ) : data.length === 0 ? (
+        <p className="py-12 text-center text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+          {t("qualityTrendNoHistory")}
+        </p>
+      ) : (
+        <div className="h-[300px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart
+              data={data}
+              margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+            >
+              <defs>
+                <AreaGradientDef id="colorScore" color={CHART_COLORS.primary} />
+                <AreaGradientDef
+                  id="colorCompliance"
+                  color={CHART_COLORS.success}
+                />
+              </defs>
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke={ct.gridStroke}
               />
-            </defs>
-            <CartesianGrid
-              strokeDasharray="3 3"
-              vertical={false}
-              stroke={ct.gridStroke}
-            />
-            <XAxis
-              dataKey="month"
-              axisLine={false}
-              tickLine={false}
-              tick={ct.tickStyle}
-              dy={10}
-            />
-            <YAxis
-              axisLine={false}
-              tickLine={false}
-              tick={ct.tickStyle}
-              unit="%"
-            />
-            <Tooltip
-              content={<ChartTooltip formatValue={(v) => `${v}%`} />}
-              cursor={{ fill: ct.cursorFill }}
-            />
-            <Area
-              type="monotone"
-              dataKey="compliance"
-              stroke={CHART_COLORS.success}
-              strokeWidth={2}
-              fillOpacity={1}
-              fill="url(#colorCompliance)"
-              animationDuration={CHART_ANIMATION.duration}
-            />
-            <Area
-              type="monotone"
-              dataKey="score"
-              stroke={CHART_COLORS.primary}
-              strokeWidth={3}
-              fillOpacity={1}
-              fill="url(#colorScore)"
-              animationDuration={CHART_ANIMATION.duration}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </div>
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={ct.tickStyle}
+                dy={10}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={ct.tickStyle}
+                unit="%"
+              />
+              <Tooltip
+                content={<ChartTooltip formatValue={(v) => `${v}%`} />}
+                cursor={{ fill: ct.cursorFill }}
+              />
+              <Area
+                type="monotone"
+                dataKey="compliance"
+                stroke={CHART_COLORS.success}
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorCompliance)"
+                animationDuration={CHART_ANIMATION.duration}
+              />
+              <Area
+                type="monotone"
+                dataKey="score"
+                stroke={CHART_COLORS.primary}
+                strokeWidth={3}
+                fillOpacity={1}
+                fill="url(#colorScore)"
+                animationDuration={CHART_ANIMATION.duration}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
     </div>
   );
 };

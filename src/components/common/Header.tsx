@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
   onLogout,
 }) => {
   const { t } = useTranslation();
-  const { isOnline, pendingCount, isSyncing } = useOfflineSync();
+  const { isOnline, pendingCount, isSyncing, syncError } = useOfflineSync();
 
   return (
     <header className="h-16 bg-brand-surface dark:bg-dark-brand-surface border-b border-brand-border dark:border-dark-brand-border flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-sm">
@@ -87,6 +87,14 @@ const Header: React.FC<HeaderProps> = ({
                 />
               </svg>
               {t("syncing") || "Syncing..."}
+            </span>
+          )}
+          {isOnline && !isSyncing && pendingCount > 0 && (
+            <span
+              className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-amber-900 dark:text-amber-300"
+              title={syncError ? t(syncError) : t("pendingChanges")}
+            >
+              {pendingCount} {t("pendingChanges")}
             </span>
           )}
         </div>

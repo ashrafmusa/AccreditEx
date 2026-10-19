@@ -149,7 +149,7 @@ export class AnalyticsService {
    * Get data quality metrics
    */
   getDataQualityMetrics(configId?: string): DataQualityMetrics {
-    const store = useHISIntegrationStore();
+    const store = useHISIntegrationStore.getState();
     const configs = configId
       ? store.configurations.filter((c) => c.id === configId)
       : store.configurations;
@@ -266,7 +266,7 @@ export class AnalyticsService {
     }
 
     // Overall score (weighted average)
-    const overall = Math.round((syncHealth * 0.5 + dataQuality * 0.3 + systemStability * 0.2) / 100);
+    const overall = Math.round(syncHealth * 0.5 + dataQuality * 0.3 + systemStability * 0.2);
 
     // Determine trend
     let performanceTrend: 'improving' | 'stable' | 'declining' = 'stable';
@@ -436,7 +436,7 @@ export class AnalyticsService {
    * Compare performance between configurations
    */
   compareConfigurations(): Map<string, PerformanceAnalysis> {
-    const store = useHISIntegrationStore();
+    const store = useHISIntegrationStore.getState();
     const comparison = new Map<string, PerformanceAnalysis>();
 
     for (const config of store.configurations) {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useAppStore } from "@/stores/useAppStore";
 import { XMarkIcon } from "../icons";
+import { getLocalizedValue } from "@/utils/localization";
 
 interface ProcessMapMetadataModalProps {
   isOpen: boolean;
@@ -250,7 +251,7 @@ const ProcessMapMetadataModal: React.FC<ProcessMapMetadataModalProps> = ({
                           className="rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
                         />
                         <span className="text-sm text-gray-700 dark:text-gray-300">
-                          {dept.name[lang] || dept.name.en}
+                          {getLocalizedValue(dept.name, lang)}
                         </span>
                       </label>
                     ))}

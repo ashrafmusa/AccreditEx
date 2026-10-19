@@ -17,6 +17,7 @@ import {
 } from '@/types/changeControl';
 import {
     addDoc,
+    arrayUnion,
     collection,
     deleteDoc,
     doc,
@@ -107,21 +108,20 @@ export async function createChangeRequest(
 ): Promise<ChangeRequest> {
     try {
         const now = new Date();
+        const initialAuditEntry: AuditEntry = {
+            id: `audit-${Date.now()}`,
+            timestamp: now,
+            action: 'created',
+            performedBy: userId,
+            performedByName: request.requestedByName,
+            details: { status: 'draft' },
+        };
         const docRef = await addDoc(collection(db, 'changeRequests'), {
             ...request,
             ...getTenantStamp(),
             status: 'draft',
             approvals: [],
-            auditTrail: [
-                {
-                    id: `audit-${Date.now()}`,
-                    timestamp: Timestamp.fromDate(now),
-                    action: 'created',
-                    performedBy: userId,
-                    performedByName: request.requestedByName,
-                    details: { status: 'draft' },
-                },
-            ],
+            auditTrail: [{ ...initialAuditEntry, timestamp: Timestamp.fromDate(now) }],
             createdAt: Timestamp.fromDate(now),
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
@@ -134,7 +134,7 @@ export async function createChangeRequest(
             ...request,
             id: docRef.id,
             status: 'draft',
-            auditTrail: [],
+            auditTrail: [initialAuditEntry],
             createdAt: now,
             updatedAt: now,
             approvals: [],
@@ -163,11 +163,13 @@ export async function updateChangeRequest(
             details: Object.keys(updates),
         };
 
+        const fieldsToUpdate = { ...updates };
+        delete fieldsToUpdate.auditTrail;
         await updateDoc(ref, {
-            ...updates,
+            ...fieldsToUpdate,
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
-            auditTrail: [...(updates.auditTrail || []), auditEntry],
+            auditTrail: arrayUnion(auditEntry),
         });
     } catch (error) {
         console.error(`Failed to update change request ${id}:`, error);
@@ -201,14 +203,14 @@ export async function submitForApproval(
             status: 'submitted',
             requiredApprovals,
             approvalDeadline: Timestamp.fromDate(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)), // 7 days
-            auditTrail: {
+            auditTrail: arrayUnion({
                 id: `audit-${Date.now()}`,
                 timestamp: Timestamp.fromDate(now),
                 action: 'submitted_for_approval',
                 performedBy: userId,
                 performedByName: 'System',
                 details: { requiredApprovals },
-            },
+            }),
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
         });
@@ -252,14 +254,14 @@ export async function addApproval(
         await updateDoc(ref, {
             approvals: updatedApprovals,
             status: newStatus,
-            auditTrail: {
+            auditTrail: arrayUnion({
                 id: `audit-${Date.now()}`,
                 timestamp: Timestamp.fromDate(now),
                 action: 'approval_added',
                 performedBy: userId,
                 performedByName: 'System',
                 details: { approverId: approval.approverId, approved: approvalsCount >= request.requiredApprovals },
-            },
+            }),
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
         });
@@ -286,14 +288,14 @@ export async function updateImpact(
 
         await updateDoc(ref, {
             impact,
-            auditTrail: {
+            auditTrail: arrayUnion({
                 id: `audit-${Date.now()}`,
                 timestamp: Timestamp.fromDate(now),
                 action: 'impact_analysis_updated',
                 performedBy: userId,
                 performedByName: 'System',
                 details: { riskLevel: impact.riskLevel },
-            },
+            }),
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
         });
@@ -327,14 +329,14 @@ export async function recordImplementation(
         await updateDoc(ref, {
             implementation: record,
             status: 'implemented',
-            auditTrail: {
+            auditTrail: arrayUnion({
                 id: `audit-${Date.now()}`,
                 timestamp: Timestamp.fromDate(now),
                 action: 'implementation_recorded',
                 performedBy: userId,
                 performedByName: 'System',
                 details: { successCriteriaMet: implementation.successCriteriaMet },
-            },
+            }),
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
         });
@@ -363,14 +365,14 @@ export async function recordVerification(
 
         await updateDoc(ref, {
             verification: record,
-            auditTrail: {
+            auditTrail: arrayUnion({
                 id: `audit-${Date.now()}`,
                 timestamp: Timestamp.fromDate(now),
                 action: 'verification_recorded',
                 performedBy: userId,
                 performedByName: 'System',
                 details: { testResultsPass: verification.testResultsPass },
-            },
+            }),
             updatedAt: Timestamp.fromDate(now),
             updatedBy: userId,
         });

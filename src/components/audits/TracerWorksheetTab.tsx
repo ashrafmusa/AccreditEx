@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -17,6 +17,13 @@ import {
   CheckCircleIcon,
   ClipboardDocumentSearchIcon,
 } from "@/components/icons";
+import {
+  getTenantTracerTemplates,
+  getTracerSessions,
+  getTracerTemplates,
+  saveTracerSession,
+  saveTracerTemplate,
+} from "@/services/tracerPersistenceService";
 
 // ── Built-in Tracer Templates ──
 
@@ -497,17 +504,87 @@ const TracerWorksheetTab: React.FC = () => {
   );
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [filterType, setFilterType] = useState<string>("all");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [loadError, setLoadError] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [templates, setTemplates] =
+    useState<TracerTemplate[]>(BUILTIN_TEMPLATES);
+
+  useEffect(() => {
+    let isCurrent = true;
+    const loadTracerData = async () => {
+      setIsLoading(true);
+      setLoadError("");
+      try {
+        const [storedTemplates, storedSessions] = await Promise.all([
+          getTracerTemplates(),
+          getTracerSessions(),
+        ]);
+        let templates = storedTemplates;
+        if (isAdmin) {
+          const tenantDefaults = getTenantTracerTemplates(BUILTIN_TEMPLATES);
+          const storedIds = new Set(storedTemplates.map((template) => template.id));
+          const missingDefaults = tenantDefaults.filter(
+            (template) => !storedIds.has(template.id),
+          );
+          if (missingDefaults.length > 0) {
+            await Promise.all(missingDefaults.map(saveTracerTemplate));
+          }
+          templates = [...storedTemplates, ...missingDefaults];
+        } else if (templates.length === 0) {
+          templates = BUILTIN_TEMPLATES;
+        }
+        if (isCurrent) {
+          setSessions(storedSessions);
+          setTemplates(templates);
+        }
+      } catch (error) {
+        console.error("Failed to load tracer records:", error);
+        if (isCurrent) setLoadError(t("tracerLoadFailed"));
+      } finally {
+        if (isCurrent) setIsLoading(false);
+      }
+    };
+
+    void loadTracerData();
+    return () => {
+      isCurrent = false;
+    };
+  }, [isAdmin, t]);
 
   const filteredTemplates = useMemo(
     () =>
       filterType === "all"
-        ? BUILTIN_TEMPLATES
-        : BUILTIN_TEMPLATES.filter((t) => t.tracerType === filterType),
-    [filterType],
+        ? templates
+        : templates.filter((template) => template.tracerType === filterType),
+    [filterType, templates],
+  );
+
+  const persistSession = useCallback(
+    async (session: TracerSession): Promise<boolean> => {
+      setIsSaving(true);
+      setSaveError("");
+      try {
+        await saveTracerSession(session);
+        return true;
+      } catch (error) {
+        console.error("Failed to save tracer session:", error);
+        setSaveError(t("tracerSaveFailed"));
+        return false;
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [t],
   );
 
   const startTracer = useCallback(
-    (tmpl: TracerTemplate) => {
+    async (tmpl: TracerTemplate) => {
+      if (!currentUser?.id) {
+        setSaveError(t("tracerSaveFailed"));
+        return;
+      }
       const session: TracerSession = {
         id: uid(),
         templateId: tmpl.id,
@@ -519,12 +596,13 @@ const TracerWorksheetTab: React.FC = () => {
         status: "in_progress",
         createdAt: new Date().toISOString(),
       };
+      if (!(await persistSession(session))) return;
       setSessions((prev) => [...prev, session]);
       setActiveSession(session);
       setActiveStepIdx(0);
       setView("conduct");
     },
-    [currentUser],
+    [currentUser, persistSession, t],
   );
 
   const updateCheckpoint = useCallback(
@@ -535,37 +613,42 @@ const TracerWorksheetTab: React.FC = () => {
       value: string,
     ) => {
       if (!activeSession) return;
-      setActiveSession((prev) => {
-        if (!prev) return prev;
-        const steps = [...prev.steps];
-        const step = {
-          ...steps[stepIdx],
-          checkpoints: [...steps[stepIdx].checkpoints],
-        };
-        step.checkpoints[cpIdx] = {
-          ...step.checkpoints[cpIdx],
-          [field]: value,
-        };
-        steps[stepIdx] = step;
-        return { ...prev, steps };
-      });
+      const steps = [...activeSession.steps];
+      const step = {
+        ...steps[stepIdx],
+        checkpoints: [...steps[stepIdx].checkpoints],
+      };
+      step.checkpoints[cpIdx] = {
+        ...step.checkpoints[cpIdx],
+        [field]: value,
+      };
+      steps[stepIdx] = step;
+      const updated = { ...activeSession, steps };
+      setActiveSession(updated);
+      setSessions((prev) =>
+        prev.map((session) =>
+          session.id === updated.id ? updated : session,
+        ),
+      );
+      if (field === "result") void persistSession(updated);
     },
-    [activeSession],
+    [activeSession, persistSession],
   );
 
-  const completeSession = useCallback(() => {
+  const completeSession = useCallback(async () => {
     if (!activeSession) return;
     const completed = {
       ...activeSession,
       status: "completed" as const,
       completedAt: new Date().toISOString(),
     };
+    if (!(await persistSession(completed))) return;
     setSessions((prev) =>
       prev.map((s) => (s.id === completed.id ? completed : s)),
     );
     setActiveSession(null);
     setView("sessions");
-  }, [activeSession]);
+  }, [activeSession, persistSession]);
 
   const resumeSession = useCallback((s: TracerSession) => {
     setActiveSession(s);
@@ -631,6 +714,22 @@ const TracerWorksheetTab: React.FC = () => {
         </div>
       </div>
 
+      {isLoading && (
+        <p role="status" className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
+          {t("tracerLoading")}
+        </p>
+      )}
+      {loadError && (
+        <p role="alert" className="text-sm text-red-600">
+          {loadError}
+        </p>
+      )}
+      {saveError && (
+        <p role="alert" className="text-sm text-red-600">
+          {saveError}
+        </p>
+      )}
+
       {/* ── Templates ── */}
       {view === "templates" && (
         <div className="space-y-3">
@@ -674,6 +773,7 @@ const TracerWorksheetTab: React.FC = () => {
                   <Button
                     variant="primary"
                     onClick={() => startTracer(tmpl)}
+                    disabled={isLoading || isSaving}
                     className="text-xs shrink-0"
                   >
                     {t("tracerStart")}
@@ -866,6 +966,7 @@ const TracerWorksheetTab: React.FC = () => {
                           ([key, { labelKey, cls }]) => (
                             <button
                               key={key}
+                              disabled={isSaving}
                               onClick={() =>
                                 updateCheckpoint(
                                   activeStepIdx,
@@ -913,29 +1014,43 @@ const TracerWorksheetTab: React.FC = () => {
           <div className="flex justify-between">
             <Button
               variant="ghost"
-              disabled={activeStepIdx === 0}
-              onClick={() => setActiveStepIdx((i) => i - 1)}
+              disabled={isSaving}
+              onClick={() => {
+                if (activeSession) void persistSession(activeSession);
+              }}
               className="text-xs"
             >
-              {t("tracerPrevious")}
+              {isSaving ? t("tracerSaving") : t("tracerSaveProgress")}
             </Button>
-            {activeStepIdx < activeSession.steps.length - 1 ? (
+            <div className="flex gap-2">
               <Button
-                variant="primary"
-                onClick={() => setActiveStepIdx((i) => i + 1)}
+                variant="ghost"
+                disabled={activeStepIdx === 0}
+                onClick={() => setActiveStepIdx((i) => i - 1)}
                 className="text-xs"
               >
-                {t("tracerNext")}
+                {t("tracerPrevious")}
               </Button>
-            ) : (
-              <Button
-                variant="primary"
-                onClick={completeSession}
-                className="text-xs"
-              >
-                {t("tracerComplete")}
-              </Button>
-            )}
+              {activeStepIdx < activeSession.steps.length - 1 ? (
+                <Button
+                  variant="primary"
+                  disabled={isSaving}
+                  onClick={() => setActiveStepIdx((i) => i + 1)}
+                  className="text-xs"
+                >
+                  {t("tracerNext")}
+                </Button>
+              ) : (
+                <Button
+                  variant="primary"
+                  disabled={isSaving}
+                  onClick={completeSession}
+                  className="text-xs"
+                >
+                  {t("tracerComplete")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       )}

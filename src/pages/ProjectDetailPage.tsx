@@ -59,7 +59,7 @@ const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
     generateReport,
   } = useProjectStore();
   const { currentUser } = useUserStore();
-  const { accreditationPrograms, documents, standards, risks, addDocument } =
+  const { accreditationPrograms, documents, standards, risks, refreshDocuments } =
     useAppStore();
   const toast = useToast();
   const { t, lang } = useTranslation();
@@ -271,7 +271,7 @@ Be specific and actionable.`;
       if (
         !useAppStore.getState().documents.some((doc) => doc.id === reportDoc.id)
       ) {
-        addDocument(reportDoc);
+        await refreshDocuments();
       }
 
       toast.success(t("projectReportGenerated"));

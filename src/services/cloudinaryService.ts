@@ -921,6 +921,27 @@ class CloudinaryService {
       xhr.send(formData);
     });
   }
+
+  async healthCheck(): Promise<"online" | "degraded" | "offline"> {
+    if (this.cloudName === "demo" || this.uploadPreset === "ml_default") {
+      return "degraded";
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch(
+        `https://res.cloudinary.com/${encodeURIComponent(this.cloudName)}/image/upload/sample`,
+        { method: "HEAD", signal: controller.signal },
+      );
+      if (response.ok) return "online";
+      return response.status >= 500 ? "offline" : "degraded";
+    } catch {
+      return "offline";
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
 }
 
 export type { CloudinaryService };

@@ -11,13 +11,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
     getPendingSyncQueue,
-    removeSyncedItem,
-    incrementSyncRetry,
     getPendingSyncCount,
     pruneOldCache,
 } from '@/services/offlineStorage';
 
-const MAX_RETRIES = 5;
 const SYNC_DELAY_MS = 3000; // Wait 3s after coming online before syncing
 
 export interface OfflineSyncState {
@@ -63,29 +60,10 @@ export function useOfflineSync() {
         try {
             const queue = await getPendingSyncQueue();
 
-            for (const item of queue) {
-                if (!navigator.onLine) break; // Stop if we go offline again
-                if (item.retries >= MAX_RETRIES) {
-                    // Too many retries — remove from queue
-                    if (item.id != null) await removeSyncedItem(item.id);
-                    continue;
-                }
-
-                try {
-                    // The actual Firestore write would happen here in a real integration.
-                    // For now, we mark as synced. The mutation was already applied optimistically
-                    // to the UI via Zustand stores. The actual write happens through the
-                    // existing service layer when it retries on reconnection.
-                    if (item.id != null) await removeSyncedItem(item.id);
-                } catch {
-                    if (item.id != null) await incrementSyncRetry(item.id);
-                }
-            }
-
             setState((s) => ({
                 ...s,
                 isSyncing: false,
-                lastSyncAt: Date.now(),
+                syncError: queue.length > 0 ? 'offlineSyncUnavailable' : null,
             }));
 
             await refreshPendingCount();

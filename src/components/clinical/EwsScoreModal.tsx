@@ -8,6 +8,7 @@
  */
 
 import { XMarkIcon } from "@/components/icons";
+import { useTranslation } from "@/hooks/useTranslation";
 import React, { useMemo, useState } from "react";
 
 // ── NEWS2 scoring tables ──────────────────────────────────────────────────────
@@ -27,16 +28,14 @@ function scoreSpO2Scale1(spo2: number): number {
   return 0;
 }
 
-function scoreSpO2Scale2(spo2: number, onO2: boolean): number {
-  // Scale 2 for hypercapnic respiratory failure patients
+export function scoreSpO2Scale2(spo2: number, onO2: boolean): number {
   if (spo2 <= 83) return 3;
   if (spo2 <= 85) return 2;
   if (spo2 <= 87) return 1;
-  if (spo2 >= 93 && onO2) return 3;
-  if (spo2 >= 95 && onO2) return 3;
-  if (spo2 <= 92 && !onO2) return 0;
-  if (spo2 <= 94 && !onO2) return 0;
-  return 0;
+  if (spo2 <= 92 || !onO2) return 0;
+  if (spo2 <= 94) return 1;
+  if (spo2 <= 96) return 2;
+  return 3;
 }
 
 function scoreSBP(sbp: number): number {
@@ -73,41 +72,37 @@ function getRiskBand(
   score: number,
   hasScore3: boolean,
 ): {
-  label: string;
+  labelKey: string;
   color: string;
   bg: string;
-  action: string;
+  actionKey: string;
 } {
   if (score >= 7)
     return {
-      label: "HIGH — Clinical Emergency",
+      labelKey: "ewsRiskHigh",
       color: "text-red-700 dark:text-red-400",
       bg: "bg-red-100 dark:bg-red-900/30",
-      action:
-        "Continuous monitoring. Urgent review by senior clinician. Consider HDU/ICU transfer.",
+      actionKey: "ewsActionHigh",
     };
   if (score >= 5 || hasScore3)
     return {
-      label: "MEDIUM — Urgent Review",
+      labelKey: "ewsRiskMedium",
       color: "text-orange-700 dark:text-orange-400",
       bg: "bg-orange-100 dark:bg-orange-900/30",
-      action:
-        "30-minute monitoring. Urgent review by doctor or senior nurse. Escalation protocol.",
+      actionKey: "ewsActionMedium",
     };
   if (score >= 1)
     return {
-      label: "LOW — Increased Monitoring",
+      labelKey: "ewsRiskLowIncreased",
       color: "text-yellow-700 dark:text-yellow-400",
       bg: "bg-yellow-100 dark:bg-yellow-900/30",
-      action:
-        "4–6 hourly observations. Ward nurse review. Inform responsible clinician.",
+      actionKey: "ewsActionLowIncreased",
     };
   return {
-    label: "LOW — Routine Monitoring",
+    labelKey: "ewsRiskLowRoutine",
     color: "text-green-700 dark:text-green-400",
     bg: "bg-green-100 dark:bg-green-900/30",
-    action:
-      "Minimum 12-hourly observations. Standard ward care. Continue regular assessment.",
+    actionKey: "ewsActionLowRoutine",
   };
 }
 
@@ -120,6 +115,7 @@ interface EwsScoreModalProps {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
+  const { t } = useTranslation();
   const [rr, setRr] = useState<string>("");
   const [spo2, setSpo2] = useState<string>("");
   const [useScale2, setUseScale2] = useState(false);
@@ -158,27 +154,27 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
       total,
       hasScore3,
       breakdown: [
-        { label: "Respiratory Rate", value: rrN, score: sRR, unit: "bpm" },
-        { label: "SpO₂", value: spo2N, score: sSPO2, unit: "%" },
+        { label: "ewsRespiratoryRate", value: rrN, score: sRR, unit: "bpm" },
+        { label: "ewsSpo2", value: spo2N, score: sSPO2, unit: "%" },
         {
-          label: "Supplemental O₂",
-          value: onO2 ? "Yes" : "No",
+          label: "ewsSupplementalOxygen",
+          value: onO2 ? t("yes") : t("no"),
           score: sO2,
           unit: "",
         },
-        { label: "Systolic BP", value: sbpN, score: sSBP, unit: "mmHg" },
-        { label: "Heart Rate", value: hrN, score: sHR, unit: "bpm" },
-        { label: "Temperature", value: tempN, score: sTemp, unit: "°C" },
+        { label: "ewsSystolicBp", value: sbpN, score: sSBP, unit: "mmHg" },
+        { label: "ewsHeartRate", value: hrN, score: sHR, unit: "bpm" },
+        { label: "ewsTemperature", value: tempN, score: sTemp, unit: "°C" },
         {
-          label: "Consciousness (AVPU)",
-          value: avpu === "Alert" ? "Alert" : "Not Alert",
+          label: "ewsConsciousness",
+          value: avpu === "Alert" ? t("ewsAlert") : t("ewsNotAlert"),
           score: sAvpu,
           unit: "",
         },
       ],
       risk: getRiskBand(total, hasScore3),
     };
-  }, [rr, spo2, useScale2, onO2, sbp, hr, temp, avpu]);
+  }, [rr, spo2, useScale2, onO2, sbp, hr, temp, avpu, t]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
@@ -187,10 +183,10 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
         <div className="flex items-center justify-between p-5 border-b border-gray-200 dark:border-dark-brand-border">
           <div>
             <h2 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-              NEWS2 Early Warning Score Calculator
+              {t("ewsTitle")}
             </h2>
             <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
-              Royal College of Physicians NEWS2 (2017) · SMCS.87 compliance
+              {t("ewsSubtitle")}
             </p>
           </div>
           <button
@@ -215,8 +211,7 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
               htmlFor="scale2"
               className="text-sm text-blue-800 dark:text-blue-300"
             >
-              Use SpO₂ Scale 2 (for patients with hypercapnic respiratory
-              failure / target SpO₂ 88–92%)
+              {t("ewsScale2Description")}
             </label>
           </div>
 
@@ -225,43 +220,43 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
             {[
               {
                 id: "rr",
-                label: "Respiratory Rate",
+                label: "ewsRespiratoryRate",
                 unit: "breaths/min",
                 value: rr,
                 set: setRr,
-                placeholder: "e.g. 18",
+                placeholder: t("ewsRespiratoryRateExample"),
               },
               {
                 id: "spo2",
-                label: "SpO₂",
+                label: "ewsSpo2",
                 unit: "%",
                 value: spo2,
                 set: setSpo2,
-                placeholder: "e.g. 97",
+                placeholder: t("ewsSpo2Example"),
               },
               {
                 id: "sbp",
-                label: "Systolic Blood Pressure",
+                label: "ewsSystolicBpLong",
                 unit: "mmHg",
                 value: sbp,
                 set: setSbp,
-                placeholder: "e.g. 120",
+                placeholder: t("ewsSystolicBpExample"),
               },
               {
                 id: "hr",
-                label: "Heart Rate",
+                label: "ewsHeartRate",
                 unit: "bpm",
                 value: hr,
                 set: setHr,
-                placeholder: "e.g. 80",
+                placeholder: t("ewsHeartRateExample"),
               },
               {
                 id: "temp",
-                label: "Temperature",
+                label: "ewsTemperature",
                 unit: "°C",
                 value: temp,
                 set: setTemp,
-                placeholder: "e.g. 37.2",
+                placeholder: t("ewsTemperatureExample"),
               },
             ].map((f) => (
               <div key={f.id}>
@@ -281,18 +276,18 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
 
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Consciousness (AVPU)
+                {t("ewsConsciousness")}
               </label>
               <select
                 value={avpu}
                 onChange={(e) => setAvpu(e.target.value as typeof avpu)}
                 className="w-full rounded-lg border border-gray-300 dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm"
               >
-                <option value="Alert">Alert</option>
-                <option value="C">Confusion (new)</option>
-                <option value="V">Voice</option>
-                <option value="P">Pain</option>
-                <option value="U">Unresponsive</option>
+                <option value="Alert">{t("ewsAlert")}</option>
+                <option value="C">{t("ewsConfusion")}</option>
+                <option value="V">{t("ewsVoice")}</option>
+                <option value="P">{t("ewsPain")}</option>
+                <option value="U">{t("ewsUnresponsive")}</option>
               </select>
             </div>
           </div>
@@ -310,7 +305,7 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
               htmlFor="o2"
               className="text-sm text-brand-text-primary dark:text-dark-brand-text-primary"
             >
-              Patient on supplemental oxygen (+2 points)
+              {t("ewsOnSupplementalOxygen")}
             </label>
           </div>
 
@@ -325,10 +320,10 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
                   {result.total}
                 </div>
                 <div className={`text-sm font-semibold ${result.risk.color}`}>
-                  {result.risk.label}
+                  {t(result.risk.labelKey)}
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                  {result.risk.action}
+                  {t(result.risk.actionKey)}
                 </div>
               </div>
 
@@ -338,13 +333,13 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
                   <thead className="bg-gray-50 dark:bg-dark-brand-surface">
                     <tr>
                       <th className="px-3 py-2 text-left text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                        Parameter
+                        {t("ewsParameter")}
                       </th>
                       <th className="px-3 py-2 text-center text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                        Value
+                        {t("ewsValue")}
                       </th>
                       <th className="px-3 py-2 text-center text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                        Score
+                        {t("ewsScore")}
                       </th>
                     </tr>
                   </thead>
@@ -361,7 +356,7 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
                         }
                       >
                         <td className="px-3 py-2 text-brand-text-primary dark:text-dark-brand-text-primary">
-                          {row.label}
+                          {t(row.label)}
                         </td>
                         <td className="px-3 py-2 text-center text-brand-text-secondary dark:text-dark-brand-text-secondary">
                           {row.value}
@@ -374,7 +369,7 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
                     ))}
                     <tr className="bg-gray-50 dark:bg-dark-brand-surface font-bold">
                       <td className="px-3 py-2 text-brand-text-primary dark:text-dark-brand-text-primary">
-                        TOTAL
+                        {t("ewsTotal")}
                       </td>
                       <td />
                       <td className="px-3 py-2 text-center text-brand-text-primary dark:text-dark-brand-text-primary">
@@ -389,7 +384,7 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
 
           {!result && (
             <p className="text-center text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary py-4">
-              Enter all vital signs above to calculate the NEWS2 score.
+              {t("ewsEnterVitals")}
             </p>
           )}
         </div>
@@ -399,7 +394,7 @@ const EwsScoreModal: React.FC<EwsScoreModalProps> = ({ onClose }) => {
             onClick={onClose}
             className="w-full py-2.5 rounded-lg border border-gray-200 dark:border-dark-brand-border text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary hover:bg-gray-50 dark:hover:bg-dark-brand-surface transition-colors"
           >
-            Close
+            {t("close")}
           </button>
         </div>
       </div>

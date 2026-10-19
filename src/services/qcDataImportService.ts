@@ -5,6 +5,8 @@
  */
 
 import type { QCData, WestgardRule } from './limsIntegration/types';
+import { applyWestgardRules } from '@/types/labOps';
+import type { WestgardRule as LabWestgardRule } from '@/types/labOps';
 
 export type QCImportSource = 'biorad_unity' | 'randox' | 'excel_csv' | 'manual';
 
@@ -83,39 +85,35 @@ function computeZScore(value: number, mean: number, sd: number): number {
     return (value - mean) / sd;
 }
 
+const WESTGARD_PRIORITY: readonly LabWestgardRule[] = [
+    '1_3s',
+    '2_2s',
+    'R_4s',
+    '4_1s',
+    '10_x',
+    '1_2s',
+];
+
+const WESTGARD_IMPORT_RULES: Record<LabWestgardRule, WestgardRule> = {
+    '1_2s': '1-2s',
+    '1_3s': '1-3s',
+    '2_2s': '2-2s',
+    R_4s: 'R-4s',
+    '4_1s': '4-1s',
+    '10_x': '10x',
+};
+
 function detectWestgardViolation(
     zScore: number,
-    _recentZScores: number[] = [],
+    recentZScores: number[] = [],
 ): WestgardRule {
-    const absZ = Math.abs(zScore);
-    // 1-3s: single control exceeds ±3SD
-    if (absZ > 3) return '1-3s';
-    // 1-2s: single control exceeds ±2SD (warning)
-    if (absZ > 2) return '1-2s';
-    // Additional rules require historical context (recent values)
-    // 2-2s: two consecutive in same direction exceed ±2SD
-    if (_recentZScores.length >= 1) {
-        const prev = _recentZScores[_recentZScores.length - 1];
-        if (
-            (zScore > 2 && prev > 2) ||
-            (zScore < -2 && prev < -2)
-        ) {
-            return '2-2s';
-        }
-        // R-4s: range between consecutive controls exceeds 4SD
-        if (Math.abs(zScore - prev) > 4) return 'R-4s';
-    }
-    // 4-1s: 4 consecutive on same side of mean exceed ±1SD
-    if (_recentZScores.length >= 3) {
-        const last4 = [..._recentZScores.slice(-3), zScore];
-        if (last4.every((z) => z > 1) || last4.every((z) => z < -1)) return '4-1s';
-    }
-    // 10x: 10 consecutive on same side of mean
-    if (_recentZScores.length >= 9) {
-        const last10 = [..._recentZScores.slice(-9), zScore];
-        if (last10.every((z) => z > 0) || last10.every((z) => z < 0)) return '10x';
-    }
-    return 'none';
+    const history = recentZScores
+        .slice()
+        .reverse()
+        .map((sdFromMean) => ({ sdFromMean }));
+    const violations = new Set(applyWestgardRules(history, zScore));
+    const highestPriority = WESTGARD_PRIORITY.find((rule) => violations.has(rule));
+    return highestPriority ? WESTGARD_IMPORT_RULES[highestPriority] : 'none';
 }
 
 // ── CSV Parsing ──────────────────────────────────────────
@@ -140,7 +138,7 @@ function mapRowToQCData(
     row: Record<string, string>,
     mapping: QCColumnMapping,
     index: number,
-    recentZScores: number[],
+    recentZScoresBySeries: Map<string, number[]>,
     errors: QCImportValidationError[],
     source: QCImportSource,
 ): QCData | null {
@@ -157,18 +155,30 @@ function mapRowToQCData(
         errors.push({ row: index + 2, field: mapping.mean, message: 'Invalid or missing mean' });
         return null;
     }
-    if (isNaN(sd) || sd < 0) {
+    if (isNaN(sd) || sd <= 0) {
         errors.push({ row: index + 2, field: mapping.sd, message: 'Invalid or missing SD' });
         return null;
     }
 
     const zScore = computeZScore(value, mean, sd);
+    const seriesKey = [
+        row[mapping.instrumentId],
+        row[mapping.analyteCode] || row[mapping.analyteName],
+        row[mapping.level],
+        row[mapping.lotNumber],
+    ].join('\u0000');
+    const recentZScores = recentZScoresBySeries.get(seriesKey) ?? [];
     const westgardViolation = detectWestgardViolation(zScore, recentZScores);
     recentZScores.push(zScore);
+    recentZScoresBySeries.set(seriesKey, recentZScores);
 
     const controlDate = row[mapping.controlDate]
         ? new Date(row[mapping.controlDate])
         : new Date();
+    if (!Number.isFinite(controlDate.getTime())) {
+        errors.push({ row: index + 2, field: mapping.controlDate, message: 'Invalid or missing control date' });
+        return null;
+    }
 
     return {
         id: `qc-${source}-${Date.now()}-${index}`,
@@ -201,11 +211,11 @@ function mapRowToQCData(
 export function parseBioRadUnityCSV(csvText: string): QCImportResult {
     const rows = parseCSV(csvText);
     const errors: QCImportValidationError[] = [];
-    const recentZScores: number[] = [];
+    const recentZScoresBySeries = new Map<string, number[]>();
     const records: QCData[] = [];
 
     for (let i = 0; i < rows.length; i++) {
-        const rec = mapRowToQCData(rows[i], BIORAD_COLUMNS, i, recentZScores, errors, 'biorad_unity');
+        const rec = mapRowToQCData(rows[i], BIORAD_COLUMNS, i, recentZScoresBySeries, errors, 'biorad_unity');
         if (rec) records.push(rec);
     }
 
@@ -225,11 +235,11 @@ export function parseBioRadUnityCSV(csvText: string): QCImportResult {
 export function parseRandoxCSV(csvText: string): QCImportResult {
     const rows = parseCSV(csvText);
     const errors: QCImportValidationError[] = [];
-    const recentZScores: number[] = [];
+    const recentZScoresBySeries = new Map<string, number[]>();
     const records: QCData[] = [];
 
     for (let i = 0; i < rows.length; i++) {
-        const rec = mapRowToQCData(rows[i], RANDOX_COLUMNS, i, recentZScores, errors, 'randox');
+        const rec = mapRowToQCData(rows[i], RANDOX_COLUMNS, i, recentZScoresBySeries, errors, 'randox');
         if (rec) records.push(rec);
     }
 
@@ -249,11 +259,11 @@ export function parseRandoxCSV(csvText: string): QCImportResult {
 export function parseGenericCSV(csvText: string, mapping: QCColumnMapping): QCImportResult {
     const rows = parseCSV(csvText);
     const errors: QCImportValidationError[] = [];
-    const recentZScores: number[] = [];
+    const recentZScoresBySeries = new Map<string, number[]>();
     const records: QCData[] = [];
 
     for (let i = 0; i < rows.length; i++) {
-        const rec = mapRowToQCData(rows[i], mapping, i, recentZScores, errors, 'excel_csv');
+        const rec = mapRowToQCData(rows[i], mapping, i, recentZScoresBySeries, errors, 'excel_csv');
         if (rec) records.push(rec);
     }
 
@@ -323,10 +333,10 @@ export async function parseExcelFile(
     }
 
     const errors: QCImportValidationError[] = [];
-    const recentZScores: number[] = [];
+    const recentZScoresBySeries = new Map<string, number[]>();
     const records: QCData[] = [];
     for (let i = 0; i < rows.length; i++) {
-        const rec = mapRowToQCData(rows[i], colMap, i, recentZScores, errors, source);
+        const rec = mapRowToQCData(rows[i], colMap, i, recentZScoresBySeries, errors, source);
         if (rec) records.push(rec);
     }
 

@@ -117,9 +117,19 @@ export const getProjectsByStatus = async (
 export const createProject = async (
   projectData: Omit<Project, "id">,
 ): Promise<Project> => {
+  const projectLeadId = projectData.projectLead?.id ?? null;
+  const assignedUsers = Array.from(
+    new Set(
+      [projectLeadId, ...(projectData.teamMembers ?? [])].filter(
+        (userId): userId is string => typeof userId === "string" && userId.length > 0,
+      ),
+    ),
+  );
   const newProject = {
     ...projectData,
     ...getTenantStamp(),
+    projectLeadId,
+    assignedUsers,
     createdAt: Timestamp.now().toDate().toISOString(),
     updatedAt: Timestamp.now().toDate().toISOString(),
     progress: 0,
@@ -165,6 +175,27 @@ export const updateProject = async (
     }
 
     const docRef = doc(db, "projects", projectId);
+    if ("projectLead" in cleanUpdates || "teamMembers" in cleanUpdates) {
+      const projectSnapshot = await getDoc(docRef);
+      if (!projectSnapshot.exists()) {
+        throw new Error("Project not found");
+      }
+      const currentProject = projectSnapshot.data() as Project;
+      const projectLead =
+        cleanUpdates.projectLead ?? currentProject.projectLead;
+      const teamMembers =
+        cleanUpdates.teamMembers ?? currentProject.teamMembers ?? [];
+      const projectLeadId = projectLead?.id ?? null;
+      sanitized.projectLeadId = projectLeadId;
+      sanitized.assignedUsers = Array.from(
+        new Set(
+          [projectLeadId, ...teamMembers].filter(
+            (userId): userId is string =>
+              typeof userId === "string" && userId.length > 0,
+          ),
+        ),
+      );
+    }
     await updateDoc(
       docRef,
       deepCleanUndefined({
@@ -471,7 +502,7 @@ export const getPDCACyclesByStage = async (
   const project = await getProjectById(projectId);
   if (!project || !project.pdcaCycles) return [];
 
-  return project.pdcaCycles.filter((cycle) => cycle.status === stage);
+  return project.pdcaCycles.filter((cycle) => cycle.currentStage === stage);
 };
 
 // ========================================

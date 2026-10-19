@@ -8,6 +8,7 @@ import { XMarkIcon, SparklesIcon, CheckIcon } from "../icons";
 import { aiAgentService } from "@/services/aiAgentService";
 import { extractDocumentText, extractionWarningKey } from "@/services/documentTextExtractionService";
 import { useToast } from "@/hooks/useToast";
+import { getLocalizedValue } from "@/utils/localization";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 const extractJSON = (text: string): any | null => {
@@ -1055,7 +1056,7 @@ Return ONLY the HTML content.`;
                         disabled={isUploading}
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {dept.name[lang] || dept.name.en}
+                        {getLocalizedValue(dept.name, lang)}
                       </span>
                     </label>
                   ))}

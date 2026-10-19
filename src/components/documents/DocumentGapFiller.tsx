@@ -161,7 +161,7 @@ interface GapItem {
 
 const DocumentGapFiller: React.FC<Props> = ({ open, onClose }) => {
   const { t } = useTranslation();
-  const { documents, addDocument } = useAppStore();
+  const { documents, addControlledDocument } = useAppStore();
   const { projects } = useProjectStore();
 
   const [selectedStandard, setSelectedStandard] = useState<string>("JCI");
@@ -217,24 +217,26 @@ Format the output as a ready-to-use document with numbered sections, clear polic
     }
   };
 
-  const saveToDocumentLibrary = (gap: GapItem) => {
+  const saveToDocumentLibrary = async (gap: GapItem) => {
     const content = generated[gap.label];
     if (!content) return;
 
-    addDocument?.({
-      id: `ai-${Date.now()}`,
-      name: { en: gap.label, ar: gap.label },
-      type: gap.docType,
-      isControlled: true,
-      status: "Draft",
-      content: { en: content, ar: "" },
-      currentVersion: 1,
-      uploadedAt: new Date().toISOString(),
-      category: selectedStandard,
-      tags: [selectedStandard, "AI-Generated", "Gap-Fill"],
-    });
-
-    setSaved((prev) => ({ ...prev, [gap.label]: true }));
+    try {
+      await addControlledDocument({
+        name: { en: gap.label, ar: gap.label },
+        type: gap.docType,
+        content: { en: content, ar: "" },
+        category: selectedStandard,
+        tags: [selectedStandard, "AI-Generated", "Gap-Fill"],
+      });
+      setSaved((prev) => ({ ...prev, [gap.label]: true }));
+    } catch (error) {
+      console.error("Failed to save generated policy:", error);
+      setErrors((prev) => ({
+        ...prev,
+        [gap.label]: error instanceof Error ? error.message : "Save failed",
+      }));
+    }
   };
 
   return (

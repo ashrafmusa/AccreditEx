@@ -119,7 +119,7 @@ export class DataMappingService {
     const mappings = this.getMappings(resourceType, 'pull');
 
     for (const mapping of mappings) {
-      if (!mapping.direction.includes('pull')) continue;
+      if (mapping.direction !== 'pull' && mapping.direction !== 'both') continue;
 
       const hisValue = this.getNestedValue(hisData, mapping.hisField);
 
@@ -145,7 +145,7 @@ export class DataMappingService {
     const mappings = this.getMappings(resourceType, 'push');
 
     for (const mapping of mappings) {
-      if (!mapping.direction.includes('push')) continue;
+      if (mapping.direction !== 'push' && mapping.direction !== 'both') continue;
 
       const localValue = this.getNestedValue(localData, mapping.localField);
 
@@ -268,7 +268,7 @@ export class DataMappingService {
     const merged: Record<string, any> = { ...localData };
 
     for (const mapping of mappings) {
-      if (!mapping.direction.includes('pull')) continue;
+      if (mapping.direction !== 'pull' && mapping.direction !== 'both') continue;
 
       const hisValue = this.getNestedValue(hisData, mapping.hisField);
       const localValue = this.getNestedValue(localData, mapping.localField);

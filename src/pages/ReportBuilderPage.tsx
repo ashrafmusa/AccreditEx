@@ -38,6 +38,7 @@ import {
   exportReportToCSV,
   exportReportToPDF,
   formatMetricValue,
+  loadQualityRoundsForReport,
   resolveChart,
   resolveMetric,
   resolveTable,
@@ -45,6 +46,7 @@ import {
 import { useConfirmStore } from "@/stores/useConfirmStore";
 import { useReportBuilderStore } from "@/stores/useReportBuilderStore";
 import { useUserStore } from "@/stores/useUserStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import {
   AGGREGATION_LABELS,
   AggregationType,
@@ -67,6 +69,7 @@ import {
   TableBlockConfig,
   TextBlockConfig,
 } from "@/types/reportBuilder";
+import type { QualityRound } from "@/types";
 import {
   CHART_ANIMATION,
   getChartTheme,
@@ -159,12 +162,54 @@ function blockIcon(type: ReportBlockType) {
 // ── Custom Tooltip ───────────────────────────────────────────
 const ChartTooltip = SharedChartTooltip;
 
+const useQualityRoundsReportData = (dataSource: ReportDataSource) => {
+  const organizationId = useTenantStore((state) => state.organizationId);
+  const [qualityRounds, setQualityRounds] = useState<QualityRound[]>([]);
+  const [loadError, setLoadError] = useState(false);
+
+  useEffect(() => {
+    if (dataSource !== "quality_rounds") {
+      setQualityRounds([]);
+      setLoadError(false);
+      return;
+    }
+
+    let active = true;
+    setLoadError(false);
+    loadQualityRoundsForReport()
+      .then((rounds) => {
+        if (active) setQualityRounds(rounds);
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load report quality rounds:", error);
+        if (active) setLoadError(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [dataSource, organizationId]);
+
+  return { qualityRounds, loadError };
+};
+
 // ── Live Chart Component ─────────────────────────────────────
 const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const ct = getChartTheme(theme);
-  const data = useMemo(() => resolveChart(config), [config]);
+  const { qualityRounds, loadError } = useQualityRoundsReportData(config.dataSource);
+  const data = useMemo(
+    () => resolveChart(config, { qualityRounds }),
+    [config, qualityRounds],
+  );
+  if (loadError) {
+    return (
+      <p role="alert" className="text-sm text-red-600">
+        {t("reportDataLoadFailed")}
+      </p>
+    );
+  }
   if (data.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-10 text-gray-400">
@@ -453,7 +498,19 @@ const LiveChart: React.FC<{ config: ChartBlockConfig }> = ({ config }) => {
 
 // ── Live Table Component ─────────────────────────────────────
 const LiveTable: React.FC<{ config: TableBlockConfig }> = ({ config }) => {
-  const { headers, rows } = useMemo(() => resolveTable(config), [config]);
+  const { t } = useTranslation();
+  const { qualityRounds, loadError } = useQualityRoundsReportData(config.dataSource);
+  const { headers, rows } = useMemo(
+    () => resolveTable(config, { qualityRounds }),
+    [config, qualityRounds],
+  );
+  if (loadError) {
+    return (
+      <p role="alert" className="text-sm text-red-600">
+        {t("reportDataLoadFailed")}
+      </p>
+    );
+  }
   if (rows.length === 0) {
     return (
       <p className="text-sm text-gray-400 py-4 text-center">
@@ -504,7 +561,19 @@ const LiveTable: React.FC<{ config: TableBlockConfig }> = ({ config }) => {
 
 // ── Live Metric Component ────────────────────────────────────
 const LiveMetric: React.FC<{ config: MetricBlockConfig }> = ({ config }) => {
-  const value = useMemo(() => resolveMetric(config), [config]);
+  const { t } = useTranslation();
+  const { qualityRounds, loadError } = useQualityRoundsReportData(config.dataSource);
+  const value = useMemo(
+    () => resolveMetric(config, { qualityRounds }),
+    [config, qualityRounds],
+  );
+  if (loadError) {
+    return (
+      <p role="alert" className="text-sm text-red-600">
+        {t("reportDataLoadFailed")}
+      </p>
+    );
+  }
   const formatted = formatMetricValue(value, config.format);
   const accentColor = config.color || "#4F46E5";
   return (
@@ -1519,9 +1588,9 @@ const ReportBuilderPage: React.FC = () => {
   }, [activeReport, incrementGenerationCount]);
 
   // ── Export CSV ──────────────────────────────────────────
-  const handleExportCSV = useCallback(() => {
+  const handleExportCSV = useCallback(async () => {
     if (!activeReport) return;
-    const csv = exportReportToCSV(activeReport);
+    const csv = await exportReportToCSV(activeReport);
     if (!csv) return;
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);

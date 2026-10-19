@@ -17,19 +17,30 @@ import {
 import {
     addDoc,
     collection,
+    documentId,
     deleteDoc,
-    doc,
     limit as firestoreLimit,
     getDocs,
     orderBy,
-    query,
     updateDoc,
+    where,
 } from 'firebase/firestore';
 import { create } from 'zustand';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 // ── Firestore collection names ──────────────────────────────
 const WORKFLOWS_COLLECTION = 'workflowDefinitions';
 const EXECUTION_LOGS_COLLECTION = 'workflowExecutionLogs';
+
+const getScopedDocumentRef = async (collectionName: string, id: string) => {
+    const snapshot = await getDocs(
+        getTenantQuery(collectionName, where(documentId(), '==', id), firestoreLimit(1)),
+    );
+    if (snapshot.empty) {
+        throw new Error(`Record ${id} was not found in the active organization.`);
+    }
+    return snapshot.docs[0].ref;
+};
 
 // ── Store Interface ─────────────────────────────────────────
 interface WorkflowState {
@@ -72,8 +83,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     fetchWorkflows: async () => {
         set({ loading: true, error: null });
         try {
-            const ref = collection(db, WORKFLOWS_COLLECTION);
-            const q = query(ref, orderBy('createdAt', 'desc'), firestoreLimit(500));
+            const q = getTenantQuery(
+                WORKFLOWS_COLLECTION,
+                orderBy('createdAt', 'desc'),
+                firestoreLimit(500),
+            );
             const snapshot = await getDocs(q);
             const workflows = snapshot.docs.map(
                 (d) => ({ ...d.data(), id: d.id }) as WorkflowDefinition,
@@ -89,15 +103,20 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     fetchExecutionLogs: async (logLimit = 100) => {
         try {
-            const ref = collection(db, EXECUTION_LOGS_COLLECTION);
-            const q = query(ref, orderBy('startedAt', 'desc'), firestoreLimit(logLimit));
+            const q = getTenantQuery(
+                EXECUTION_LOGS_COLLECTION,
+                orderBy('startedAt', 'desc'),
+                firestoreLimit(logLimit),
+            );
             const snapshot = await getDocs(q);
             const logs = snapshot.docs.map(
                 (d) => ({ ...d.data(), id: d.id }) as WorkflowExecutionLog,
             );
             set({ executionLogs: logs });
         } catch (error) {
-            logger.warn(`[WorkflowStore] Failed to fetch execution logs: ${error}`);
+            const msg = error instanceof Error ? error.message : String(error);
+            logger.warn(`[WorkflowStore] Failed to fetch execution logs: ${msg}`);
+            set({ error: msg });
         }
     },
 
@@ -114,10 +133,11 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     addWorkflow: async (workflow: WorkflowDefinition) => {
         try {
             // Persist to Firestore (let Firestore generate the ID)
+            const { id: _workflowId, ...workflowData } = workflow;
             const ref = collection(db, WORKFLOWS_COLLECTION);
             const docRef = await addDoc(ref, {
-                ...workflow,
-                id: undefined, // Will be replaced on read with doc.id
+                ...workflowData,
+                ...getTenantStamp(),
             });
 
             const saved: WorkflowDefinition = { ...workflow, id: docRef.id };
@@ -135,8 +155,13 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     updateWorkflow: async (id: string, updates: Partial<WorkflowDefinition>) => {
         try {
-            const docRef = doc(db, WORKFLOWS_COLLECTION, id);
-            const cleanUpdates = { ...updates, updatedAt: new Date().toISOString() };
+            const docRef = await getScopedDocumentRef(WORKFLOWS_COLLECTION, id);
+            const { id: _workflowId, ...updateFields } = updates;
+            const cleanUpdates = {
+                ...updateFields,
+                ...getTenantStamp(),
+                updatedAt: new Date().toISOString(),
+            };
             await updateDoc(docRef, cleanUpdates);
 
             set((state) => ({
@@ -155,7 +180,7 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
 
     deleteWorkflow: async (id: string) => {
         try {
-            const docRef = doc(db, WORKFLOWS_COLLECTION, id);
+            const docRef = await getScopedDocumentRef(WORKFLOWS_COLLECTION, id);
             await deleteDoc(docRef);
 
             set((state) => ({
@@ -204,22 +229,23 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
     addExecutionLog: async (log: WorkflowExecutionLog) => {
         try {
             const ref = collection(db, EXECUTION_LOGS_COLLECTION);
-            await addDoc(ref, log);
+            await addDoc(ref, { ...log, ...getTenantStamp() });
 
             set((state) => ({
                 executionLogs: [log, ...state.executionLogs].slice(0, 200),
             }));
         } catch (error) {
-            logger.warn(`[WorkflowStore] Failed to persist execution log: ${error}`);
-            // Still add to local state
-            set((state) => ({
-                executionLogs: [log, ...state.executionLogs].slice(0, 200),
-            }));
+            logger.error(`[WorkflowStore] Failed to persist execution log: ${error}`);
+            throw error;
         }
     },
 
     clearOldLogs: async (daysToKeep = 30) => {
         const cutoff = new Date(Date.now() - daysToKeep * 24 * 60 * 60 * 1000).toISOString();
+        const staleLogs = await getDocs(
+            getTenantQuery(EXECUTION_LOGS_COLLECTION, where('startedAt', '<', cutoff)),
+        );
+        await Promise.all(staleLogs.docs.map((log) => deleteDoc(log.ref)));
         set((state) => ({
             executionLogs: state.executionLogs.filter((l) => l.startedAt > cutoff),
         }));

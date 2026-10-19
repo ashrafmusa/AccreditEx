@@ -11,6 +11,7 @@
 import { db } from '@/firebase/firebaseConfig';
 import {
     doc,
+    deleteDoc,
     getDoc,
     setDoc,
     updateDoc,
@@ -34,8 +35,13 @@ export class CustomizationService {
             const docSnap = await getDoc(docRef);
 
             if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.userId !== userId) {
+                    throw new Error('Customization ownership does not match the authenticated user');
+                }
+                if (data.deleted === true) return null;
                 logger.info('Customization loaded from Firebase');
-                return docSnap.data() as UserCustomization;
+                return this.mergeWithDefaults(data as Partial<UserCustomization>);
             }
 
             logger.info('No customization found, using defaults');
@@ -52,7 +58,7 @@ export class CustomizationService {
     static async saveCustomization(customization: UserCustomization): Promise<void> {
         try {
             const docRef = doc(db, COLLECTION_NAME, customization.userId);
-            await setDoc(docRef, customization, { merge: true });
+            await setDoc(docRef, customization);
             logger.info('Customization saved to Firebase');
         } catch (error) {
             logger.error('Error saving customization:', error);
@@ -86,11 +92,7 @@ export class CustomizationService {
     static async deleteCustomization(userId: string): Promise<void> {
         try {
             const docRef = doc(db, COLLECTION_NAME, userId);
-            await setDoc(docRef, {
-                userId,
-                deleted: true,
-                deletedAt: new Date().toISOString(),
-            });
+            await deleteDoc(docRef);
             logger.info('Customization deleted');
         } catch (error) {
             logger.error('Error deleting customization:', error);

@@ -77,6 +77,7 @@ export const routes: RouteConfig[] = [
 
     // Knowledge Base
     { path: "/knowledge-base", view: "knowledgeBase", requiresAuth: true },
+    { path: "/question-bank", view: "questionBank", requiresAuth: true },
 
     // Multi-Facility Dashboard
     { path: "/multi-facility", view: "multiFacility", requiresAuth: true, requiresAdmin: true },
@@ -108,7 +109,7 @@ export const routes: RouteConfig[] = [
 
     // Redirect legacy standalone routes to parent hubs
     { path: "/performance", view: "trainingHub", requiresAuth: true },
-    { path: "/quality-insights", view: "analyticsHub", requiresAuth: true },
+    { path: "/quality-insights", view: "qualityInsights", requiresAuth: true },
     { path: "/reports", view: "analyticsHub", requiresAuth: true },
     { path: "/competencies", view: "trainingHub", requiresAuth: true },
     { path: "/ai-document-generator", view: "documentControl", requiresAuth: true },
@@ -174,6 +175,8 @@ export const navigationStateToPath = (state: NavigationState): string => {
             return "/accreditation";
         case "knowledgeBase":
             return "/knowledge-base";
+        case "questionBank":
+            return "/question-bank";
         case "labOperations":
             return "/lab-operations";
         case "multiFacility":
@@ -231,6 +234,7 @@ export const pathToNavigationState = (
     if (path === "/messages") return { view: "messaging" };
     if (path === "/accreditation") return { view: "accreditationHub" };
     if (path === "/knowledge-base") return { view: "knowledgeBase" };
+    if (path === "/question-bank") return { view: "questionBank" };
     if (path === "/lab-operations") return { view: "labOperations" };
     if (path === "/multi-facility") return { view: "multiFacility" };
     if (path === "/workflow-automation") return { view: "workflowAutomation" };

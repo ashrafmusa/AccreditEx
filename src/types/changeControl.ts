@@ -82,6 +82,7 @@ export interface VerificationRecord {
  */
 export interface ChangeRequest {
     id: string;
+    projectId?: string;
     title: string;
     description: string;
     changeType: 'process' | 'system' | 'documentation' | 'training' | 'other';

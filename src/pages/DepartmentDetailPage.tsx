@@ -23,6 +23,7 @@ import DepartmentTaskTable from "../components/departments/DepartmentTaskTable";
 import { aiAgentService } from "../services/aiAgentService";
 import { useToast } from "../hooks/useToast";
 import AIResponseView from "@/components/ai/AIResponseView";
+import { getLocalizedValue } from "@/utils/localization";
 
 interface DepartmentDetailPageProps {
   department: Department;
@@ -201,7 +202,7 @@ const DepartmentDetailPage: React.FC<DepartmentDetailPageProps> = (props) => {
 
       const prompt = `You are a healthcare accreditation department performance advisor. Analyze this department and provide actionable insights.
 
-## Department: ${department.name.en || department.name.ar}
+## Department: ${getLocalizedValue(department.name, "en")}
 ## Members: ${data.usersInDept.length}
 ## Readiness Score: ${data.readinessScore}%
 ## Compliance Rate: ${data.compliance}%
@@ -240,7 +241,7 @@ Keep it brief, specific, and actionable for a department head.`;
         <BuildingOffice2Icon className="h-8 w-8 text-brand-primary" />
         <div>
           <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-            {department.name[lang]}
+            {getLocalizedValue(department.name, lang)}
           </h1>
           <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
             {t("departmentDetails")}

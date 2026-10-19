@@ -11,7 +11,7 @@ import {
     BatchAuditResult
 } from '@/types/audit';
 import { getAuth } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, getDocs, query, where } from 'firebase/firestore';
 import { scoreDocumentCompliance } from './documentComplianceService';
 
 /**
@@ -190,12 +190,10 @@ export async function storeAuditResults(result: BatchAuditResult): Promise<void>
             })),
         };
 
-        // Note: In a real implementation, you'd use addDoc or setDoc here
-        // For now, this demonstrates the structure
-        console.log('Audit results stored:', auditRecord);
+        await addDoc(auditRef, auditRecord);
     } catch (error) {
         console.error('Error storing audit results:', error);
-        // Don't throw - audit should complete even if storage fails
+        throw error;
     }
 }
 

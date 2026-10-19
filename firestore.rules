@@ -273,6 +273,66 @@ service cloud.firestore {
       allow update: if isProjectLead() && belongsToUserOrg() && setsCorrectOrg();
       allow delete: if isAdmin() && belongsToUserOrg();
     }
+
+    // Training Hub records are tenant-owned. Staff can read their own
+    // assessments/credits/progress; tenant admins manage shared records.
+    match /capAssessments/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg()
+        && (isAdmin()
+          || resource.data.userId == request.auth.uid
+          || resource.data.assessorId == request.auth.uid);
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isProjectLead() && belongsToActiveOrg();
+    }
+
+    match /ceCredits/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg()
+        && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isProjectLead() && belongsToActiveOrg();
+    }
+
+    match /learningPaths/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isProjectLead() && belongsToActiveOrg();
+    }
+
+    match /userLearningPathProgress/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg()
+        && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if isAuthenticated() && setsActiveOrg()
+        && request.resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && belongsToActiveOrg() && setsActiveOrg()
+        && resource.data.userId == request.auth.uid
+        && request.resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && belongsToActiveOrg()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    match /smcsCompetencies/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isProjectLead() && belongsToActiveOrg();
+    }
+
+    match /tracerTemplates/{docId} {
+      allow read: if isAuthenticated() && belongsToActiveOrg();
+      allow create: if isProjectLead() && setsActiveOrg();
+      allow update: if isProjectLead() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isProjectLead() && belongsToActiveOrg();
+    }
+
+    match /tracerSessions/{docId} {
+      allow read: if isAtLeastTeamMember() && belongsToActiveOrg();
+      allow create: if isAtLeastTeamMember() && setsActiveOrg();
+      allow update: if isAtLeastTeamMember() && belongsToActiveOrg() && setsActiveOrg();
+      allow delete: if isProjectLead() && belongsToActiveOrg();
+    }
     
     // Competencies collection
     match /competencies/{docId} {
@@ -627,6 +687,14 @@ service cloud.firestore {
       allow update: if isAdmin() && belongsToUserOrg() && setsCorrectOrg();
       allow delete: if isAdmin() && belongsToUserOrg();
     }
+
+    // Training progress is written only by the server-side quiz verifier.
+    // Users can read their own record; admins can read their active tenant.
+    match /userTrainingStatuses/{userId} {
+      allow read: if isOwner(userId)
+        || (isAdmin() && belongsToActiveOrg());
+      allow write: if false;
+    }
     
     // Notifications collection
     // Security fix (2026-04-17): Added belongsToUserOrg() to read/update/delete rules.
@@ -694,7 +762,11 @@ service cloud.firestore {
             && request.resource.data.record.id == recordId
             && request.resource.data.sortAt is string
             && after.revision == before.revision + 1
-            && after.lastOperation.kind == kind && after.lastOperation.id == recordId;
+            && after.lastOperation.kind == kind
+            && (
+              after.lastOperation.id == recordId
+              || ('ids' in after.lastOperation && after.lastOperation.ids.hasAny([recordId]))
+            );
         }
         allow read: if labTenant() && validKind() && activeLab();
         allow create: if atomicLabWrite();

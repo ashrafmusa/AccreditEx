@@ -48,7 +48,7 @@ const UserCompetencies: React.FC<Props> = ({
   const canEdit = currentUser.role === UserRole.Admin;
   const toast = useToast();
   const [isSyncing, setIsSyncing] = useState(false);
-  const { addDocument } = useAppStore();
+  const { addControlledDocument, updateDocument } = useAppStore();
   const [showUploader, setShowUploader] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -134,20 +134,13 @@ const UserCompetencies: React.FC<Props> = ({
         (progress) => setUploadProgress(progress.progress),
       );
 
-      const newDoc: AppDocument = {
-        id: documentId,
+      const newDoc = await addControlledDocument({
         name: { en: file.name, ar: file.name },
         type: "Evidence",
-        isControlled: false,
-        status: "Approved",
-        content: { en: "", ar: "" },
         fileUrl,
-        currentVersion: 1,
-        versionHistory: [],
-        uploadedAt: new Date().toISOString(),
-      };
-
-      addDocument(newDoc);
+        content: { en: "", ar: "" },
+        tags: [`user:${user.id}`, `competency:${uploadingForCompetency}`],
+      });
 
       // Link to competency evidence
       const updatedCompetencies = user.competencies?.map((uc) => {
@@ -156,7 +149,7 @@ const UserCompetencies: React.FC<Props> = ({
             ...uc,
             evidenceDocumentIds: [
               ...(uc.evidenceDocumentIds || []),
-              documentId,
+              newDoc.id,
             ],
           };
         }
@@ -386,7 +379,10 @@ const UserCompetencies: React.FC<Props> = ({
           isOpen={!!viewingDoc}
           onClose={() => setViewingDoc(null)}
           document={viewingDoc}
-          onSave={(doc) => setViewingDoc(null)}
+          onSave={async (doc) => {
+            await updateDocument(doc);
+            setViewingDoc(null);
+          }}
           standards={[]}
         />
       )}

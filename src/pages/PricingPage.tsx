@@ -15,6 +15,7 @@ import {
   type PlanInfo,
 } from "@/services/subscriptionService";
 import { useTenantStore } from "@/stores/useTenantStore";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { PlanTier } from "@/types/modules";
 import { motion } from "framer-motion";
 import {
@@ -51,10 +52,21 @@ function PlanCard({
   onStartTrial: () => void;
   trialLoading: boolean;
 }) {
+  const { t } = useTranslation();
   const isCurrent = currentPlan === plan.tier;
   const isOwned = planMeetsRequirement(currentPlan, plan.tier);
   const isEnterprise = plan.tier === "enterprise";
   const isTrialTarget = plan.tier === "professional" && trialEligible;
+  const translationPrefix = `pricingPlan${plan.tier[0].toUpperCase()}${plan.tier.slice(1)}`;
+  const planNameKey = `${translationPrefix}Name`;
+  const planTaglineKey = `${translationPrefix}Tagline`;
+  const localizedPlanName = t(planNameKey);
+  const localizedPlanTagline = t(planTaglineKey);
+  const localizedHighlights = plan.highlights.map((highlight, index) => {
+    const key = `${translationPrefix}Feature${index + 1}`;
+    const translated = t(key);
+    return translated === key ? highlight : translated;
+  });
 
   function handleCTA() {
     if (isTrialTarget) {
@@ -71,20 +83,20 @@ function PlanCard({
     redirectToStripePaymentLink(plan.tier, orgId);
   }
 
-  let ctaLabel: React.ReactNode = "Get Started";
-  if (plan.tier === "free") ctaLabel = "Current Plan";
-  else if (isCurrent) ctaLabel = "Current Plan";
-  else if (isOwned) ctaLabel = "Included";
-  else if (isEnterprise) ctaLabel = "Contact Sales";
+  let ctaLabel: React.ReactNode = t("pricingGetStarted");
+  if (plan.tier === "free") ctaLabel = t("pricingCurrentPlan");
+  else if (isCurrent) ctaLabel = t("pricingCurrentPlan");
+  else if (isOwned) ctaLabel = t("pricingIncluded");
+  else if (isEnterprise) ctaLabel = t("pricingContactSales");
   else if (isTrialTarget)
     ctaLabel = trialLoading ? (
       <span className="flex items-center justify-center gap-2">
-        <Loader2 className="w-4 h-4 animate-spin" /> Activating…
+        <Loader2 className="w-4 h-4 animate-spin" /> {t("pricingActivating")}
       </span>
     ) : (
-      "🎁 Start 14-Day Free Trial"
+      t("pricingStartTrial")
     );
-  else ctaLabel = "Upgrade Now";
+  else ctaLabel = t("pricingUpgradeNow");
 
   const ctaDisabled =
     plan.tier === "free" ||
@@ -107,7 +119,7 @@ function PlanCard({
       {plan.recommended && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-primary px-3 py-1 text-xs font-semibold text-white shadow">
-            <Star className="w-3 h-3" /> Most Popular
+            <Star className="w-3 h-3" />             {t("pricingMostPopular")}
           </span>
         </div>
       )}
@@ -115,7 +127,7 @@ function PlanCard({
       {isCurrent && (
         <div className="absolute -top-3 right-4">
           <span className="inline-flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-xs font-semibold text-white shadow">
-            <Check className="w-3 h-3" /> Your Plan
+            <Check className="w-3 h-3" />             {t("pricingYourPlan")}
           </span>
         </div>
       )}
@@ -134,10 +146,12 @@ function PlanCard({
         </div>
         <div>
           <h3 className="text-lg font-bold text-brand-text-primary dark:text-dark-brand-text-primary">
-            {plan.name}
+            {localizedPlanName === planNameKey ? plan.name : localizedPlanName}
           </h3>
           <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-            {plan.tagline}
+            {localizedPlanTagline === planTaglineKey
+              ? plan.tagline
+              : localizedPlanTagline}
           </p>
         </div>
       </div>
@@ -150,16 +164,18 @@ function PlanCard({
               {plan.price}
             </span>
             <span className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-              /{plan.period}
+              /{t(`${translationPrefix}Period`) === `${translationPrefix}Period`
+                ? plan.period
+                : t(`${translationPrefix}Period`)}
             </span>
           </div>
         ) : (
           <div>
             <span className="text-2xl font-extrabold text-brand-text-primary dark:text-dark-brand-text-primary">
-              Custom Pricing
+              {t("pricingCustom")}
             </span>
             <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-              Tailored to your network
+              {t("pricingTailored")}
             </p>
           </div>
         )}
@@ -167,9 +183,9 @@ function PlanCard({
 
       {/* Features */}
       <ul className="flex-1 space-y-2 mb-6">
-        {plan.highlights.map((item) => (
+        {localizedHighlights.map((item, index) => (
           <li
-            key={item}
+            key={`${plan.tier}-${index}`}
             className="flex items-start gap-2 text-sm text-brand-text-primary dark:text-dark-brand-text-primary"
           >
             <Check className="w-4 h-4 text-brand-primary mt-0.5 shrink-0" />
@@ -198,6 +214,7 @@ function PlanCard({
 }
 
 export default function PricingPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { toast } = useToast();
   const currentOrg = useTenantStore((s) => s.currentOrganization);
@@ -220,12 +237,12 @@ export default function PricingPage() {
       await startFreeTrial(orgId);
       await loadOrganization(orgId);
       toast.success(
-        "Your 14-day free trial is now active! Enjoy Hospital plan features.",
+        t("pricingTrialSuccess"),
       );
       navigate(-1);
     } catch {
       toast.error(
-        "Could not activate trial. Please contact support or try again.",
+        t("pricingTrialFailed"),
       );
     } finally {
       setTrialLoading(false);
@@ -241,7 +258,7 @@ export default function PricingPage() {
           className="flex items-center gap-2 text-sm text-brand-text-secondary hover:text-brand-text-primary dark:text-dark-brand-text-secondary dark:hover:text-dark-brand-text-primary transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Back
+          {t("back")}
         </button>
       </div>
 
@@ -252,7 +269,7 @@ export default function PricingPage() {
           animate={{ opacity: 1, y: 0 }}
           className="text-4xl font-extrabold text-brand-text-primary dark:text-dark-brand-text-primary mb-3"
         >
-          Simple, Transparent Pricing
+          {t("pricingTitle")}
         </motion.h1>
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -260,7 +277,7 @@ export default function PricingPage() {
           transition={{ delay: 0.05 }}
           className="inline-flex items-center gap-2 bg-brand-success/10 text-brand-success border border-brand-success/30 rounded-full px-4 py-1.5 text-sm font-semibold mb-4"
         >
-          ✓ 14-day free trial on Hospital plan — no credit card required
+          {t("pricingTrialBanner")}
         </motion.div>
         <motion.p
           initial={{ opacity: 0 }}
@@ -268,8 +285,7 @@ export default function PricingPage() {
           transition={{ delay: 0.1 }}
           className="text-lg text-brand-text-secondary dark:text-dark-brand-text-secondary max-w-xl mx-auto"
         >
-          Start free. Upgrade as your team grows. No hidden fees — only pay when
-          you earn.
+          {t("pricingDescription")}
         </motion.p>
       </div>
 
@@ -293,8 +309,8 @@ export default function PricingPage() {
       {/* FAQ / note */}
       <div className="max-w-3xl mx-auto px-4 pb-20 text-center">
         <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary">
-          All plans include a <strong>14-day free trial</strong> of the Hospital
-          plan. Payments are processed securely by{" "}
+          {t("pricingFooterBefore")} <strong>{t("pricingFourteenDayTrial")}</strong>{" "}
+          {t("pricingFooterMiddle")}{" "}
           <a
             href="https://stripe.com"
             target="_blank"
@@ -303,7 +319,7 @@ export default function PricingPage() {
           >
             Stripe
           </a>
-          . Cancel anytime.
+          . {t("pricingCancelAnytime")}
         </p>
       </div>
     </div>

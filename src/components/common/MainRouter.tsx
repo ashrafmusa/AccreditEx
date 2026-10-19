@@ -72,6 +72,9 @@ const AccreditationHubPage = lazy(() => import("@/pages/AccreditationHubPage"));
 
 // Knowledge Base
 const KnowledgeBasePage = lazy(() => import("@/pages/KnowledgeBasePage"));
+const SurveyorQuestionBankPage = lazy(
+  () => import("@/pages/SurveyorQuestionBankPage"),
+);
 
 // Lab Operations
 const LabOperationsPage = lazy(() => import("@/pages/LabOperationsPage"));
@@ -239,57 +242,6 @@ const MainRouter: React.FC<MainRouterProps> = ({
     analytics.trackPageView(navigation.view);
   }, [navigation.view]);
 
-  // Standalone pages (no main layout context needed beyond navigation)
-  if (navigation.view === "certificate") {
-    const certificate = certificates.find(
-      (c) => c.id === navigation.certificateId,
-    );
-    if (!certificate) return <div>Certificate Not Found</div>;
-    return (
-      <Suspense fallback={<RouteLoadingFallback />}>
-        <CertificatePage certificate={certificate} />
-      </Suspense>
-    );
-  }
-  if (navigation.view === "mockSurvey") {
-    const project = projects.find((p) => p.id === navigation.projectId);
-    const survey = project?.mockSurveys?.find(
-      (s) => s.id === navigation.surveyId,
-    );
-    if (!project || !survey) return <div>Survey not found</div>;
-    return (
-      <Suspense fallback={<RouteLoadingFallback />}>
-        <SurveyComponent
-          project={project}
-          survey={survey}
-          users={users}
-          onUpdateSurvey={updateMockSurvey}
-          setNavigation={setNavigation}
-        />
-      </Suspense>
-    );
-  }
-  if (navigation.view === "surveyReport") {
-    const project = projects.find((p) => p.id === navigation.projectId);
-    const survey = project?.mockSurveys?.find(
-      (s) => s.id === navigation.surveyId,
-    );
-    if (!project || !survey) return <div>Report not found</div>;
-    const surveyor = users.find((u) => u.id === survey.surveyorId);
-    return (
-      <Suspense fallback={<RouteLoadingFallback />}>
-        <SurveyReportPage
-          project={project}
-          survey={survey}
-          users={users}
-          surveyor={surveyor}
-          onApplyFindings={applySurveyFindingsToProject}
-          setNavigation={setNavigation}
-        />
-      </Suspense>
-    );
-  }
-
   if (!currentUser) {
     return <LoadingScreen />;
   }
@@ -346,6 +298,71 @@ const MainRouter: React.FC<MainRouterProps> = ({
     return (
       <Suspense fallback={<RouteLoadingFallback />}>
         <UpgradePrompt moduleId={moduleDef.id} />
+      </Suspense>
+    );
+  }
+
+  // These routes must remain behind authentication, role, and module gates.
+  if (navigation.view === "certificate") {
+    const certificate = certificates.find(
+      (c) =>
+        c.id === navigation.certificateId &&
+        c.userId === currentUser.id &&
+        (!c.organizationId ||
+          c.organizationId === currentUser.organizationId),
+    );
+    if (!certificate) return <div>Certificate Not Found</div>;
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <CertificatePage certificate={certificate} />
+      </Suspense>
+    );
+  }
+  if (navigation.view === "mockSurvey") {
+    const project = projects.find(
+      (p) =>
+        p.id === navigation.projectId &&
+        p.organizationId === currentUser.organizationId,
+    );
+    const survey = project?.mockSurveys?.find(
+      (s) => s.id === navigation.surveyId,
+    );
+    if (!project || !survey) return <div>Survey not found</div>;
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <SurveyComponent
+          project={project}
+          survey={survey}
+          users={users}
+          onUpdateSurvey={updateMockSurvey}
+          setNavigation={setNavigation}
+        />
+      </Suspense>
+    );
+  }
+  if (navigation.view === "surveyReport") {
+    const project = projects.find(
+      (candidate) =>
+        candidate.organizationId === currentUser.organizationId &&
+        candidate.mockSurveys?.some(
+          (survey) => survey.id === navigation.surveyId,
+        ),
+    );
+    const survey = project?.mockSurveys?.find(
+      (candidate) => candidate.id === navigation.surveyId,
+    );
+    if (!project || !survey) return <div>Report not found</div>;
+    const surveyor = users.find((u) => u.id === survey.surveyorId);
+    return (
+      <Suspense fallback={<RouteLoadingFallback />}>
+        <SurveyReportPage
+          project={project}
+          survey={survey}
+          users={users}
+          surveyor={surveyor}
+          onApplyFindings={applySurveyFindingsToProject}
+          setNavigation={setNavigation}
+        />
       </Suspense>
     );
   }
@@ -510,7 +527,7 @@ const MainRouter: React.FC<MainRouterProps> = ({
       case "qualityTools":
         return <QualityToolsPage setNavigation={setNavigation} />;
       case "questionBank":
-        return <KnowledgeBasePage />;
+        return <SurveyorQuestionBankPage setNavigation={setNavigation} />;
       case "myTasks":
         return (
           <MyTasksPage

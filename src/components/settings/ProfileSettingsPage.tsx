@@ -19,9 +19,15 @@ import {
   setAIDailyBriefingVisibility,
 } from "@/utils/dashboardPreferences";
 import React, { FormEvent, useState } from "react";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
 import { useToast } from "../../hooks/useToast";
 import { useTranslation } from "../../hooks/useTranslation";
 import { cloudinaryService } from "../../services/cloudinaryService";
+import { getAuthInstance } from "../../firebase/firebaseConfig";
 import { useAppStore } from "../../stores/useAppStore";
 import { useUserStore } from "../../stores/useUserStore";
 import { User } from "../../types";
@@ -68,6 +74,7 @@ const ProfileSettingsPage: React.FC = () => {
   const [name, setName] = useState(currentUser!.name);
   const [jobTitle, setJobTitle] = useState(currentUser!.jobTitle || "");
   const [hireDate, setHireDate] = useState(currentUser!.hireDate || "");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(currentUser!.avatarUrl || "");
@@ -99,6 +106,9 @@ const ProfileSettingsPage: React.FC = () => {
     }
 
     if (password) {
+      if (!currentPassword) {
+        newErrors.currentPassword = t("currentPasswordRequired");
+      }
       if (password.length < 8) {
         newErrors.password = t("passwordMinLength");
       }
@@ -171,6 +181,7 @@ const ProfileSettingsPage: React.FC = () => {
     }
 
     setLoading(true);
+    let passwordChanged = false;
     try {
       let finalAvatarUrl = avatarUrl;
 
@@ -206,10 +217,23 @@ const ProfileSettingsPage: React.FC = () => {
 
       // Note: Password is handled separately via Firebase Auth, not stored in Firestore
       if (password) {
-        // TODO: Implement password change via Firebase Auth updatePassword()
-        console.warn(
-          "Password update not yet implemented - requires Firebase Auth integration",
+        const authUser = getAuthInstance().currentUser;
+        if (
+          !authUser ||
+          authUser.uid !== currentUser!.id ||
+          !authUser.email ||
+          !authUser.providerData.some(
+            (provider) => provider.providerId === "password",
+          )
+        ) {
+          throw new Error("PASSWORD_ACCOUNT_REQUIRED");
+        }
+        await reauthenticateWithCredential(
+          authUser,
+          EmailAuthProvider.credential(authUser.email, currentPassword),
         );
+        await updatePassword(authUser, password);
+        passwordChanged = true;
       }
 
       await onUpdateUser(updatedUser as User);
@@ -228,6 +252,7 @@ const ProfileSettingsPage: React.FC = () => {
       }
 
       setAvatarFile(undefined);
+      setCurrentPassword("");
       setPassword("");
       setConfirmPassword("");
       setHasChanges(false);
@@ -236,7 +261,13 @@ const ProfileSettingsPage: React.FC = () => {
       toast.success(t("profileUpdated"));
     } catch (error) {
       console.error("Profile update error:", error);
-      toast.error(t("settingsUpdateFailed"));
+      if (error instanceof Error && error.message === "PASSWORD_ACCOUNT_REQUIRED") {
+        toast.error(t("passwordChangeUnsupported"));
+      } else if (passwordChanged) {
+        toast.error(t("profilePasswordChangedButProfileFailed"));
+      } else {
+        toast.error(t("settingsUpdateFailed"));
+      }
     } finally {
       setLoading(false);
     }
@@ -246,6 +277,7 @@ const ProfileSettingsPage: React.FC = () => {
     setName(currentUser!.name);
     setJobTitle(currentUser!.jobTitle || "");
     setHireDate(currentUser!.hireDate || "");
+    setCurrentPassword("");
     setPassword("");
     setConfirmPassword("");
     setAvatarUrl(currentUser!.avatarUrl || "");
@@ -430,6 +462,37 @@ const ProfileSettingsPage: React.FC = () => {
             icon={ShieldCheckIcon}
           >
             <div className="space-y-4">
+              {password && (
+                <div>
+                  <label htmlFor="currentPassword" className={labelClasses}>
+                    {t("currentPassword")}
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    id="currentPassword"
+                    autoComplete="current-password"
+                    value={currentPassword}
+                    onChange={(event) => {
+                      setCurrentPassword(event.target.value);
+                      if (errors.currentPassword) {
+                        setErrors({ ...errors, currentPassword: "" });
+                      }
+                    }}
+                    className={`${inputClasses} ${
+                      errors.currentPassword
+                        ? "border-red-500 focus:ring-red-500"
+                        : ""
+                    }`}
+                    required
+                  />
+                  {errors.currentPassword && (
+                    <p className="text-red-600 dark:text-red-400 text-sm mt-1">
+                      {errors.currentPassword}
+                    </p>
+                  )}
+                </div>
+              )}
               <div>
                 <label htmlFor="password" className={labelClasses}>
                   {t("newPassword") || "New Password"}

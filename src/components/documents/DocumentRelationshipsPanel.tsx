@@ -1,5 +1,6 @@
 import { useTranslation } from "@/hooks/useTranslation";
 import { AppDocument } from "@/types";
+import { getLocalizedValue } from "@/utils/localization";
 import React, { useMemo, useState } from "react";
 import { LinkIcon, PlusIcon, XMarkIcon } from "../icons";
 
@@ -118,7 +119,7 @@ const DocumentRelationshipsPanel: React.FC<DocumentRelationshipsPanelProps> = ({
             </option>
             {availableDocs.map((doc) => (
               <option key={doc.id} value={doc.id}>
-                {doc.name[lang]} ({doc.type})
+                {getLocalizedValue(doc.name, lang)} ({doc.type})
               </option>
             ))}
           </select>
@@ -163,7 +164,7 @@ const DocumentRelationshipsPanel: React.FC<DocumentRelationshipsPanelProps> = ({
                     </span>
                   </div>
                   <p className="text-xs font-medium text-brand-text-primary dark:text-dark-brand-text-primary truncate">
-                    {relatedDoc.name[lang]}
+                    {getLocalizedValue(relatedDoc.name, lang)}
                   </p>
                   <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
                     {relatedDoc.type}

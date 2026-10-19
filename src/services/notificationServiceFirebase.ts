@@ -15,6 +15,7 @@ import {
   orderBy,
   limit as firestoreLimit,
   Timestamp,
+  writeBatch,
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { Notification } from '@/types';
@@ -42,8 +43,8 @@ export async function getNotificationsForUser(
 
     return notifications;
   } catch (error) {
-    // Silently handle errors
-    return [];
+    console.error('Failed to load notifications:', error);
+    throw error;
   }
 }
 
@@ -69,8 +70,12 @@ export async function markAllNotificationsAsRead(userId: string): Promise<void> 
     const q = getTenantQuery('notifications', where('userId', '==', userId), where('read', '==', false));
 
     const querySnapshot = await getDocs(q);
-    for (const doc of querySnapshot.docs) {
-      await updateDoc(doc.ref, { read: true });
+    for (let start = 0; start < querySnapshot.docs.length; start += 500) {
+      const batch = writeBatch(db);
+      querySnapshot.docs.slice(start, start + 500).forEach((notification) => {
+        batch.update(notification.ref, { read: true });
+      });
+      await batch.commit();
     }
   } catch (error) {
     throw new Error(`Failed to mark notifications as read: ${error}`);
@@ -86,8 +91,11 @@ export async function createNotification(
 ): Promise<string> {
   try {
     const notificationsRef = collection(db, 'notifications');
+    const payload = Object.fromEntries(
+      Object.entries(notification).filter(([, value]) => value !== undefined),
+    );
     const docRef = await addDoc(notificationsRef, {
-      ...notification,
+      ...payload,
       ...getTenantStamp(),
       userId,
       timestamp: Timestamp.now(),
@@ -97,6 +105,53 @@ export async function createNotification(
     return docRef.id;
   } catch (error) {
     throw new Error(`Failed to create notification: ${error}`);
+  }
+}
+
+export async function markNotificationsAsRead(
+  notificationIds: string[],
+): Promise<void> {
+  try {
+    for (let start = 0; start < notificationIds.length; start += 500) {
+      const batch = writeBatch(db);
+      notificationIds.slice(start, start + 500).forEach((notificationId) => {
+        batch.update(doc(db, 'notifications', notificationId), { read: true });
+      });
+      await batch.commit();
+    }
+  } catch (error) {
+    throw new Error(`Failed to mark notifications as read: ${error}`);
+  }
+}
+
+export async function archiveNotification(
+  notificationId: string,
+): Promise<void> {
+  try {
+    await updateDoc(doc(db, 'notifications', notificationId), { archived: true });
+  } catch (error) {
+    throw new Error(`Failed to archive notification: ${error}`);
+  }
+}
+
+export async function deleteNotificationsForUser(
+  userId: string,
+  archivedOnly = false,
+): Promise<number> {
+  try {
+    const constraints = [where('userId', '==', userId)];
+    if (archivedOnly) constraints.push(where('archived', '==', true));
+    const snapshot = await getDocs(getTenantQuery('notifications', ...constraints));
+    for (let start = 0; start < snapshot.docs.length; start += 500) {
+      const batch = writeBatch(db);
+      snapshot.docs.slice(start, start + 500).forEach((notification) => {
+        batch.delete(notification.ref);
+      });
+      await batch.commit();
+    }
+    return snapshot.docs.length;
+  } catch (error) {
+    throw new Error(`Failed to delete notifications: ${error}`);
   }
 }
 

@@ -13,6 +13,7 @@ import {
 import { getAuth } from 'firebase/auth';
 import { doc, getDoc, updateDoc } from 'firebase/firestore';
 import { ComplianceIssue } from './documentComplianceService';
+import { createChangeRequest } from './changeControlService';
 
 /**
  * Convert an audit issue to a change control request
@@ -29,13 +30,7 @@ export async function createChangeRequestFromAuditIssue(
         const currentUser = auth.currentUser;
 
         // Map issue severity to change control priority
-        const priorityMap: { [key in ComplianceIssue['severity']]: 'High' | 'Medium' | 'Low' } = {
-            error: 'High',
-            warning: 'Medium',
-            info: 'Low',
-        };
-
-        const priority = priorityMap[issue.severity];
+        const priority = severity;
 
         // Determine impact area based on issue
         let impactArea = 'Document Quality';
@@ -55,57 +50,51 @@ export async function createChangeRequestFromAuditIssue(
             impactArea = 'Missing Required Sections';
         }
 
-        // Build the change request document
-        const changeRequestData = {
+        if (!currentUser) {
+            throw new Error('Sign in before creating an audit change request');
+        }
+
+        const now = new Date();
+        const request = await createChangeRequest({
             projectId,
             title: `Compliance Issue: ${issue.title}`,
             description: issue.description || issue.title,
-            impactArea,
-            relatedDocument: {
-                documentId,
-                documentName,
-            },
-            issue: issue,
-            source: 'audit',
-            createdBy: currentUser?.uid || 'system',
-            createdByEmail: currentUser?.email,
-            createdAt: new Date(),
-            status: 'pending',
+            changeType: 'documentation',
             priority,
-            category: 'quality',
-            targetResolvingTeam: 'Documentation Team',
-            proposedSolution: issue.suggestion || 'Review and update document content',
-            estimatedEffort:
-                issue.severity === 'error' ? ('high' as const) : ('medium' as const),
-            attachedStandards: ['JCI', 'CBAHI'],
-        };
-
-        // Store in change control collection
-        // Using a simpler approach - in a real scenario, would use useChangeControlStore
-        console.log('Change request created:', changeRequestData);
-
-        // Return a mock ID (in real implementation, this would be the actual CR ID from Firestore)
-        const crId = `CR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            status: 'draft',
+            requestedBy: currentUser.uid,
+            requestedByName: currentUser.displayName || currentUser.email || currentUser.uid,
+            dateRequested: now,
+            businessJustification: `Resolve the audit finding: ${issue.title}`,
+            expectedBenefits: issue.suggestion || 'Restore document compliance.',
+            detailedDescription: `${impactArea}: ${issue.description || issue.title}`,
+            scope: `Update document ${documentName} (${documentId}) in project ${projectId}.`,
+            impact: null,
+            approvals: [],
+            requiredApprovals: 1,
+            plannedStartDate: now,
+            plannedEndDate: new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000),
+            supportingDocuments: [documentId],
+            tags: ['audit', 'compliance', severity],
+            updatedBy: currentUser.uid,
+        }, currentUser.uid);
 
         // Update document to link the change request
-        try {
-            const docRef = doc(db, 'projects', projectId, 'documents', documentId);
-            const docSnap = await getDoc(docRef);
-
-            if (docSnap.exists()) {
-                const currentLinkedCRs = docSnap.data().linkedChangeRequests || [];
-
-                await updateDoc(docRef, {
-                    linkedChangeRequests: [...currentLinkedCRs, { crId, createdAt: new Date() }],
-                    lastAuditLink: new Date(),
-                });
-            }
-        } catch (error) {
-            console.error('Error linking CR to document:', error);
-            // Continue - CR creation shouldn't fail if linking fails
+        const docRef = doc(db, 'projects', projectId, 'documents', documentId);
+        const docSnap = await getDoc(docRef);
+        if (!docSnap.exists()) {
+            throw new Error(`Audited document ${documentId} not found in project ${projectId}`);
         }
+        const currentLinkedCRs = docSnap.data().linkedChangeRequests || [];
+        await updateDoc(docRef, {
+            linkedChangeRequests: [
+                ...currentLinkedCRs,
+                { crId: request.id, createdAt: new Date() },
+            ],
+            lastAuditLink: new Date(),
+        });
 
-        return crId;
+        return request.id;
     } catch (error) {
         console.error('Error creating change request from audit issue:', error);
         throw error;
@@ -129,25 +118,21 @@ export async function createChangeRequestsFromAudit(
 
         if (criticalIssues.length > 0 && auditedDoc.complianceScore.overall < criticalThreshold) {
             for (const issue of criticalIssues) {
-                try {
-                    const crId = await createChangeRequestFromAuditIssue(
-                        auditedDoc.documentId,
-                        auditedDoc.documentName,
-                        auditedDoc.projectId,
-                        issue,
-                        'critical'
-                    );
-                    crIds.push(crId);
-                } catch (error) {
-                    console.error(`Error creating CR for issue ${issue.id}:`, error);
-                }
+                const crId = await createChangeRequestFromAuditIssue(
+                    auditedDoc.documentId,
+                    auditedDoc.documentName,
+                    auditedDoc.projectId,
+                    issue,
+                    'critical'
+                );
+                crIds.push(crId);
             }
         }
 
         return crIds;
     } catch (error) {
         console.error('Error creating change requests:', error);
-        return [];
+        throw error;
     }
 }
 

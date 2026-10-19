@@ -1,4 +1,5 @@
 export const ar = {
+    limsSandboxNotice: 'بيئة تجريبية / معاينة: اختبارات الاتصال والمزامنة تعرض السجلات المسترجعة فقط حالياً. لا تُحفظ البيانات في عمليات المختبر.',
     // General
     general: 'عام',
     profile: 'الملف الشخصي',
@@ -18,6 +19,10 @@ export const ar = {
     userName: 'الاسم',
     userEmail: 'البريد الإلكتروني',
     passwordPlaceholder: 'اتركه فارغًا للحفاظ على كلمة المرور الحالية',
+    currentPassword: 'كلمة المرور الحالية',
+    currentPasswordRequired: 'أدخل كلمة المرور الحالية لتغييرها.',
+    passwordChangeUnsupported: 'تغيير كلمة المرور متاح فقط للحسابات المسجلة بالبريد الإلكتروني وكلمة المرور.',
+    profilePasswordChangedButProfileFailed: 'تم تغيير كلمة المرور، لكن تعذر حفظ بيانات الملف الشخصي. يرجى إعادة محاولة تحديث الملف الشخصي.',
     updateProfile: 'تحديث الملف الشخصي',
     profileUpdated: 'تم تحديث الملف الشخصي بنجاح!',
     // Profile Photo Section

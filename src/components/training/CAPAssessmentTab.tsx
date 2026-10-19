@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
 import {
@@ -14,6 +14,12 @@ import {
 import { Button, EmptyState } from "@/components/ui";
 import { PlusIcon, CheckCircleIcon } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useTenantStore } from "@/stores/useTenantStore";
+import {
+  getTrainingHubRecords,
+  saveTrainingHubRecord,
+} from "@/services/trainingHubPersistenceService";
+import { where } from "firebase/firestore";
 
 const RESULT_COLORS = {
   competent:
@@ -53,9 +59,10 @@ const EMPTY_FORM: Omit<CAPAssessment, "id" | "createdAt"> = {
 type TabView = "dashboard" | "schedule" | "form";
 
 const CAPAssessmentTab: React.FC = () => {
-  const { currentUser, users, updateUser } = useUserStore();
+  const { currentUser, users } = useUserStore();
   const { competencies } = useAppStore();
   const { t } = useTranslation();
+  const organizationId = useTenantStore((state) => state.organizationId);
   const isAdmin = currentUser?.role === UserRole.Admin;
 
   const [view, setView] = useState<TabView>("dashboard");
@@ -64,6 +71,47 @@ const CAPAssessmentTab: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterMethod, setFilterMethod] = useState<string>("all");
   const [filterPhase, setFilterPhase] = useState<string>("all");
+  const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setDataError(null);
+    const recordsPromise = currentUser?.role === UserRole.Admin
+      ? getTrainingHubRecords<CAPAssessment>("capAssessments")
+      : currentUser?.id
+        ? Promise.all([
+            getTrainingHubRecords<CAPAssessment>(
+              "capAssessments",
+              where("userId", "==", currentUser.id),
+            ),
+            getTrainingHubRecords<CAPAssessment>(
+              "capAssessments",
+              where("assessorId", "==", currentUser.id),
+            ),
+          ]).then(([owned, assessed]) => {
+            const recordsById = new Map(
+              [...owned, ...assessed].map((record) => [record.id, record]),
+            );
+            return [...recordsById.values()];
+          })
+        : Promise.resolve([]);
+    recordsPromise
+      .then((records) => {
+        if (active) setAssessments(records);
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load CAP assessments:", error);
+        if (active) setDataError(t("trainingDataLoadError"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId, currentUser?.id, t]);
 
   // All assessments across users (stored on user records conceptually — using local state for now)
   const enrichedAssessments = useMemo(
@@ -111,43 +159,63 @@ const CAPAssessmentTab: React.FC = () => {
     return { total, completed, overdue, methodCoverage };
   }, [enrichedAssessments]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!form.userId || !form.competencyId || !form.scheduledDate) return;
     const now = new Date().toISOString();
+    let assessment: CAPAssessment;
     if (editingId) {
-      setAssessments((prev) =>
-        prev.map((a) => (a.id === editingId ? { ...a, ...form } : a)),
-      );
+      const existing = assessments.find((item) => item.id === editingId);
+      if (!existing) {
+        setDataError(t("trainingDataLoadError"));
+        return;
+      }
+      assessment = { ...existing, ...form };
     } else {
-      const newA: CAPAssessment = {
-        ...form,
-        id: `cap-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
-        createdAt: now,
-      };
-      setAssessments((prev) => [...prev, newA]);
+      assessment = {
+          ...form,
+          id: `cap-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+          createdAt: now,
+        };
+    }
+    try {
+      setDataError(null);
+      await saveTrainingHubRecord("capAssessments", assessment);
+    } catch (error) {
+      console.error("Failed to save CAP assessment:", error);
+      setDataError(t("trainingDataSaveError"));
+      return;
+    }
+    if (editingId) {
+      setAssessments((prev) => prev.map((a) => (a.id === editingId ? assessment : a)));
+    } else {
+      setAssessments((prev) => [...prev, assessment]);
     }
     setForm(EMPTY_FORM);
     setEditingId(null);
     setView("schedule");
-  }, [form, editingId]);
+  }, [form, editingId, assessments, t]);
 
   const handleComplete = useCallback(
-    (id: string, score: number, result: CAPAssessment["result"]) => {
-      setAssessments((prev) =>
-        prev.map((a) =>
-          a.id === id
-            ? {
-                ...a,
-                status: "completed" as const,
-                completedDate: new Date().toISOString(),
-                score,
-                result,
-              }
-            : a,
-        ),
-      );
+    async (id: string, score: number, result: CAPAssessment["result"]) => {
+      const existing = assessments.find((item) => item.id === id);
+      if (!existing) return;
+      const completed: CAPAssessment = {
+        ...existing,
+        status: "completed",
+        completedDate: new Date().toISOString(),
+        score,
+        result,
+      };
+      try {
+        setDataError(null);
+        await saveTrainingHubRecord("capAssessments", completed);
+        setAssessments((prev) => prev.map((item) => item.id === id ? completed : item));
+      } catch (error) {
+        console.error("Failed to complete CAP assessment:", error);
+        setDataError(t("trainingDataSaveError"));
+      }
     },
-    [],
+    [assessments, t],
   );
 
   const handleEdit = useCallback((a: CAPAssessment) => {
@@ -162,6 +230,8 @@ const CAPAssessmentTab: React.FC = () => {
 
   return (
     <div className="space-y-4 p-4">
+      {dataError && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{dataError}</div>}
+      {loading && <p role="status" className="text-sm text-brand-text-secondary">{t("trainingRecordsLoading")}</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>

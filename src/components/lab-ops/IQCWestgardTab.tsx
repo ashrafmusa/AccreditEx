@@ -20,7 +20,7 @@ import { aiAgentService } from "@/services/aiAgentService";
 import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { useTenantStore } from "@/stores/useTenantStore";
-import type { IQCAnalyte, IQCResult } from "@/types/labOps";
+import type { IQCAnalyte, IQCResult, QualityEvent } from "@/types/labOps";
 import {
   applyWestgardRules,
   checkCompetencyAuthorization,
@@ -250,14 +250,8 @@ const IQCWestgardTab: React.FC = () => {
     iqcAnalytes,
     iqcResults,
     competencyRecords,
-    reagents,
     addIQCAnalyte,
-    addIQCResult,
-    updateIQCResult,
-    addCAPARecord,
-    addQualityEvent,
-    addQualityRisk,
-    updateReagent,
+    logIQCResultWithSideEffects,
   } = useLabOpsStore();
 
   const [selectedAnalyteId, setSelectedAnalyteId] = useState<string>(
@@ -347,16 +341,23 @@ const IQCWestgardTab: React.FC = () => {
 
   const persistResult = async (result: IQCResult) => {
     pendingResult.current = result;
+    let savedResult: IQCResult;
     try {
-      await addIQCResult(result);
+      savedResult = await logIQCResultWithSideEffects(result);
     } catch {
       toast.error(t("labOpsRecordSaveFailed"));
       return;
     }
     pendingResult.current = null;
-    setJustLogged(result);
+    setJustLogged(savedResult);
     setShowResultForm(false);
     toast.success(t("iqcResultLoggedSuccess") || "QC result logged successfully.");
+    if (savedResult.linkedRiskRecordId && savedResult.linkedCapaId) {
+      toast.warning(
+        t("iqcSupplierRiskTriggered") ||
+          "Supplier risk signal and CAPA were auto-created. Reagent lot moved to quarantine.",
+      );
+    }
     setResultForm({
       measuredValue: "", measuredBy: "", measuredAt: new Date().toISOString().slice(0, 16), reagentLot: "", note: "",
     });
@@ -410,74 +411,6 @@ const IQCWestgardTab: React.FC = () => {
       createdAt: now,
     };
 
-    if (rejected && result.reagentLot) {
-      const reagent = reagents.find(
-        (r) =>
-          r.lotNumber === result.reagentLot &&
-          r.labSection.toLowerCase() === result.labSection.toLowerCase(),
-      );
-
-      if (reagent) {
-        const riskId = `qr-iqc-${Date.now()}`;
-        const capaId = `capa-iqc-${Date.now()}`;
-        const score = Math.min(25, 4 * 5);
-
-        addQualityRisk({
-          id: riskId,
-          title: `Supplier-linked IQC instability: ${result.analyteCode} lot ${result.reagentLot}`,
-          hazard: "Potential reagent lot instability causing analytical drift",
-          potentialHarm:
-            "Delayed reporting, inaccurate patient results, and increased rerun burden",
-          labSection: result.labSection,
-          owner: "Quality Manager",
-          likelihood: 4,
-          impact: 5,
-          riskScore: score,
-          riskLevel: "critical",
-          status: "open",
-          relatedSupplierId: reagent.supplierId,
-          relatedSupplierName: reagent.supplierName,
-          relatedReagentLot: reagent.lotNumber,
-          mitigationPlan:
-            "Quarantine impacted lot, verify alternate lot performance, and complete supplier CAPA follow-up.",
-          createdAt: now,
-          updatedAt: now,
-        });
-
-        addCAPARecord({
-          id: capaId,
-          title: `CAPA: Investigate ${result.reagentLot} IQC rejection trend`,
-          owner: "Section Supervisor",
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-            .toISOString()
-            .slice(0, 10),
-          status: "open",
-          actionPlan:
-            "Quarantine lot, repeat QC with alternate lot, perform calibration verification, notify supplier, and document disposition decision.",
-          effectivenessCriteria:
-            "Three consecutive in-control runs with no reject Westgard rules and documented supplier response.",
-          createdAt: now,
-          updatedAt: now,
-        });
-
-        updateReagent({
-          ...reagent,
-          status: "quarantine",
-          qualityFlag: "under_investigation",
-          notes: `${reagent.notes ? `${reagent.notes} | ` : ""}Auto-flagged from IQC reject (${result.id}).`,
-          updatedAt: now,
-        });
-
-        result.linkedRiskRecordId = riskId;
-        result.linkedCapaId = capaId;
-
-        toast.warning(
-          t("iqcSupplierRiskTriggered") ||
-            "Supplier risk signal and CAPA were auto-created. Reagent lot moved to quarantine.",
-        );
-      }
-    }
-
     await persistResult(result);
   };
 
@@ -489,7 +422,7 @@ const IQCWestgardTab: React.FC = () => {
       .map((r) => WESTGARD_RULE_LABELS[r])
       .join(", ");
 
-    addQualityEvent({
+    const event: QualityEvent = {
       id: eventId,
       eventDate: result.measuredAt.split("T")[0],
       labSection: result.labSection,
@@ -502,11 +435,12 @@ const IQCWestgardTab: React.FC = () => {
         "Patient results on hold pending re-calibration and repeat QC.",
       createdAt: now,
       updatedAt: now,
-    });
+    };
 
     const updated = { ...result, linkedQualityEventId: eventId };
     try {
-      await updateIQCResult(updated);
+      const saved = await logIQCResultWithSideEffects(updated, event, result);
+      setJustLogged(saved);
     } catch {
       toast.error(t("labOpsRecordSaveFailed"));
       return;

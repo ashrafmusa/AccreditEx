@@ -8,7 +8,7 @@
  * @version 1.0.0
  */
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCustomizationStore } from '@/stores/useCustomizationStore';
 import { CustomizationService } from '@/services/customizationService';
 import { UserCustomization } from '@/types/customization';
@@ -29,67 +29,76 @@ export const useCustomization = (userId?: string) => {
         getThemeCSS,
         getLayoutClasses,
     } = useCustomizationStore();
+    const activeCustomization = userId && customization?.userId === userId
+        ? customization
+        : null;
+    const requestedUserId = useRef<string | null>(null);
 
     // Auto-load customization on mount
     useEffect(() => {
-        if (userId && !customization) {
-            loadCustomization(userId);
+        if (!userId) {
+            requestedUserId.current = null;
+            return;
         }
-    }, [userId, customization, loadCustomization]);
+        if (!isLoading && requestedUserId.current !== userId) {
+            requestedUserId.current = userId;
+            void loadCustomization(userId);
+        }
+    }, [userId, isLoading, loadCustomization]);
 
     // Auto-apply CSS and classes when customization changes
     useEffect(() => {
-        if (customization) {
-            CustomizationService.applyCSSVariables(customization);
-            CustomizationService.applyBodyClasses(customization);
+        if (activeCustomization) {
+            CustomizationService.applyCSSVariables(activeCustomization);
+            CustomizationService.applyBodyClasses(activeCustomization);
         }
-    }, [customization]);
+    }, [activeCustomization]);
 
     // Update theme (safe wrapper)
     const updateTheme = async (theme: Partial<UserCustomization['theme']>) => {
-        if (!customization) return;
-        await updateCustomization({ theme: { ...customization.theme, ...theme } });
+        if (!activeCustomization) return;
+        await updateCustomization({ theme: { ...activeCustomization.theme, ...theme } });
     };
 
     // Update layout (safe wrapper)
     const updateLayout = async (layout: Partial<UserCustomization['layout']>) => {
-        if (!customization) return;
-        await updateCustomization({ layout: { ...customization.layout, ...layout } });
+        if (!activeCustomization) return;
+        await updateCustomization({ layout: { ...activeCustomization.layout, ...layout } });
     };
 
     // Update features (safe wrapper)
     const updateFeatures = async (features: Partial<UserCustomization['features']>) => {
-        if (!customization) return;
-        await updateCustomization({ features: { ...customization.features, ...features } });
+        if (!activeCustomization) return;
+        await updateCustomization({ features: { ...activeCustomization.features, ...features } });
     };
 
     // Update accessibility (safe wrapper)
     const updateAccessibility = async (accessibility: Partial<UserCustomization['accessibility']>) => {
-        if (!customization) return;
-        await updateCustomization({ accessibility: { ...customization.accessibility, ...accessibility } });
+        if (!activeCustomization) return;
+        await updateCustomization({ accessibility: { ...activeCustomization.accessibility, ...accessibility } });
     };
 
     // Toggle dark mode
     const toggleDarkMode = async () => {
-        if (!customization) return;
+        if (!activeCustomization) return;
 
-        const newMode = customization.theme.mode === 'dark' ? 'light' : 'dark';
+        const newMode = activeCustomization.theme.mode === 'dark' ? 'light' : 'dark';
         await updateTheme({ mode: newMode });
     };
 
     // Toggle sidebar
     const toggleSidebar = async () => {
-        if (!customization) return;
+        if (!activeCustomization) return;
 
-        await updateLayout({ sidebarCollapsed: !customization.layout.sidebarCollapsed });
+        await updateLayout({ sidebarCollapsed: !activeCustomization.layout.sidebarCollapsed });
     };
 
     // Export customization
     const exportCustomization = () => {
-        if (!customization) return null;
+        if (!activeCustomization) return null;
 
         try {
-            const json = CustomizationService.exportCustomization(customization);
+            const json = CustomizationService.exportCustomization(activeCustomization);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -126,15 +135,16 @@ export const useCustomization = (userId?: string) => {
 
     return {
         // State
-        customization,
+        customization: activeCustomization,
         presets,
         isLoading,
         error,
-        themeCSS,
-        layoutClasses,
+        themeCSS: activeCustomization ? themeCSS : '',
+        layoutClasses: activeCustomization ? layoutClasses : [],
 
         // Actions
         updateCustomization,
+        loadCustomization,
         updateTheme,
         updateLayout,
         updateFeatures,
@@ -149,9 +159,9 @@ export const useCustomization = (userId?: string) => {
         importCustomization,
 
         // Helpers
-        isDarkMode: customization?.theme.mode === 'dark',
-        isSidebarCollapsed: customization?.layout.sidebarCollapsed || false,
-        isHighContrast: customization?.accessibility.highContrast || false,
-        isReducedMotion: customization?.accessibility.reducedMotion || false,
+        isDarkMode: activeCustomization?.theme.mode === 'dark',
+        isSidebarCollapsed: activeCustomization?.layout.sidebarCollapsed || false,
+        isHighContrast: activeCustomization?.accessibility.highContrast || false,
+        isReducedMotion: activeCustomization?.accessibility.reducedMotion || false,
     };
 };

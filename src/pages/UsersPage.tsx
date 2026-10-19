@@ -13,6 +13,7 @@ import { useTranslation } from "../hooks/useTranslation";
 import { useAppStore } from "../stores/useAppStore";
 import { useUserStore } from "../stores/useUserStore";
 import { NavigationState, User, UserRole } from "../types";
+import { getLocalizedValue } from "@/utils/localization";
 
 interface UsersPageProps {
   setNavigation: (state: NavigationState) => void;
@@ -57,11 +58,11 @@ const UsersPage: React.FC<UsersPageProps> = ({ setNavigation }) => {
         searchQuery.toLowerCase() === "" ||
         user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.department?.name.en
-          ?.toLowerCase()
+        getLocalizedValue(user.department?.name, "en")
+          .toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
-        user.department?.name.ar
-          ?.toLowerCase()
+        getLocalizedValue(user.department?.name, "ar")
+          .toLowerCase()
           .includes(searchQuery.toLowerCase());
 
       const matchesRole = filterRole === "All" || user.role === filterRole;

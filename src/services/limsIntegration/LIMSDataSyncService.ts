@@ -20,6 +20,7 @@ import { LIMSConnectorFactory } from './LIMSConnectorFactory';
 
 export class LIMSDataSyncService {
     private connectors: Map<string, LIMSConnector> = new Map();
+    private connectorConfigSignatures: Map<string, string> = new Map();
     private syncHistory: LIMSSyncResult[] = [];
     private logs: LIMSIntegrationLog[] = [];
 
@@ -28,11 +29,18 @@ export class LIMSDataSyncService {
      */
     getConnector(config: LIMSConfig): LIMSConnector {
         let connector = this.connectors.get(config.id);
-        if (!connector) {
+        const configSignature = JSON.stringify(config);
+        if (!connector || this.connectorConfigSignatures.get(config.id) !== configSignature) {
             connector = LIMSConnectorFactory.createConnector(config);
             this.connectors.set(config.id, connector);
+            this.connectorConfigSignatures.set(config.id, configSignature);
         }
         return connector;
+    }
+
+    invalidateConnector(configId: string): void {
+        this.connectors.delete(configId);
+        this.connectorConfigSignatures.delete(configId);
     }
 
     /**
@@ -51,9 +59,11 @@ export class LIMSDataSyncService {
         let qcDataImported = 0;
         let errorCount = 0;
         const errors: { timestamp: Date; resource: string; error: string; recoverable: boolean }[] = [];
+        let connected = false;
 
         try {
             await connector.connect();
+            connected = true;
 
             // Sync results
             try {
@@ -105,11 +115,20 @@ export class LIMSDataSyncService {
                 }
             }
 
-            await connector.disconnect();
         } catch (err) {
             errorCount++;
             errors.push({ timestamp: new Date(), resource: 'connection', error: String(err), recoverable: false });
             this.addLog(config, 'sync_error', 'error', `Sync aborted: ${err}`);
+        } finally {
+            if (connected) {
+                try {
+                    await connector.disconnect();
+                } catch (err) {
+                    errorCount++;
+                    errors.push({ timestamp: new Date(), resource: 'disconnect', error: String(err), recoverable: true });
+                    this.addLog(config, 'sync_error', 'error', `Failed to disconnect: ${err}`);
+                }
+            }
         }
 
         const endTime = new Date();
@@ -146,9 +165,11 @@ export class LIMSDataSyncService {
     async fetchResults(config: LIMSConfig, filters?: LIMSQueryFilters): Promise<LabResult[]> {
         const connector = this.getConnector(config);
         await connector.connect();
-        const results = await connector.fetchResults(filters);
-        await connector.disconnect();
-        return results;
+        try {
+            return await connector.fetchResults(filters);
+        } finally {
+            await connector.disconnect();
+        }
     }
 
     /**
@@ -157,9 +178,11 @@ export class LIMSDataSyncService {
     async fetchQCData(config: LIMSConfig, filters?: LIMSQueryFilters): Promise<QCData[]> {
         const connector = this.getConnector(config);
         await connector.connect();
-        const qc = await connector.fetchQCData(filters);
-        await connector.disconnect();
-        return qc;
+        try {
+            return await connector.fetchQCData(filters);
+        } finally {
+            await connector.disconnect();
+        }
     }
 
     /**
@@ -168,9 +191,11 @@ export class LIMSDataSyncService {
     async fetchSpecimens(config: LIMSConfig, filters?: LIMSQueryFilters): Promise<Specimen[]> {
         const connector = this.getConnector(config);
         await connector.connect();
-        const specimens = await connector.fetchSpecimens(filters);
-        await connector.disconnect();
-        return specimens;
+        try {
+            return await connector.fetchSpecimens(filters);
+        } finally {
+            await connector.disconnect();
+        }
     }
 
     /**

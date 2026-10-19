@@ -1,5 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { getDocsFromServer, limit } from "firebase/firestore";
+import { aiAgentService } from "@/services/aiAgentService";
+import { cloudinaryService } from "@/services/cloudinaryService";
+import { getTenantQuery } from "@/utils/tenantQuery";
 import {
   ExclamationTriangleIcon,
   ChartBarIcon,
@@ -34,11 +38,18 @@ interface PerformanceMetric {
   status: "success" | "warning" | "error";
 }
 
+type SystemHealthStatus = "checking" | "online" | "degraded" | "offline";
+
+interface ServiceHealthProbe {
+  status: SystemHealthStatus;
+  latencyMs: number | null;
+}
+
 interface SystemHealth {
-  api: "online" | "degraded" | "offline";
-  database: "online" | "degraded" | "offline";
-  storage: "online" | "degraded" | "offline";
-  ai: "online" | "degraded" | "offline";
+  api: ServiceHealthProbe;
+  database: ServiceHealthProbe;
+  storage: ServiceHealthProbe;
+  ai: ServiceHealthProbe;
 }
 
 interface MonitoringStats {
@@ -49,6 +60,54 @@ interface MonitoringStats {
   successfulBuilds: number;
   failedBuilds: number;
   lastUpdateTime: Date;
+}
+
+const runHealthProbe = async <T,>(
+  probe: () => Promise<T>,
+  getStatus: (result: T) => Exclude<SystemHealthStatus, "checking"> = () =>
+    "online",
+): Promise<{
+  status: Exclude<SystemHealthStatus, "checking">;
+  latencyMs: number;
+  result?: T;
+}> => {
+  const startedAt = performance.now();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    const result = await Promise.race([
+      probe(),
+      new Promise<never>((_, reject) => {
+        timeout = setTimeout(
+          () =>
+            reject(
+              Object.assign(new Error("Health probe timed out."), {
+                code: "probe-timeout",
+              }),
+            ),
+          8000,
+        );
+      }),
+    ]);
+    return {
+      status: getStatus(result),
+      latencyMs: Math.round(performance.now() - startedAt),
+      result,
+    };
+  } catch (error) {
+    const code =
+      error && typeof error === "object" && "code" in error
+        ? String(error.code)
+        : "";
+    return {
+      status:
+        code === "permission-denied" || code === "unauthenticated"
+          ? "degraded"
+          : "offline",
+      latencyMs: Math.round(performance.now() - startedAt),
+    };
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout);
+  }
 }
 
 export default function MonitoringDashboard() {
@@ -63,10 +122,10 @@ export default function MonitoringDashboard() {
   const [errors, setErrors] = useState<ErrorLog[]>([]);
   const [metrics, setMetrics] = useState<PerformanceMetric[]>([]);
   const [systemHealth, setSystemHealth] = useState<SystemHealth>({
-    api: "online",
-    database: "online",
-    storage: "online",
-    ai: "degraded", // Example: AI service might be having issues
+    api: { status: "checking", latencyMs: null },
+    database: { status: "checking", latencyMs: null },
+    storage: { status: "checking", latencyMs: null },
+    ai: { status: "checking", latencyMs: null },
   });
   const [stats, setStats] = useState<MonitoringStats>({
     totalErrors: 0,
@@ -251,18 +310,6 @@ export default function MonitoringDashboard() {
     return () => observer.disconnect();
   }, []);
 
-  // Auto refresh
-  useEffect(() => {
-    if (!autoRefresh) return;
-
-    const interval = setInterval(() => {
-      updateStats();
-      checkSystemHealth();
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [autoRefresh]);
-
   const updateStats = () => {
     setStats((prev) => {
       const last24Hours = Date.now() - 24 * 60 * 60 * 1000;
@@ -297,22 +344,48 @@ export default function MonitoringDashboard() {
     });
   };
 
-  const checkSystemHealth = async () => {
-    // Simulate system health checks
-    // In a real implementation, these would be actual API calls to health endpoints
+  const checkSystemHealth = useCallback(async () => {
+    const [backend, database, storage] = await Promise.all([
+      runHealthProbe(
+        () => aiAgentService.healthCheckDetails(),
+        (result) => result.api,
+      ),
+      runHealthProbe(async () => {
+        await getDocsFromServer(getTenantQuery("projects", limit(1)));
+      }),
+      runHealthProbe(() => cloudinaryService.healthCheck(), (status) => status),
+    ]);
     setSystemHealth({
-      api: Math.random() > 0.1 ? "online" : "degraded",
-      database: Math.random() > 0.05 ? "online" : "degraded",
-      storage: Math.random() > 0.02 ? "online" : "degraded",
-      ai: Math.random() > 0.3 ? "online" : "degraded", // AI service more likely to have issues
+      api: { status: backend.status, latencyMs: backend.latencyMs },
+      database: { status: database.status, latencyMs: database.latencyMs },
+      storage: { status: storage.status, latencyMs: storage.latencyMs },
+      ai: {
+        status: backend.result?.ai ?? backend.status,
+        latencyMs: backend.latencyMs,
+      },
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    void checkSystemHealth();
+    if (!autoRefresh) return;
+
+    const interval = setInterval(() => {
+      updateStats();
+      void checkSystemHealth();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [autoRefresh, checkSystemHealth]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await checkSystemHealth();
-    updateStats();
-    setTimeout(() => setIsRefreshing(false), 1000);
+    try {
+      await checkSystemHealth();
+      updateStats();
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -496,19 +569,21 @@ export default function MonitoringDashboard() {
                 {t("systemHealth") || "System Health"}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {Object.entries(systemHealth).map(([service, status]) => (
+                {Object.entries(systemHealth).map(([service, probe]) => (
                   <div
                     key={service}
-                    className={`flex items-center justify-between p-4 rounded-lg ${getStatusColor(status)}`}
+                    className={`flex items-center justify-between p-4 rounded-lg ${getStatusColor(probe.status)}`}
                   >
                     <div className="flex items-center">
-                      {getStatusIcon(status)}
+                      {getStatusIcon(probe.status)}
                       <span className="ml-3 font-medium capitalize">
                         {t(service) || service}
                       </span>
                     </div>
                     <span className="text-sm font-semibold capitalize">
-                      {status}
+                      {t(probe.status) || probe.status}
+                      {probe.latencyMs !== null &&
+                        ` • ${formatTime(probe.latencyMs)}`}
                     </span>
                   </div>
                 ))}
@@ -656,14 +731,14 @@ export default function MonitoringDashboard() {
                 {t("systemHealthDetail") || "System Health Details"}
               </h3>
               <div className="space-y-4">
-                {Object.entries(systemHealth).map(([service, status]) => (
+                {Object.entries(systemHealth).map(([service, probe]) => (
                   <div
                     key={service}
                     className="border border-gray-200 dark:border-gray-700 rounded-lg p-4"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        {getStatusIcon(status)}
+                        {getStatusIcon(probe.status)}
                         <div>
                           <h4 className="text-sm font-medium text-gray-900 dark:text-white capitalize">
                             {t(service) || service} Service
@@ -675,9 +750,11 @@ export default function MonitoringDashboard() {
                         </div>
                       </div>
                       <span
-                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(status)}`}
+                        className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(probe.status)}`}
                       >
-                        {status}
+                        {t(probe.status) || probe.status}
+                        {probe.latencyMs !== null &&
+                          ` • ${formatTime(probe.latencyMs)}`}
                       </span>
                     </div>
                   </div>

@@ -115,7 +115,7 @@ const DataHubPage: React.FC<DataHubPageProps> = ({ setNavigation }) => {
           >
             <div className="flex items-center space-x-2">
               <CircleStackIcon className="h-5 w-5" />
-              <span>Data Management</span>
+              <span>{t("dataManagementTab")}</span>
             </div>
           </button>
 
@@ -129,7 +129,7 @@ const DataHubPage: React.FC<DataHubPageProps> = ({ setNavigation }) => {
           >
             <div className="flex items-center space-x-2">
               <ServerStackIcon className="h-5 w-5" />
-              <span>HIS Integration</span>
+              <span>{t("hisIntegrationTab")}</span>
             </div>
           </button>
 
@@ -143,7 +143,7 @@ const DataHubPage: React.FC<DataHubPageProps> = ({ setNavigation }) => {
           >
             <div className="flex items-center space-x-2">
               <BeakerIcon className="h-5 w-5" />
-              <span>QC Data Import</span>
+              <span>{t("qcDataImportTab")}</span>
             </div>
           </button>
         </div>

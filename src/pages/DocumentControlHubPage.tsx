@@ -89,6 +89,7 @@ const BatchAuditModal = lazy(
 );
 
 import { projectDocuments } from "@/utils/projectEvidence";
+import { getLocalizedValue } from "@/utils/localization";
 
 // --- Quick Filter Types ---
 type QuickFilterKey =
@@ -118,7 +119,7 @@ interface DocumentControlHubPageProps {
     departmentIds?: string[];
   }) => Promise<void> | void;
   onDeleteDocument: (docId: string) => Promise<void> | void;
-  onApproveDocument: (docId: string) => Promise<void> | void;
+  onApproveDocument: (docId: string, password: string) => Promise<void> | void;
 }
 
 // --- Status Badge Component ---
@@ -227,6 +228,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   >(undefined);
   const [isProcessMapModalOpen, setIsProcessMapModalOpen] = useState(false);
   const [signingDoc, setSigningDoc] = useState<AppDocument | null>(null);
+  const [bulkApprovalQueue, setBulkApprovalQueue] = useState<string[]>([]);
   const [isAddMenuOpen, setIsAddMenuOpen] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
 
@@ -332,16 +334,31 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     }
   }, [navigation?.documentId, documents]);
 
-  const handleConfirmSignature = async () => {
+  const handleConfirmSignature = async (password: string) => {
     if (!signingDoc) return;
 
     setIsSaving(true);
     try {
-      await onApproveDocument(signingDoc.id);
+      await onApproveDocument(signingDoc.id, password);
       toast.success(
         t("documentApprovedSuccessfully") || "Document approved successfully",
       );
-      setSigningDoc(null);
+      setSelectedDocIds((selected) => {
+        const next = new Set(selected);
+        next.delete(signingDoc.id);
+        return next;
+      });
+      const nextDocumentId = bulkApprovalQueue[0];
+      if (nextDocumentId) {
+        setBulkApprovalQueue((queue) => queue.slice(1));
+        const nextDocument = controlledDocuments.find(
+          (document) => document.id === nextDocumentId,
+        );
+        setSigningDoc(nextDocument ?? null);
+      } else {
+        setBulkApprovalQueue([]);
+        setSigningDoc(null);
+      }
     } catch (error) {
       const errorMsg =
         error instanceof Error
@@ -370,6 +387,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
           : t("failedToSaveDocument") || "Failed to save document";
       toast.error(errorMsg);
       console.error("Document save failed:", error);
+      throw error;
     } finally {
       setIsSaving(false);
     }
@@ -381,13 +399,19 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
       await onUpdateDocument(doc);
       setViewingDoc(doc);
     } catch (error) {
+      const errorMsg =
+        error instanceof Error
+          ? error.message
+          : t("failedToSaveDocument") || "Failed to save document";
+      toast.error(errorMsg);
       console.error("Auto-save failed:", error);
+      throw error;
     }
   };
 
   const handleDeleteDocument = async (docId: string) => {
     const doc = documents.find((d) => d.id === docId);
-    const docName = doc?.name[lang] || "Document";
+    const docName = getLocalizedValue(doc?.name, lang) || t("document");
 
     if (
       !window.confirm(
@@ -763,23 +787,17 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
 
   // --- Bulk action handlers ---
   const handleBulkApprove = useCallback(async () => {
-    const results = await Promise.allSettled(
-      Array.from(selectedDocIds).map((docId) => onApproveDocument(docId)),
+    const pending = controlledDocuments.filter(
+      (document) =>
+        selectedDocIds.has(document.id) && document.status !== "Approved",
     );
-    const failed = results.filter((r) => r.status === "rejected").length;
-    const succeeded = results.filter((r) => r.status === "fulfilled").length;
-    if (failed > 0) {
-      toast.error(
-        t("bulkApprovePartialFail") ||
-          `${succeeded} approved, ${failed} failed`,
-      );
-    } else {
-      toast.success(
-        t("bulkApproveSuccess") || `${succeeded} documents approved`,
-      );
+    if (pending.length === 0) {
+      toast.error(t("noDocumentsToApprove") || "No selected documents need approval");
+      return;
     }
-    setSelectedDocIds(new Set());
-  }, [selectedDocIds, onApproveDocument, toast, t]);
+    setBulkApprovalQueue(pending.slice(1).map((document) => document.id));
+    setSigningDoc(pending[0]);
+  }, [selectedDocIds, controlledDocuments, toast, t]);
 
   const handleBulkDelete = useCallback(async () => {
     if (
@@ -823,8 +841,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
     ];
     const csvRows = exportData.map((d) => [
       d.documentNumber || "",
-      `"${(d.name.en || "").replace(/"/g, '""')}"`,
-      `"${(d.name.ar || "").replace(/"/g, '""')}"`,
+      `"${getLocalizedValue(d.name, "en").replace(/"/g, '""')}"`,
+      `"${getLocalizedValue(d.name, "ar").replace(/"/g, '""')}"`,
       d.type,
       d.status,
       `v${d.currentVersion}`,
@@ -1528,7 +1546,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
                                   {doc.documentNumber}
                                 </span>
                               )}
-                              {doc.name[lang]}
+                              {getLocalizedValue(doc.name, lang)}
                             </h4>
                             {doc.category && (
                               <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5 truncate">
@@ -1752,8 +1770,8 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
         <SignatureModal
           isOpen={!!signingDoc}
           onClose={() => setSigningDoc(null)}
-          onConfirm={() => handleConfirmSignature()}
-          actionTitle={`${t("approve")} "${signingDoc.name[lang]}"`}
+          onConfirm={handleConfirmSignature}
+          actionTitle={`${t("approve")} "${getLocalizedValue(signingDoc.name, lang)}"`}
           signatureStatement={t("signatureStatementDocument")}
           confirmActionText={t("signAndApprove")}
         />
@@ -1791,7 +1809,7 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             isOpen={!!viewingPDF}
             onClose={() => setViewingPDF(null)}
             fileUrl={viewingPDF.fileUrl || ""}
-            fileName={viewingPDF.name[lang]}
+            fileName={getLocalizedValue(viewingPDF.name, lang)}
           />
         </Suspense>
       )}

@@ -17,6 +17,9 @@ import {
     CUSTOMIZATION_PRESETS,
 } from '@/types/customization';
 import { logger } from '@/services/logger';
+import { CustomizationService } from '@/services/customizationService';
+
+let loadGeneration = 0;
 
 interface CustomizationState {
     customization: UserCustomization | null;
@@ -27,8 +30,8 @@ interface CustomizationState {
     // Actions
     loadCustomization: (userId: string) => Promise<void>;
     updateCustomization: (updates: Partial<UserCustomization>) => Promise<void>;
-    resetCustomization: () => void;
-    applyPreset: (presetId: string) => void;
+    resetCustomization: () => Promise<void>;
+    applyPreset: (presetId: string) => Promise<void>;
     saveCustomPreset: (preset: Omit<CustomizationPreset, 'id'>) => void;
     deleteCustomPreset: (presetId: string) => void;
 
@@ -49,24 +52,37 @@ export const useCustomizationStore = create<CustomizationState>()(
             error: null,
 
             loadCustomization: async (userId: string) => {
-                set({ isLoading: true, error: null });
+                if (!userId.trim()) {
+                    throw new Error('Customization requires an authenticated user');
+                }
+                const generation = ++loadGeneration;
+                set((state) => ({
+                    isLoading: true,
+                    error: null,
+                    customization: state.customization?.userId === userId
+                        ? state.customization
+                        : null,
+                }));
 
                 try {
-                    // Try to load from Firebase
-                    // For now, create default if none exists
-                    const defaultCustom: UserCustomization = {
+                    const saved = await CustomizationService.loadCustomization(userId);
+                    const now = new Date().toISOString();
+                    const customization: UserCustomization = saved ?? {
                         id: `custom_${userId}`,
                         userId,
                         ...DEFAULT_CUSTOMIZATION,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
+                        createdAt: now,
+                        updatedAt: now,
                     };
-
-                    set({ customization: defaultCustom, isLoading: false });
+                    if (!saved) await CustomizationService.saveCustomization(customization);
+                    if (generation !== loadGeneration) return;
+                    set({ customization, isLoading: false, error: null });
                     logger.info('Customization loaded for user:', userId);
                 } catch (error) {
                     logger.error('Failed to load customization:', error);
-                    set({ error: 'Failed to load customization settings', isLoading: false });
+                    if (generation === loadGeneration) {
+                        set({ error: 'Failed to load customization settings', isLoading: false });
+                    }
                 }
             },
 
@@ -118,18 +134,19 @@ export const useCustomizationStore = create<CustomizationState>()(
                         updated.advanced = { ...customization.advanced, ...updates.advanced };
                     }
 
-                    set({ customization: updated });
+                    await CustomizationService.saveCustomization(updated);
+                    if (get().customization?.userId !== customization.userId) return;
+                    set({ customization: updated, error: null });
                     logger.info('Customization updated');
-
-                    // TODO: Save to Firebase
 
                 } catch (error) {
                     logger.error('Failed to update customization:', error);
                     set({ error: 'Failed to save customization' });
+                    throw error;
                 }
             },
 
-            resetCustomization: () => {
+            resetCustomization: async () => {
                 const { customization } = get();
 
                 if (!customization) return;
@@ -141,11 +158,20 @@ export const useCustomizationStore = create<CustomizationState>()(
                     preset: undefined,
                 };
 
-                set({ customization: reset });
-                logger.info('Customization reset to defaults');
+                try {
+                    await CustomizationService.saveCustomization(reset);
+                    if (get().customization?.userId === customization.userId) {
+                        set({ customization: reset, error: null });
+                    }
+                    logger.info('Customization reset to defaults');
+                } catch (error) {
+                    logger.error('Failed to reset customization:', error);
+                    set({ error: 'Failed to save customization' });
+                    throw error;
+                }
             },
 
-            applyPreset: (presetId: string) => {
+            applyPreset: async (presetId: string) => {
                 const { customization, presets } = get();
 
                 if (!customization) return;
@@ -178,8 +204,17 @@ export const useCustomizationStore = create<CustomizationState>()(
                     updated.accessibility = { ...customization.accessibility, ...preset.customization.accessibility };
                 }
 
-                set({ customization: updated });
-                logger.info('Preset applied:', presetId);
+                try {
+                    await CustomizationService.saveCustomization(updated);
+                    if (get().customization?.userId === customization.userId) {
+                        set({ customization: updated, error: null });
+                    }
+                    logger.info('Preset applied:', presetId);
+                } catch (error) {
+                    logger.error('Failed to apply customization preset:', error);
+                    set({ error: 'Failed to save customization' });
+                    throw error;
+                }
             },
 
             saveCustomPreset: (preset: Omit<CustomizationPreset, 'id'>) => {

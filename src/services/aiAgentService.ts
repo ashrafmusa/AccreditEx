@@ -371,19 +371,51 @@ export class AIAgentService {
      * Check if AI agent is healthy
      */
     async healthCheck(): Promise<boolean> {
+        const health = await this.healthCheckDetails();
+        return health.ai === "online";
+    }
+
+    async healthCheckDetails(): Promise<{
+        api: "online" | "degraded" | "offline";
+        ai: "online" | "degraded" | "offline";
+    }> {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 8000);
         try {
             const url = this.getApiUrl('/health');
             const response = await fetch(url, {
                 method: 'GET',
+                signal: controller.signal,
             });
 
-            if (!response.ok) return false;
+            if (!response.ok) {
+                return { api: "degraded", ai: "degraded" };
+            }
 
-            const data = await response.json();
-            return data.status === 'healthy' && data.agent_initialized;
-        } catch (error) {
-            // Silently fail - backend may not be available
-            return false;
+            try {
+                const data: unknown = await response.json();
+                if (!data || typeof data !== "object") {
+                    return { api: "online", ai: "degraded" };
+                }
+                const health = data as {
+                    status?: unknown;
+                    agent_initialized?: unknown;
+                };
+                return {
+                    api: "online",
+                    ai:
+                        health.status === "healthy" &&
+                        health.agent_initialized === true
+                            ? "online"
+                            : "degraded",
+                };
+            } catch {
+                return { api: "online", ai: "degraded" };
+            }
+        } catch {
+            return { api: "offline", ai: "offline" };
+        } finally {
+            clearTimeout(timeout);
         }
     }
 

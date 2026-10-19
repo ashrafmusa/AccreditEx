@@ -21,6 +21,7 @@ import { create } from 'zustand';
 // MIGRATION: Replaced BackendService with Firebase services
 import { generateProjectTemplates } from '@/data/projectTemplates';
 import { getAuthInstance } from '@/firebase/firebaseConfig';
+import { EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import { addAccreditationProgram, deleteAccreditationProgram, getAccreditationPrograms, updateAccreditationProgram } from '@/services/accreditationProgramService';
 import { ActivityLogger } from '@/services/activityLogService';
 import { getAppSettings, updateAppSettings as updateAppSettingsInFirebase } from '@/services/appSettingsService';
@@ -28,8 +29,11 @@ import { addAuditPlan as addAuditPlanToFirebase, deleteAuditPlan as deleteAuditP
 import { addCompetency as addCompetencyToFirebase, deleteCompetency as deleteCompetencyFromFirebase, getCompetencies, updateCompetency as updateCompetencyInFirebase } from '@/services/competencyService';
 import { addCustomEvent as addCustomEventToFirebase, deleteCustomEvent as deleteCustomEventFromFirebase, updateCustomEvent as updateCustomEventInFirebase } from '@/services/customCalendarEventService';
 import { addDepartment as addDepartmentToFirebase, deleteDepartment as deleteDepartmentFromFirebase, getDepartments, updateDepartment as updateDepartmentInFirebase } from '@/services/departmentService';
-import { addDocument as addDocumentToFirebase, deleteDocument as deleteDocumentFromFirebase, getDocuments, updateDocument as updateDocumentInFirebase } from '@/services/documentService';
+import { addDocument as addDocumentToFirebase, addDocumentWithProjectEvidence, deleteDocument as deleteDocumentFromFirebase, getDocuments, updateDocument as updateDocumentInFirebase } from '@/services/documentService';
 import { escalationService } from '@/services/escalationService';
+import { getCertificates } from '@/services/certificateService';
+import { getUserTrainingStatuses } from '@/services/userTrainingStatusService';
+import { submitTrainingQuiz as submitTrainingQuizToFirebase } from '@/services/trainingQuizService';
 import { addIncidentReport as addIncidentReportToFirebase, deleteIncidentReport as deleteIncidentReportFromFirebase, updateIncidentReport as updateIncidentReportInFirebase } from '@/services/incidentReportService';
 import { addRisk as addRiskToFirebase, deleteRisk as deleteRiskFromFirebase, getRisks, updateRisk as updateRiskInFirebase } from '@/services/riskService';
 import { addStandard as addStandardToFirebase, deleteStandard as deleteStandardFromFirebase, getStandards, updateStandard as updateStandardInFirebase } from '@/services/standardService';
@@ -91,12 +95,15 @@ interface AppState {
   clearInitializationError: () => void;
 
   // Documents
-  addDocument: (doc: AppDocument) => void;
-  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, extractedText?: AppDocument['extractedText'], tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string } }) => Promise<AppDocument>;
+  refreshDocuments: () => Promise<void>;
+  addControlledDocument: (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, extractedText?: AppDocument['extractedText'], tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string }, checklistEvidence?: { projectId: string; checklistItemId: string } }) => Promise<AppDocument>;
   addProcessMap: (docData: { name: { en: string; ar: string }, tags?: string[], category?: string, departmentIds?: string[] }) => Promise<void>;
-  updateDocument: (doc: AppDocument) => Promise<void>;
+  updateDocument: (
+    doc: AppDocument,
+    options?: { skipWorkflowEvaluation?: boolean },
+  ) => Promise<void>;
   deleteDocument: (docId: string) => Promise<void>;
-  approveDocument: (docId: string) => Promise<void>;
+  approveDocument: (docId: string, password: string) => Promise<void>;
 
   // App Settings
   updateAppSettings: (settings: AppSettings) => Promise<void>;
@@ -139,7 +146,10 @@ interface AppState {
 
   // Incidents
   addIncidentReport: (reportData: Omit<IncidentReport, 'id'>) => Promise<void>;
-  updateIncidentReport: (report: IncidentReport) => Promise<void>;
+  updateIncidentReport: (
+    report: IncidentReport,
+    options?: { skipWorkflowEvaluation?: boolean },
+  ) => Promise<void>;
   deleteIncidentReport: (reportId: string) => Promise<void>;
 
   // Audits
@@ -205,6 +215,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           departments: [],
           accreditationPrograms: [],
           trainingPrograms: [],
+          certificates: [],
+          userTrainingStatuses: {},
           risks: [],
           documents: [],
           initializationError: null,
@@ -222,11 +234,24 @@ export const useAppStore = create<AppState>((set, get) => ({
         getAccreditationPrograms(),
         getTrainingPrograms(),
         getRisks(),
-        getDocuments()
+        getDocuments(),
+        getCertificates(),
+        getUserTrainingStatuses(),
       ]);
 
       // Extract values from PromiseSettledResult objects
-      const [settingsResult, stdsResult, compsResult, deptsResult, programsResult, trainingsResult, rksResult, docsResult] = results;
+      const [
+        settingsResult,
+        stdsResult,
+        compsResult,
+        deptsResult,
+        programsResult,
+        trainingsResult,
+        rksResult,
+        docsResult,
+        certificatesResult,
+        trainingStatusesResult,
+      ] = results;
 
       const settings = settingsResult.status === 'fulfilled' ? settingsResult.value : null;
       const stds = stdsResult.status === 'fulfilled' ? stdsResult.value : null;
@@ -236,6 +261,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       const trainings = trainingsResult.status === 'fulfilled' ? trainingsResult.value : null;
       const rks = rksResult.status === 'fulfilled' ? rksResult.value : null;
       const docs = docsResult.status === 'fulfilled' ? docsResult.value : null;
+      const certificates = certificatesResult.status === 'fulfilled' ? certificatesResult.value : null;
+      const trainingStatuses = trainingStatusesResult.status === 'fulfilled'
+        ? Object.fromEntries(trainingStatusesResult.value.map((record) => [record.userId, record.statuses]))
+        : null;
 
       // Log any failures for debugging
       const failedServices: string[] = [];
@@ -247,6 +276,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (trainingsResult.status === 'rejected') failedServices.push('trainings');
       if (rksResult.status === 'rejected') failedServices.push('risks');
       if (docsResult.status === 'rejected') failedServices.push('documents');
+      if (certificatesResult.status === 'rejected') failedServices.push('certificates');
+      if (trainingStatusesResult.status === 'rejected') failedServices.push('training statuses');
 
       if (failedServices.length > 0) {
         const errorMsg = `Failed to load: ${failedServices.join(', ')}`;
@@ -265,7 +296,9 @@ export const useAppStore = create<AppState>((set, get) => ({
         accreditationPrograms: programs || [],
         trainingPrograms: trainings || [],
         risks: rks || [],
-        documents: docs || []
+        documents: docs || [],
+        certificates: certificates || [],
+        userTrainingStatuses: trainingStatuses || {},
       });
 
       // Generate project templates dynamically based on loaded programs
@@ -290,8 +323,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   clearInitializationError: () => set({ initializationError: null }),
 
   // Documents
-  addDocument: (doc: AppDocument) => set(state => ({ documents: [...state.documents, doc] })),
-  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, extractedText?: AppDocument['extractedText'], tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string } }): Promise<AppDocument> => {
+  refreshDocuments: async () => {
+    const documents = await getDocuments();
+    set({ documents });
+  },
+  addControlledDocument: async (docData: { name: { en: string; ar: string }, type: AppDocument['type'], fileUrl?: string, extractedText?: AppDocument['extractedText'], tags?: string[], category?: string, departmentIds?: string[], projectId?: string, content?: { en: string; ar: string }, checklistEvidence?: { projectId: string; checklistItemId: string } }): Promise<AppDocument> => {
     try {
       const currentUser = useUserStore.getState().currentUser;
       const uploaderName = currentUser?.name || 'Unknown';
@@ -328,7 +364,13 @@ export const useAppStore = create<AppState>((set, get) => ({
       };
 
       // Save to Firebase first (this returns the document with Firebase-generated ID)
-      const newDoc = await addDocumentToFirebase(docWithoutId);
+      const newDoc = docData.checklistEvidence
+        ? await addDocumentWithProjectEvidence(
+            docWithoutId,
+            docData.checklistEvidence.projectId,
+            docData.checklistEvidence.checklistItemId,
+          )
+        : await addDocumentToFirebase(docWithoutId);
 
       // Then update local state with the same ID from Firebase
       set(state => ({ documents: [...state.documents, newDoc] }));
@@ -380,7 +422,10 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw error;
     }
   },
-  updateDocument: async (doc: AppDocument) => {
+  updateDocument: async (
+    doc: AppDocument,
+    options?: { skipWorkflowEvaluation?: boolean },
+  ) => {
     try {
       // RBAC Guard: verify update permission + Firestore doc readiness
       await permissionService.guard(Action.Update, Resource.Document);
@@ -415,7 +460,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       // Then update local state
       set(state => ({ documents: state.documents.map(d => d.id === updatedDoc.id ? updatedDoc : d) }));
       // Trigger workflow engine for document updates
-      workflowEngine.evaluate('document', 'updated', updatedDoc as unknown as Record<string, unknown>).catch(() => { });
+      if (!options?.skipWorkflowEvaluation) {
+        workflowEngine.evaluate('document', 'updated', updatedDoc as unknown as Record<string, unknown>).catch(() => { });
+      }
       // Activity logging
       const currentUser = useUserStore.getState().currentUser;
       if (currentUser) ActivityLogger.documentUpdated(currentUser.id, currentUser.name, doc.name?.en || 'Unknown');
@@ -447,10 +494,24 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw error;
     }
   },
-  approveDocument: async (docId: string) => {
+  approveDocument: async (docId: string, password: string) => {
     try {
       // RBAC Guard: verify approve permission + Firestore doc readiness
       const verifiedUser = await permissionService.guard(Action.Approve, Resource.Document);
+      const authUser = getAuthInstance().currentUser;
+      if (
+        !verifiedUser ||
+        !authUser ||
+        authUser.uid !== verifiedUser.id ||
+        !authUser.email ||
+        !password
+      ) {
+        throw new Error('Re-authentication is required to approve a document');
+      }
+      await reauthenticateWithCredential(
+        authUser,
+        EmailAuthProvider.credential(authUser.email, password),
+      );
       const doc = get().documents.find(d => d.id === docId);
       if (doc) {
         const now = new Date().toISOString();
@@ -694,41 +755,41 @@ export const useAppStore = create<AppState>((set, get) => ({
     const user = useUserStore.getState().currentUser;
     const program = get().trainingPrograms.find(p => p.id === trainingId);
     if (!user || !program) throw new Error("User or training not found");
+    if (program.quiz.length === 0) throw new Error("Training quiz must contain at least one question");
 
-    let correctAnswers = 0;
-    program.quiz.forEach(q => {
-      if (answers[q.id] === q.correctOptionIndex) {
-        correctAnswers++;
-      }
-    });
-    const score = Math.round((correctAnswers / program.quiz.length) * 100);
-    const passed = score >= program.passingScore;
-
-    let certificateId: string | undefined;
-    if (passed) {
-      const newCert: CertificateData = {
-        id: `cert-${user.id}-${trainingId}`,
-        userId: user.id,
-        userName: user.name,
-        trainingId,
-        trainingTitle: typeof program.title === 'string' ? program.title : program.title.en,
-        completionDate: new Date().toISOString(),
-        score
-      };
-      set(state => ({ certificates: [...state.certificates.filter(c => c.id !== newCert.id), newCert] }));
-      certificateId = newCert.id;
-    }
-
+    const result = await submitTrainingQuizToFirebase(trainingId, answers);
+    const completionDate = result.certificate?.completionDate;
     set(state => ({
+      certificates: result.certificate
+        ? [...state.certificates.filter(c => c.id !== result.certificate?.id), result.certificate]
+        : state.certificates,
       userTrainingStatuses: {
         ...state.userTrainingStatuses,
         [user.id]: {
           ...state.userTrainingStatuses[user.id],
-          [trainingId]: { status: passed ? 'Completed' : 'In Progress', score, completionDate: passed ? new Date().toISOString() : undefined, certificateId }
+          [trainingId]: {
+            status: result.passed || state.userTrainingStatuses[user.id]?.[trainingId]?.status === 'Completed'
+              ? 'Completed'
+              : 'In Progress',
+            score: Math.max(
+              state.userTrainingStatuses[user.id]?.[trainingId]?.score ?? 0,
+              result.score,
+            ),
+            ...(completionDate || state.userTrainingStatuses[user.id]?.[trainingId]?.completionDate
+              ? { completionDate: completionDate || state.userTrainingStatuses[user.id]?.[trainingId]?.completionDate }
+              : {}),
+            ...(result.certificateId || state.userTrainingStatuses[user.id]?.[trainingId]?.certificateId
+              ? { certificateId: result.certificateId || state.userTrainingStatuses[user.id]?.[trainingId]?.certificateId }
+              : {}),
+          }
         }
       }
     }));
-    return { score, passed, certificateId };
+    return {
+      score: result.score,
+      passed: result.passed,
+      ...(result.certificateId ? { certificateId: result.certificateId } : {}),
+    };
   },
 
   addRisk: async (riskData: Omit<Risk, 'id'>) => {
@@ -777,14 +838,17 @@ export const useAppStore = create<AppState>((set, get) => ({
       throw new AppError('Failed to add incident report', 'OPERATION_FAILED');
     }
   },
-  updateIncidentReport: async (report: IncidentReport) => {
+  updateIncidentReport: async (
+    report: IncidentReport,
+    options?: { skipWorkflowEvaluation?: boolean },
+  ) => {
     try {
       await updateIncidentReportInFirebase(report);
       set(state => ({ incidentReports: state.incidentReports.map(r => r.id === report.id ? report : r) }));
-      // Re-evaluate escalation rules on update (e.g. severity change)
-      escalationService.evaluateIncident(report, false).catch(() => { });
-      // Trigger workflow engine for incident updates
-      workflowEngine.evaluate('incident', 'updated', report as unknown as Record<string, unknown>).catch(() => { });
+      if (!options?.skipWorkflowEvaluation) {
+        escalationService.evaluateIncident(report, false).catch(() => { });
+        workflowEngine.evaluate('incident', 'updated', report as unknown as Record<string, unknown>).catch(() => { });
+      }
     } catch (error) {
       handleError(error, 'updateIncidentReport');
       throw new AppError('Failed to update incident report', 'OPERATION_FAILED');

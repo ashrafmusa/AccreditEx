@@ -7,6 +7,17 @@
 import React, { useState, useRef, useCallback } from "react";
 import type { QCData, WestgardRule } from "@/services/limsIntegration/types";
 import {
+  applyWestgardRules,
+  WESTGARD_REJECT_RULES,
+  type IQCResult,
+  type WestgardRule as LabWestgardRule,
+} from "@/types/labOps";
+import { useLabOpsStore } from "@/stores/useLabOpsStore";
+import { useTenantStore } from "@/stores/useTenantStore";
+import { useUserStore } from "@/stores/useUserStore";
+import { UserRole } from "@/types";
+import { useTranslation } from "@/hooks/useTranslation";
+import {
   QCImportSource,
   QC_IMPORT_SOURCE_LABELS,
   QCImportResult,
@@ -55,6 +66,9 @@ const westgardBgColor = (rule: WestgardRule): string => {
 // ── Component ────────────────────────────────────────────
 
 const QCDataImportTab: React.FC = () => {
+  const { t } = useTranslation();
+  const currentUser = useUserStore((state) => state.currentUser);
+  const [importError, setImportError] = useState<string | null>(null);
   const [source, setSource] = useState<QCImportSource>("biorad_unity");
   const [step, setStep] = useState<"select" | "mapping" | "preview" | "done">(
     "select",
@@ -175,10 +189,136 @@ const QCDataImportTab: React.FC = () => {
     }
   }, [mapping, rawCSV, rawFile]);
 
-  const handleConfirmImport = () => {
+  const handleConfirmImport = async () => {
     if (!importResult) return;
-    setAllImported((prev) => [...prev, ...importResult.records]);
-    setStep("done");
+    setLoading(true);
+    setImportError(null);
+    try {
+      if (!currentUser || currentUser.role !== UserRole.Admin) {
+        throw new Error(t("qcImportAdminOnly"));
+      }
+
+      const initialState = useLabOpsStore.getState();
+      if (!initialState.hasLoadedFromFirestore) {
+        await initialState.loadFromFirestore();
+      }
+      const labState = useLabOpsStore.getState();
+      const organizationId = useTenantStore.getState().organizationId;
+      if (
+        !labState.hasLoadedFromFirestore ||
+        !organizationId ||
+        labState.loadedOrganizationId !== organizationId
+      ) {
+        throw new Error(t("qcImportLoadRequired"));
+      }
+
+      const stagedByAnalyte = new Map<string, IQCResult[]>();
+      const importedResults: IQCResult[] = importResult.records.map(
+        (record, index) => {
+          const matches = labState.iqcAnalytes.filter((analyte) => {
+            const analyteMatches =
+              (record.analyteCode &&
+                analyte.analyteCode.trim().toLowerCase() ===
+                  record.analyteCode.trim().toLowerCase()) ||
+              analyte.analyteName.trim().toLowerCase() ===
+                record.analyteName.trim().toLowerCase();
+            const instrumentMatches =
+              analyte.equipmentId === record.instrumentId ||
+              analyte.equipmentName.trim().toLowerCase() ===
+                record.instrumentName.trim().toLowerCase();
+            return (
+              analyte.active &&
+              analyte.level === record.level &&
+              analyteMatches &&
+              instrumentMatches
+            );
+          });
+          if (matches.length !== 1) {
+            throw new Error(
+              t("qcImportAnalyteMatchFailed", {
+                analyte: record.analyteName,
+                instrument: record.instrumentName,
+              }),
+            );
+          }
+          const analyte = matches[0];
+          const meanTolerance = Math.max(
+            Math.abs(analyte.targetMean) * 0.001,
+            0.000001,
+          );
+          const sdTolerance = Math.max(
+            Math.abs(analyte.targetSD) * 0.001,
+            0.000001,
+          );
+          if (
+            analyte.targetSD <= 0 ||
+            Math.abs(analyte.targetMean - record.mean) > meanTolerance ||
+            Math.abs(analyte.targetSD - record.sd) > sdTolerance
+          ) {
+            throw new Error(
+              t("qcImportTargetMismatch", { analyte: analyte.analyteName }),
+            );
+          }
+
+          const measuredAt = record.controlDate;
+          if (!Number.isFinite(measuredAt.getTime())) {
+            throw new Error(t("qcImportInvalidDate"));
+          }
+          const history = [
+            ...labState.iqcResults.filter(
+              (result) => result.analyteId === analyte.id,
+            ),
+            ...(stagedByAnalyte.get(analyte.id) ?? []),
+          ]
+            .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt))
+            .slice(0, 11);
+          const sdFromMean =
+            (record.value - analyte.targetMean) / analyte.targetSD;
+          const violatedRules: LabWestgardRule[] = applyWestgardRules(
+            history,
+            sdFromMean,
+          );
+          const importedResult: IQCResult = {
+            id: `iqc-import-${crypto.randomUUID()}`,
+            analyteId: analyte.id,
+            analyteName: analyte.analyteName,
+            analyteCode: analyte.analyteCode,
+            labSection: analyte.labSection,
+            equipmentId: analyte.equipmentId,
+            level: analyte.level,
+            measuredValue: record.value,
+            sdFromMean,
+            measuredAt: measuredAt.toISOString(),
+            measuredBy: currentUser.name || currentUser.email,
+            measuredByStaffId: currentUser.id,
+            reagentLot: record.lotNumber || undefined,
+            violatedRules,
+            rejected: violatedRules.some((rule) =>
+              WESTGARD_REJECT_RULES.has(rule),
+            ),
+            note: t("qcImportedFrom", {
+              source: QC_IMPORT_SOURCE_LABELS[importResult.source],
+            }),
+            createdAt: new Date().toISOString(),
+          };
+          const staged = stagedByAnalyte.get(analyte.id) ?? [];
+          staged.push(importedResult);
+          stagedByAnalyte.set(analyte.id, staged);
+          return importedResult;
+        },
+      );
+
+      await useLabOpsStore.getState().importIQCResults(importedResults);
+      setAllImported((prev) => [...prev, ...importResult.records]);
+      setStep("done");
+    } catch (error) {
+      console.error("QC data import failed:", error);
+      setImportError(
+        error instanceof Error ? error.message : t("qcImportFailed"),
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -188,6 +328,7 @@ const QCDataImportTab: React.FC = () => {
     setRawCSV("");
     setRawFile(null);
     setMapping({});
+    setImportError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -525,17 +666,22 @@ const QCDataImportTab: React.FC = () => {
 
         {/* Confirm */}
         <div className="flex justify-end gap-2">
+          {importError && (
+            <p role="alert" className="mr-auto text-sm text-red-600">
+              {importError}
+            </p>
+          )}
           <Button variant="ghost" onClick={handleReset}>
             Cancel
           </Button>
           <Button
             variant="primary"
             onClick={handleConfirmImport}
-            disabled={importResult.importedCount === 0}
+            disabled={loading || importResult.importedCount === 0}
             className="flex items-center gap-2"
           >
             <CheckCircleIcon className="h-4 w-4" />
-            Import {importResult.importedCount} Records
+            {loading ? t("processing") : `Import ${importResult.importedCount} Records`}
           </Button>
         </div>
       </div>

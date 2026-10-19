@@ -505,7 +505,9 @@ export const ar = {
 
     // Document Editor Modal
     autosaving: 'حفظ تلقائي...',
+    saving: 'جارٍ الحفظ...',
     saved: 'تم الحفظ',
+    saveError: 'فشل الحفظ. لا تزال تغييراتك غير محفوظة.',
     unsavedChanges: 'تغييرات غير محفوظة',
     unsavedChangesTitle: 'تغييرات غير محفوظة',
     unsavedChangesMessage: 'لديك تغييرات غير محفوظة. ماذا تريد أن تفعل؟',

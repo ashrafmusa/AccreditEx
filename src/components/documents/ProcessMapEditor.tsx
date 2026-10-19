@@ -25,6 +25,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import { useTranslation } from "../../hooks/useTranslation";
 import { AppDocument } from "../../types";
+import { getLocalizedValue } from "@/utils/localization";
 import {
   ArrowUturnLeftIcon,
   ArrowUturnRightIcon,
@@ -696,7 +697,7 @@ Every suggestion MUST have a concrete action. For "add_node", nodeLabel is the n
     try {
       const { nodesDesc, edgesDesc } = describeGraph();
       const prompt = `Generate a professional HTML document describing this process map.
-Process name: "${documentData.name[lang]}"
+Process name: "${getLocalizedValue(documentData.name, lang)}"
 Steps: [${nodesDesc}]
 Flow: [${edgesDesc}]
 
@@ -1237,7 +1238,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
         },
       });
       const link = document.createElement("a");
-      link.download = `${documentData.name.en.replace(/\s+/g, "_")}_process_map.png`;
+      link.download = `${getLocalizedValue(documentData.name, "en").replace(/\s+/g, "_")}_process_map.png`;
       link.href = dataUrl;
       link.click();
     } catch (error) {
@@ -1245,7 +1246,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
     } finally {
       setIsExporting(false);
     }
-  }, [reactFlowWrapper, getNodes, documentData.name.en]);
+  }, [reactFlowWrapper, getNodes, documentData.name]);
 
   const handleExportSVG = useCallback(async () => {
     if (!reactFlowWrapper.current) return;
@@ -1324,7 +1325,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
       const blob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = `${documentData.name.en.replace(/\s+/g, "_")}_process_map.svg`;
+      link.download = `${getLocalizedValue(documentData.name, "en").replace(/\s+/g, "_")}_process_map.svg`;
       link.href = url;
       link.click();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
@@ -1333,7 +1334,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
     } finally {
       setIsExporting(false);
     }
-  }, [reactFlowWrapper, getNodes, documentData.name.en]);
+  }, [reactFlowWrapper, getNodes, documentData.name]);
 
   // ─── Template loading ─────────────────────────────────────────────────────
   const handleLoadTemplate = (template: Template) => {
@@ -1384,7 +1385,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
         {/* Left: title */}
         <div className="flex items-center gap-2.5 min-w-0 shrink">
           <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[200px]">
-            {documentData.name[lang]}
+            {getLocalizedValue(documentData.name, lang)}
           </h3>
           <span className="text-[11px] text-slate-400 shrink-0">
             v{documentData.currentVersion}
@@ -2423,7 +2424,7 @@ Return ONLY a JSON object with: { "type": "add_node" or "remove_node" or "rename
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
                   a.href = url;
-                  a.download = `${documentData.name.en}_documentation.html`;
+                  a.download = `${getLocalizedValue(documentData.name, "en")}_documentation.html`;
                   a.click();
                 }}
                 className="px-4 py-1.5 bg-emerald-600 text-white rounded-lg text-sm font-medium hover:bg-emerald-700 transition-colors"

@@ -255,7 +255,7 @@ export const WORKFLOW_TEMPLATES: Omit<WorkflowDefinition, 'id' | 'createdBy' | '
         trigger: { entity: 'incident', event: 'created', fieldFilters: [{ field: 'severity', operator: 'equals', value: 'Sentinel Event' }] },
         conditionGroup: { logic: 'AND', conditions: [] },
         actions: [
-            { id: 'a1', type: 'create_capa', config: { title: 'CAPA: {{entity.description}}', assignToRoles: ['Admin'], priority: 'critical' }, delayMinutes: 0, order: 1 },
+            { id: 'a1', type: 'create_capa', config: { title: 'CAPA: {{entity.description}}', priority: 'critical' }, delayMinutes: 0, order: 1 },
             { id: 'a2', type: 'send_notification', config: { recipientRoles: ['Admin'], priority: 'critical', title: '🚨 Sentinel Event — CAPA Created', message: 'A sentinel event has triggered automatic CAPA creation.' } as NotifyActionConfig, delayMinutes: 0, order: 2 },
         ],
         status: 'draft',

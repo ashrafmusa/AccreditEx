@@ -2,6 +2,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { AppDocument } from "../../types";
+import { getLocalizedValue } from "@/utils/localization";
 import {
   ArchiveBoxIcon,
   ArrowDownTrayIcon,
@@ -242,7 +243,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
             }}
             onClick={(e) => e.stopPropagation()}
             className="h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary dark:border-gray-600 dark:bg-gray-800"
-            aria-label={t("selectDocument") || `Select ${doc.name[lang]}`}
+            aria-label={t("selectDocument") || `Select ${getLocalizedValue(doc.name, lang)}`}
           />
         </td>
       )}
@@ -268,7 +269,7 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
                   {doc.documentNumber}
                 </span>
               )}
-              {doc.name[lang]}
+              {getLocalizedValue(doc.name, lang)}
             </div>
             {hasRelationships && (
               <span

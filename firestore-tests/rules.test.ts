@@ -19,6 +19,8 @@ import {
   where,
 } from 'firebase/firestore';
 
+jest.setTimeout(30_000);
+
 describe('Firestore tenant and ownership rules', () => {
   let testEnv: RulesTestEnvironment;
 
@@ -41,6 +43,132 @@ describe('Firestore tenant and ownership rules', () => {
 
   const clientDb = (uid: string, role: string, organizationId = 'org-a') =>
     testEnv.authenticatedContext(uid, { role, organizationId }).firestore();
+
+  it('restricts training progress to server writes and owner or tenant-admin reads', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'userTrainingStatuses/member-a'), {
+        userId: 'member-a',
+        organizationId: 'org-a',
+        trainingOne: { status: 'Completed', score: 100 },
+      });
+
+    });
+
+    const owner = clientDb('member-a', 'TeamMember');
+    const otherMember = clientDb('member-b', 'TeamMember');
+    const tenantAdmin = clientDb('admin-a', 'Admin');
+
+    await assertSucceeds(getDoc(doc(owner, 'userTrainingStatuses/member-a')));
+    await assertFails(getDoc(doc(otherMember, 'userTrainingStatuses/member-a')));
+    await assertSucceeds(getDoc(doc(tenantAdmin, 'userTrainingStatuses/member-a')));
+    await assertFails(updateDoc(doc(owner, 'userTrainingStatuses/member-a'), {
+      trainingOne: { status: 'Completed', score: 100 },
+    }));
+    await assertFails(setDoc(doc(owner, 'userTrainingStatuses/member-b'), {
+      userId: 'member-b',
+      organizationId: 'org-a',
+      trainingOne: { status: 'Completed', score: 100 },
+    }));
+  });
+
+  it('scopes Training Hub writes and user-owned training records by tenant and owner', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'userLearningPathProgress/member-a_path-a'), {
+        id: 'member-a_path-a',
+        userId: 'member-a',
+        learningPathId: 'path-a',
+        stepsCompleted: [],
+        organizationId: 'org-a',
+      });
+      await setDoc(doc(context.firestore(), 'ceCredits/credit-a'), {
+        id: 'credit-a',
+        userId: 'member-a',
+        organizationId: 'org-a',
+      });
+      await setDoc(doc(context.firestore(), 'capAssessments/cap-a'), {
+        id: 'cap-a',
+        userId: 'member-a',
+        assessorId: 'assessor-a',
+        organizationId: 'org-a',
+      });
+    });
+
+    const owner = clientDb('member-a', 'TeamMember');
+    const otherMember = clientDb('member-b', 'TeamMember');
+    const tenantAdmin = clientDb('admin-a', 'Admin');
+    const otherTenantAdmin = clientDb('admin-b', 'Admin', 'org-b');
+
+    await assertSucceeds(getDoc(doc(owner, 'userLearningPathProgress/member-a_path-a')));
+    await assertFails(getDoc(doc(otherMember, 'userLearningPathProgress/member-a_path-a')));
+    await assertSucceeds(updateDoc(doc(owner, 'userLearningPathProgress/member-a_path-a'), {
+      stepsCompleted: ['step-1'],
+    }));
+    await assertFails(updateDoc(doc(otherMember, 'userLearningPathProgress/member-a_path-a'), {
+      stepsCompleted: ['step-1'],
+    }));
+
+    await assertSucceeds(getDoc(doc(owner, 'ceCredits/credit-a')));
+    await assertFails(getDoc(doc(otherMember, 'ceCredits/credit-a')));
+    await assertSucceeds(getDoc(doc(owner, 'capAssessments/cap-a')));
+    await assertFails(getDoc(doc(otherMember, 'capAssessments/cap-a')));
+    await assertSucceeds(getDoc(doc(tenantAdmin, 'capAssessments/cap-a')));
+    await assertFails(getDoc(doc(otherTenantAdmin, 'capAssessments/cap-a')));
+
+    await assertSucceeds(setDoc(doc(tenantAdmin, 'learningPaths/path-a'), {
+      title: 'Tenant path',
+      organizationId: 'org-a',
+    }));
+    await assertFails(setDoc(doc(tenantAdmin, 'learningPaths/path-b'), {
+      title: 'Wrong tenant',
+      organizationId: 'org-b',
+    }));
+    await assertSucceeds(setDoc(doc(owner, 'userLearningPathProgress/member-a_path-b'), {
+      userId: 'member-a',
+      learningPathId: 'path-b',
+      stepsCompleted: [],
+      organizationId: 'org-a',
+    }));
+    await assertFails(setDoc(doc(owner, 'userLearningPathProgress/member-b_path-b'), {
+      userId: 'member-b',
+      learningPathId: 'path-b',
+      stepsCompleted: [],
+      organizationId: 'org-a',
+    }));
+  });
+
+  it('scopes tracer records to the tenant and restricts template management', async () => {
+    const adminDb = clientDb('admin-a', 'Admin');
+    const memberDb = clientDb('member-a', 'TeamMember');
+    const otherTenantDb = clientDb('admin-b', 'Admin', 'org-b');
+
+    await assertSucceeds(setDoc(doc(adminDb, 'tracerTemplates/org-a_template-a'), {
+      id: 'org-a_template-a',
+      organizationId: 'org-a',
+      name: 'Tenant template',
+    }));
+    await assertFails(setDoc(doc(memberDb, 'tracerTemplates/org-a_template-b'), {
+      id: 'org-a_template-b',
+      organizationId: 'org-a',
+      name: 'Member template',
+    }));
+    await assertSucceeds(getDoc(doc(memberDb, 'tracerTemplates/org-a_template-a')));
+    await assertFails(getDoc(doc(otherTenantDb, 'tracerTemplates/org-a_template-a')));
+
+    await assertSucceeds(setDoc(doc(memberDb, 'tracerSessions/session-a'), {
+      id: 'session-a',
+      organizationId: 'org-a',
+      surveyorId: 'member-a',
+      status: 'in_progress',
+    }));
+    await assertSucceeds(getDoc(doc(adminDb, 'tracerSessions/session-a')));
+    await assertFails(getDoc(doc(otherTenantDb, 'tracerSessions/session-a')));
+    await assertFails(setDoc(doc(memberDb, 'tracerSessions/session-b'), {
+      id: 'session-b',
+      organizationId: 'org-b',
+      surveyorId: 'member-a',
+      status: 'in_progress',
+    }));
+  });
 
   it('reserves Lab Operations writes for tenant admins', async () => {
     const adminDb = clientDb('admin-a', 'Admin');

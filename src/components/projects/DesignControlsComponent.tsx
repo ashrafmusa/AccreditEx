@@ -40,7 +40,7 @@ const DesignControlsComponent: React.FC<DesignControlsComponentProps> = ({
   onSave,
 }) => {
   const { t, lang } = useTranslation();
-  const { addControlledDocument } = useAppStore();
+  const { addControlledDocument, updateDocument } = useAppStore();
   const toast = useToast();
   const [controls, setControls] = useState<DesignControlItem[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -866,7 +866,10 @@ RATIONALE: (one sentence explaining why these documents are relevant)`;
           isOpen={!!viewingDoc}
           onClose={() => setViewingDoc(null)}
           document={viewingDoc}
-          onSave={(doc) => setViewingDoc(null)}
+          onSave={async (doc) => {
+            await updateDocument(doc);
+            setViewingDoc(null);
+          }}
           standards={[]}
         />
       )}

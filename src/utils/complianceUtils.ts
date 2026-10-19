@@ -1,4 +1,65 @@
-import { ComplianceStatus } from "@/types";
+import { ChecklistItem, ComplianceStatus } from "@/types";
+
+export interface ChecklistCompliance {
+  complianceRate: number;
+  applicableCount: number;
+  compliantCount: number;
+  partiallyCompliantCount: number;
+  nonCompliantCount: number;
+  notStartedCount: number;
+  notApplicableCount: number;
+  isAllNotApplicable: boolean;
+}
+
+export function calculateChecklistCompliance(
+  checklist: Pick<ChecklistItem, "status">[],
+  options: { partialCredit?: number } = {},
+): ChecklistCompliance {
+  const partialCredit = options.partialCredit ?? 0.5;
+  if (!Number.isFinite(partialCredit) || partialCredit < 0 || partialCredit > 1) {
+    throw new RangeError("partialCredit must be between 0 and 1");
+  }
+
+  const counts = {
+    compliantCount: 0,
+    partiallyCompliantCount: 0,
+    nonCompliantCount: 0,
+    notStartedCount: 0,
+    notApplicableCount: 0,
+  };
+  for (const item of checklist) {
+    switch (item.status) {
+      case ComplianceStatus.Compliant:
+        counts.compliantCount += 1;
+        break;
+      case ComplianceStatus.PartiallyCompliant:
+        counts.partiallyCompliantCount += 1;
+        break;
+      case ComplianceStatus.NonCompliant:
+        counts.nonCompliantCount += 1;
+        break;
+      case ComplianceStatus.NotApplicable:
+        counts.notApplicableCount += 1;
+        break;
+      case ComplianceStatus.NotStarted:
+        counts.notStartedCount += 1;
+        break;
+    }
+  }
+
+  const applicableCount =
+    checklist.length - counts.notApplicableCount;
+  const score =
+    counts.compliantCount + counts.partiallyCompliantCount * partialCredit;
+  return {
+    ...counts,
+    applicableCount,
+    complianceRate:
+      applicableCount === 0 ? 0 : (score / applicableCount) * 100,
+    isAllNotApplicable:
+      checklist.length > 0 && applicableCount === 0,
+  };
+}
 
 /**
  * Maps a ComplianceStatus value to its translation key.

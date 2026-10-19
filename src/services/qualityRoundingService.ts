@@ -71,7 +71,7 @@ export const getQualityRounds = async (): Promise<QualityRound[]> => {
         return sortByFieldDesc(snapshot.docs.map(d => ({ ...d.data(), id: d.id } as QualityRound)), 'scheduledDate');
     } catch (error) {
         console.error('Failed to fetch quality rounds:', error);
-        return [];
+        throw error;
     }
 };
 

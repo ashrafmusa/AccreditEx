@@ -4,7 +4,13 @@ import {
   getAssessorPackExportAudit,
   type AssessorPackExportMetrics,
 } from "@/services/assessorReportPackService";
-import { calculatePredictiveAuditRisk } from "@/services/qualityOutcomeIntelligenceService";
+import {
+  calculatePredictiveAuditRisk,
+  calculateQualityTrendMetrics,
+  getRecentMonthlyQualityOutcomeSnapshots,
+  recordMonthlyQualityOutcomeSnapshot,
+  type MonthlyQualityOutcomeSnapshot,
+} from "@/services/qualityOutcomeIntelligenceService";
 import { calculatePortfolioReadiness } from "@/services/tqmReadinessService";
 import { useAppStore } from "@/stores/useAppStore";
 import {
@@ -54,9 +60,17 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
       exportsLast30Days: 0,
       reviewerSignOffRatePercent: 0,
     });
+  const [qualitySnapshots, setQualitySnapshots] = useState<
+    MonthlyQualityOutcomeSnapshot[]
+  >([]);
+  const [qualitySnapshotsOrganizationId, setQualitySnapshotsOrganizationId] =
+    useState<string | null>(null);
+  const [qualityHistoryError, setQualityHistoryError] = useState(false);
   const assessorAuditErrorToast = useRef(toast.error);
+  const qualityHistoryErrorToast = useRef(toast.error);
   const translateRef = useRef(t);
   assessorAuditErrorToast.current = toast.error;
+  qualityHistoryErrorToast.current = toast.error;
   translateRef.current = t;
 
   useEffect(() => {
@@ -80,6 +94,54 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
     };
   }, [organizationId]);
 
+  const qualityTrendMetrics = useMemo(
+    () => calculateQualityTrendMetrics(props.projects, props.risks),
+    [props.projects, props.risks],
+  );
+
+  const readiness = useMemo(() => {
+    return calculatePortfolioReadiness(props.projects, props.risks, documents);
+  }, [props.projects, props.risks, documents]);
+
+  useEffect(() => {
+    try {
+      recordMonthlyQualityOutcomeSnapshot({
+        organizationId,
+        readinessScore: readiness.readinessScore,
+        assessorExportsLast30Days: assessorExportMetrics.exportsLast30Days,
+        reviewerSignOffRatePercent:
+          assessorExportMetrics.reviewerSignOffRatePercent,
+        criticalOpenFindings: readiness.criticalOpenFindings,
+        ...qualityTrendMetrics,
+      });
+      setQualitySnapshots(
+        getRecentMonthlyQualityOutcomeSnapshots(6, organizationId),
+      );
+      setQualitySnapshotsOrganizationId(organizationId?.trim() || "legacy");
+      setQualityHistoryError(false);
+    } catch (error) {
+      console.error("Failed to update quality outcome history:", error);
+      setQualitySnapshots([]);
+      setQualitySnapshotsOrganizationId(organizationId?.trim() || "legacy");
+      setQualityHistoryError(true);
+      qualityHistoryErrorToast.current(
+        translateRef.current("qualityTrendSaveFailed"),
+      );
+    }
+  }, [
+    organizationId,
+    readiness.readinessScore,
+    readiness.criticalOpenFindings,
+    assessorExportMetrics.exportsLast30Days,
+    assessorExportMetrics.reviewerSignOffRatePercent,
+    qualityTrendMetrics,
+  ]);
+
+  const visibleQualitySnapshots =
+    qualitySnapshotsOrganizationId === (organizationId?.trim() || "legacy")
+      ? qualitySnapshots
+      : [];
+
   const kpis = useMemo(() => {
     const pendingChecks = props.projects
       .flatMap((p) => p.capaReports || [])
@@ -91,40 +153,13 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
       .flatMap((u) => (u as any).readAndAcknowledge || [])
       .filter((ack: any) => !ack.acknowledgedDate).length;
 
-    // Calculate Quality Score
-    const totalProjects = props.projects.length || 1;
-    const completedProjects = props.projects.filter(
-      (p) => p.status === "Completed",
-    ).length;
-    const activeProjects = props.projects.filter(
-      (p) => p.status === "In Progress",
-    ).length;
-    const complianceRate =
-      ((completedProjects + activeProjects) / totalProjects) * 100;
-
-    // Calculate Risk Control Index
-    const totalRisks = props.risks.length || 1;
-    const mitigatedRisks = props.risks.filter(
-      (r) => r.status === "Mitigated" || r.status === "Closed",
-    ).length;
-    const riskControlIndex = (mitigatedRisks / totalRisks) * 100;
-
-    // Composite Quality Score (60% Compliance, 40% Risk)
-    const qualityScore = Math.round(
-      complianceRate * 0.6 + riskControlIndex * 0.4,
-    );
-
     return {
       pendingChecks,
       pendingAcks,
-      qualityScore,
-      riskControlIndex: Math.round(riskControlIndex),
+      qualityScore: qualityTrendMetrics.qualityScore,
+      riskControlIndex: qualityTrendMetrics.riskControlIndex,
     };
-  }, [props.projects, props.users, props.risks]);
-
-  const readiness = useMemo(() => {
-    return calculatePortfolioReadiness(props.projects, props.risks, documents);
-  }, [props.projects, props.risks, documents]);
+  }, [props.projects, props.users, qualityTrendMetrics]);
 
   const openCapas = useMemo(
     () =>
@@ -153,16 +188,49 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
     ],
   );
 
-  // Generate sparkline data based on current score (simulated history)
   const qualitySparkline = useMemo(() => {
-    const data = [];
-    let current = kpis.qualityScore;
-    for (let i = 0; i < 7; i++) {
-      data.unshift(Math.max(0, Math.min(100, current)));
-      current += Math.random() * 10 - 5; // Random fluctuation
-    }
-    return data;
-  }, [kpis.qualityScore]);
+    return visibleQualitySnapshots.flatMap((snapshot) =>
+      typeof snapshot.qualityScore === "number" ? [snapshot.qualityScore] : [],
+    );
+  }, [visibleQualitySnapshots]);
+
+  const previousMonthDate = new Date();
+  previousMonthDate.setDate(1);
+  previousMonthDate.setMonth(previousMonthDate.getMonth() - 1);
+  const previousMonthKey = `${previousMonthDate.getFullYear()}-${String(
+    previousMonthDate.getMonth() + 1,
+  ).padStart(2, "0")}`;
+  const previousMonthSnapshot = visibleQualitySnapshots.find(
+    (snapshot) => snapshot.monthKey === previousMonthKey,
+  );
+  const qualityScoreTrend =
+    typeof previousMonthSnapshot?.qualityScore === "number"
+      ? {
+          direction:
+            kpis.qualityScore > previousMonthSnapshot.qualityScore
+              ? ("up" as const)
+              : kpis.qualityScore < previousMonthSnapshot.qualityScore
+                ? ("down" as const)
+                : ("neutral" as const),
+          value: Math.abs(kpis.qualityScore - previousMonthSnapshot.qualityScore),
+          label: t("vsLastMonth"),
+        }
+      : undefined;
+  const riskControlTrend =
+    typeof previousMonthSnapshot?.riskControlIndex === "number"
+      ? {
+          direction:
+            kpis.riskControlIndex > previousMonthSnapshot.riskControlIndex
+              ? ("up" as const)
+              : kpis.riskControlIndex < previousMonthSnapshot.riskControlIndex
+                ? ("down" as const)
+                : ("neutral" as const),
+          value: Math.abs(
+            kpis.riskControlIndex - previousMonthSnapshot.riskControlIndex,
+          ),
+          label: t("vsLastMonth"),
+        }
+      : undefined;
 
   return (
     <div className="space-y-6">
@@ -200,7 +268,7 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
             value={`${kpis.qualityScore}%`}
             icon={CheckBadgeIcon}
             color="from-sky-500 to-sky-700 bg-linear-to-br"
-            trend={{ direction: "up", value: 3.2, label: t("vsLastMonth") }}
+            trend={qualityScoreTrend}
             sparklineData={qualitySparkline}
           />
           <StatCard
@@ -208,14 +276,13 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
             value={kpis.pendingChecks}
             icon={ClipboardDocumentCheckIcon}
             color="from-amber-500 to-amber-700 bg-linear-to-br"
-            trend={{ direction: "down", value: 12, label: t("vsLastWeek") }}
           />
           <StatCard
             title={t("riskControlIndex") || "Risk Control Index"}
             value={`${kpis.riskControlIndex}`}
             icon={ExclamationTriangleIcon}
             color="from-emerald-500 to-emerald-700 bg-linear-to-br"
-            trend={{ direction: "up", value: 1.5, label: t("vsLastMonth") }}
+            trend={riskControlTrend}
           />
           <StatCard
             title={t("pendingAcknowledgements")}
@@ -274,7 +341,10 @@ const QualityInsightsPage: React.FC<QualityInsightsPageProps> = (props) => {
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <QualityTrendChart projects={props.projects} risks={props.risks} />
+          <QualityTrendChart
+            snapshots={visibleQualitySnapshots}
+            historyError={qualityHistoryError}
+          />
           <PDCACycleTracker projects={props.projects} />
         </div>
       </div>

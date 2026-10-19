@@ -57,12 +57,12 @@ export const DATA_SOURCE_FIELDS: Record<ReportDataSource, string[]> = {
     users: ['name', 'email', 'role', 'department', 'status', 'lastActive'],
     mock_surveys: ['status', 'startDate', 'completedDate', 'overallScore', 'totalItems', 'passedItems'],
     pdca_cycles: ['currentStage', 'status', 'startedAt', 'completedAt', 'description'],
-    quality_rounds: ['title', 'department', 'status', 'date', 'findings', 'score'],
+    quality_rounds: ['title', 'department', 'status', 'date', 'findings', 'score', 'complianceRate'],
 };
 
 // ── Aggregation Functions ───────────────────────────────────
 
-export type AggregationType = 'count' | 'sum' | 'average' | 'min' | 'max' | 'percentage' | 'group_count';
+export type AggregationType = 'count' | 'sum' | 'average' | 'min' | 'max' | 'percentage' | 'compliance_rate' | 'group_count';
 
 export const AGGREGATION_LABELS: Record<AggregationType, string> = {
     count: 'Count',
@@ -71,6 +71,7 @@ export const AGGREGATION_LABELS: Record<AggregationType, string> = {
     min: 'Minimum',
     max: 'Maximum',
     percentage: 'Percentage',
+    compliance_rate: 'Compliance Rate',
     group_count: 'Group & Count',
 };
 

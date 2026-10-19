@@ -1,6 +1,7 @@
 import { SettingsVersion, AppSettings } from '@/types';
-import { collection, addDoc, getDocs, getDoc, doc, deleteDoc, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, query, where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'settings_versions';
 
@@ -25,6 +26,7 @@ export const createSettingsVersion = async (
 
     const docRef = await addDoc(collection(db, COLLECTION_NAME), {
         ...versionData,
+        ...getTenantStamp(),
         createdAtTimestamp: Timestamp.now(),
     });
 
@@ -32,7 +34,7 @@ export const createSettingsVersion = async (
 };
 
 export const getAllVersions = async (): Promise<SettingsVersion[]> => {
-    const q = query(collection(db, COLLECTION_NAME), orderBy('version', 'desc'));
+    const q = getTenantQuery(COLLECTION_NAME, orderBy('version', 'desc'));
     const snapshot = await getDocs(q);
 
     return snapshot.docs.map(doc => ({
@@ -42,13 +44,14 @@ export const getAllVersions = async (): Promise<SettingsVersion[]> => {
 };
 
 export const getVersionById = async (versionId: string): Promise<SettingsVersion | null> => {
-    const docRef = doc(db, COLLECTION_NAME, versionId);
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
+    const versionSnapshot = await getDocs(
+        getTenantQuery(COLLECTION_NAME, where('__name__', '==', versionId), limit(1)),
+    );
+    if (versionSnapshot.empty) {
         return null;
     }
 
+    const docSnap = versionSnapshot.docs[0];
     return {
         id: docSnap.id,
         ...docSnap.data(),
@@ -56,8 +59,8 @@ export const getVersionById = async (versionId: string): Promise<SettingsVersion
 };
 
 export const getVersionByNumber = async (versionNumber: number): Promise<SettingsVersion | null> => {
-    const q = query(
-        collection(db, COLLECTION_NAME),
+    const q = getTenantQuery(
+        COLLECTION_NAME,
         where('version', '==', versionNumber),
         limit(1)
     );
@@ -75,8 +78,8 @@ export const getVersionByNumber = async (versionNumber: number): Promise<Setting
 };
 
 export const getRecentVersions = async (limitCount: number = 10): Promise<SettingsVersion[]> => {
-    const q = query(
-        collection(db, COLLECTION_NAME),
+    const q = getTenantQuery(
+        COLLECTION_NAME,
         orderBy('version', 'desc'),
         limit(limitCount)
     );
@@ -89,8 +92,8 @@ export const getRecentVersions = async (limitCount: number = 10): Promise<Settin
 };
 
 export const getUserVersions = async (userId: string): Promise<SettingsVersion[]> => {
-    const q = query(
-        collection(db, COLLECTION_NAME),
+    const q = getTenantQuery(
+        COLLECTION_NAME,
         where('createdBy', '==', userId),
         orderBy('version', 'desc')
     );
@@ -103,8 +106,8 @@ export const getUserVersions = async (userId: string): Promise<SettingsVersion[]
 };
 
 export const getVersionsByTag = async (tag: string): Promise<SettingsVersion[]> => {
-    const q = query(
-        collection(db, COLLECTION_NAME),
+    const q = getTenantQuery(
+        COLLECTION_NAME,
         where('tags', 'array-contains', tag),
         orderBy('version', 'desc')
     );

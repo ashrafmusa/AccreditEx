@@ -19,6 +19,7 @@ import {
 } from "@/types";
 import { create } from "zustand";
 import { useUserStore } from "./useUserStore";
+import { calculateChecklistCompliance } from "@/utils/complianceUtils";
 import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
 import {
   Action,
@@ -51,13 +52,19 @@ interface ProjectState {
     projectId: string,
     checklistItemId: string,
     updates: Partial<ChecklistItem>,
+    options?: { skipWorkflowEvaluation?: boolean },
   ) => Promise<void>;
   addComment: (
     projectId: string,
     checklistItemId: string,
     commentText: string,
   ) => Promise<void>;
-  addCapaReport: (projectId: string, checklistItemId: string) => Promise<void>;
+  addCapaReport: (
+    projectId: string,
+    checklistItemId: string,
+    overrides?: Partial<Omit<CAPAReport, "id" | "checklistItemId">>,
+    options?: { skipWorkflowEvaluation?: boolean },
+  ) => Promise<void>;
   uploadEvidence: (
     projectId: string,
     checklistItemId: string,
@@ -103,21 +110,7 @@ interface ProjectState {
 }
 
 const calculateProgress = (checklist: ChecklistItem[]): number => {
-  if (!checklist || checklist.length === 0) {
-    return 0;
-  }
-  const applicableItems = checklist.filter(
-    (c) => c.status !== ComplianceStatus.NotApplicable,
-  );
-  if (applicableItems.length === 0) {
-    return 100;
-  }
-  const score = applicableItems.reduce((acc, item) => {
-    if (item.status === ComplianceStatus.Compliant) return acc + 1;
-    if (item.status === ComplianceStatus.PartiallyCompliant) return acc + 0.5;
-    return acc;
-  }, 0);
-  return (score / applicableItems.length) * 100;
+  return calculateChecklistCompliance(checklist).complianceRate;
 };
 
 function assertProjectWritable(
@@ -302,7 +295,12 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
     // Optionally, we could add it to the app store's documents array
     return reportDocument;
   },
-  updateChecklistItem: async (projectId, checklistItemId, updates) => {
+  updateChecklistItem: async (
+    projectId,
+    checklistItemId,
+    updates,
+    options,
+  ) => {
     const project = get().projects.find((p) => p.id === projectId);
     assertProjectWritable(project);
     if (project) {
@@ -312,7 +310,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       await get().updateProject({ ...project, checklist: newChecklist });
       // Trigger workflow engine for checklist item updates
       const updatedItem = newChecklist.find((i) => i.id === checklistItemId);
-      if (updatedItem) {
+      if (updatedItem && !options?.skipWorkflowEvaluation) {
         const event = updates.status
           ? ("status_changed" as const)
           : ("updated" as const);
@@ -330,35 +328,43 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       get().projects.find((project) => project.id === projectId),
     );
     const user = useUserStore.getState().currentUser;
-    if (user) {
-      await projectService.addComment(projectId, checklistItemId, {
-        userId: user.id,
-        userName: user.name,
-        timestamp: new Date().toISOString(),
-        text: commentText,
-      });
-      await get().fetchAllProjects();
-    }
+    if (!user) throw new Error("User not authenticated");
+    await projectService.addComment(projectId, checklistItemId, {
+      userId: user.id,
+      userName: user.name,
+      timestamp: new Date().toISOString(),
+      text: commentText,
+    });
+    await get().fetchAllProjects();
   },
-  addCapaReport: async (projectId, checklistItemId) => {
+  addCapaReport: async (
+    projectId,
+    checklistItemId,
+    overrides,
+    options,
+  ) => {
     const project = get().projects.find((p) => p.id === projectId);
     assertProjectWritable(project);
     const item = project?.checklist.find((i) => i.id === checklistItemId);
-    if (project && item) {
-      const capaData: Omit<CAPAReport, "id"> = {
-        status: ProjectStatus.InProgress,
-        checklistItemId: checklistItemId,
-        rootCause: "",
-        correctiveAction: `CAPA for non-compliance in standard ${item.standardId}: ${item.item}`,
-        preventiveAction: "",
-        pdcaStage: "Plan",
-        pdcaHistory: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      await projectService.addCapaReport(projectId, capaData);
-      await get().fetchAllProjects();
-      // Trigger workflow engine for CAPA creation
+    if (!project || !item) {
+      throw new Error("Project or checklist item not found");
+    }
+    const capaData: Omit<CAPAReport, "id"> = {
+      status: ProjectStatus.InProgress,
+      checklistItemId: checklistItemId,
+      rootCause: "",
+      correctiveAction: `CAPA for non-compliance in standard ${item.standardId}: ${item.item}`,
+      preventiveAction: "",
+      pdcaStage: "Plan",
+      pdcaHistory: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ...overrides,
+    };
+    await projectService.addCapaReport(projectId, capaData);
+    await get().fetchAllProjects();
+    // Trigger workflow engine for CAPA creation
+    if (!options?.skipWorkflowEvaluation) {
       workflowEngine
         .evaluate("capa", "created", {
           ...capaData,
@@ -387,16 +393,27 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       projectId,
       departmentIds: project.departmentIds,
       tags: [`project:${projectId}`, `checklist:${checklistItemId}`],
+      checklistEvidence: { projectId, checklistItemId },
     });
-    const currentProject = get().projects.find((item) => item.id === projectId);
-    assertProjectWritable(currentProject);
-    const item = currentProject.checklist.find(
-      (entry) => entry.id === checklistItemId,
-    );
-    if (!item) throw new Error("Checklist item not found");
-    await get().updateChecklistItem(projectId, checklistItemId, {
-      evidenceFiles: [...new Set([...(item.evidenceFiles || []), document.id])],
-    });
+    set((state) => ({
+      projects: state.projects.map((currentProject) =>
+        currentProject.id !== projectId
+          ? currentProject
+          : {
+              ...currentProject,
+              checklist: currentProject.checklist.map((item) =>
+                item.id !== checklistItemId
+                  ? item
+                  : {
+                      ...item,
+                      evidenceFiles: [
+                        ...new Set([...(item.evidenceFiles || []), document.id]),
+                      ],
+                    },
+              ),
+            },
+      ),
+    }));
   },
   startMockSurvey: async (projectId) => {
     assertProjectWritable(

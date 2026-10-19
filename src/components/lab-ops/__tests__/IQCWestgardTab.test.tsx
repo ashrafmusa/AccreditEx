@@ -41,6 +41,14 @@ jest.mock("@/services/aiAgentService", () => ({
     chat: jest.fn(),
   },
 }));
+jest.mock("@/services/labOpsService", () => ({
+  getLabOpsData: jest.fn().mockResolvedValue(null),
+  saveLabOpsDataWithRetry: jest.fn().mockResolvedValue(undefined),
+  labRecordStorageEnabled: () => false,
+  labRecordService: {
+    write: jest.fn().mockResolvedValue(undefined),
+  },
+}));
 jest.mock("@/stores/useTenantStore", () => ({
   useTenantStore: Object.assign(
     (selector: (state: { organizationId: string }) => unknown) => selector({ organizationId: "org-a" }),
@@ -85,6 +93,11 @@ const initialDataState = {
   ),
   iqcResults: JSON.parse(JSON.stringify(useLabOpsStore.getState().iqcResults)),
   loading: false,
+  hasLoadedFromFirestore: true,
+  loadedOrganizationId: "org-a",
+  syncStatus: "synced",
+  syncError: null,
+  recordRevision: 0,
 };
 
 describe("IQCWestgardTab", () => {

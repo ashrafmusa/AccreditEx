@@ -28,6 +28,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState, ProjectStatus } from "@/types";
+import { calculateChecklistCompliance } from "@/utils/complianceUtils";
 import { CHART_COLORS, getChartTheme } from "@/utils/chartTheme";
 import React, { useMemo } from "react";
 import {
@@ -215,14 +216,11 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
       (sum, p) => sum + (p.checklist?.length ?? 0),
       0,
     );
-    const compliantItems = projects.reduce(
-      (sum, p) =>
-        sum +
-        (p.checklist?.filter((c) => c.status === "Compliant").length ?? 0),
-      0,
+    const complianceRate = Math.round(
+      calculateChecklistCompliance(
+        projects.flatMap((project) => project.checklist ?? []),
+      ).complianceRate,
     );
-    const complianceRate =
-      totalItems > 0 ? Math.round((compliantItems / totalItems) * 100) : 0;
 
     const openRisks = (risks ?? []).filter(
       (r) => r.status !== "Closed" && r.status !== "Mitigated",
@@ -247,13 +245,11 @@ const ClinicDashboard: React.FC<ClinicDashboardProps> = ({ setNavigation }) => {
       .filter((p) => (p.checklist?.length ?? 0) > 0)
       .slice(0, 6)
       .map((p) => {
-        const total = p.checklist.length;
-        const compliant = p.checklist.filter(
-          (c) => c.status === "Compliant",
-        ).length;
+        const complianceRate =
+          calculateChecklistCompliance(p.checklist).complianceRate;
         return {
           name: p.name.length > 18 ? p.name.slice(0, 16) + "…" : p.name,
-          rate: Math.round((compliant / total) * 100),
+          rate: Math.round(complianceRate),
         };
       });
   }, [projects]);

@@ -1,4 +1,5 @@
 export const en = {
+    limsSandboxNotice: 'Sandbox / Preview: connection tests and sync currently preview fetched records only. Data is not persisted to Lab Operations.',
     // General
     general: 'General',
     profile: 'Profile',
@@ -18,6 +19,10 @@ export const en = {
     userName: 'Name',
     userEmail: 'Email',
     passwordPlaceholder: 'Leave blank to keep current password',
+    currentPassword: 'Current Password',
+    currentPasswordRequired: 'Enter your current password to change it.',
+    passwordChangeUnsupported: 'Password changes are available only for email and password accounts.',
+    profilePasswordChangedButProfileFailed: 'Your password changed, but your profile details could not be saved. Please retry the profile update.',
     updateProfile: 'Update Profile',
     profileUpdated: 'Profile updated successfully!',
     // Security Settings

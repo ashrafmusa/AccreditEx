@@ -73,6 +73,42 @@ describe('AIAgentService', () => {
             expect(result).toBe(false);
         });
 
+        it('separates a reachable API from an uninitialized AI agent', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: true,
+                json: async () => ({
+                    status: 'starting',
+                    agent_initialized: false
+                })
+            });
+
+            await expect(service.healthCheckDetails()).resolves.toEqual({
+                api: 'online',
+                ai: 'degraded'
+            });
+        });
+
+        it('reports a non-success health response as degraded', async () => {
+            (global.fetch as jest.Mock).mockResolvedValueOnce({
+                ok: false,
+                status: 503
+            });
+
+            await expect(service.healthCheckDetails()).resolves.toEqual({
+                api: 'degraded',
+                ai: 'degraded'
+            });
+        });
+
+        it('reports unreachable backend status separately from agent readiness', async () => {
+            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
+
+            await expect(service.healthCheckDetails()).resolves.toEqual({
+                api: 'offline',
+                ai: 'offline'
+            });
+        });
+
         it('should handle network errors gracefully', async () => {
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
 

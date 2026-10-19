@@ -383,16 +383,17 @@ describe("Project record integration", () => {
       .uploadEvidence("p1", "c1", new File(["evidence"], "evidence.pdf"));
     // Assert
     expect(saveEvidence).toHaveBeenCalledWith(
-      expect.objectContaining({ projectId: "p1", type: "Evidence" }),
-    );
-    expect(updateProject).toHaveBeenCalledWith(
-      "p1",
       expect.objectContaining({
-        checklist: [
-          expect.objectContaining({ evidenceFiles: ["saved-evidence"] }),
-        ],
+        projectId: "p1",
+        type: "Evidence",
+        checklistEvidence: { projectId: "p1", checklistItemId: "c1" },
       }),
     );
+    expect(
+      useProjectStore
+        .getState()
+        .projects[0].checklist[0].evidenceFiles,
+    ).toEqual(["saved-evidence"]);
     jest.mocked(updateProject).mockClear();
     jest
       .mocked(cloudinaryService.uploadDocument)

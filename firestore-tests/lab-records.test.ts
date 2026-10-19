@@ -172,4 +172,97 @@ describe("Lab record migration and transactional operations", () => {
         await assertFails(updateDoc(doc(client(), "labOpsData/org-a"), { equipment: [] }));
         await assertFails(setDoc(doc(client(), "labOpsRecords/org-b"), { organizationId: "org-b", ready: true, revision: 0 }));
     });
+
+    it("commits a bulk QC import with one atomic revision", async () => {
+        await migration.migrateLabOperations(admin, "org-a", await backup());
+        const service = createLabRecordService(client());
+        const initial = await service.state("org-a");
+        const records = [
+            { ...SEED_IQC_RESULTS[0], id: "bulk-qc-1" },
+            { ...SEED_IQC_RESULTS[1], id: "bulk-qc-2" },
+        ];
+
+        const next = await service.writeMany(
+            "org-a",
+            "iqcResults",
+            records,
+            initial.revision,
+        );
+        const page = await service.page("org-a", "iqcResults");
+
+        expect(next.revision).toBe(initial.revision + 1);
+        expect(page.records.map((record) => record.id)).toEqual(
+            expect.arrayContaining(["bulk-qc-1", "bulk-qc-2"]),
+        );
+    });
+
+    it("commits rejected QC results and linked lab metadata in one transaction", async () => {
+        await migration.migrateLabOperations(admin, "org-a", await backup());
+        const service = createLabRecordService(client());
+        const initial = await service.state("org-a");
+        const reagent = initial.reagents[0];
+        const result = {
+            ...SEED_IQC_RESULTS[0],
+            id: "atomic-rejected-qc",
+            rejected: true,
+            reagentLot: reagent.lotNumber,
+            linkedRiskRecordId: "atomic-rejected-qc-risk",
+            linkedCapaId: "atomic-rejected-qc-capa",
+        };
+        const nextData: LabOpsPersistedData = {
+            ...data,
+            reagents: [{ ...reagent, status: "quarantine", qualityFlag: "under_investigation" }],
+            qualityRisks: [{
+                id: result.linkedRiskRecordId,
+                relatedCapaId: result.linkedCapaId,
+                title: "IQC instability",
+                hazard: "Reagent instability",
+                potentialHarm: "Inaccurate patient results",
+                labSection: result.labSection,
+                owner: "Quality Manager",
+                likelihood: 4,
+                impact: 5,
+                riskScore: 20,
+                riskLevel: "critical",
+                status: "open",
+                createdAt: result.createdAt,
+                updatedAt: result.createdAt,
+            }],
+            capaRecords: [{
+                id: result.linkedCapaId,
+                title: "Investigate reagent lot",
+                owner: "Section Supervisor",
+                dueDate: "2026-10-18",
+                status: "open",
+                actionPlan: "Quarantine and investigate the reagent lot",
+                createdAt: result.createdAt,
+                updatedAt: result.createdAt,
+            }],
+        };
+
+        const revision = await service.writeIQCResultWithMetadata(
+            "org-a",
+            result,
+            nextData,
+            initial.revision,
+        );
+        const savedState = await service.state("org-a");
+
+        expect(revision).toBe(initial.revision + 1);
+        expect((await service.page("org-a", "iqcResults")).records).toContainEqual(result);
+        expect(savedState.reagents[0]).toMatchObject({
+            status: "quarantine",
+            qualityFlag: "under_investigation",
+        });
+        expect(savedState.qualityRisks.map((record) => record.id)).toContain(result.linkedRiskRecordId);
+        expect(savedState.capaRecords.map((record) => record.id)).toContain(result.linkedCapaId);
+        await expect(service.writeIQCResultWithMetadata(
+            "org-a",
+            { ...result, id: "stale-qc" },
+            nextData,
+            initial.revision,
+        )).rejects.toThrow("changed");
+        expect((await service.page("org-a", "iqcResults")).records.map((record) => record.id))
+            .not.toContain("stale-qc");
+    });
 });

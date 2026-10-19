@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect } from "react";
 import AIResponseView from "@/components/ai/AIResponseView";
 import {
   LearningPath,
@@ -19,6 +19,12 @@ import {
 import { useUserStore } from "@/stores/useUserStore";
 import { aiAgentService } from "@/services/aiAgentService";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useTenantStore } from "@/stores/useTenantStore";
+import {
+  getTrainingHubRecords,
+  saveTrainingHubRecord,
+} from "@/services/trainingHubPersistenceService";
+import { where } from "firebase/firestore";
 
 // ── Seed data: 4 built-in learning paths ──────────────────
 
@@ -353,10 +359,13 @@ type ViewMode = "catalog" | "detail" | "myProgress";
 const LearningPathsTab: React.FC = () => {
   const { currentUser } = useUserStore();
   const { t } = useTranslation();
+  const organizationId = useTenantStore((state) => state.organizationId);
   const isAdmin = currentUser?.role === UserRole.Admin;
 
-  const [paths] = useState<LearningPath[]>(SEED_PATHS);
+  const [paths, setPaths] = useState<LearningPath[]>(SEED_PATHS);
   const [progress, setProgress] = useState<UserLearningPathProgress[]>([]);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [view, setView] = useState<ViewMode>("catalog");
   const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<
@@ -369,6 +378,38 @@ const LearningPathsTab: React.FC = () => {
   );
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setDataError(null);
+    Promise.all([
+      getTrainingHubRecords<LearningPath & { id: string }>("learningPaths"),
+      getTrainingHubRecords<UserLearningPathProgress & { id: string }>(
+        "userLearningPathProgress",
+        ...(currentUser?.id ? [where("userId", "==", currentUser.id)] : []),
+      ),
+    ])
+      .then(([storedPaths, storedProgress]) => {
+        if (!active) return;
+        const storedPathIds = new Set(storedPaths.map((path) => path.id));
+        setPaths([
+          ...SEED_PATHS.filter((path) => !storedPathIds.has(path.id)),
+          ...storedPaths,
+        ]);
+        setProgress(storedProgress.map(({ id: _id, ...item }) => item));
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load learning paths:", error);
+        if (active) setDataError(t("trainingDataLoadError"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId, currentUser?.id, t]);
 
   const fetchAiRecommendations = useCallback(async () => {
     if (aiLoading) return;
@@ -440,45 +481,63 @@ const LearningPathsTab: React.FC = () => {
       (p) => p.learningPathId === pathId && p.userId === currentUser?.id,
     );
 
-  const enrollInPath = (path: LearningPath) => {
+  const enrollInPath = async (path: LearningPath) => {
     if (getProgress(path.id)) return;
-    setProgress((prev) => [
-      ...prev,
-      {
-        userId: currentUser?.id || "",
-        learningPathId: path.id,
-        stepsCompleted: [],
-        startedAt: new Date().toISOString(),
-        earnedCredits: 0,
-      },
-    ]);
+    if (!currentUser?.id) return;
+    const enrollment: UserLearningPathProgress & { id: string } = {
+      id: `${currentUser.id}_${path.id}`,
+      userId: currentUser.id,
+      learningPathId: path.id,
+      stepsCompleted: [],
+      startedAt: new Date().toISOString(),
+      earnedCredits: 0,
+    };
+    try {
+      setDataError(null);
+      await saveTrainingHubRecord("userLearningPathProgress", enrollment);
+      const { id: _id, ...progressRecord } = enrollment;
+      setProgress((prev) => [...prev, progressRecord]);
+    } catch (error) {
+      console.error("Failed to enroll in learning path:", error);
+      setDataError(t("trainingDataSaveError"));
+    }
   };
 
-  const toggleStepComplete = (pathId: string, stepId: string) => {
-    setProgress((prev) =>
-      prev.map((p) => {
-        if (p.learningPathId !== pathId || p.userId !== currentUser?.id)
-          return p;
-        const path = paths.find((lp) => lp.id === pathId);
-        const step = path?.steps.find((s) => s.id === stepId);
-        const isCompleted = p.stepsCompleted.includes(stepId);
-        const newCompleted = isCompleted
-          ? p.stepsCompleted.filter((s) => s !== stepId)
-          : [...p.stepsCompleted, stepId];
-        const newCredits = isCompleted
-          ? p.earnedCredits - (step?.externalProvider?.credits || 0)
-          : p.earnedCredits + (step?.externalProvider?.credits || 0);
-        const allRequired =
-          path?.steps.filter((s) => s.requiredForCompletion) || [];
-        const allDone = allRequired.every((s) => newCompleted.includes(s.id));
-        return {
-          ...p,
-          stepsCompleted: newCompleted,
-          earnedCredits: Math.max(0, newCredits),
-          completedAt: allDone ? new Date().toISOString() : undefined,
-        };
-      }),
-    );
+  const toggleStepComplete = async (pathId: string, stepId: string) => {
+    const existing = getProgress(pathId);
+    if (!existing || !currentUser?.id) return;
+    const path = paths.find((lp) => lp.id === pathId);
+    const step = path?.steps.find((item) => item.id === stepId);
+    const isCompleted = existing.stepsCompleted.includes(stepId);
+    const newCompleted = isCompleted
+      ? existing.stepsCompleted.filter((item) => item !== stepId)
+      : [...existing.stepsCompleted, stepId];
+    const newCredits = isCompleted
+      ? existing.earnedCredits - (step?.externalProvider?.credits || 0)
+      : existing.earnedCredits + (step?.externalProvider?.credits || 0);
+    const required = path?.steps.filter((item) => item.requiredForCompletion) || [];
+    const allDone = required.every((item) => newCompleted.includes(item.id));
+    const updated: UserLearningPathProgress = {
+      ...existing,
+      stepsCompleted: newCompleted,
+      earnedCredits: Math.max(0, newCredits),
+      completedAt: allDone ? new Date().toISOString() : undefined,
+    };
+    try {
+      setDataError(null);
+      await saveTrainingHubRecord("userLearningPathProgress", {
+        ...updated,
+        id: `${currentUser.id}_${pathId}`,
+      });
+      setProgress((prev) => prev.map((item) =>
+        item.learningPathId === pathId && item.userId === currentUser.id
+          ? updated
+          : item,
+      ));
+    } catch (error) {
+      console.error("Failed to update learning path progress:", error);
+      setDataError(t("trainingDataSaveError"));
+    }
   };
 
   const openDetail = (path: LearningPath) => {
@@ -558,6 +617,8 @@ const LearningPathsTab: React.FC = () => {
       {/* ── Catalog View ───────────────────────────────── */}
       {view === "catalog" && (
         <div className="space-y-4">
+          {dataError && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{dataError}</div>}
+          {loading && <p role="status" className="text-sm text-brand-text-secondary">{t("trainingRecordsLoading")}</p>}
           {/* Category filter */}
           <div className="flex flex-wrap gap-2">
             <button

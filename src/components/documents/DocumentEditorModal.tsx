@@ -11,6 +11,7 @@ import { useSanitizedHTML } from "../../hooks/useSanitizedHTML";
 import { useTranslation } from "../../hooks/useTranslation";
 import { exportToDocx } from "../../services/docxExportService";
 import { AppDocument, Standard } from "../../types";
+import { getLocalizedValue } from "@/utils/localization";
 import {
   ArrowRightIcon,
   ChatBubbleLeftEllipsisIcon,
@@ -59,17 +60,17 @@ const DOC_TYPE_COLORS: Record<string, string> = {
 
 const AUTOSAVE_INTERVAL_MS = 10_000;
 
-type SaveStatus = "idle" | "saving" | "saved" | "unsaved";
+type SaveStatus = "idle" | "saving" | "saved" | "unsaved" | "error";
 
 // --- Props ---
 interface DocumentEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   document: AppDocument;
-  onSave: (document: AppDocument) => void;
+  onSave: (document: AppDocument) => Promise<void>;
   standards: Standard[];
   allDocuments?: AppDocument[];
-  onAutoSave?: (doc: AppDocument) => void;
+  onAutoSave?: (doc: AppDocument) => Promise<void>;
 }
 
 // --- Component ---
@@ -191,7 +192,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
     autosaveTimerRef.current = setInterval(() => {
       if (hasUnsavedChanges) {
-        performSave(true);
+        void performSave(true);
       }
     }, AUTOSAVE_INTERVAL_MS);
 
@@ -203,7 +204,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
   // --- Save logic ---
   const performSave = useCallback(
-    (isAutoSave = false) => {
+    async (isAutoSave = false): Promise<boolean> => {
       setSaveStatus("saving");
 
       let docToSave = { ...document };
@@ -226,13 +227,20 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
         setSaveStatus("unsaved");
         setPendingVersionDoc(newVersionDoc);
         setShowNewVersionDialog(true);
-        return;
+        return false;
       }
 
-      if (isAutoSave && onAutoSave) {
-        onAutoSave(docToSave);
-      } else {
-        onSave(docToSave);
+      try {
+        if (isAutoSave && onAutoSave) {
+          await onAutoSave(docToSave);
+        } else {
+          await onSave(docToSave);
+        }
+      } catch (error) {
+        console.error("Document save failed:", error);
+        setHasUnsavedChanges(true);
+        setSaveStatus("error");
+        return false;
       }
 
       contentSnapshotRef.current = JSON.stringify(docToSave.content);
@@ -241,11 +249,14 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
       // Brief "saving" → "saved" animation
       setTimeout(() => setSaveStatus("saved"), 600);
+      return true;
     },
     [document, documentData.content, isEditMode, onAutoSave, onSave],
   );
 
-  const handleSave = useCallback(() => performSave(false), [performSave]);
+  const handleSave = useCallback(() => {
+    void performSave(false);
+  }, [performSave]);
 
   // --- Close with unsaved-changes guard ---
   const attemptClose = useCallback(() => {
@@ -256,8 +267,8 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
     }
   }, [hasUnsavedChanges, onClose]);
 
-  const handleSaveAndClose = useCallback(() => {
-    performSave(false);
+  const handleSaveAndClose = useCallback(async () => {
+    if (!(await performSave(false))) return;
     setShowUnsavedDialog(false);
     onClose();
   }, [performSave, onClose]);
@@ -321,13 +332,13 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
     setShowLinkPicker(false);
   };
 
-  const handleRelatedDocumentClick = (docId: string) => {
+  const handleRelatedDocumentClick = async (docId: string) => {
     // Switch to viewing the clicked related document inline — find it in allDocuments
     const target = allDocuments.find((d) => d.id === docId);
     if (target) {
       // Save current document if unsaved, then switch
       if (hasUnsavedChanges) {
-        onSave(document);
+        if (!(await performSave(false))) return;
       }
       setDocument(target);
       setIsEditMode(target.status === "Draft");
@@ -347,8 +358,8 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
       .filter(
         (d) =>
           !linkSearchQuery ||
-          d.name.en.toLowerCase().includes(linkSearchQuery.toLowerCase()) ||
-          d.name.ar?.toLowerCase().includes(linkSearchQuery.toLowerCase()) ||
+          getLocalizedValue(d.name, "en").toLowerCase().includes(linkSearchQuery.toLowerCase()) ||
+          getLocalizedValue(d.name, "ar").toLowerCase().includes(linkSearchQuery.toLowerCase()) ||
           d.documentNumber
             ?.toLowerCase()
             .includes(linkSearchQuery.toLowerCase()),
@@ -364,7 +375,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
 
   const handleExportToDocx = async () => {
     try {
-      const fileName = `${document.name[lang]}_v${document.currentVersion}.docx`;
+      const fileName = `${getLocalizedValue(document.name, lang)}_v${document.currentVersion}.docx`;
       await exportToDocx(currentContent?.[lang] || "", { fileName });
     } catch (error) {
       console.error("Failed to export document:", error);
@@ -376,7 +387,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
     const printWindow = window.open("", "_blank");
     if (printWindow) {
       printWindow.document.write(`
-        <html><head><title>${document.name[lang]}</title></head>
+        <html><head><title>${getLocalizedValue(document.name, lang)}</title></head>
         <body style="font-family:sans-serif;max-width:800px;margin:40px auto;padding:0 20px;">
           ${currentContent?.[lang] || ""}
         </body></html>
@@ -427,7 +438,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
         return (
           <span className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
             <SpinnerIcon className="w-3.5 h-3.5 animate-spin" />
-            {t("autosaving") || "Autosaving..."}
+            {t("saving") || "Saving..."}
           </span>
         );
       case "saved":
@@ -444,6 +455,12 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
           <span className="flex items-center gap-1.5 text-xs text-orange-500 dark:text-orange-400">
             <span className="h-2 w-2 rounded-full bg-orange-500" />
             {t("unsavedChanges") || "Unsaved changes"}
+          </span>
+        );
+      case "error":
+        return (
+          <span className="flex items-center gap-1.5 text-xs text-red-600 dark:text-red-400" role="alert">
+            {t("saveError") || "Save failed. Your changes are still unsaved."}
           </span>
         );
       default:
@@ -481,7 +498,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                     id="document-editor-title"
                     className="text-lg font-semibold dark:text-dark-brand-text-primary truncate"
                   >
-                    {document.name[lang]}
+                    {getLocalizedValue(document.name, lang)}
                   </h3>
                   {/* Document type badge */}
                   <span
@@ -727,7 +744,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                         viewingVersion === "current" ? editorLang : "en"
                       ] || ""
                     }
-                    documentName={document.name[lang]}
+                    documentName={getLocalizedValue(document.name, lang)}
                     onClose={() => setShowAudit(false)}
                   />
                 </div>
@@ -740,7 +757,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                         viewingVersion === "current" ? editorLang : "en"
                       ] || ""
                     }
-                    documentName={document.name[lang]}
+                    documentName={getLocalizedValue(document.name, lang)}
                     onClose={() => setShowAudit(false)}
                   />
                 </div>
@@ -961,7 +978,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                         className="w-full text-left p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {d.name[lang] || d.name.en}
+                          {getLocalizedValue(d.name, lang)}
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-400">
                           {d.documentNumber} • {d.type}
@@ -1023,14 +1040,25 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
               {document.status === "Draft" && (
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={async () => {
                     const updatedDoc = {
                       ...document,
                       status: "Pending Review" as const,
                     };
-                    onSave(updatedDoc);
-                    setSaveStatus("saved");
-                    setLastSavedAt(new Date());
+                    setSaveStatus("saving");
+                    try {
+                      await onSave(updatedDoc);
+                      contentSnapshotRef.current = JSON.stringify(
+                        updatedDoc.content,
+                      );
+                      setHasUnsavedChanges(false);
+                      setSaveStatus("saved");
+                      setLastSavedAt(new Date());
+                    } catch (error) {
+                      console.error("Document approval request failed:", error);
+                      setHasUnsavedChanges(true);
+                      setSaveStatus("error");
+                    }
                   }}
                   className="inline-flex items-center gap-1 text-sm font-medium text-brand-primary dark:text-sky-400 hover:underline transition-colors"
                 >
@@ -1119,17 +1147,24 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
                 {t("cancel") || "Cancel"}
               </button>
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!pendingVersionDoc) return;
-                  onSave(pendingVersionDoc);
-                  contentSnapshotRef.current = JSON.stringify(
-                    pendingVersionDoc.content,
-                  );
-                  setHasUnsavedChanges(false);
-                  setLastSavedAt(new Date());
-                  setTimeout(() => setSaveStatus("saved"), 600);
-                  setShowNewVersionDialog(false);
-                  setPendingVersionDoc(null);
+                  setSaveStatus("saving");
+                  try {
+                    await onSave(pendingVersionDoc);
+                    contentSnapshotRef.current = JSON.stringify(
+                      pendingVersionDoc.content,
+                    );
+                    setHasUnsavedChanges(false);
+                    setLastSavedAt(new Date());
+                    setTimeout(() => setSaveStatus("saved"), 600);
+                    setShowNewVersionDialog(false);
+                    setPendingVersionDoc(null);
+                  } catch (error) {
+                    console.error("New document version save failed:", error);
+                    setHasUnsavedChanges(true);
+                    setSaveStatus("error");
+                  }
                 }}
                 className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-sky-700 rounded-lg shadow-sm transition-all"
               >
@@ -1181,7 +1216,7 @@ const DocumentEditorModal: React.FC<DocumentEditorModalProps> = ({
             <AuditChangeControlPanel
               documentId={document.id}
               projectId={document.projectId || ""}
-              documentName={document.name[lang]}
+              documentName={getLocalizedValue(document.name, lang)}
             />
           </div>
         </div>

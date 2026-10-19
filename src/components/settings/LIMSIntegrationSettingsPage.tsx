@@ -16,6 +16,7 @@ import {
 } from "@/services/limsIntegration";
 import { limsDataSyncService } from "@/services/limsIntegration";
 import { Button, Card } from "@/components/ui";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   PlusIcon,
   BeakerIcon,
@@ -32,6 +33,7 @@ type SettingsView = "list" | "add" | "detail";
 // ── Component ────────────────────────────────────────────
 
 const LIMSIntegrationSettingsPage: React.FC = () => {
+  const { t } = useTranslation();
   const [view, setView] = useState<SettingsView>("list");
   const [configs, setConfigs] = useState<LIMSConfig[]>([]);
   const [selectedConfig, setSelectedConfig] = useState<LIMSConfig | null>(null);
@@ -136,6 +138,12 @@ const LIMSIntegrationSettingsPage: React.FC = () => {
 
   const renderList = () => (
     <div className="space-y-4">
+      <div
+        role="status"
+        className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+      >
+        {t("limsSandboxNotice")}
+      </div>
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold dark:text-dark-brand-text-primary">

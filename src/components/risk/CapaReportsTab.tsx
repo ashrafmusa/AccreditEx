@@ -1,8 +1,9 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CAPAReport } from "../../types";
 import { useTranslation } from "../../hooks/useTranslation";
 import { useProjectStore } from "../../stores/useProjectStore";
 import { useUserStore } from "../../stores/useUserStore";
+import { getCAPAReports } from "../../services/capaService";
 // FIX: Corrected import path for CapaListItem
 import CapaListItem from "../dashboard/CapaListItem";
 import EmptyState from "../common/EmptyState";
@@ -12,22 +13,48 @@ const CapaReportsTab: React.FC = () => {
   const { t } = useTranslation();
   const { projects } = useProjectStore();
   const { users } = useUserStore();
+  const [standaloneCapas, setStandaloneCapas] = useState<CAPAReport[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCAPAReports()
+      .then((reports) => {
+        if (!cancelled) setStandaloneCapas(reports);
+      })
+      .catch((error: unknown) => {
+        console.error("[CapaReportsTab] Failed to load standalone CAPAs:", error);
+        if (!cancelled) setLoadError("errorLoadingCapaReports");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const allCapas = useMemo(
-    () =>
+    () => {
+      const uniqueCapas = new Map<string, CAPAReport>();
       projects
-        .flatMap((p) => p.capaReports || [])
+        .flatMap((project) => project.capaReports || [])
         .filter((x): x is NonNullable<typeof x> => !!x)
-        .sort(
-          (a, b) =>
-            new Date(b?.createdAt || 0).getTime() -
-            new Date(a?.createdAt || 0).getTime(),
-        ),
-    [projects],
+        .forEach((capa) => uniqueCapas.set(capa.id, capa));
+      standaloneCapas.forEach((capa) => uniqueCapas.set(capa.id, capa));
+      return [...uniqueCapas.values()].sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime(),
+      );
+    },
+    [projects, standaloneCapas],
   );
 
   return (
     <div className="space-y-4">
+      {loadError && (
+        <p role="alert" className="text-red-700 dark:text-red-300">
+          {t(loadError)}
+        </p>
+      )}
       {allCapas.length > 0 ? (
         allCapas.map((capa) => {
           // First try sourceProjectId, then search through all projects

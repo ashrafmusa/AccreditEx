@@ -5,9 +5,20 @@ import { CAPAReport } from '../types';
 
 const capaReportsCollection = collection(db, 'capaReports');
 
-/** Strip undefined values from an object (Firestore rejects undefined) */
-const stripUndefined = <T extends Record<string, any>>(obj: T): Partial<T> =>
-    Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined)) as Partial<T>;
+/** Strip undefined values recursively (Firestore rejects nested undefined values). */
+const stripUndefined = <T>(value: T): T => {
+    if (Array.isArray(value)) {
+        return value.map((nestedValue) => stripUndefined(nestedValue)) as T;
+    }
+    if (value && typeof value === 'object') {
+        return Object.fromEntries(
+            Object.entries(value)
+                .filter(([, nestedValue]) => nestedValue !== undefined)
+                .map(([key, nestedValue]) => [key, stripUndefined(nestedValue)]),
+        ) as T;
+    }
+    return value;
+};
 
 /**
  * Get all CAPA reports for the current tenant
@@ -47,6 +58,7 @@ export const getCAPAReportsByIncident = async (incidentId: string): Promise<CAPA
         return capaSnapshot.docs
             .map(d => ({ ...d.data(), id: d.id } as CAPAReport))
             .filter(capa =>
+                capa.sourceIncidentId === incidentId ||
                 capa.linkedDocumentIds?.includes(incidentId) ||
                 capa.description?.includes(incidentId)
             );
@@ -149,10 +161,11 @@ export const updateCAPAPDCAStage = async (
         const timestamp = new Date().toISOString();
 
         // Fetch current CAPA to get existing history
-        const capaSnapshot = await getDocs(getTenantQuery('capaReports'));
-        const currentCapa = capaSnapshot.docs
-            .map(d => ({ ...d.data(), id: d.id } as CAPAReport))
-            .find(c => c.id === capaId);
+        const capaSnapshot = await getDoc(docRef);
+        if (!capaSnapshot.exists()) {
+            throw new Error(`CAPA ${capaId} not found`);
+        }
+        const currentCapa = { ...capaSnapshot.data(), id: capaSnapshot.id } as CAPAReport;
 
         const updatedHistory = [
             ...(currentCapa?.pdcaHistory || []),
@@ -160,7 +173,6 @@ export const updateCAPAPDCAStage = async (
                 stage,
                 completedAt: timestamp,
                 notes,
-                completedBy: undefined // Will be set by component if needed
             }
         ];
 

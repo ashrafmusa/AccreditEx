@@ -7,6 +7,7 @@ import {
     getFirestore,
 } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { connectFunctionsEmulator, getFunctions } from "firebase/functions";
 
 type ViteEnv = Record<string, string | boolean | undefined>;
 
@@ -70,9 +71,11 @@ const app = !firebase.getApps().length ? firebase.initializeApp(firebaseConfig) 
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+export const functions = getFunctions(app);
 
 if (useFirebaseEmulators) {
     connectFirestoreEmulator(db, "127.0.0.1", 8080);
+    connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 }
 
 // Lazy initialize auth - only when needed (after login page)

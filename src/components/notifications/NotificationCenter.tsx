@@ -30,6 +30,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
   const {
     notifications,
     unreadCount,
+    error,
     markAsRead,
     archive,
     remove,
@@ -78,23 +79,27 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
     setExpandedId(expandedId === notification.id ? null : notification.id);
   };
 
-  if (notifications.length === 0) {
+  if (notifications.length === 0 && !error) {
     return (
       <div className="text-center py-8 text-gray-500 dark:text-gray-400">
         <BellIcon className="w-8 h-8 mx-auto mb-2 opacity-50" />
-        <p className="text-sm">{t("noNotifications") || "No notifications"}</p>
+        <p className="text-sm">{t("noNotifications")}</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3">
+      {error && (
+        <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+          {t(error)}
+        </p>
+      )}
       {/* Unread badge */}
       {unreadCount > 0 && (
         <div className="flex items-center justify-between px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
           <span className="text-sm font-medium text-blue-900 dark:text-blue-200">
-            {unreadCount}{" "}
-            {unreadCount === 1 ? "unread notification" : "unread notifications"}
+            {unreadCount} {unreadCount === 1 ? t("unreadNotification") : t("unreadNotifications")}
           </span>
           <button
             onClick={() =>
@@ -102,7 +107,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
             }
             className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
           >
-            Mark all as read
+            {t("markAllAsRead")}
           </button>
         </div>
       )}
@@ -161,7 +166,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                         href={notification.actionUrl}
                         className="text-xs font-medium text-blue-600 dark:text-blue-400 hover:underline"
                       >
-                        View
+                        {t("view")}
                       </a>
                     )}
                   </div>
@@ -178,10 +183,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                     markAsRead(notification.id);
                   }}
                   className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-                  title="Mark as read"
+                  title={t("markAsRead")}
                 >
                   <CheckIcon className="w-3 h-3" />
-                  Read
+                  {t("read")}
                 </button>
               )}
               <button
@@ -190,9 +195,9 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   archive(notification.id);
                 }}
                 className="flex items-center gap-1 text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors"
-                title="Archive"
+                title={t("archive")}
               >
-                📦 Archive
+                📦 {t("archive")}
               </button>
               <button
                 onClick={(e) => {
@@ -200,10 +205,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
                   remove(notification.id);
                 }}
                 className="flex items-center gap-1 text-xs font-medium text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-200 transition-colors"
-                title="Delete"
+                title={t("delete")}
               >
                 <TrashIcon className="w-3 h-3" />
-                Delete
+                {t("delete")}
               </button>
             </div>
           </div>
@@ -215,7 +220,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({
         onClick={() => clearArchived()}
         className="w-full text-xs font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 transition-colors py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
       >
-        Clear archived notifications
+        {t("clearArchivedNotifications")}
       </button>
     </div>
   );

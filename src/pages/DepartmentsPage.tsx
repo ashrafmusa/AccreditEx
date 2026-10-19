@@ -18,6 +18,7 @@ import {
 } from "../components/icons";
 import { useToast } from "../hooks/useToast";
 import { useTranslation } from "../hooks/useTranslation";
+import { getLocalizedValue } from "@/utils/localization";
 import { ComplianceStatus, Department, NavigationState } from "../types";
 
 interface DepartmentsPageProps {
@@ -231,7 +232,9 @@ const DepartmentsPage: React.FC<DepartmentsPageProps> = ({ setNavigation }) => {
               setEditingDept(dept);
               setIsModalOpen(true);
             }}
-            onDelete={() => handleDelete(dept.id, dept.name.en)}
+            onDelete={() =>
+              handleDelete(dept.id, getLocalizedValue(dept.name, "en"))
+            }
           />
         ))}
       </div>

@@ -29,10 +29,8 @@ export const addStandard = async (standard: Omit<Standard, 'id'>): Promise<Stand
 };
 
 export const updateStandard = async (standard: Standard): Promise<void> => {
-    // Use standardId or id for the document reference
-    const docId = standard.standardId || standard.id || '';
-    if (!docId) throw new Error('Standard must have an id or standardId');
-    const docRef = doc(db, 'standards', docId);
+    if (!standard.id) throw new Error('Standard must have a Firestore document id');
+    const docRef = doc(db, 'standards', standard.id);
     const { id, ...standardData } = standard;
     await updateDoc(docRef, { ...standardData } as Record<string, any>);
 };

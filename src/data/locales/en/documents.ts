@@ -507,7 +507,9 @@ export const en = {
 
     // Document Editor Modal
     autosaving: 'Autosaving...',
+    saving: 'Saving...',
     saved: 'Saved',
+    saveError: 'Save failed. Your changes are still unsaved.',
     unsavedChanges: 'Unsaved Changes',
     unsavedChangesTitle: 'Unsaved Changes',
     unsavedChangesMessage: 'You have unsaved changes. What would you like to do?',

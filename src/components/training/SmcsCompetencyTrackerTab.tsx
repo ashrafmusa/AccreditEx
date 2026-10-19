@@ -24,7 +24,14 @@ import { Button } from "@/components/ui";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { UserRole } from "@/types";
-import React, { useMemo, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
+import React, { useMemo, useState, useEffect } from "react";
+import { useTenantStore } from "@/stores/useTenantStore";
+import {
+  deleteTrainingHubRecord,
+  getTrainingHubRecords,
+  saveTrainingHubRecord,
+} from "@/services/trainingHubPersistenceService";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -61,6 +68,24 @@ const SMCS_DEPARTMENTS = [
   "Medical Rehabilitation & Physiotherapy",
   "Nutrition & Dietary Services",
 ] as const;
+
+const SMCS_DEPARTMENT_KEYS: Record<string, string> = {
+  "All Departments": "smcsDepartmentAll",
+  "Provision of Care": "smcsDepartmentProvisionOfCare",
+  "Laboratory Services": "smcsDepartmentLaboratory",
+  "Nursing Services": "smcsDepartmentNursing",
+  "Operation Theatre": "smcsDepartmentOperationTheatre",
+  "Critical Care (ICU)": "smcsDepartmentCriticalCare",
+  "Emergency Department": "smcsDepartmentEmergency",
+  "Anaesthesia Care": "smcsDepartmentAnaesthesia",
+  "Burn Care Unit": "smcsDepartmentBurnCare",
+  "Obstetrics & Gynaecology": "smcsDepartmentObgyn",
+  "Neonatal ICU (NICU)": "smcsDepartmentNeonatalIcu",
+  "Diagnostic Imaging (Radiology)": "smcsDepartmentDiagnosticImaging",
+  "Respiratory Therapy": "smcsDepartmentRespiratoryTherapy",
+  "Medical Rehabilitation & Physiotherapy": "smcsDepartmentRehabilitation",
+  "Nutrition & Dietary Services": "smcsDepartmentNutrition",
+};
 
 // ── Core SMCS competency items per department ─────────────────────────────────
 
@@ -270,8 +295,10 @@ const EMPTY_FORM: RecordForm = {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 const SmcsCompetencyTrackerTab: React.FC = () => {
+  const { t } = useTranslation();
   const { currentUser, users } = useUserStore();
   const { departments } = useAppStore();
+  const organizationId = useTenantStore((state) => state.organizationId);
 
   const isAdmin =
     currentUser?.role === UserRole.Admin ||
@@ -283,6 +310,28 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState<RecordForm>(EMPTY_FORM);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setDataError(null);
+    getTrainingHubRecords<CompetencyRecord>("smcsCompetencies")
+      .then((items) => {
+        if (active) setRecords(items);
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load SMCS competency records:", error);
+        if (active) setDataError(t("trainingDataLoadError"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId, currentUser?.id, t]);
 
   // Clinical users only
   const clinicalUsers = useMemo(
@@ -327,20 +376,29 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
       selectedDept === "All Departments" ? "Nursing Services" : selectedDept
     ] ?? [];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.staffId || !form.competencyName || !form.assessedDate) return;
     const status = deriveStatus(form.nextDueDate);
+    const existing = records.find((record) => record.id === editingId);
+    if (editingId && !existing) {
+      setDataError(t("trainingDataLoadError"));
+      return;
+    }
+    const record: CompetencyRecord = editingId && existing
+      ? { ...existing, ...form, status }
+      : { id: `comp-${Date.now()}`, ...form, status };
+    try {
+      setDataError(null);
+      await saveTrainingHubRecord("smcsCompetencies", record);
+    } catch (error) {
+      console.error("Failed to save SMCS competency record:", error);
+      setDataError(t("trainingDataSaveError"));
+      return;
+    }
     if (editingId) {
-      setRecords((prev) =>
-        prev.map((r) => (r.id === editingId ? { ...r, ...form, status } : r)),
-      );
+      setRecords((prev) => prev.map((r) => (r.id === editingId ? record : r)));
     } else {
-      const newRecord: CompetencyRecord = {
-        id: `comp-${Date.now()}`,
-        ...form,
-        status,
-      };
-      setRecords((prev) => [...prev, newRecord]);
+      setRecords((prev) => [...prev, record]);
     }
     setForm(EMPTY_FORM);
     setEditingId(null);
@@ -361,21 +419,28 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = (id: string) => {
-    setRecords((prev) => prev.filter((r) => r.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      setDataError(null);
+      await deleteTrainingHubRecord("smcsCompetencies", id);
+      setRecords((prev) => prev.filter((r) => r.id !== id));
+    } catch (error) {
+      console.error("Failed to delete SMCS competency record:", error);
+      setDataError(t("trainingDataSaveError"));
+    }
   };
 
   const handleExport = () => {
     const rows = [
       [
-        "Staff Name",
-        "Department",
-        "Competency",
-        "Assessed Date",
-        "Next Due",
-        "Assessor",
-        "Status",
-        "Notes",
+        t("smcsStaffMember"),
+        t("smcsDepartment"),
+        t("smcsCompetency"),
+        t("smcsAssessedDate"),
+        t("smcsNextDue"),
+        t("smcsAssessor"),
+        t("smcsStatus"),
+        t("smcsNotes"),
       ].join(","),
       ...filteredRecords.map((r) => {
         const name = users.find((u) => u.id === r.staffId)?.name ?? r.staffId;
@@ -403,21 +468,22 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
 
   return (
     <div className="space-y-6 p-4">
+      {dataError && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{dataError}</div>}
+      {loading && <p role="status" className="text-sm text-brand-text-secondary">{t("trainingRecordsLoading")}</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-brand-text-primary dark:text-dark-brand-text-primary flex items-center gap-2">
             <AcademicCapIcon className="w-5 h-5 text-brand-primary" />
-            SMCS Staff Competency Tracker
+            {t("smcsTrackerTitle")}
           </h2>
           <p className="text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
-            Tracks annual clinical competency assessments per SMCS standards
-            (.55, .67, .82, .96, .104, .116)
+            {t("smcsTrackerDescription")}
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" onClick={handleExport}>
-            Export CSV
+            {t("smcsExportCsv")}
           </Button>
           {isAdmin && (
             <Button
@@ -429,7 +495,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
               }}
             >
               <PlusIcon className="w-4 h-4 mr-1" />
-              Add Record
+              {t("smcsAddRecord")}
             </Button>
           )}
         </div>
@@ -439,25 +505,25 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           {
-            label: "Competent",
+            label: "smcsStatusCompetent",
             value: stats.competent,
             color: "text-green-600",
             bg: "bg-green-50 dark:bg-green-900/20",
           },
           {
-            label: "Due Soon",
+            label: "smcsStatusDue",
             value: stats.due,
             color: "text-yellow-600",
             bg: "bg-yellow-50 dark:bg-yellow-900/20",
           },
           {
-            label: "Overdue",
+            label: "smcsStatusOverdue",
             value: stats.overdue,
             color: "text-red-600",
             bg: "bg-red-50 dark:bg-red-900/20",
           },
           {
-            label: "Not Assessed",
+            label: "smcsStatusNotAssessed",
             value: stats.notAssessed,
             color: "text-gray-500",
             bg: "bg-gray-50 dark:bg-gray-800",
@@ -469,7 +535,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
           >
             <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
             <div className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-              {s.label}
+              {t(s.label)}
             </div>
           </div>
         ))}
@@ -484,13 +550,13 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
         >
           {SMCS_DEPARTMENTS.map((d) => (
             <option key={d} value={d}>
-              {d}
+              {t(SMCS_DEPARTMENT_KEYS[d] || d)}
             </option>
           ))}
         </select>
         <input
           type="text"
-          placeholder="Search staff or competency..."
+          placeholder={t("smcsSearchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="flex-1 rounded-lg border border-gray-300 dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm"
@@ -501,7 +567,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
       {selectedDept !== "All Departments" && (
         <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-lg p-4">
           <h3 className="text-sm font-semibold text-brand-primary mb-2">
-            SMCS Core Competencies — {selectedDept}
+            {t("smcsCoreCompetencies")} — {t(SMCS_DEPARTMENT_KEYS[selectedDept] || selectedDept)}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
             {coreCompetencies.map((c) => (
@@ -522,7 +588,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
         <div className="bg-brand-surface dark:bg-dark-brand-surface border border-gray-200 dark:border-dark-brand-border rounded-xl p-5 space-y-4">
           <div className="flex justify-between items-center">
             <h3 className="font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
-              {editingId ? "Edit Competency Record" : "Add Competency Record"}
+              {editingId ? t("smcsEditRecord") : t("smcsAddRecord")}
             </h3>
             <button
               onClick={() => {
@@ -537,7 +603,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Staff Member *
+                {t("smcsStaffMember")} *
               </label>
               <select
                 value={form.staffId}
@@ -546,7 +612,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                 }
                 className="w-full rounded-lg border border-gray-300 dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm"
               >
-                <option value="">Select staff member...</option>
+                <option value="">{t("smcsSelectStaff")}</option>
                 {clinicalUsers.map((u) => (
                   <option key={u.id} value={u.id}>
                     {u.name} {u.department ? `(${u.department})` : ""}
@@ -556,7 +622,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Department *
+                {t("smcsDepartment")} *
               </label>
               <select
                 value={form.department}
@@ -568,7 +634,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                 {SMCS_DEPARTMENTS.filter((d) => d !== "All Departments").map(
                   (d) => (
                     <option key={d} value={d}>
-                      {d}
+                      {t(SMCS_DEPARTMENT_KEYS[d] || d)}
                     </option>
                   ),
                 )}
@@ -576,7 +642,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Competency *
+                {t("smcsCompetency")} *
               </label>
               <input
                 list="competency-suggestions"
@@ -584,7 +650,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, competencyName: e.target.value }))
                 }
-                placeholder="e.g. Medication Administration & Safety"
+                placeholder={t("smcsCompetencyExample")}
                 className="w-full rounded-lg border border-gray-300 dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm"
               />
               <datalist id="competency-suggestions">
@@ -595,7 +661,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Assessor Name
+                {t("smcsAssessorName")}
               </label>
               <input
                 type="text"
@@ -603,13 +669,13 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                 onChange={(e) =>
                   setForm((f) => ({ ...f, assessorName: e.target.value }))
                 }
-                placeholder="Name of assessing clinician"
+                placeholder={t("smcsAssessorPlaceholder")}
                 className="w-full rounded-lg border border-gray-300 dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Date Assessed *
+                {t("smcsAssessedDate")} *
               </label>
               <input
                 type="date"
@@ -622,7 +688,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
             </div>
             <div>
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Next Due Date
+                {t("smcsNextDueDate")}
               </label>
               <input
                 type="date"
@@ -635,7 +701,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
             </div>
             <div className="sm:col-span-2">
               <label className="block text-xs font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1">
-                Notes
+                {t("smcsNotes")}
               </label>
               <textarea
                 value={form.notes}
@@ -643,7 +709,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                   setForm((f) => ({ ...f, notes: e.target.value }))
                 }
                 rows={2}
-                placeholder="Remediation plan, special observations..."
+                placeholder={t("smcsNotesPlaceholder")}
                 className="w-full rounded-lg border border-gray-300 dark:border-dark-brand-border bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary px-3 py-2 text-sm"
               />
             </div>
@@ -657,7 +723,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                 setEditingId(null);
               }}
             >
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               size="sm"
@@ -666,7 +732,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                 !form.staffId || !form.competencyName || !form.assessedDate
               }
             >
-              {editingId ? "Save Changes" : "Add Record"}
+              {editingId ? t("saveChanges") : t("smcsAddRecord")}
             </Button>
           </div>
         </div>
@@ -676,11 +742,11 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
       {filteredRecords.length === 0 ? (
         <div className="text-center py-16 text-brand-text-secondary dark:text-dark-brand-text-secondary">
           <AcademicCapIcon className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p className="font-medium">No competency records yet</p>
+          <p className="font-medium">{t("smcsNoRecords")}</p>
           <p className="text-sm mt-1">
             {isAdmin
-              ? 'Click "Add Record" to log the first SMCS competency assessment.'
-              : "Contact your administrator to add competency records."}
+              ? t("smcsAddFirstRecordHelp")
+              : t("smcsContactAdminHelp")}
           </p>
         </div>
       ) : (
@@ -689,13 +755,13 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
             <thead className="bg-gray-50 dark:bg-dark-brand-surface">
               <tr>
                 {[
-                  "Staff Member",
-                  "Department",
-                  "Competency",
-                  "Assessed",
-                  "Next Due",
-                  "Assessor",
-                  "Status",
+                  t("smcsStaffMember"),
+                  t("smcsDepartment"),
+                  t("smcsCompetency"),
+                  t("smcsAssessed"),
+                  t("smcsNextDue"),
+                  t("smcsAssessor"),
+                  t("smcsStatus"),
                   "",
                 ].map((h) => (
                   <th
@@ -721,7 +787,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                       {staffName}
                     </td>
                     <td className="px-4 py-3 text-brand-text-secondary dark:text-dark-brand-text-secondary">
-                      {rec.department}
+                      {t(SMCS_DEPARTMENT_KEYS[rec.department] || rec.department)}
                     </td>
                     <td className="px-4 py-3 text-brand-text-primary dark:text-dark-brand-text-primary max-w-[200px] truncate">
                       {rec.competencyName}
@@ -740,7 +806,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                         className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${cfg.bg} ${cfg.color}`}
                       >
                         {cfg.icon}
-                        {rec.status}
+                        {t(`smcsStatus${rec.status.replace(" ", "")}`)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -750,14 +816,14 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
                             onClick={() => handleEdit(rec)}
                             className="text-xs text-brand-primary hover:underline"
                           >
-                            Edit
+                            {t("edit")}
                           </button>
                           <span className="text-gray-300">|</span>
                           <button
                             onClick={() => handleDelete(rec.id)}
                             className="text-xs text-red-500 hover:underline"
                           >
-                            Delete
+                            {t("delete")}
                           </button>
                         </div>
                       )}
@@ -771,9 +837,7 @@ const SmcsCompetencyTrackerTab: React.FC = () => {
       )}
 
       <p className="text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
-        SMCS standards requiring competency documentation: SMCS.55 (Nursing) ·
-        SMCS.67 (OT) · SMCS.82 (ICU) · SMCS.96 (Lab) · SMCS.104 (Anaesthesia) ·
-        SMCS.116 (ED)
+        {t("smcsStandardsFootnote")}
       </p>
     </div>
   );

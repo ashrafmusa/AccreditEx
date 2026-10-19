@@ -18,7 +18,9 @@ import logging
 import time
 from datetime import datetime
 import base64
+import binascii
 import json
+import re
 import firebase_admin
 from firebase_admin import auth as firebase_auth
 
@@ -930,74 +932,83 @@ async def get_training_status_ai(
         raise HTTPException(status_code=500, detail="AI service error. Please try again.")
 
 # Upload report to Firebase Storage (bypasses browser CORS)
-@app.post("/upload-report", dependencies=[Depends(verify_api_key)])
+@app.post("/upload-report")
 @limiter.limit("10/minute")
 async def upload_report(
     request: Request,
     project_id: str = File(...),
     file_data: str = File(...),
-    file_name: str = File(...)
+    file_name: str = File(...),
+    auth_info: Dict[str, Any] = Depends(verify_api_key),
 ):
     """
     Upload PDF report to Firebase Storage from backend
     Bypasses browser CORS restrictions
     """
+    if auth_info.get("auth_type") != "firebase":
+        raise HTTPException(status_code=403, detail="Firebase user authentication is required")
+
+    scope = resolve_request_scope(auth_info)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,150}", project_id):
+        raise HTTPException(status_code=422, detail="Invalid project ID")
+    if (
+        not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,123}\.pdf", file_name, re.IGNORECASE)
+        or file_name in {".", ".."}
+    ):
+        raise HTTPException(status_code=422, detail="Invalid PDF file name")
+
+    max_bytes = 10 * 1024 * 1024
+    max_encoded_chars = 4 * ((max_bytes + 2) // 3)
+    if len(file_data) > max_encoded_chars:
+        raise HTTPException(status_code=413, detail="PDF exceeds the 10 MiB upload limit")
+
     try:
-        import firebase_admin
-        from firebase_admin import credentials, storage
-        
-        # Initialize Firebase Admin if not already done
-        if not firebase_admin._apps:
-            cred_json = os.getenv('FIREBASE_CREDENTIALS_JSON')
-            if cred_json:
-                # Parse credentials from environment variable (Render.com)
-                import json
-                cred_dict = json.loads(cred_json)
-                cred = credentials.Certificate(cred_dict)
-                firebase_admin.initialize_app(cred, {
-                    'storageBucket': 'accreditex-79c08.firebasestorage.app'
-                })
-            else:
-                # Try default credentials (will work if GOOGLE_APPLICATION_CREDENTIALS is set)
-                firebase_admin.initialize_app(options={
-                    'storageBucket': 'accreditex-79c08.firebasestorage.app'
-                })
-        
-        # Decode base64 file data
-        file_bytes = base64.b64decode(file_data)
-        
-        # Get storage bucket
-        bucket = storage.bucket()
-        
-        # Create blob path
-        blob_path = f"reports/{project_id}/{file_name}"
-        blob = bucket.blob(blob_path)
-        
-        # Upload file
-        blob.upload_from_string(
-            file_bytes,
-            content_type='application/pdf'
+        file_bytes = base64.b64decode(file_data, validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(status_code=422, detail="Invalid base64 PDF data")
+    if len(file_bytes) > max_bytes:
+        raise HTTPException(status_code=413, detail="PDF exceeds the 10 MiB upload limit")
+    if not file_bytes.startswith(b"%PDF-"):
+        raise HTTPException(status_code=415, detail="Uploaded file is not a PDF")
+
+    try:
+        from firebase_admin import storage
+        from firebase_client import firebase_client
+
+        project_ref = firebase_client.db.collection("projects").document(project_id)
+        project_snapshot = project_ref.get()
+        if not project_snapshot.exists:
+            raise HTTPException(status_code=404, detail="Project not found")
+        project_data = project_snapshot.to_dict() or {}
+        if project_data.get("organizationId") != scope["organization_id"]:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        blob_path = (
+            f"reports/{scope['organization_id']}/{project_id}/{file_name}"
         )
-        
-        # Generate signed URL (audit fix S-8: no public blobs)
+        blob = storage.bucket().blob(blob_path)
+        blob.upload_from_string(file_bytes, content_type="application/pdf")
+
         from datetime import timedelta
         download_url = blob.generate_signed_url(
             version="v4",
             expiration=timedelta(hours=24),
             method="GET",
         )
-        
-        logger.info(f"Report uploaded successfully: {blob_path}")
-        
+        logger.info(
+            "Report uploaded successfully",
+            extra={"organization_id": scope["organization_id"], "project_id": project_id},
+        )
         return JSONResponse(content={
             "success": True,
             "downloadUrl": download_url,
-            "path": blob_path
+            "path": blob_path,
         })
-        
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Report upload error: {e}")
-        raise HTTPException(status_code=500, detail="AI service error. Please try again.")
+        raise HTTPException(status_code=500, detail="Report upload failed")
 
 # Root endpoint
 @app.get("/")
@@ -1066,16 +1077,16 @@ async def get_metrics():
 # Called by Stripe (no auth header) — verified by webhook signature
 # ─────────────────────────────────────────────────────────────
 
-STRIPE_PLAN_MAP = {
-    # Map Stripe price IDs → AccrediTex plan tier strings
-    # Set STRIPE_PRICE_CLINIC, STRIPE_PRICE_HOSPITAL, STRIPE_PRICE_NETWORK in Render env vars
-}
-
 def _get_stripe_plan_map() -> dict:
+    configured_prices = {
+        "STRIPE_PRICE_CLINIC": "starter",
+        "STRIPE_PRICE_HOSPITAL": "professional",
+        "STRIPE_PRICE_NETWORK": "enterprise",
+    }
     return {
-        os.getenv("STRIPE_PRICE_CLINIC", ""): "starter",
-        os.getenv("STRIPE_PRICE_HOSPITAL", ""): "professional",
-        os.getenv("STRIPE_PRICE_NETWORK", ""): "enterprise",
+        price_id: plan
+        for env_name, plan in configured_prices.items()
+        if (price_id := os.getenv(env_name))
     }
 
 
@@ -1086,7 +1097,9 @@ async def stripe_webhook(request: Request):
     Events handled:
       - checkout.session.completed → activate paid plan
       - invoice.paid               → renew subscription expiry
+      - customer.subscription.updated → synchronize plan and cancellation state
       - customer.subscription.deleted → downgrade to free
+      - invoice.payment_failed      → mark subscription past due
     """
     import stripe as stripe_lib  # lazy import — only used here
 
@@ -1115,72 +1128,159 @@ async def stripe_webhook(request: Request):
 
     event_type = event["type"]
     data_obj = event["data"]["object"]
+    event_id = event["id"]
+    organization_id = None
+    customer_id = None
+    organization_update = None
+    require_customer_match = False
 
     if event_type == "checkout.session.completed":
         org_id = data_obj.get("metadata", {}).get("organizationId")
-        plan = data_obj.get("metadata", {}).get("plan")
         customer_id = data_obj.get("customer")
         sub_id = data_obj.get("subscription")
-
-        if org_id and plan:
-            # Security fix (2026-04-17): Verify org-customer binding before updating plan.
-            # Prevents an attacker from forging metadata to upgrade a different org's plan.
-            # On first checkout the org won't have a stripeCustomerId yet (None or ""),
-            # so we allow the first bind. On renewals the IDs must match exactly.
-            org_ref = db.collection("organizations").document(org_id)
-            org_snap = org_ref.get()
-            if not org_snap.exists:
-                logger.error(f"Webhook: org not found org={org_id}")
-                raise HTTPException(status_code=400, detail="Organization not found")
-
-            stored_customer_id = org_snap.to_dict().get("stripeCustomerId")
-            if stored_customer_id and stored_customer_id != customer_id:
-                logger.error(
-                    f"Webhook: customer mismatch org={org_id} "
-                    f"stored={stored_customer_id} event={customer_id}"
-                )
-                raise HTTPException(status_code=400, detail="Customer ID mismatch")
-
-            from datetime import timedelta
-            expires = (datetime.utcnow() + timedelta(days=32)).isoformat()
-            org_ref.update({
-                "plan": plan,
-                "trialActive": False,
-                "subscriptionExpiresAt": expires,
-                "stripeCustomerId": customer_id,
-                "stripeSubscriptionId": sub_id,
-                "updatedAt": now,
-            })
-            logger.info(f"Plan activated: org={org_id} plan={plan}")
+        if not org_id or not customer_id or not sub_id:
+            raise HTTPException(status_code=400, detail="Checkout metadata is incomplete")
+        subscription = stripe_lib.Subscription.retrieve(sub_id)
+        subscription_org_id = subscription.get("metadata", {}).get("organizationId")
+        if subscription_org_id and subscription_org_id != org_id:
+            raise HTTPException(status_code=400, detail="Subscription organization mismatch")
+        price_items = subscription.get("items", {}).get("data", [])
+        plans = {
+            plan_map[item.get("price", {}).get("id")]
+            for item in price_items
+            if item.get("price", {}).get("id") in plan_map
+        }
+        if len(plans) != 1:
+            raise HTTPException(status_code=400, detail="Subscription has no unique configured plan")
+        period_end = subscription.get("current_period_end")
+        if not period_end:
+            raise HTTPException(status_code=400, detail="Subscription period is unavailable")
+        organization_id = org_id
+        organization_update = {
+            "plan": plans.pop(),
+            "trialActive": False,
+            "subscriptionExpiresAt": datetime.utcfromtimestamp(period_end).isoformat(),
+            "stripeCustomerId": customer_id,
+            "stripeSubscriptionId": sub_id,
+            "updatedAt": now,
+        }
+        logger.info("Verified checkout subscription", extra={"organization_id": org_id})
 
     elif event_type == "invoice.paid":
         sub_id = data_obj.get("subscription")
         if sub_id:
             sub = stripe_lib.Subscription.retrieve(sub_id)
             org_id = sub.get("metadata", {}).get("organizationId")
+            customer_id = data_obj.get("customer") or sub.get("customer")
+            require_customer_match = True
             price_id = sub["items"]["data"][0]["price"]["id"] if sub.get("items", {}).get("data") else None
             plan = plan_map.get(price_id or "")
-            period_end = datetime.utcfromtimestamp(sub.get("current_period_end", 0)).isoformat()
-
-            if org_id:
-                update = {"subscriptionExpiresAt": period_end, "updatedAt": now}
+            period_end = sub.get("current_period_end")
+            if org_id and customer_id and period_end:
+                organization_id = org_id
+                organization_update = {
+                    "subscriptionExpiresAt": datetime.utcfromtimestamp(period_end).isoformat(),
+                    "stripeSubscriptionId": sub_id,
+                    "updatedAt": now,
+                }
                 if plan:
-                    update["plan"] = plan
-                db.collection("organizations").document(org_id).update(update)
-                logger.info(f"Subscription renewed: org={org_id}")
+                    organization_update["plan"] = plan
+                logger.info("Verified subscription renewal", extra={"organization_id": org_id})
+
+    elif event_type == "customer.subscription.updated":
+        org_id = data_obj.get("metadata", {}).get("organizationId")
+        customer_id = data_obj.get("customer")
+        require_customer_match = True
+        price_ids = {
+            item.get("price", {}).get("id")
+            for item in data_obj.get("items", {}).get("data", [])
+            if item.get("price", {}).get("id") in plan_map
+        }
+        plans = {plan_map[price_id] for price_id in price_ids}
+        period_end = data_obj.get("current_period_end")
+        if not org_id or not customer_id or len(plans) != 1 or not period_end:
+            raise HTTPException(status_code=400, detail="Subscription update is incomplete")
+        organization_id = org_id
+        organization_update = {
+            "plan": plans.pop(),
+            "subscriptionStatus": data_obj.get("status"),
+            "cancelAtPeriodEnd": bool(data_obj.get("cancel_at_period_end", False)),
+            "subscriptionExpiresAt": datetime.utcfromtimestamp(period_end).isoformat(),
+            "stripeSubscriptionId": data_obj.get("id"),
+            "updatedAt": now,
+        }
 
     elif event_type == "customer.subscription.deleted":
         org_id = data_obj.get("metadata", {}).get("organizationId")
-        if org_id:
-            db.collection("organizations").document(org_id).update({
+        customer_id = data_obj.get("customer")
+        require_customer_match = True
+        if org_id and customer_id:
+            organization_id = org_id
+            organization_update = {
                 "plan": "free",
+                "subscriptionStatus": "canceled",
+                "cancelAtPeriodEnd": False,
                 "subscriptionExpiresAt": None,
                 "stripeSubscriptionId": None,
                 "updatedAt": now,
-            })
-            logger.info(f"Subscription cancelled: org={org_id} → downgraded to free")
+            }
+            logger.info("Verified subscription cancellation", extra={"organization_id": org_id})
 
-    return {"received": True}
+    elif event_type == "invoice.payment_failed":
+        sub_id = data_obj.get("subscription")
+        if sub_id:
+            sub = stripe_lib.Subscription.retrieve(sub_id)
+            org_id = sub.get("metadata", {}).get("organizationId")
+            customer_id = data_obj.get("customer") or sub.get("customer")
+            require_customer_match = True
+            if org_id and customer_id:
+                organization_id = org_id
+                organization_update = {
+                    "subscriptionStatus": "past_due",
+                    "lastPaymentFailedAt": now,
+                    "stripeSubscriptionId": sub_id,
+                    "updatedAt": now,
+                }
+                logger.warning(
+                    "Subscription payment failed",
+                    extra={"organization_id": org_id, "subscription_id": sub_id},
+                )
+
+    event_ref = db.collection("stripeWebhookEvents").document(event_id)
+    transaction = db.transaction()
+
+    @fs.transactional
+    def apply_event_once(transaction):
+        if event_ref.get(transaction=transaction).exists:
+            return False
+
+        if organization_id and organization_update:
+            org_ref = db.collection("organizations").document(organization_id)
+            org_snapshot = org_ref.get(transaction=transaction)
+            if not org_snapshot.exists:
+                raise HTTPException(status_code=404, detail="Organization not found")
+            stored_customer_id = (org_snapshot.to_dict() or {}).get("stripeCustomerId")
+            if require_customer_match and stored_customer_id != customer_id:
+                raise HTTPException(status_code=400, detail="Customer ID mismatch")
+            if not require_customer_match and stored_customer_id and stored_customer_id != customer_id:
+                raise HTTPException(status_code=400, detail="Customer ID mismatch")
+            transaction.update(org_ref, organization_update)
+
+        transaction.create(event_ref, {
+            "eventType": event_type,
+            "organizationId": organization_id,
+            "processedAt": fs.SERVER_TIMESTAMP,
+        })
+        return True
+
+    try:
+        was_applied = apply_event_once(transaction)
+    except HTTPException:
+        raise
+    except Exception:
+        logger.exception("Stripe webhook transaction failed", extra={"event_id": event_id})
+        raise HTTPException(status_code=500, detail="Stripe event processing failed")
+    return {"received": True, "duplicate": not was_applied}
 
 
 # Run the application

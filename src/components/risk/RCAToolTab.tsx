@@ -1,16 +1,18 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import {
+  CAPAReport,
   FishboneCategory,
   FishboneCause,
   FishboneAnalysis,
   FiveWhyStep,
   FiveWhyAnalysis,
   RootCauseAnalysisData,
-  FISHBONE_CATEGORY_LABELS,
 } from "@/types";
 import { Button } from "@/components/ui";
 import { PlusIcon, TrashIcon } from "@/components/icons";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
 
 // ── Colors per category ──────────────────────────────────
 
@@ -514,6 +516,13 @@ type ToolMode = "fishbone" | "fiveWhy";
 
 const RCAToolTab: React.FC = () => {
   const { t } = useTranslation();
+  const risks = useAppStore((state) => state.risks);
+  const updateRisk = useAppStore((state) => state.updateRisk);
+  const projects = useProjectStore((state) => state.projects);
+  const updateCapa = useProjectStore((state) => state.updateCapa);
+  const [selectedTargetKey, setSelectedTargetKey] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [mode, setMode] = useState<ToolMode>("fishbone");
   const [fishbone, setFishbone] = useState<FishboneAnalysis>(emptyFishbone());
   const [fiveWhy, setFiveWhy] = useState<FiveWhyAnalysis>({
@@ -522,28 +531,86 @@ const RCAToolTab: React.FC = () => {
     rootCauseConclusion: "",
     createdAt: new Date().toISOString(),
   });
-  const [savedAnalyses, setSavedAnalyses] = useState<RootCauseAnalysisData[]>(
-    [],
+  const targets = useMemo(
+    () => [
+      ...risks.map((risk) => ({
+        key: JSON.stringify({ type: "risk", id: risk.id }),
+        label: `${t("rcaTargetRisk")}: ${risk.title}`,
+        rcaData: risk.rcaData,
+        risk,
+      })),
+      ...projects.flatMap((project) =>
+        (project.capaReports || []).map((capa: CAPAReport) => ({
+          key: JSON.stringify({
+            type: "capa",
+            projectId: project.id,
+            id: capa.id,
+          }),
+          label: `${t("rcaTargetCapa")}: ${capa.title || capa.id}`,
+          rcaData: capa.rcaData,
+          projectId: project.id,
+          capa,
+        })),
+      ),
+    ],
+    [risks, projects, t],
+  );
+  const selectedTarget = targets.find(
+    (target) => target.key === selectedTargetKey,
   );
 
-  const handleSave = useCallback(() => {
-    const rca: RootCauseAnalysisData = {
-      fishbone: mode === "fishbone" ? fishbone : undefined,
-      fiveWhys: mode === "fiveWhy" ? [fiveWhy] : undefined,
-    };
-    setSavedAnalyses((prev) => [rca, ...prev]);
-    // Reset
-    if (mode === "fishbone") setFishbone(emptyFishbone());
-    else
-      setFiveWhy({
+  useEffect(() => {
+    setSaveError("");
+    setFishbone(selectedTarget?.rcaData?.fishbone || emptyFishbone());
+    setFiveWhy(
+      selectedTarget?.rcaData?.fiveWhys?.[0] || {
         id: `5w-${Date.now()}`,
-        steps: [
-          { whyNumber: 1, question: t("rcaWhyDidThisHappen"), answer: "" },
-        ],
+        steps: [{ whyNumber: 1, question: t("rcaWhyDidThisHappen"), answer: "" }],
         rootCauseConclusion: "",
         createdAt: new Date().toISOString(),
-      });
-  }, [mode, fishbone, fiveWhy, t]);
+      },
+    );
+  }, [selectedTargetKey, selectedTarget?.rcaData, t]);
+
+  const savedAnalyses = selectedTarget?.rcaData
+    ? [selectedTarget.rcaData]
+    : [];
+
+  const handleSave = useCallback(async () => {
+    if (!selectedTarget) return;
+    setIsSaving(true);
+    setSaveError("");
+    const existing = selectedTarget.rcaData || {};
+    const rca: RootCauseAnalysisData = {
+      ...existing,
+      ...(mode === "fishbone"
+        ? { fishbone }
+        : {
+            fiveWhys: [
+              ...(existing.fiveWhys || []).filter(
+                (analysis) => analysis.id !== fiveWhy.id,
+              ),
+              fiveWhy,
+            ],
+          }),
+    };
+
+    try {
+      if ("risk" in selectedTarget) {
+        await updateRisk({ ...selectedTarget.risk, rcaData: rca });
+      } else {
+        await updateCapa(selectedTarget.projectId, {
+          ...selectedTarget.capa,
+          rcaData: rca,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to save root-cause analysis:", error);
+      setSaveError(t("rcaSaveFailed"));
+    } finally {
+      setIsSaving(false);
+    }
+  }, [selectedTarget, mode, fishbone, fiveWhy, updateRisk, updateCapa, t]);
 
   const handleReset = () => {
     if (mode === "fishbone") setFishbone(emptyFishbone());
@@ -586,15 +653,44 @@ const RCAToolTab: React.FC = () => {
             variant="primary"
             onClick={handleSave}
             disabled={
-              mode === "fishbone"
+              !selectedTarget ||
+              isSaving ||
+              (mode === "fishbone"
                 ? !fishbone.problemStatement
-                : !fiveWhy.rootCauseConclusion
+                : !fiveWhy.rootCauseConclusion)
             }
             className="text-xs"
           >
-            {t("rcaSaveAnalysis")}
+            {isSaving ? t("rcaSaving") : t("rcaSaveAnalysis")}
           </Button>
         </div>
+      </div>
+
+      <div>
+        <label
+          htmlFor="rca-target"
+          className="block text-sm font-medium text-brand-text-secondary dark:text-dark-brand-text-secondary mb-1"
+        >
+          {t("rcaTargetLabel")}
+        </label>
+        <select
+          id="rca-target"
+          value={selectedTargetKey}
+          onChange={(event) => setSelectedTargetKey(event.target.value)}
+          className="w-full max-w-xl border border-brand-border dark:border-dark-brand-border rounded-lg px-3 py-2 text-sm bg-brand-surface dark:bg-dark-brand-surface dark:text-dark-brand-text-primary"
+        >
+          <option value="">{t("rcaSelectTarget")}</option>
+          {targets.map((target) => (
+            <option key={target.key} value={target.key}>
+              {target.label}
+            </option>
+          ))}
+        </select>
+        {saveError && (
+          <p role="alert" className="mt-2 text-sm text-red-600">
+            {saveError}
+          </p>
+        )}
       </div>
 
       {/* Mode Tabs */}

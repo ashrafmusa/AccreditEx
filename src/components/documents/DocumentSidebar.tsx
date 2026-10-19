@@ -17,6 +17,7 @@ import {
   Bars3Icon,
 } from "../icons";
 import { Department } from "../../types";
+import { getLocalizedValue } from "@/utils/localization";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -203,7 +204,7 @@ const DocumentSidebar: React.FC<DocumentSidebarProps> = ({
 
   const departmentItems: SidebarItem[] = departments.map((dept) => ({
     id: dept.id,
-    label: dept.name[lang] || dept.name.en,
+    label: getLocalizedValue(dept.name, lang),
     icon: UserGroupIcon,
   }));
 

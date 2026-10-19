@@ -1,5 +1,12 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useTranslation } from "@/hooks/useTranslation";
+import { useTenantStore } from "@/stores/useTenantStore";
+import {
+  deleteTrainingHubRecord,
+  getTrainingHubRecords,
+  saveTrainingHubRecord,
+} from "@/services/trainingHubPersistenceService";
+import { where } from "firebase/firestore";
 import { useUserStore } from "@/stores/useUserStore";
 import {
   CECredit,
@@ -53,6 +60,7 @@ type TabView = "overview" | "credits" | "form";
 const CECreditsTab: React.FC = () => {
   const { t } = useTranslation();
   const { currentUser, users } = useUserStore();
+  const organizationId = useTenantStore((state) => state.organizationId);
   const isAdmin = currentUser?.role === UserRole.Admin;
 
   const [view, setView] = useState<TabView>("overview");
@@ -61,6 +69,33 @@ const CECreditsTab: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterUser, setFilterUser] = useState<string>("all");
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setDataError(null);
+    const queryConstraints = currentUser?.role === UserRole.Admin
+      ? []
+      : currentUser?.id
+        ? [where("userId", "==", currentUser.id)]
+        : [];
+    getTrainingHubRecords<CECredit>("ceCredits", ...queryConstraints)
+      .then((records) => {
+        if (active) setCredits(records);
+      })
+      .catch((error: unknown) => {
+        console.error("Failed to load CE credits:", error);
+        if (active) setDataError(t("trainingDataLoadError"));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [organizationId, currentUser?.id, t]);
 
   const activeUsers = users.filter((u) => u.isActive !== false);
 
@@ -128,7 +163,7 @@ const CECreditsTab: React.FC = () => {
     return { totalCredits, uniqueUsers, verified, expired };
   }, [credits, enrichedCredits]);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (
       !form.userId ||
       !form.title ||
@@ -136,21 +171,27 @@ const CECreditsTab: React.FC = () => {
       form.credits <= 0
     )
       return;
-    if (editingId) {
-      setCredits((prev) =>
-        prev.map((c) => (c.id === editingId ? { ...c, ...form } : c)),
-      );
-    } else {
-      const newC: CECredit = {
+    const credit: CECredit = editingId
+      ? { ...credits.find((item) => item.id === editingId)!, ...form }
+      : {
         ...form,
         id: `ce-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
       };
-      setCredits((prev) => [...prev, newC]);
+    try {
+      setDataError(null);
+      await saveTrainingHubRecord("ceCredits", credit);
+    } catch (error) {
+      console.error("Failed to save CE credit:", error);
+      setDataError(t("trainingDataSaveError"));
+      return;
     }
+    setCredits((prev) => editingId
+      ? prev.map((item) => item.id === editingId ? credit : item)
+      : [...prev, credit]);
     setForm(EMPTY_FORM);
     setEditingId(null);
     setView("credits");
-  }, [form, editingId]);
+  }, [form, editingId, credits, t]);
 
   const handleEdit = useCallback((c: CECredit) => {
     setForm(c);
@@ -159,31 +200,44 @@ const CECreditsTab: React.FC = () => {
   }, []);
 
   const handleVerify = useCallback(
-    (id: string) => {
-      setCredits((prev) =>
-        prev.map((c) =>
-          c.id === id
-            ? {
-                ...c,
-                verifiedBy: currentUser?.name,
-                verifiedAt: new Date().toISOString(),
-              }
-            : c,
-        ),
-      );
+    async (id: string) => {
+      const existing = credits.find((item) => item.id === id);
+      if (!existing) return;
+      const verified = {
+        ...existing,
+        verifiedBy: currentUser?.name,
+        verifiedAt: new Date().toISOString(),
+      };
+      try {
+        setDataError(null);
+        await saveTrainingHubRecord("ceCredits", verified);
+        setCredits((prev) => prev.map((item) => item.id === id ? verified : item));
+      } catch (error) {
+        console.error("Failed to verify CE credit:", error);
+        setDataError(t("trainingDataSaveError"));
+      }
     },
-    [currentUser],
+    [currentUser, credits, t],
   );
 
-  const handleDelete = useCallback((id: string) => {
-    setCredits((prev) => prev.filter((c) => c.id !== id));
-  }, []);
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      setDataError(null);
+      await deleteTrainingHubRecord("ceCredits", id);
+      setCredits((prev) => prev.filter((credit) => credit.id !== id));
+    } catch (error) {
+      console.error("Failed to delete CE credit:", error);
+      setDataError(t("trainingDataSaveError"));
+    }
+  }, [t]);
 
   const inputCls =
     "text-sm border border-brand-border dark:border-dark-brand-border rounded-lg py-1.5 px-3 bg-brand-surface dark:bg-dark-brand-surface dark:text-dark-brand-text-primary w-full";
 
   return (
     <div className="space-y-4 p-4">
+      {dataError && <div role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{dataError}</div>}
+      {loading && <p role="status" className="text-sm text-brand-text-secondary">{t("trainingRecordsLoading")}</p>}
       {/* Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div>

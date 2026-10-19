@@ -41,7 +41,10 @@ const emptyImportData = (): LabOpsPersistedData => ({
 
 jest.mock("@/services/labOpsService", () => ({
     getLabOpsData: jest.fn(), resetLabOpsData: jest.fn(), saveLabOpsDataWithRetry: jest.fn(), labRecordStorageEnabled: jest.fn(() => false),
-    labRecordService: { state: jest.fn(), page: jest.fn(), write: jest.fn(), save: jest.fn() },
+    labRecordService: {
+        state: jest.fn(), page: jest.fn(), write: jest.fn(), writeMany: jest.fn(),
+        writeIQCResultWithMetadata: jest.fn(), save: jest.fn(),
+    },
 }));
 jest.mock("@/stores/useTenantStore", () => ({
     useTenantStore: { getState: () => ({ organizationId: mockOrganizationId }) },
@@ -399,5 +402,151 @@ describe("Lab Operations safeguards", () => {
         useLabOpsStore.getState().addReagentUsage(usage);
         expect(useLabOpsStore.getState().reagents[0].quantity).toBe(8);
         expect(useLabOpsStore.getState().reagentUsageLogs[0].quantityUsed).toBe(2);
+    });
+
+    it("persists aggregate QC imports before resolving", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: false,
+            iqcResults: [],
+            syncStatus: "synced",
+        });
+        const records = [{ ...SEED_IQC_RESULTS[0], id: "qc-import-aggregate" }];
+
+        await useLabOpsStore.getState().importIQCResults(records);
+
+        expect(saveLabOpsDataWithRetry).toHaveBeenCalledWith(
+            expect.objectContaining({ iqcResults: records }),
+            3,
+            500,
+            "org-a",
+        );
+        expect(useLabOpsStore.getState().iqcResults).toEqual(records);
+        expect(useLabOpsStore.getState().syncStatus).toBe("synced");
+    });
+
+    it("uses a single atomic record-mode bulk write for QC imports", async () => {
+        const nextState = { organizationId: "org-a", ready: true, revision: 2 } as LabRecordState;
+        jest.mocked(labRecordService.writeMany).mockResolvedValue(nextState);
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: true,
+            recordRevision: 1,
+            iqcResults: [],
+            syncStatus: "synced",
+        });
+        const records = [{ ...SEED_IQC_RESULTS[0], id: "qc-import-record" }];
+
+        await useLabOpsStore.getState().importIQCResults(records);
+
+        expect(labRecordService.writeMany).toHaveBeenCalledWith(
+            "org-a",
+            "iqcResults",
+            records,
+            1,
+        );
+        expect(useLabOpsStore.getState().iqcResults).toEqual(records);
+        expect(useLabOpsStore.getState().recordRevision).toBe(2);
+        expect(saveLabOpsDataWithRetry).not.toHaveBeenCalled();
+    });
+
+    it("rolls back aggregate QC imports when persistence fails", async () => {
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: false,
+            iqcResults: [],
+            syncStatus: "synced",
+        });
+        jest.mocked(saveLabOpsDataWithRetry).mockRejectedValueOnce(new Error("offline"));
+
+        await expect(
+            useLabOpsStore.getState().importIQCResults([
+                { ...SEED_IQC_RESULTS[0], id: "qc-import-failed" },
+            ]),
+        ).rejects.toThrow("offline");
+
+        expect(useLabOpsStore.getState().iqcResults).toEqual([]);
+        expect(useLabOpsStore.getState().syncStatus).toBe("error");
+    });
+
+    it("persists a rejected result and its reagent, risk, and CAPA effects together", async () => {
+        const reagent = { ...SEED_REAGENTS[0], lotNumber: "LOT-IQC", labSection: "Chemistry" };
+        const result = {
+            ...SEED_IQC_RESULTS[0],
+            id: "qc-rejected",
+            rejected: true,
+            reagentLot: reagent.lotNumber,
+            labSection: reagent.labSection,
+            createdAt: "2026-10-11T00:00:00.000Z",
+        };
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: false,
+            iqcResults: [],
+            reagents: [reagent],
+            qualityRisks: [],
+            capaRecords: [],
+            syncStatus: "synced",
+        });
+
+        const saved = await useLabOpsStore.getState().logIQCResultWithSideEffects(result);
+
+        expect(saveLabOpsDataWithRetry).toHaveBeenCalledWith(
+            expect.objectContaining({
+                iqcResults: [expect.objectContaining({
+                    id: result.id,
+                    linkedRiskRecordId: `${result.id}-risk`,
+                    linkedCapaId: `${result.id}-capa`,
+                })],
+                qualityRisks: [expect.objectContaining({ id: `${result.id}-risk` })],
+                capaRecords: [expect.objectContaining({ id: `${result.id}-capa` })],
+                reagents: [expect.objectContaining({
+                    id: reagent.id,
+                    status: "quarantine",
+                    qualityFlag: "under_investigation",
+                })],
+            }),
+            3,
+            500,
+            "org-a",
+        );
+        expect(saved.linkedRiskRecordId).toBe(`${result.id}-risk`);
+        expect(useLabOpsStore.getState().syncStatus).toBe("synced");
+    });
+
+    it("leaves the rejected result and all linked effects unchanged when persistence fails", async () => {
+        const reagent = { ...SEED_REAGENTS[0], lotNumber: "LOT-IQC", labSection: "Chemistry" };
+        const result = {
+            ...SEED_IQC_RESULTS[0],
+            id: "qc-rejected-failed",
+            rejected: true,
+            reagentLot: reagent.lotNumber,
+            labSection: reagent.labSection,
+        };
+        useLabOpsStore.setState({
+            hasLoadedFromFirestore: true,
+            loadedOrganizationId: "org-a",
+            recordMode: false,
+            iqcResults: [],
+            reagents: [reagent],
+            qualityRisks: [],
+            capaRecords: [],
+            syncStatus: "synced",
+        });
+        jest.mocked(saveLabOpsDataWithRetry).mockRejectedValueOnce(new Error("offline"));
+
+        await expect(
+            useLabOpsStore.getState().logIQCResultWithSideEffects(result),
+        ).rejects.toThrow("offline");
+
+        expect(useLabOpsStore.getState().iqcResults).toEqual([]);
+        expect(useLabOpsStore.getState().reagents).toEqual([reagent]);
+        expect(useLabOpsStore.getState().qualityRisks).toEqual([]);
+        expect(useLabOpsStore.getState().capaRecords).toEqual([]);
+        expect(useLabOpsStore.getState().syncStatus).toBe("error");
     });
 });

@@ -1,4 +1,7 @@
+import type { Project, Risk } from "@/types";
+
 export interface MonthlyQualityOutcomeSnapshot {
+    organizationId: string;
     monthKey: string;
     capturedAt: string;
     readinessScore: number;
@@ -6,6 +9,9 @@ export interface MonthlyQualityOutcomeSnapshot {
     assessorExportsLast30Days: number;
     reviewerSignOffRatePercent: number;
     criticalOpenFindings: number;
+    qualityScore?: number;
+    complianceRate?: number;
+    riskControlIndex?: number;
 }
 
 export interface GuideReadinessCorrelationResult {
@@ -30,8 +36,26 @@ export interface AIPredictiveAuditRiskResult extends PredictiveAuditRiskResult {
 const QUALITY_OUTCOME_SNAPSHOT_STORAGE_KEY =
     "accreditex_quality_outcome_monthly_snapshots";
 
+const getStorageKey = (organizationId?: string): string =>
+    `${QUALITY_OUTCOME_SNAPSHOT_STORAGE_KEY}:${encodeURIComponent(organizationId?.trim() || "legacy")}`;
+
 const clampPercent = (value: number): number =>
     Math.max(0, Math.min(100, Math.round(value)));
+
+const getFiniteNumber = (value: unknown): value is number =>
+    typeof value === "number" && Number.isFinite(value);
+
+const resolveMetric = (
+    value: number | undefined,
+    previousValue: number | undefined,
+    fieldName: string,
+): number => {
+    const resolved = value ?? previousValue ?? 0;
+    if (!getFiniteNumber(resolved)) {
+        throw new Error(`Invalid quality outcome metric: ${fieldName}.`);
+    }
+    return resolved;
+};
 
 const getCurrentMonthKey = (): string => {
     const now = new Date();
@@ -40,58 +64,170 @@ const getCurrentMonthKey = (): string => {
 };
 
 export const getMonthlyQualityOutcomeSnapshots =
-    (): MonthlyQualityOutcomeSnapshot[] => {
+    (organizationId?: string): MonthlyQualityOutcomeSnapshot[] => {
+        let raw: string | null;
         try {
-            const raw = localStorage.getItem(QUALITY_OUTCOME_SNAPSHOT_STORAGE_KEY);
-            if (!raw) {
-                return [];
-            }
-
-            const parsed = JSON.parse(raw);
-            if (!Array.isArray(parsed)) {
-                return [];
-            }
-
-            return parsed as MonthlyQualityOutcomeSnapshot[];
+            raw = localStorage.getItem(getStorageKey(organizationId));
         } catch {
+            throw new Error("Unable to access quality outcome history storage.");
+        }
+        if (!raw) {
             return [];
         }
+
+        let parsed: unknown;
+        try {
+            parsed = JSON.parse(raw);
+        } catch {
+            throw new Error("Quality outcome history contains invalid JSON.");
+        }
+        if (!Array.isArray(parsed)) {
+            throw new Error("Quality outcome history has an invalid format.");
+        }
+
+        const scopedOrganizationId = organizationId?.trim() || "legacy";
+        return parsed.map((entry: unknown) => {
+            if (
+                !entry ||
+                typeof entry !== "object" ||
+                Array.isArray(entry)
+            ) {
+                throw new Error(
+                    "Quality outcome history contains an invalid snapshot.",
+                );
+            }
+            const snapshot = entry as Partial<MonthlyQualityOutcomeSnapshot>;
+            if (
+                snapshot.organizationId !== scopedOrganizationId ||
+                typeof snapshot.monthKey !== "string" ||
+                !/^\d{4}-(0[1-9]|1[0-2])$/.test(snapshot.monthKey) ||
+                typeof snapshot.capturedAt !== "string" ||
+                !getFiniteNumber(snapshot.readinessScore) ||
+                !getFiniteNumber(snapshot.guideCompletionPercent) ||
+                !getFiniteNumber(snapshot.assessorExportsLast30Days) ||
+                !getFiniteNumber(snapshot.reviewerSignOffRatePercent) ||
+                !getFiniteNumber(snapshot.criticalOpenFindings) ||
+                (snapshot.qualityScore !== undefined &&
+                    !getFiniteNumber(snapshot.qualityScore)) ||
+                (snapshot.complianceRate !== undefined &&
+                    !getFiniteNumber(snapshot.complianceRate)) ||
+                (snapshot.riskControlIndex !== undefined &&
+                    !getFiniteNumber(snapshot.riskControlIndex))
+            ) {
+                throw new Error("Quality outcome history contains an invalid snapshot.");
+            }
+            return snapshot as MonthlyQualityOutcomeSnapshot;
+        });
     };
 
 export const recordMonthlyQualityOutcomeSnapshot = (input: {
-    readinessScore: number;
-    guideCompletionPercent: number;
-    assessorExportsLast30Days: number;
-    reviewerSignOffRatePercent: number;
-    criticalOpenFindings: number;
+    organizationId?: string;
+    readinessScore?: number;
+    guideCompletionPercent?: number;
+    assessorExportsLast30Days?: number;
+    reviewerSignOffRatePercent?: number;
+    criticalOpenFindings?: number;
+    qualityScore?: number;
+    complianceRate?: number;
+    riskControlIndex?: number;
 }): MonthlyQualityOutcomeSnapshot => {
     const monthKey = getCurrentMonthKey();
+    const organizationId = input.organizationId?.trim() || "legacy";
+    const existing = getMonthlyQualityOutcomeSnapshots(organizationId);
+    const existingMonth = existing.find((entry) => entry.monthKey === monthKey);
     const snapshot: MonthlyQualityOutcomeSnapshot = {
+        ...existingMonth,
+        organizationId,
         monthKey,
         capturedAt: new Date().toISOString(),
-        readinessScore: clampPercent(input.readinessScore),
-        guideCompletionPercent: clampPercent(input.guideCompletionPercent),
+        readinessScore: clampPercent(
+            resolveMetric(
+                input.readinessScore,
+                existingMonth?.readinessScore,
+                "readinessScore",
+            ),
+        ),
+        guideCompletionPercent: clampPercent(
+            resolveMetric(
+                input.guideCompletionPercent,
+                existingMonth?.guideCompletionPercent,
+                "guideCompletionPercent",
+            ),
+        ),
         assessorExportsLast30Days: Math.max(
             0,
-            Math.round(input.assessorExportsLast30Days),
+            Math.round(
+                resolveMetric(
+                    input.assessorExportsLast30Days,
+                    existingMonth?.assessorExportsLast30Days,
+                    "assessorExportsLast30Days",
+                ),
+            ),
         ),
-        reviewerSignOffRatePercent: clampPercent(input.reviewerSignOffRatePercent),
-        criticalOpenFindings: Math.max(0, Math.round(input.criticalOpenFindings)),
+        reviewerSignOffRatePercent: clampPercent(
+            resolveMetric(
+                input.reviewerSignOffRatePercent,
+                existingMonth?.reviewerSignOffRatePercent,
+                "reviewerSignOffRatePercent",
+            ),
+        ),
+        criticalOpenFindings: Math.max(
+            0,
+            Math.round(
+                resolveMetric(
+                    input.criticalOpenFindings,
+                    existingMonth?.criticalOpenFindings,
+                    "criticalOpenFindings",
+                ),
+            ),
+        ),
+        ...(input.qualityScore !== undefined
+            ? {
+                  qualityScore: clampPercent(
+                      resolveMetric(
+                          input.qualityScore,
+                          existingMonth?.qualityScore,
+                          "qualityScore",
+                      ),
+                  ),
+              }
+            : {}),
+        ...(input.complianceRate !== undefined
+            ? {
+                  complianceRate: clampPercent(
+                      resolveMetric(
+                          input.complianceRate,
+                          existingMonth?.complianceRate,
+                          "complianceRate",
+                      ),
+                  ),
+              }
+            : {}),
+        ...(input.riskControlIndex !== undefined
+            ? {
+                  riskControlIndex: clampPercent(
+                      resolveMetric(
+                          input.riskControlIndex,
+                          existingMonth?.riskControlIndex,
+                          "riskControlIndex",
+                      ),
+                  ),
+              }
+            : {}),
     };
 
     try {
-        const existing = getMonthlyQualityOutcomeSnapshots();
         const filtered = existing.filter((entry) => entry.monthKey !== monthKey);
         const updated = [snapshot, ...filtered]
             .sort((a, b) => b.monthKey.localeCompare(a.monthKey))
             .slice(0, 24);
 
         localStorage.setItem(
-            QUALITY_OUTCOME_SNAPSHOT_STORAGE_KEY,
+            getStorageKey(organizationId),
             JSON.stringify(updated),
         );
     } catch {
-        // no-op to keep dashboard non-blocking
+        throw new Error("Unable to save quality outcome history.");
     }
 
     return snapshot;
@@ -99,10 +235,40 @@ export const recordMonthlyQualityOutcomeSnapshot = (input: {
 
 export const getRecentMonthlyQualityOutcomeSnapshots = (
     months: number = 6,
+    organizationId?: string,
 ): MonthlyQualityOutcomeSnapshot[] => {
-    return getMonthlyQualityOutcomeSnapshots()
+    const windowSize = Math.max(0, Math.floor(months));
+    if (windowSize === 0) return [];
+    return getMonthlyQualityOutcomeSnapshots(organizationId)
         .sort((a, b) => a.monthKey.localeCompare(b.monthKey))
-        .slice(-months);
+        .slice(-windowSize);
+};
+
+export const calculateQualityTrendMetrics = (
+    projects: Pick<Project, "status">[],
+    risks: Pick<Risk, "status">[],
+): { qualityScore: number; complianceRate: number; riskControlIndex: number } => {
+    const completedProjects = projects.filter(
+        (project) => project.status === "Completed",
+    ).length;
+    const activeProjects = projects.filter(
+        (project) => project.status === "In Progress",
+    ).length;
+    const complianceRate = projects.length
+        ? ((completedProjects + activeProjects) / projects.length) * 100
+        : 0;
+    const mitigatedRisks = risks.filter(
+        (risk) => risk.status === "Mitigated" || risk.status === "Closed",
+    ).length;
+    const riskControlIndex = risks.length
+        ? (mitigatedRisks / risks.length) * 100
+        : 0;
+
+    return {
+        qualityScore: clampPercent(complianceRate * 0.6 + riskControlIndex * 0.4),
+        complianceRate: clampPercent(complianceRate),
+        riskControlIndex: clampPercent(riskControlIndex),
+    };
 };
 
 export const calculateGuideReadinessCorrelation = (

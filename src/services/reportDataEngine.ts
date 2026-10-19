@@ -11,6 +11,9 @@
 import { useAppStore } from '@/stores/useAppStore';
 import { useProjectStore } from '@/stores/useProjectStore';
 import { useUserStore } from '@/stores/useUserStore';
+import { calculateComplianceRate, calculateOverallScore, getQualityRounds } from '@/services/qualityRoundingService';
+import type { QualityRound } from '@/types';
+import { useTenantStore } from '@/stores/useTenantStore';
 import {
     ReportDataSource,
     AggregationType,
@@ -27,8 +30,39 @@ import autoTable from 'jspdf-autotable';
 
 // ── Data Resolution ─────────────────────────────────────────
 
+export interface ReportDataContext {
+    qualityRounds?: QualityRound[];
+}
+
+const pendingQualityRoundLoads = new Map<string, Promise<QualityRound[]>>();
+
+export function loadQualityRoundsForReport(): Promise<QualityRound[]> {
+    const organizationId = useTenantStore.getState().organizationId ?? '';
+    const pendingLoad = pendingQualityRoundLoads.get(organizationId);
+    if (pendingLoad) return pendingLoad;
+
+    const load = getQualityRounds().finally(() => {
+        pendingQualityRoundLoads.delete(organizationId);
+    });
+    pendingQualityRoundLoads.set(organizationId, load);
+    return load;
+}
+
+function mapQualityRounds(rounds: QualityRound[]): Record<string, unknown>[] {
+    return rounds.map((round) => ({
+        ...round,
+        date: round.scheduledDate,
+        findings: round.findings.length,
+        score: round.overallScore ?? calculateOverallScore(round),
+        complianceRate: round.complianceRate ?? calculateComplianceRate(round),
+    }) as unknown as Record<string, unknown>);
+}
+
 /** Pull raw data array for given data source from the Zustand stores */
-export function resolveDataSource(source: ReportDataSource): Record<string, unknown>[] {
+export function resolveDataSource(
+    source: ReportDataSource,
+    context: ReportDataContext = {},
+): Record<string, unknown>[] {
     const appState = useAppStore.getState();
     const projectState = useProjectStore.getState();
     const userState = useUserStore.getState();
@@ -95,7 +129,9 @@ export function resolveDataSource(source: ReportDataSource): Record<string, unkn
             return cycles;
         }
         case 'quality_rounds':
-            return []; // Placeholder — quality rounds may not be in a store yet
+            return mapQualityRounds(
+                context.qualityRounds ?? [],
+            );
         default:
             return [];
     }
@@ -139,6 +175,38 @@ export function aggregate(
             const matching = data.filter((d) => d[field] !== undefined && d[field] !== null && d[field] !== '').length;
             return total > 0 ? Math.round((matching / total) * 100) : 0;
         }
+        case 'compliance_rate': {
+            const values = data.map((item) => item[field]);
+            const statusValues = values.filter((value): value is string => typeof value === 'string');
+            const statusKeys = new Set([
+                'Compliant',
+                'Partially Compliant',
+                'Partial',
+                'Non-Compliant',
+                'Not Started',
+                'Not Applicable',
+                'N/A',
+            ]);
+            if (statusValues.some((value) => statusKeys.has(value))) {
+                const applicable = statusValues.filter(
+                    (value) => value !== 'Not Applicable' && value !== 'N/A',
+                );
+                if (applicable.length === 0) return 0;
+                const weighted = applicable.reduce((score, value) => {
+                    if (value === 'Compliant') return score + 1;
+                    if (value === 'Partially Compliant' || value === 'Partial') return score + 0.5;
+                    return score;
+                }, 0);
+                return Math.round((weighted / applicable.length) * 100);
+            }
+
+            const numericValues = values
+                .map((value) => typeof value === 'number' ? value : Number(value))
+                .filter((value) => Number.isFinite(value) && value >= 0 && value <= 100);
+            return numericValues.length
+                ? Math.round(numericValues.reduce((sum, value) => sum + value, 0) / numericValues.length)
+                : 0;
+        }
         case 'group_count':
             // Returns count of unique groups — used mainly for charts
             return new Set(data.map((d) => String(d[field] ?? 'Unknown'))).size;
@@ -164,8 +232,8 @@ export function groupAndCount(
 
 // ── Block Data Resolvers ────────────────────────────────────
 
-export function resolveMetric(config: MetricBlockConfig): number {
-    const raw = resolveDataSource(config.dataSource);
+export function resolveMetric(config: MetricBlockConfig, context?: ReportDataContext): number {
+    const raw = resolveDataSource(config.dataSource, context);
     const filtered = applyFilter(raw, config.filterField, config.filterValue);
     const value = aggregate(filtered, config.field, config.aggregation);
 
@@ -175,17 +243,17 @@ export function resolveMetric(config: MetricBlockConfig): number {
     return Math.round(value * 100) / 100;
 }
 
-export function resolveChart(config: ChartBlockConfig): { name: string; value: number }[] {
-    const raw = resolveDataSource(config.dataSource);
+export function resolveChart(config: ChartBlockConfig, context?: ReportDataContext): { name: string; value: number }[] {
+    const raw = resolveDataSource(config.dataSource, context);
     const filtered = applyFilter(raw, config.filterField, config.filterValue);
     return groupAndCount(filtered, config.groupByField);
 }
 
-export function resolveTable(config: TableBlockConfig): {
+export function resolveTable(config: TableBlockConfig, context?: ReportDataContext): {
     headers: string[];
     rows: string[][];
 } {
-    const raw = resolveDataSource(config.dataSource);
+    const raw = resolveDataSource(config.dataSource, context);
     const filtered = applyFilter(raw, config.filterField, config.filterValue);
 
     // Sort
@@ -546,6 +614,15 @@ function renderChartToImage(
 }
 
 export async function exportReportToPDF(report: ReportDefinition): Promise<Blob> {
+    const usesQualityRounds = report.sections.some((section) =>
+        section.blocks.some((block) =>
+            (block.type === 'metric' || block.type === 'chart' || block.type === 'table') &&
+            (block.config as MetricBlockConfig | ChartBlockConfig | TableBlockConfig).dataSource === 'quality_rounds',
+        ),
+    );
+    const context: ReportDataContext = usesQualityRounds
+        ? { qualityRounds: await loadQualityRoundsForReport() }
+        : {};
     const isLandscape = report.pageOrientation === 'landscape';
     const doc = new jsPDF({
         orientation: isLandscape ? 'landscape' : 'portrait',
@@ -650,7 +727,7 @@ export async function exportReportToPDF(report: ReportDefinition): Promise<Blob>
 
                 case 'metric': {
                     const cfg = block.config as MetricBlockConfig;
-                    const value = resolveMetric(cfg);
+                    const value = resolveMetric(cfg, context);
                     const formatted = formatMetricValue(value, cfg.format);
 
                     // Position metrics side-by-side in a row
@@ -701,7 +778,7 @@ export async function exportReportToPDF(report: ReportDefinition): Promise<Blob>
 
                 case 'chart': {
                     const cfg = block.config as ChartBlockConfig;
-                    const chartData = resolveChart(cfg);
+                    const chartData = resolveChart(cfg, context);
 
                     if (cfg.title) {
                         doc.setTextColor(50, 50, 50);
@@ -734,7 +811,7 @@ export async function exportReportToPDF(report: ReportDefinition): Promise<Blob>
 
                 case 'table': {
                     const cfg = block.config as TableBlockConfig;
-                    const { headers, rows } = resolveTable(cfg);
+                    const { headers, rows } = resolveTable(cfg, context);
 
                     if (rows.length > 0) {
                         autoTable(doc, {
@@ -790,7 +867,16 @@ export function downloadPDFBlob(blob: Blob, fileName: string) {
 }
 
 /** Export report data to CSV */
-export function exportReportToCSV(report: ReportDefinition): string {
+export async function exportReportToCSV(report: ReportDefinition): Promise<string> {
+    const usesQualityRounds = report.sections.some((section) =>
+        section.blocks.some((block) =>
+            block.type === 'table' &&
+            (block.config as TableBlockConfig).dataSource === 'quality_rounds',
+        ),
+    );
+    const context: ReportDataContext = usesQualityRounds
+        ? { qualityRounds: await loadQualityRoundsForReport() }
+        : {};
     const allRows: string[][] = [];
     const allHeaders: string[] = [];
 
@@ -798,7 +884,7 @@ export function exportReportToCSV(report: ReportDefinition): string {
         for (const block of section.blocks) {
             if (block.type === 'table') {
                 const cfg = block.config as TableBlockConfig;
-                const { headers, rows } = resolveTable(cfg);
+                const { headers, rows } = resolveTable(cfg, context);
                 if (allHeaders.length === 0) {
                     allHeaders.push(...headers);
                     allRows.push(headers);

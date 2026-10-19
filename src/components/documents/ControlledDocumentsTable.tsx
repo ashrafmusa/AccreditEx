@@ -2,6 +2,7 @@ import { EmptyState, TableContainer } from "@/components/ui";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { AppDocument } from "../../types";
+import { getLocalizedValue } from "@/utils/localization";
 import {
   ChevronDownIcon,
   ChevronUpIcon,
@@ -98,7 +99,9 @@ const ControlledDocumentsTable: React.FC<ControlledDocumentsTableProps> = ({
       let comparison = 0;
       switch (sortField) {
         case "name":
-          comparison = (a.name[lang] || "").localeCompare(b.name[lang] || "");
+          comparison = getLocalizedValue(a.name, lang).localeCompare(
+            getLocalizedValue(b.name, lang),
+          );
           break;
         case "status":
           comparison = a.status.localeCompare(b.status);

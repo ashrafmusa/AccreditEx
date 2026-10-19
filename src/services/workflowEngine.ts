@@ -25,6 +25,7 @@ import {
     CreateTaskActionConfig,
     WORKFLOW_TEMPLATES,
 } from '@/types/workflow';
+import { ComplianceStatus, ProjectStatus } from '@/types';
 import { notificationService } from '@/services/notificationService';
 import { useUserStore } from '@/stores/useUserStore';
 import { logger } from '@/services/logger';
@@ -283,7 +284,7 @@ class WorkflowEngine {
                     continue;
                 }
 
-                const result = await this.executeAction(action, data);
+                const result = await this.executeAction(action, entity, data);
                 logEntry.actionResults.push(result);
             }
 
@@ -318,6 +319,7 @@ class WorkflowEngine {
 
     private async executeAction(
         action: WorkflowAction,
+        entity: TriggerEntity,
         data: Record<string, unknown>,
     ): Promise<WorkflowExecutionLog['actionResults'][0]> {
         const executedAt = new Date().toISOString();
@@ -346,7 +348,7 @@ class WorkflowEngine {
                     const uniqueRecipients = [...new Set(recipientIds)];
 
                     for (const userId of uniqueRecipients) {
-                        notificationService.createNotification(
+                        await notificationService.createNotification(
                             userId,
                             title,
                             message,
@@ -387,7 +389,7 @@ class WorkflowEngine {
 
                     const unique = [...new Set(assignees)];
                     for (const userId of unique) {
-                        notificationService.createNotification(
+                        await notificationService.createNotification(
                             userId,
                             `📋 Task: ${title}`,
                             description,
@@ -410,13 +412,233 @@ class WorkflowEngine {
                 }
 
                 case 'change_status': {
-                    // Status changes need to be applied by the calling store
-                    // We log the intent — the store integration handles actual updates
+                    const targetStatus = String(action.config.targetStatus || '').trim();
+                    const entityId = typeof data.id === 'string' ? data.id : '';
+                    if (!targetStatus || !entityId) {
+                        throw new Error('Status change requires a target status and entity ID.');
+                    }
+
+                    if (entity === 'checklist_item') {
+                        const projectId = typeof data.projectId === 'string' ? data.projectId : '';
+                        if (!projectId || !Object.values(ComplianceStatus).includes(targetStatus as ComplianceStatus)) {
+                            throw new Error('Invalid checklist status or missing project ID.');
+                        }
+                        const { useProjectStore } = await import('@/stores/useProjectStore');
+                        const project = useProjectStore.getState().projects.find((item) => item.id === projectId);
+                        const checklistItem = project?.checklist.find((item) => item.id === entityId);
+                        if (!checklistItem) throw new Error('Checklist item was not found in the active project.');
+                        if (checklistItem.status !== targetStatus) {
+                            await useProjectStore.getState().updateChecklistItem(
+                                projectId,
+                                entityId,
+                                { status: targetStatus as ComplianceStatus },
+                                { skipWorkflowEvaluation: true },
+                            );
+                        }
+                    } else if (entity === 'incident') {
+                        const statuses = ['Open', 'Under Investigation', 'Closed'] as const;
+                        if (!statuses.includes(targetStatus as (typeof statuses)[number])) {
+                            throw new Error('Invalid incident status.');
+                        }
+                        const { useAppStore } = await import('@/stores/useAppStore');
+                        const report = useAppStore.getState().incidentReports.find((item) => item.id === entityId);
+                        if (!report) throw new Error('Incident was not found in the active organization.');
+                        if (report.status !== targetStatus) {
+                            await useAppStore.getState().updateIncidentReport(
+                                { ...report, status: targetStatus as (typeof statuses)[number] },
+                                { skipWorkflowEvaluation: true },
+                            );
+                        }
+                    } else if (entity === 'risk') {
+                        const statuses = ['Open', 'Mitigated', 'Closed'] as const;
+                        if (!statuses.includes(targetStatus as (typeof statuses)[number])) {
+                            throw new Error('Invalid risk status.');
+                        }
+                        const { useAppStore } = await import('@/stores/useAppStore');
+                        const risk = useAppStore.getState().risks.find((item) => item.id === entityId);
+                        if (!risk) throw new Error('Risk was not found in the active organization.');
+                        if (risk.status !== targetStatus) {
+                            await useAppStore.getState().updateRisk({
+                                ...risk,
+                                status: targetStatus as (typeof statuses)[number],
+                            });
+                        }
+                    } else if (entity === 'project') {
+                        if (!Object.values(ProjectStatus).includes(targetStatus as ProjectStatus)) {
+                            throw new Error('Invalid project status.');
+                        }
+                        const { useProjectStore } = await import('@/stores/useProjectStore');
+                        const project = useProjectStore.getState().projects.find((item) => item.id === entityId);
+                        if (!project) throw new Error('Project was not found in the active organization.');
+                        if (project.status !== targetStatus) {
+                            await useProjectStore.getState().updateProject({
+                                ...project,
+                                status: targetStatus as ProjectStatus,
+                            });
+                        }
+                    } else if (entity === 'capa') {
+                        if (!Object.values(ProjectStatus).includes(targetStatus as ProjectStatus)) {
+                            throw new Error('Invalid CAPA status.');
+                        }
+                        const projectId = typeof data.projectId === 'string' ? data.projectId : '';
+                        if (projectId) {
+                            const { useProjectStore } = await import('@/stores/useProjectStore');
+                            const project = useProjectStore.getState().projects.find((item) => item.id === projectId);
+                            const capa = project?.capaReports?.find((item) => item.id === entityId);
+                            if (!capa) throw new Error('CAPA was not found in the active project.');
+                            if (capa.status !== targetStatus) {
+                                await useProjectStore.getState().updateCapa(projectId, {
+                                    ...capa,
+                                    status: targetStatus as ProjectStatus,
+                                });
+                            }
+                        } else {
+                            const capaService = await import('@/services/capaService');
+                            const capa = (await capaService.getCAPAReports()).find((item) => item.id === entityId);
+                            if (!capa) throw new Error('CAPA was not found in the active organization.');
+                            if (capa.status !== targetStatus) {
+                                await capaService.updateCAPAReport({
+                                    ...capa,
+                                    status: targetStatus as ProjectStatus,
+                                });
+                            }
+                        }
+                    } else {
+                        throw new Error(`Status changes are not supported for ${entity}.`);
+                    }
+
                     return {
                         actionId: action.id,
                         actionType: action.type,
                         status: 'completed' as ExecutionStatus,
-                        message: `Status change intent logged: → ${(action.config as Record<string, unknown>).targetStatus}`,
+                        message: `Updated ${entity} status to ${targetStatus}.`,
+                        executedAt,
+                    };
+                }
+
+                case 'assign_user': {
+                    const assignee = this.resolveSingleAssignee(action.config, data);
+                    const entityId = typeof data.id === 'string' ? data.id : '';
+                    if (!entityId) throw new Error('Assignment requires an entity ID.');
+
+                    if (entity === 'checklist_item') {
+                        const projectId = typeof data.projectId === 'string' ? data.projectId : '';
+                        const { useProjectStore } = await import('@/stores/useProjectStore');
+                        const project = useProjectStore.getState().projects.find((item) => item.id === projectId);
+                        const checklistItem = project?.checklist.find((item) => item.id === entityId);
+                        if (!projectId || !checklistItem) throw new Error('Checklist item was not found in the active project.');
+                        await useProjectStore.getState().updateChecklistItem(
+                            projectId,
+                            entityId,
+                            { assignedTo: assignee.id },
+                            { skipWorkflowEvaluation: true },
+                        );
+                    } else if (entity === 'incident') {
+                        const { useAppStore } = await import('@/stores/useAppStore');
+                        const report = useAppStore.getState().incidentReports.find((item) => item.id === entityId);
+                        if (!report) throw new Error('Incident was not found in the active organization.');
+                        await useAppStore.getState().updateIncidentReport(
+                            { ...report, investigatorId: assignee.id },
+                            { skipWorkflowEvaluation: true },
+                        );
+                    } else if (entity === 'risk') {
+                        const { useAppStore } = await import('@/stores/useAppStore');
+                        const risk = useAppStore.getState().risks.find((item) => item.id === entityId);
+                        if (!risk) throw new Error('Risk was not found in the active organization.');
+                        await useAppStore.getState().updateRisk({ ...risk, ownerId: assignee.id });
+                    } else if (entity === 'capa') {
+                        const projectId = typeof data.projectId === 'string' ? data.projectId : '';
+                        if (projectId) {
+                            const { useProjectStore } = await import('@/stores/useProjectStore');
+                            const project = useProjectStore.getState().projects.find((item) => item.id === projectId);
+                            const capa = project?.capaReports?.find((item) => item.id === entityId);
+                            if (!capa) throw new Error('CAPA was not found in the active project.');
+                            await useProjectStore.getState().updateCapa(projectId, {
+                                ...capa,
+                                assignedTo: assignee.id,
+                            });
+                        } else {
+                            const capaService = await import('@/services/capaService');
+                            const capa = (await capaService.getCAPAReports()).find((item) => item.id === entityId);
+                            if (!capa) throw new Error('CAPA was not found in the active organization.');
+                            await capaService.updateCAPAReport({ ...capa, assignedTo: assignee.id });
+                        }
+                    } else {
+                        throw new Error(`User assignment is not supported for ${entity}.`);
+                    }
+
+                    return {
+                        actionId: action.id,
+                        actionType: action.type,
+                        status: 'completed' as ExecutionStatus,
+                        message: `Assigned ${entity} to ${assignee.name}.`,
+                        executedAt,
+                    };
+                }
+
+                case 'create_capa': {
+                    const title = this.resolveTokens(
+                        String(action.config.title || `CAPA: ${data.description || data.item || data.id || ''}`),
+                        data,
+                    ).trim();
+                    const description = this.resolveTokens(
+                        String(action.config.description || data.description || title),
+                        data,
+                    ).trim();
+                    if (!title) throw new Error('CAPA creation requires a title.');
+                    const assignee = this.resolveOptionalAssignee(action.config, data);
+                    const projectId = typeof data.projectId === 'string' ? data.projectId : '';
+
+                    if (entity === 'checklist_item') {
+                        const checklistItemId = typeof data.id === 'string' ? data.id : '';
+                        if (!projectId || !checklistItemId) {
+                            throw new Error('Checklist CAPA creation requires a project and checklist item.');
+                        }
+                        const { useProjectStore } = await import('@/stores/useProjectStore');
+                        await useProjectStore.getState().addCapaReport(
+                            projectId,
+                            checklistItemId,
+                            {
+                                title,
+                                description,
+                                assignedTo: assignee?.id,
+                            },
+                            { skipWorkflowEvaluation: true },
+                        );
+                    } else if (entity === 'incident') {
+                        const incidentId = typeof data.id === 'string' ? data.id : '';
+                        if (!incidentId) throw new Error('Incident CAPA creation requires an incident ID.');
+                        const capaService = await import('@/services/capaService');
+                        const now = new Date().toISOString();
+                        const created = await capaService.addCAPAReport({
+                            type: 'CAPA',
+                            title,
+                            description,
+                            checklistItemId: '',
+                            sourceIncidentId: incidentId,
+                            assignedTo: assignee?.id,
+                            rootCause: '',
+                            correctiveAction: '',
+                            status: ProjectStatus.InProgress,
+                            createdAt: now,
+                            updatedAt: now,
+                        });
+                        return {
+                            actionId: action.id,
+                            actionType: action.type,
+                            status: 'completed' as ExecutionStatus,
+                            message: `Created CAPA ${created.id} for incident ${incidentId}.`,
+                            executedAt,
+                        };
+                    } else {
+                        throw new Error(`CAPA creation is not supported for ${entity}.`);
+                    }
+
+                    return {
+                        actionId: action.id,
+                        actionType: action.type,
+                        status: 'completed' as ExecutionStatus,
+                        message: `Created CAPA: ${title}.`,
                         executedAt,
                     };
                 }
@@ -433,7 +655,7 @@ class WorkflowEngine {
                     );
 
                     for (const user of targets) {
-                        notificationService.createNotification(
+                        await notificationService.createNotification(
                             user.id,
                             '⚡ Escalation',
                             msg,
@@ -456,11 +678,22 @@ class WorkflowEngine {
                 }
 
                 case 'add_comment': {
+                    if (entity !== 'checklist_item') {
+                        throw new Error(`Comments are not supported for ${entity}.`);
+                    }
+                    const projectId = typeof data.projectId === 'string' ? data.projectId : '';
+                    const checklistItemId = typeof data.id === 'string' ? data.id : '';
+                    const comment = this.resolveTokens(String(action.config.comment || ''), data).trim();
+                    if (!projectId || !checklistItemId || !comment) {
+                        throw new Error('Comment action requires a project, checklist item, and comment.');
+                    }
+                    const { useProjectStore } = await import('@/stores/useProjectStore');
+                    await useProjectStore.getState().addComment(projectId, checklistItemId, comment);
                     return {
                         actionId: action.id,
                         actionType: action.type,
                         status: 'completed' as ExecutionStatus,
-                        message: `Comment added: ${this.resolveTokens(String((action.config as Record<string, unknown>).comment || ''), data)}`,
+                        message: `Added a comment to checklist item ${checklistItemId}.`,
                         executedAt,
                     };
                 }
@@ -486,6 +719,56 @@ class WorkflowEngine {
     }
 
     // ── Token Resolution ──────────────────────────────────────
+
+    private resolveOptionalAssignee(
+        config: Record<string, unknown>,
+        data: Record<string, unknown>,
+    ): { id: string; name: string } | undefined {
+        const userIds = Array.isArray(config.userIds)
+            ? config.userIds.filter((value): value is string => typeof value === 'string')
+            : [];
+        const roles = Array.isArray(config.roles)
+            ? config.roles.filter((value): value is string => typeof value === 'string')
+            : Array.isArray(config.assignToRoles)
+                ? config.assignToRoles.filter((value): value is string => typeof value === 'string')
+                : [];
+        if (userIds.length === 0 && roles.length === 0) return undefined;
+
+        const { currentUser, users } = useUserStore.getState();
+        const organizationId =
+            typeof data.organizationId === 'string'
+                ? data.organizationId
+                : currentUser?.organizationId;
+        const candidates = users.filter((user) => {
+            if (organizationId && user.organizationId !== organizationId) return false;
+            return (
+                userIds.includes(user.id) ||
+                roles.some((role) => role.toLowerCase() === String(user.role).toLowerCase())
+            );
+        });
+        const uniqueCandidates = [...new Map(candidates.map((user) => [user.id, user])).values()];
+        if (uniqueCandidates.length !== 1) {
+            throw new Error(
+                uniqueCandidates.length === 0
+                    ? 'Workflow assignment did not resolve to an active user in this organization.'
+                    : 'Workflow assignment resolved to multiple users; configure exactly one user or a role with one member.',
+            );
+        }
+
+        const assignee = uniqueCandidates[0];
+        return { id: assignee.id, name: assignee.name || assignee.id };
+    }
+
+    private resolveSingleAssignee(
+        config: Record<string, unknown>,
+        data: Record<string, unknown>,
+    ): { id: string; name: string } {
+        const assignee = this.resolveOptionalAssignee(config, data);
+        if (!assignee) {
+            throw new Error('User assignment requires a selected user or role.');
+        }
+        return assignee;
+    }
 
     /** Replace {{entity.field}} tokens with actual values from data */
     private resolveTokens(template: string, data: Record<string, unknown>): string {

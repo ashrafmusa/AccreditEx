@@ -23,8 +23,8 @@ const SignatureModal: FC<SignatureModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const submitting = useRef(false);
   useEffect(() => {
-    if (!isOpen) setPassword("");
-  }, [isOpen]);
+    setPassword("");
+  }, [isOpen, actionTitle]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

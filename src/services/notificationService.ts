@@ -1,6 +1,14 @@
 import { Notification } from '@/types';
-import { collection, addDoc, query, where, getDocs, updateDoc, doc, deleteDoc, orderBy, limit as firestoreLimit } from 'firebase/firestore';
-import { db } from '@/firebase/firebaseConfig';
+import {
+  archiveNotification as archiveNotificationInFirebase,
+  createNotification as createNotificationInFirebase,
+  deleteNotification as deleteNotificationInFirebase,
+  deleteNotificationsForUser,
+  getNotificationsForUser,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+  markNotificationsAsRead,
+} from './notificationServiceFirebase';
 
 export type NotificationType = 'info' | 'success' | 'warning' | 'error';
 export type NotificationCategory = 'project' | 'audit' | 'training' | 'compliance' | 'task' | 'system';
@@ -59,8 +67,7 @@ class NotificationService {
       expiresInDays?: number;
     } = {}
   ): Promise<EnhancedNotification> {
-    const notification: EnhancedNotification = {
-      id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+    const notificationData: Omit<EnhancedNotification, 'id'> = {
       userId,
       title,
       message,
@@ -78,6 +85,8 @@ class NotificationService {
       actionUrl: options.actionUrl,
       data: options.data,
     };
+    const id = await createNotificationInFirebase(userId, notificationData);
+    const notification: EnhancedNotification = { ...notificationData, id };
 
     // Add to queue
     this.notificationQueue.unshift(notification);
@@ -96,6 +105,21 @@ class NotificationService {
     this.notifyListeners();
 
     return notification;
+  }
+
+  public async hydrateNotifications(userId: string): Promise<void> {
+    const loaded = await getNotificationsForUser(userId);
+    const userNotifications = loaded.map((notification) => ({
+      ...notification,
+      category: notification.category || 'system',
+      priority: notification.priority || 'normal',
+    })) as EnhancedNotification[];
+    this.notificationQueue = [
+      ...this.notificationQueue.filter((notification) => notification.userId !== userId),
+      ...userNotifications,
+    ];
+    this.unreadCount = this.notificationQueue.filter((notification) => !notification.read).length;
+    this.notifyListeners();
   }
 
   /**
@@ -200,9 +224,10 @@ class NotificationService {
   /**
    * Mark notification as read
    */
-  public markAsRead(notificationId: string): boolean {
+  public async markAsRead(notificationId: string): Promise<boolean> {
     const notification = this.notificationQueue.find(n => n.id === notificationId);
     if (notification && !notification.read) {
+      await markNotificationAsRead(notificationId);
       notification.read = true;
       this.unreadCount--;
       this.notifyListeners();
@@ -214,34 +239,47 @@ class NotificationService {
   /**
    * Mark multiple notifications as read
    */
-  public markBulkAsRead(notificationIds: string[]): number {
-    let count = 0;
-    notificationIds.forEach(id => {
-      if (this.markAsRead(id)) count++;
+  public async markBulkAsRead(notificationIds: string[]): Promise<number> {
+    const unreadIds = notificationIds.filter((id) =>
+      this.notificationQueue.some((notification) => notification.id === id && !notification.read),
+    );
+    if (unreadIds.length === 0) return 0;
+    await markNotificationsAsRead(unreadIds);
+    const unreadIdSet = new Set(unreadIds);
+    this.notificationQueue.forEach((notification) => {
+      if (unreadIdSet.has(notification.id)) notification.read = true;
     });
+    this.unreadCount = this.notificationQueue.filter((notification) => !notification.read).length;
+    this.notifyListeners();
+    const count = unreadIds.length;
     return count;
   }
 
   /**
    * Mark all unread notifications as read
    */
-  public markAllAsRead(userId: string): number {
+  public async markAllAsRead(userId: string): Promise<number> {
     const unread = this.notificationQueue.filter(
       n => n.userId === userId && !n.read
     );
-    let count = 0;
-    unread.forEach(n => {
-      if (this.markAsRead(n.id)) count++;
+    if (unread.length === 0) return 0;
+    await markAllNotificationsAsRead(userId);
+    unread.forEach((notification) => {
+      notification.read = true;
     });
+    this.unreadCount = this.notificationQueue.filter((notification) => !notification.read).length;
+    this.notifyListeners();
+    const count = unread.length;
     return count;
   }
 
   /**
    * Archive notification
    */
-  public archiveNotification(notificationId: string): boolean {
+  public async archiveNotification(notificationId: string): Promise<boolean> {
     const notification = this.notificationQueue.find(n => n.id === notificationId);
     if (notification && !notification.archived) {
+      await archiveNotificationInFirebase(notificationId);
       notification.archived = true;
       this.notifyListeners();
       return true;
@@ -252,9 +290,10 @@ class NotificationService {
   /**
    * Delete notification permanently
    */
-  public deleteNotification(notificationId: string): boolean {
+  public async deleteNotification(notificationId: string): Promise<boolean> {
     const index = this.notificationQueue.findIndex(n => n.id === notificationId);
     if (index !== -1) {
+      await deleteNotificationInFirebase(notificationId);
       const notification = this.notificationQueue[index];
       if (!notification.read) {
         this.unreadCount--;
@@ -269,29 +308,29 @@ class NotificationService {
   /**
    * Clear all notifications for user
    */
-  public clearAll(userId: string): number {
+  public async clearAll(userId: string): Promise<number> {
+    const cleared = await deleteNotificationsForUser(userId);
     const before = this.notificationQueue.length;
     this.notificationQueue = this.notificationQueue.filter(n => n.userId !== userId);
-    const cleared = before - this.notificationQueue.length;
     
     // Recalculate unread count
     this.unreadCount = this.notificationQueue.filter(n => !n.read).length;
     this.notifyListeners();
     
-    return cleared;
+    return Math.max(cleared, before - this.notificationQueue.length);
   }
 
   /**
    * Clear archived notifications
    */
-  public clearArchived(userId: string): number {
+  public async clearArchived(userId: string): Promise<number> {
+    const cleared = await deleteNotificationsForUser(userId, true);
     const before = this.notificationQueue.length;
     this.notificationQueue = this.notificationQueue.filter(
       n => !(n.userId === userId && n.archived)
     );
-    const cleared = before - this.notificationQueue.length;
     this.notifyListeners();
-    return cleared;
+    return Math.max(cleared, before - this.notificationQueue.length);
   }
 
   /**
@@ -394,12 +433,14 @@ class NotificationService {
   /**
    * Batch delete notifications by filter
    */
-  public deleteByFilter(userId: string, filter: NotificationFilter): number {
+  public async deleteByFilter(userId: string, filter: NotificationFilter): Promise<number> {
     const toDelete = this.getNotifications(userId, filter);
-    let count = 0;
-    toDelete.forEach(n => {
-      if (this.deleteNotification(n.id)) count++;
-    });
+    await Promise.all(toDelete.map((notification) => deleteNotificationInFirebase(notification.id)));
+    const deleteIds = new Set(toDelete.map((notification) => notification.id));
+    this.notificationQueue = this.notificationQueue.filter((notification) => !deleteIds.has(notification.id));
+    this.unreadCount = this.notificationQueue.filter((notification) => !notification.read).length;
+    if (toDelete.length > 0) this.notifyListeners();
+    const count = toDelete.length;
     return count;
   }
 }

@@ -300,7 +300,7 @@ export class HL7Connector extends BaseHISConnector {
     try {
       if (this.protocol === 'http') {
         // HTTP POST
-        const response = await this.makeRequest('POST', this.config.baseUrl, { message });
+        const response = await this.makeRequest('POST', '', { message });
         const result = await response.text();
         return result;
       } else {

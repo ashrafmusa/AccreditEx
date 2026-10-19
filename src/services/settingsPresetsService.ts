@@ -1,7 +1,7 @@
 import { SettingsPreset, AppSettings } from '@/types';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, where, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, where, orderBy, Timestamp } from 'firebase/firestore';
 import { db, getAuthInstance } from '../firebase/firebaseConfig';
-import { getTenantStamp } from '@/utils/tenantQuery';
+import { getSharedTenantQuery, getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'settings_presets';
 
@@ -28,18 +28,15 @@ export const createPreset = async (preset: Omit<SettingsPreset, 'id' | 'createdA
 };
 
 export const getPresets = async (category?: string): Promise<SettingsPreset[]> => {
-    const presets = collection(db, COLLECTION_NAME);
-    const publicConstraints = [
-        where('isPublic', '==', true),
-        ...(category ? [where('category', '==', category)] : []),
-        orderBy('usageCount', 'desc'),
-    ];
-    const snapshots = [getDocs(query(presets, ...publicConstraints))];
     const userId = getAuthInstance().currentUser?.uid;
+    const snapshots = [getDocs(getSharedTenantQuery(
+        COLLECTION_NAME,
+        orderBy('usageCount', 'desc'),
+    ))];
 
     if (userId) {
-        snapshots.push(getDocs(query(
-            presets,
+        snapshots.push(getDocs(getTenantQuery(
+            COLLECTION_NAME,
             where('createdBy', '==', userId),
             orderBy('usageCount', 'desc'),
         )));
@@ -49,8 +46,13 @@ export const getPresets = async (category?: string): Promise<SettingsPreset[]> =
     const byId = new Map<string, SettingsPreset>();
     for (const snapshot of results) {
         for (const presetDoc of snapshot.docs) {
-            const preset = { id: presetDoc.id, ...presetDoc.data() } as SettingsPreset;
-            if (!category || preset.category === category) byId.set(preset.id, preset);
+            const data = presetDoc.data();
+            const preset = { id: presetDoc.id, ...data } as SettingsPreset;
+            const isVisible = data.scope === 'global' || preset.isPublic ||
+                preset.createdBy === userId;
+            if (isVisible && (!category || preset.category === category)) {
+                byId.set(preset.id, preset);
+            }
         }
     }
     return [...byId.values()].sort((a, b) => b.usageCount - a.usageCount);
@@ -62,8 +64,8 @@ export const getUserPresets = async (userId: string): Promise<SettingsPreset[]> 
         throw new Error('Users may only load their own settings presets.');
     }
 
-    const q = query(
-        collection(db, COLLECTION_NAME),
+    const q = getTenantQuery(
+        COLLECTION_NAME,
         where('createdBy', '==', authenticatedUserId),
         orderBy('createdAt', 'desc')
     );
@@ -76,17 +78,18 @@ export const getUserPresets = async (userId: string): Promise<SettingsPreset[]> 
 };
 
 export const getPublicPresets = async (): Promise<SettingsPreset[]> => {
-    const q = query(
-        collection(db, COLLECTION_NAME),
-        where('isPublic', '==', true),
+    const q = getSharedTenantQuery(
+        COLLECTION_NAME,
         orderBy('usageCount', 'desc')
     );
 
     const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-    })) as SettingsPreset[];
+    return snapshot.docs
+        .filter(presetDoc => {
+            const data = presetDoc.data();
+            return data.scope === 'global' || data.isPublic === true;
+        })
+        .map(doc => ({ id: doc.id, ...doc.data() }) as SettingsPreset);
 };
 
 export const applyPreset = async (presetId: string): Promise<Partial<AppSettings>> => {
@@ -97,23 +100,37 @@ export const applyPreset = async (presetId: string): Promise<Partial<AppSettings
         throw new Error('Preset not found');
     }
 
-    // Increment usage count
-    const presetRef = doc(db, COLLECTION_NAME, presetId);
-    await updateDoc(presetRef, {
-        usageCount: preset.usageCount + 1,
-    });
+    // Shared presets are read-only across tenants; only increment tenant-owned records.
+    const ownedPresetSnapshot = await getDocs(
+        getTenantQuery(COLLECTION_NAME, where('__name__', '==', presetId)),
+    );
+    if (!ownedPresetSnapshot.empty) {
+        await updateDoc(ownedPresetSnapshot.docs[0].ref, {
+            usageCount: preset.usageCount + 1,
+        });
+    }
 
     return preset.settings;
 };
 
 export const updatePreset = async (presetId: string, updates: Partial<SettingsPreset>): Promise<void> => {
-    const presetRef = doc(db, COLLECTION_NAME, presetId);
+    const presetRef = await getTenantPresetRef(presetId);
     await updateDoc(presetRef, updates);
 };
 
 export const deletePreset = async (presetId: string): Promise<void> => {
-    const presetRef = doc(db, COLLECTION_NAME, presetId);
+    const presetRef = await getTenantPresetRef(presetId);
     await deleteDoc(presetRef);
+};
+
+const getTenantPresetRef = async (presetId: string) => {
+    const snapshot = await getDocs(
+        getTenantQuery(COLLECTION_NAME, where('__name__', '==', presetId)),
+    );
+    if (snapshot.empty) {
+        throw new Error(`Settings preset ${presetId} was not found in this organization.`);
+    }
+    return snapshot.docs[0].ref;
 };
 
 // Built-in presets

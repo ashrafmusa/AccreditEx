@@ -18,6 +18,7 @@ export const ar = {
     // CAPA
     noCapaReports: 'لم يتم العثور على تقارير CAPA.',
     noCapaReportsDescription: 'ستظهر هنا تقارير الإجراءات التصحيحية والوقائية من عناصر قائمة المراجعة غير الممتثلة.',
+    errorLoadingCapaReports: 'تعذر تحميل تقارير CAPA المستقلة. يرجى تحديث الصفحة والمحاولة مرة أخرى.',
     capaReport: 'تقرير CAPA',
     source: 'المصدر',
     // Incidents
@@ -143,6 +144,12 @@ export const ar = {
     // RCA Tool
     rcaToolTitle: 'أداة تحليل السبب الجذري',
     rcaToolDescription: 'تحليل عظمة السمكة (إيشيكاوا) والأسباب الخمسة التفاعلي لحل المشكلات المنهجي',
+    rcaTargetLabel: 'حفظ التحليل في',
+    rcaSelectTarget: 'اختر خطرًا أو تقرير CAPA',
+    rcaTargetRisk: 'خطر',
+    rcaTargetCapa: 'CAPA',
+    rcaSaving: 'جارٍ الحفظ…',
+    rcaSaveFailed: 'تعذر حفظ التحليل. يرجى المحاولة مرة أخرى.',
     rcaReset: 'إعادة تعيين',
     rcaSaveAnalysis: 'حفظ التحليل',
     rcaFishboneDiagram: '🐟 مخطط عظمة السمكة',

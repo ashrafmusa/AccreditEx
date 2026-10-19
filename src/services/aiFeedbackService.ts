@@ -2,6 +2,7 @@ import { db } from "@/firebase/firebaseConfig";
 import { useUserStore } from "@/stores/useUserStore";
 import type { AIResponse } from "@/types/aiResponse";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { getTenantStamp } from "@/utils/tenantQuery";
 
 /** Persist thumbs-up/down on an AI answer into the shared `feedback` collection. */
 export async function submitAIFeedback(
@@ -9,8 +10,12 @@ export async function submitAIFeedback(
   response: AIResponse,
 ): Promise<void> {
   const user = useUserStore.getState().currentUser;
+  const tenantStamp = user?.organizationId
+    ? { organizationId: user.organizationId }
+    : getTenantStamp();
   try {
     await addDoc(collection(db, "feedback"), {
+      ...tenantStamp,
       type: "ai_response",
       rating: rating === "up" ? 5 : 1,
       aiRating: rating,
@@ -20,7 +25,6 @@ export async function submitAIFeedback(
       message: response.contentMarkdown.slice(0, 1000),
       userId: user?.id || "anonymous",
       userRole: user?.role || "Unknown",
-      organizationId: user?.organizationId || null,
       url: typeof window !== "undefined" ? window.location.pathname : null,
       timestamp: serverTimestamp(),
     });

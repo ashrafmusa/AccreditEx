@@ -1,6 +1,7 @@
 import { UserActivityLog } from '@/types';
 import { collection, addDoc, query, where, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
 import { db } from '../firebase/firebaseConfig';
+import { getTenantQuery, getTenantStamp } from '@/utils/tenantQuery';
 
 const COLLECTION_NAME = 'user_activity_logs';
 
@@ -31,6 +32,7 @@ export const logUserActivity = async (
             ...Object.fromEntries(
                 Object.entries(activityLog).filter(([, value]) => value !== undefined),
             ),
+            ...getTenantStamp(),
             createdAt: Timestamp.now(),
         });
     } catch (error) {
@@ -44,8 +46,8 @@ export const getUserActivityLogs = async (
     limitCount: number = 100
 ): Promise<UserActivityLog[]> => {
     try {
-        const q = query(
-            collection(db, COLLECTION_NAME),
+        const q = getTenantQuery(
+            COLLECTION_NAME,
             where('userId', '==', userId),
             orderBy('timestamp', 'desc'),
             limit(limitCount)
@@ -68,16 +70,16 @@ export const getResourceActivityLogs = async (
     limitCount: number = 100
 ): Promise<UserActivityLog[]> => {
     try {
-        let q = query(
-            collection(db, COLLECTION_NAME),
+        let q = getTenantQuery(
+            COLLECTION_NAME,
             where('resource', '==', resource),
             orderBy('timestamp', 'desc'),
             limit(limitCount)
         );
 
         if (resourceId) {
-            q = query(
-                collection(db, COLLECTION_NAME),
+            q = getTenantQuery(
+                COLLECTION_NAME,
                 where('resource', '==', resource),
                 where('resourceId', '==', resourceId),
                 orderBy('timestamp', 'desc'),
@@ -98,8 +100,8 @@ export const getResourceActivityLogs = async (
 
 export const getRecentActivityLogs = async (limitCount: number = 100): Promise<UserActivityLog[]> => {
     try {
-        const q = query(
-            collection(db, COLLECTION_NAME),
+        const q = getTenantQuery(
+            COLLECTION_NAME,
             orderBy('timestamp', 'desc'),
             limit(limitCount)
         );

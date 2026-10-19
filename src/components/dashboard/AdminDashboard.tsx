@@ -21,6 +21,7 @@ import {
   type AssessorPackExportMetrics,
 } from "@/services/assessorReportPackService";
 import {
+  calculateQualityTrendMetrics,
   calculateGuideReadinessCorrelation,
   getRecentMonthlyQualityOutcomeSnapshots,
   recordMonthlyQualityOutcomeSnapshot,
@@ -229,14 +230,28 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
     [projects, risks, documents],
   );
 
+  const qualityTrendMetrics = useMemo(
+    () => calculateQualityTrendMetrics(projects, risks),
+    [projects, risks],
+  );
+
   const monthlyOutcomeSnapshots = useMemo(
-    () => getRecentMonthlyQualityOutcomeSnapshots(6),
+    () => {
+      try {
+        return getRecentMonthlyQualityOutcomeSnapshots(6, organizationId);
+      } catch (error) {
+        console.error("Failed to load quality outcome history:", error);
+        return [];
+      }
+    },
     [
+      organizationId,
       readinessMetrics.readinessScore,
       readinessMetrics.criticalOpenFindings,
       cycleGuideProgress,
       assessorExportMetrics.exportsLast30Days,
       assessorExportMetrics.reviewerSignOffRatePercent,
+      qualityTrendMetrics,
     ],
   );
 
@@ -246,20 +261,31 @@ const AdminDashboard: React.FC<DashboardPageProps> = ({
   );
 
   useEffect(() => {
-    recordMonthlyQualityOutcomeSnapshot({
-      readinessScore: readinessMetrics.readinessScore,
-      guideCompletionPercent: cycleGuideProgress,
-      assessorExportsLast30Days: assessorExportMetrics.exportsLast30Days,
-      reviewerSignOffRatePercent:
-        assessorExportMetrics.reviewerSignOffRatePercent,
-      criticalOpenFindings: readinessMetrics.criticalOpenFindings,
-    });
+    try {
+      recordMonthlyQualityOutcomeSnapshot({
+        organizationId,
+        readinessScore: readinessMetrics.readinessScore,
+        guideCompletionPercent: cycleGuideProgress,
+        assessorExportsLast30Days: assessorExportMetrics.exportsLast30Days,
+        reviewerSignOffRatePercent:
+          assessorExportMetrics.reviewerSignOffRatePercent,
+        criticalOpenFindings: readinessMetrics.criticalOpenFindings,
+        ...qualityTrendMetrics,
+      });
+    } catch (error) {
+      console.error("Failed to save quality outcome history:", error);
+      assessorAuditErrorToast.current(
+        translateRef.current("qualityTrendSaveFailed"),
+      );
+    }
   }, [
+    organizationId,
     readinessMetrics.readinessScore,
     readinessMetrics.criticalOpenFindings,
     cycleGuideProgress,
     assessorExportMetrics.exportsLast30Days,
     assessorExportMetrics.reviewerSignOffRatePercent,
+    qualityTrendMetrics,
   ]);
 
   const dashboardData = useMemo(() => {

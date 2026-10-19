@@ -18,6 +18,7 @@ export const en = {
     // CAPA
     noCapaReports: 'No CAPA reports found.',
     noCapaReportsDescription: 'Corrective and Preventive Action reports from non-compliant checklist items will appear here.',
+    errorLoadingCapaReports: 'Unable to load standalone CAPA reports. Please refresh and try again.',
     capaReport: 'CAPA Report',
     source: 'Source',
     // Incidents
@@ -143,6 +144,12 @@ export const en = {
     // RCA Tool
     rcaToolTitle: 'Root Cause Analysis Tool',
     rcaToolDescription: 'Interactive Fishbone (Ishikawa) and 5-Why analysis for systematic problem solving',
+    rcaTargetLabel: 'Save analysis to',
+    rcaSelectTarget: 'Select a Risk or CAPA report',
+    rcaTargetRisk: 'Risk',
+    rcaTargetCapa: 'CAPA',
+    rcaSaving: 'Saving…',
+    rcaSaveFailed: 'The analysis could not be saved. Please retry.',
     rcaReset: 'Reset',
     rcaSaveAnalysis: 'Save Analysis',
     rcaFishboneDiagram: '🐟 Fishbone Diagram',

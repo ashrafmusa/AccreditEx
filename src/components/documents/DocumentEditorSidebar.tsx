@@ -28,6 +28,7 @@ import { aiWritingService } from "@/services/aiWritingService";
 import type { AICommand } from "@/services/aiWritingService";
 import { useToast } from "@/hooks/useToast";
 import { useAppStore } from "@/stores/useAppStore";
+import { getLocalizedValue } from "@/utils/localization";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -1285,7 +1286,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
               >
                 <div className="flex items-center gap-1.5 font-medium">
                   {statusIcon(parentDocument.status)}
-                  {parentDocument.name[lang]}
+                  {getLocalizedValue(parentDocument.name, lang)}
                 </div>
                 <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                   {parentDocument.type} • v{parentDocument.currentVersion}
@@ -1311,7 +1312,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                   >
                     <div className="flex items-center gap-1.5 font-medium">
                       {statusIcon(doc.status)}
-                      {doc.name[lang]}
+                      {getLocalizedValue(doc.name, lang)}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                       {doc.type} • v{doc.currentVersion}
@@ -1339,7 +1340,7 @@ const DocumentEditorSidebar: React.FC<DocumentEditorSidebarProps> = (props) => {
                   >
                     <div className="flex items-center gap-1.5 font-medium">
                       {statusIcon(doc.status)}
-                      {doc.name[lang]}
+                      {getLocalizedValue(doc.name, lang)}
                     </div>
                     <div className="text-xs text-gray-600 dark:text-gray-400 mt-0.5 flex items-center gap-1">
                       {doc.type} • v{doc.currentVersion}

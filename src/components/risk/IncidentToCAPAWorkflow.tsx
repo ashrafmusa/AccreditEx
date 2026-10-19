@@ -1,7 +1,10 @@
 import { FC, useEffect, useState } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
 import { addCAPAReport, linkCAPAToIncident } from "../../services/capaService";
-import { addIncidentReport } from "../../services/incidentReportService";
+import {
+  addIncidentReport,
+  updateIncidentReport,
+} from "../../services/incidentReportService";
 import { addRisk, getRisks } from "../../services/riskService";
 import { useProjectStore } from "../../stores/useProjectStore";
 import { useUserStore } from "../../stores/useUserStore";
@@ -275,6 +278,11 @@ const IncidentToCAPAWorkflow: FC<IncidentToCAPAWorkflowProps> = ({
 
       // Step 4: Link CAPA to Incident
       await linkCAPAToIncident(capa.id, incident.id);
+      await updateIncidentReport({
+        ...incident,
+        linkedRiskIds: linkedRiskId ? [linkedRiskId] : [],
+        correctiveActionIds: [capa.id],
+      });
 
       // Notify
       if (onSuccess) {

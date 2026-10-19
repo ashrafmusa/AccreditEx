@@ -176,7 +176,7 @@ export async function queueOfflineMutation(mutation: {
     docId?: string;
     operation: 'create' | 'update' | 'delete';
     data: Record<string, unknown>;
-}): Promise<number | undefined> {
+}): Promise<number> {
     try {
         const db = await getDB();
         const id = await db.add('pendingSync', {
@@ -187,8 +187,8 @@ export async function queueOfflineMutation(mutation: {
         console.log(`[OfflineStorage] Queued ${mutation.operation} for ${mutation.collection}/${mutation.docId || 'new'}`);
         return id as number;
     } catch (error) {
-        console.warn('[OfflineStorage] Failed to queue mutation:', error);
-        return undefined;
+        console.error('[OfflineStorage] Failed to queue mutation:', error);
+        throw error;
     }
 }
 
@@ -203,8 +203,8 @@ export async function getPendingSyncQueue(): Promise<
         const items = await db.getAll('pendingSync');
         return items.sort((a, b) => a.timestamp - b.timestamp);
     } catch (error) {
-        console.warn('[OfflineStorage] Failed to read sync queue:', error);
-        return [];
+        console.error('[OfflineStorage] Failed to read sync queue:', error);
+        throw error;
     }
 }
 
@@ -256,7 +256,8 @@ export async function getPendingSyncCount(): Promise<number> {
         const db = await getDB();
         return await db.count('pendingSync');
     } catch (error) {
-        return 0;
+        console.error('[OfflineStorage] Failed to count pending sync items:', error);
+        throw error;
     }
 }
 

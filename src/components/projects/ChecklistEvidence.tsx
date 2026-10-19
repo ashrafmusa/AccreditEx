@@ -34,7 +34,7 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
 }) => {
   const { t } = useTranslation();
   const toast = useToast();
-  const { documents, addControlledDocument } = useAppStore();
+  const { documents, addControlledDocument, updateDocument } = useAppStore();
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [showUploader, setShowUploader] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -351,8 +351,8 @@ const ChecklistEvidence: React.FC<ChecklistEvidenceProps> = ({
           isOpen={!!viewingDoc}
           onClose={() => setViewingDoc(null)}
           document={viewingDoc}
-          onSave={(doc) => {
-            // Handle save if needed
+          onSave={async (doc) => {
+            await updateDocument(doc);
             setViewingDoc(null);
           }}
           standards={[]}

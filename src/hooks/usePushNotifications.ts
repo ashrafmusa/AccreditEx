@@ -23,11 +23,15 @@ import {
 } from '@/services/nativePushService';
 import { isNativePlatform } from '@/utils/capacitorPlatform';
 import { useUserStore } from '@/stores/useUserStore';
+import { useNavigate } from 'react-router-dom';
+import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { db } from '@/firebase/firebaseConfig';
 
 const PUSH_PERMISSION_ASKED_KEY = 'accreditex_push_permission_asked';
 
 export function usePushNotifications() {
     const currentUser = useUserStore((s) => s.currentUser);
+    const navigate = useNavigate();
     const cleanupRef = useRef<(() => void) | null>(null);
 
     const handleNotificationTap = useCallback((data: Record<string, string> | undefined) => {
@@ -39,25 +43,24 @@ export function usePushNotifications() {
         switch (type) {
             case 'task_deadline':
                 if (projectId) {
-                    window.location.hash = `#/projects/${projectId}`;
+                    navigate(`/projects/${encodeURIComponent(projectId)}`);
                 }
                 break;
             case 'audit_reminder':
                 if (auditId) {
-                    window.location.hash = `#/audit-hub`;
+                    navigate('/audit');
                 }
                 break;
             case 'document_approval':
                 if (documentId) {
-                    window.location.hash = `#/document-control`;
+                    navigate('/documents');
                 }
                 break;
             default:
-                // Open dashboard
-                window.location.hash = '#/dashboard';
+                navigate('/dashboard');
                 break;
         }
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
         // Only initialize when user is authenticated and on native
@@ -83,8 +86,26 @@ export function usePushNotifications() {
             const handlers: PushNotificationHandler = {
                 onRegistration: (token) => {
                     console.log('[Push] Registered with FCM token');
-                    // TODO: Send token to backend for targeting
-                    // e.g., updateUserFCMToken(currentUser.id, token);
+                    try {
+                        const storageKey = `${PUSH_PERMISSION_ASKED_KEY}_${currentUser.id}`;
+                        const sessionId =
+                            localStorage.getItem(storageKey) || crypto.randomUUID();
+                        localStorage.setItem(storageKey, sessionId);
+                        void setDoc(
+                            doc(db, 'users', currentUser.id, 'sessions', sessionId),
+                            {
+                                userId: currentUser.id,
+                                pushToken: token,
+                                platform: 'native',
+                                updatedAt: serverTimestamp(),
+                            },
+                            { merge: true },
+                        ).catch((error: unknown) => {
+                            console.error('[Push] Failed to persist FCM token:', error);
+                        });
+                    } catch (error) {
+                        console.error('[Push] Failed to prepare FCM token storage:', error);
+                    }
                 },
                 onNotificationReceived: (notification) => {
                     console.log('[Push] Foreground notification:', notification.title);

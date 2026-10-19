@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useTranslation } from "../../hooks/useTranslation";
+import { getLocalizedValue } from "@/utils/localization";
 import {
   CalendarDaysIcon,
   ClockIcon,
@@ -376,7 +377,7 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
       if (!dept) return id;
       return typeof dept.name === "string"
         ? dept.name
-        : dept.name[lang] || dept.name.en;
+        : getLocalizedValue(dept.name, lang);
     },
     [departments, lang],
   );
@@ -588,7 +589,7 @@ const DocumentSearch: React.FC<DocumentSearchProps> = ({
                   <option key={dept.id} value={dept.id}>
                     {typeof dept.name === "string"
                       ? dept.name
-                      : dept.name[lang] || dept.name.en}
+                      : getLocalizedValue(dept.name, lang)}
                   </option>
                 ))}
               </select>

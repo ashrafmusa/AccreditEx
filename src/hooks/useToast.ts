@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import { notificationService, NotificationCategory, NotificationPriority } from '@/services/notificationService';
 import { useUserStore } from '@/stores/useUserStore';
 
@@ -48,12 +48,23 @@ export const useToast = (): ToastContextType => {
  */
 export const useToastNotifications = () => {
   const { currentUser } = useUserStore();
+  const persistNotification = useCallback((
+    title: string,
+    message: string,
+    options: Parameters<typeof notificationService.createNotification>[3],
+  ) => {
+    if (!currentUser?.id) return;
+    void notificationService
+      .createNotification(currentUser.id, title, message, options)
+      .catch((error: unknown) => {
+        console.error('[useToastNotifications] Failed to persist notification:', error);
+      });
+  }, [currentUser?.id]);
 
   const showToast = useMemo(() => ({
     success: (message: string, options?: ToastOptions) => {
       if (currentUser?.id) {
-        notificationService.createNotification(
-          currentUser.id,
+        persistNotification(
           options?.title || 'Success',
           message,
           {
@@ -70,8 +81,7 @@ export const useToastNotifications = () => {
     },
     error: (message: string, options?: ToastOptions) => {
       if (currentUser?.id) {
-        notificationService.createNotification(
-          currentUser.id,
+        persistNotification(
           options?.title || 'Error',
           message,
           {
@@ -88,8 +98,7 @@ export const useToastNotifications = () => {
     },
     info: (message: string, options?: ToastOptions) => {
       if (currentUser?.id) {
-        notificationService.createNotification(
-          currentUser.id,
+        persistNotification(
           options?.title || 'Information',
           message,
           {
@@ -106,8 +115,7 @@ export const useToastNotifications = () => {
     },
     warning: (message: string, options?: ToastOptions) => {
       if (currentUser?.id) {
-        notificationService.createNotification(
-          currentUser.id,
+        persistNotification(
           options?.title || 'Warning',
           message,
           {
@@ -124,8 +132,7 @@ export const useToastNotifications = () => {
     },
     custom: (type: ToastType, message: string, options?: ToastOptions) => {
       if (currentUser?.id) {
-        notificationService.createNotification(
-          currentUser.id,
+        persistNotification(
           options?.title || type,
           message,
           {
@@ -140,7 +147,7 @@ export const useToastNotifications = () => {
         );
       }
     },
-  }), [currentUser?.id]);
+  }), [currentUser?.id, persistNotification]);
 
   return showToast;
 };
