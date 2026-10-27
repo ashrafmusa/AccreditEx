@@ -1,16 +1,37 @@
+import { OrganizationScaleMode } from "@/data/facilityBlueprints";
 import { useTranslation } from "@/hooks/useTranslation";
+import { provisionFacilityWorkspace } from "@/services/facilityProvisioningService";
 import { setProgramSelection } from "@/services/userService";
+import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import WizardStep1Welcome from "./WizardStep1Welcome";
 import WizardStep2ProgramSelection from "./WizardStep2ProgramSelection";
 import WizardStep3Details from "./WizardStep3Details";
 import WizardStep4Review from "./WizardStep4Review";
 
 export interface WizardFormData {
-  program: "cbahi" | "ashk" | "jci" | "other" | "";
+  program:
+    | "cbahi"
+    | "jci"
+    | "cap_iso15189"
+    | "dnv_iso9001"
+    | "doh_dha"
+    | "ashk"
+    | "other"
+    | "";
   organizationName: string;
-  organizationType: "hospital" | "clinic" | "lab" | "pharmacy" | "other" | "";
+  organizationType:
+    | "hospital"
+    | "clinic"
+    | "laboratory"
+    | "lab"
+    | "pharmacy"
+    | "group"
+    | "other"
+    | "";
+  organizationSize?: OrganizationScaleMode;
+  autoProvisionStarterPack?: boolean;
   country: string;
   city: string;
   region: string;
@@ -26,17 +47,33 @@ const ProgramSelectorWizard: React.FC<ProgramSelectorWizardProps> = ({
   const { t } = useTranslation();
   const currentUser = useUserStore((state) => state.currentUser);
   const setCurrentUser = useUserStore((state) => state.setCurrentUser);
+  const currentOrganization = useTenantStore(
+    (state) => state.currentOrganization,
+  );
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<WizardFormData>({
     program: "",
-    organizationName: "",
-    organizationType: "",
-    country: "",
+    organizationName: currentOrganization?.name || "",
+    organizationType: (currentOrganization?.type as any) || "",
+    organizationSize: "medium",
+    autoProvisionStarterPack: true,
+    country: currentOrganization?.country || "",
     city: "",
     region: "",
   });
   const [error, setError] = useState<string>("");
+
+  useEffect(() => {
+    if (!currentOrganization) return;
+    setFormData((prev) => ({
+      ...prev,
+      organizationName: prev.organizationName || currentOrganization.name || "",
+      organizationType:
+        prev.organizationType || (currentOrganization.type as any) || "",
+      country: prev.country || currentOrganization.country || "",
+    }));
+  }, [currentOrganization]);
 
   const handleNext = () => {
     // Validate current step
@@ -81,6 +118,15 @@ const ProgramSelectorWizard: React.FC<ProgramSelectorWizardProps> = ({
         country: formData.country,
         city: formData.city,
         region: formData.region,
+      });
+
+      await provisionFacilityWorkspace({
+        user: currentUser,
+        program: formData.program as string,
+        organizationName: formData.organizationName,
+        organizationType: formData.organizationType as string,
+        organizationSize: formData.organizationSize || "medium",
+        autoProvisionStarterPack: formData.autoProvisionStarterPack ?? true,
       });
 
       // Keep UI state in sync immediately after persisting selection.

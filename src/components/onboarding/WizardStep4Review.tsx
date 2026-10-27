@@ -20,18 +20,23 @@ const WizardStep4Review: React.FC<WizardStep4ReviewProps> = ({
   const { t } = useTranslation();
 
   const programLabels: Record<string, string> = {
-    cbahi: t("cbahiLabel"),
-    ashk: t("ashkLabel"),
-    jci: t("jciLabel"),
-    other: t("otherProgramLabel"),
+    cbahi: t("cbahiLabel") || "CBAHI",
+    jci: t("jciLabel") || "JCI",
+    cap_iso15189: "CAP / ISO 15189 (Clinical Laboratories)",
+    dnv_iso9001: "DNV NIAHO / ISO 9001",
+    doh_dha: "DOH / DHA / MOH (Regional)",
+    ashk: t("ashkLabel") || "ASHK",
+    other: t("otherProgramLabel") || "Custom / Multi-Program",
   };
 
   const organizationTypeLabels: Record<string, string> = {
-    hospital: t("hospitalType"),
-    clinic: t("clinicType"),
-    lab: t("labType"),
-    pharmacy: t("pharmacyType"),
-    other: t("otherType"),
+    hospital: t("hospitalType") || "Hospital / Medical Center",
+    clinic: t("clinicType") || "Primary Healthcare / Polyclinic",
+    laboratory: t("labType") || "Medical & Clinical Laboratory",
+    lab: t("labType") || "Medical & Clinical Laboratory",
+    pharmacy: t("pharmacyType") || "Pharmacy / Diagnostic Center",
+    group: "Multi-Facility Healthcare Network",
+    other: t("otherType") || "Specialized Facility",
   };
 
   return (

@@ -17,26 +17,53 @@ const WizardStep2ProgramSelection: React.FC<
   const programs = [
     {
       id: "cbahi" as const,
-      label: t("cbahiLabel"),
-      description: t("cbahiDescription"),
+      label: t("cbahiLabel") || "CBAHI (Saudi Central Board)",
+      description:
+        t("cbahiDescription") ||
+        "Hospital, Primary Healthcare (PHC), Clinical Lab & Ambulatory Standards",
       icon: "🏥",
     },
     {
-      id: "ashk" as const,
-      label: t("ashkLabel"),
-      description: t("ashkDescription"),
-      icon: "⚕️",
-    },
-    {
       id: "jci" as const,
-      label: t("jciLabel"),
-      description: t("jciDescription"),
+      label: t("jciLabel") || "JCI (Joint Commission International)",
+      description:
+        t("jciDescription") ||
+        "International Patient Safety Goals (IPSG), Hospital & Ambulatory Care",
       icon: "🌍",
     },
     {
+      id: "cap_iso15189" as const,
+      label: "CAP / ISO 15189 (Clinical Laboratories)",
+      description:
+        "College of American Pathologists & ISO 15189 Medical Laboratory Quality",
+      icon: "🔬",
+    },
+    {
+      id: "dnv_iso9001" as const,
+      label: "DNV NIAHO / ISO 9001",
+      description:
+        "Integrated Hospital Quality Management System & Risk-Based Accreditation",
+      icon: "🛡️",
+    },
+    {
+      id: "doh_dha" as const,
+      label: "DOH / DHA / MOH (GCC Regional)",
+      description:
+        "Jawda Quality Indicators, TASNEEF & Regional Clinical Governance",
+      icon: "🏛️",
+    },
+    {
+      id: "ashk" as const,
+      label: t("ashkLabel") || "ASHK",
+      description: t("ashkDescription") || "Healthcare Accreditation Standards",
+      icon: "⚕️",
+    },
+    {
       id: "other" as const,
-      label: t("otherProgramLabel"),
-      description: t("otherProgramDescription"),
+      label: t("otherProgramLabel") || "Multi-Program / Custom Framework",
+      description:
+        t("otherProgramDescription") ||
+        "Combine or customize standards for specialized centers",
       icon: "📋",
     },
   ];

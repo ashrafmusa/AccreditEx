@@ -2,6 +2,7 @@ import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 import AdminDashboard from "@/components/dashboard/AdminDashboard";
 import AIDailyBriefingWidget from "@/components/dashboard/AIDailyBriefingWidget";
 import AuditorDashboard from "@/components/dashboard/AuditorDashboard";
+import AuditReadinessScannerWidget from "@/components/dashboard/AuditReadinessScannerWidget";
 import ClinicDashboard from "@/components/dashboard/ClinicDashboard";
 import MyTasksWidget from "@/components/dashboard/MyTasksWidget";
 import ProjectLeadDashboard from "@/components/dashboard/ProjectLeadDashboard";
@@ -143,16 +144,18 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
   }
 
   const renderDashboard = () => {
-    // Org-type override: clinic/PHC gets a specialized dashboard regardless of role
+    // Normalize role to handle both 'Project Lead' and 'ProjectLead' formats
+    const userRole = normalizeUserRole(currentUser.role) as UserRole;
+
+    // Org-type override: clinic/PHC gets a specialized dashboard for leadership roles,
+    // while preserving dedicated Auditor, TeamMember, and Viewer workflows
     if (
-      currentOrganization?.type === "clinic" ||
-      currentOrganization?.type === "other"
+      (currentOrganization?.type === "clinic" ||
+        currentOrganization?.type === "other") &&
+      (userRole === UserRole.Admin || userRole === UserRole.ProjectLead)
     ) {
       return <ClinicDashboard setNavigation={setNavigation} />;
     }
-
-    // Normalize role to handle both 'Project Lead' and 'ProjectLead' formats
-    const userRole = normalizeUserRole(currentUser.role) as UserRole;
 
     switch (userRole) {
       case UserRole.Admin:
@@ -183,6 +186,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         <DashboardJourney user={currentUser} organizationId={organizationId}
           projects={projects} documents={documents || []} auditPlans={auditPlans || []}
           setNavigation={setNavigation} />
+        <AuditReadinessScannerWidget setNavigation={setNavigation} />
         <div id="dashboard-overview" tabIndex={-1} className="scroll-mt-6 min-h-[600px]">
           {renderDashboard()}
         </div>

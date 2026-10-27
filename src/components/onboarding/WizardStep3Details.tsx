@@ -1,3 +1,4 @@
+import { ORGANIZATION_SCALE_MODES } from "@/data/facilityBlueprints";
 import { useTranslation } from "@/hooks/useTranslation";
 import React from "react";
 import { WizardFormData } from "./ProgramSelectorWizard";
@@ -15,14 +16,29 @@ const WizardStep3Details: React.FC<WizardStep3DetailsProps> = ({
   onNext,
   onBack,
 }) => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
 
   const organizationTypes = [
-    { id: "hospital", label: t("hospitalType") },
-    { id: "clinic", label: t("clinicType") },
-    { id: "lab", label: t("labType") },
-    { id: "pharmacy", label: t("pharmacyType") },
-    { id: "other", label: t("otherType") },
+    { id: "hospital", label: t("hospitalType") || "Hospital / Medical Center" },
+    {
+      id: "clinic",
+      label:
+        t("clinicType") ||
+        "Primary Healthcare (PHC) / Polyclinic / Day Surgery / Dental",
+    },
+    {
+      id: "laboratory",
+      label: t("labType") || "Medical & Clinical Laboratory",
+    },
+    {
+      id: "pharmacy",
+      label: t("pharmacyType") || "Pharmacy / Diagnostic Imaging Center",
+    },
+    {
+      id: "group",
+      label: "Multi-Facility Healthcare Network / Group",
+    },
+    { id: "other", label: t("otherType") || "Specialized Healthcare Facility" },
   ];
 
   const countries = [
@@ -125,6 +141,71 @@ const WizardStep3Details: React.FC<WizardStep3DetailsProps> = ({
             className="w-full px-4 py-2 border border-brand-background dark:border-dark-brand-background rounded-lg bg-brand-background dark:bg-dark-brand-background text-brand-text-primary dark:text-dark-brand-text-primary placeholder-brand-text-tertiary dark:placeholder-dark-brand-text-tertiary focus:outline-none focus:ring-2 focus:ring-brand-primary dark:focus:ring-dark-brand-primary"
           />
         </div>
+
+        {/* Organization Size & Governance Mode */}
+        <div>
+          <label className="block text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary mb-2">
+            {lang === "ar"
+              ? "حجم المنشأة ونمط الحوكمة"
+              : "Organization Size & Governance Mode"}
+          </label>
+          <div className="grid grid-cols-1 gap-3">
+            {ORGANIZATION_SCALE_MODES.map((scale) => {
+              const selected =
+                (formData.organizationSize || "medium") === scale.id;
+              return (
+                <button
+                  key={scale.id}
+                  type="button"
+                  onClick={() => onUpdateForm({ organizationSize: scale.id })}
+                  className={`p-3 rounded-lg border text-left transition-all ${
+                    selected
+                      ? "border-brand-primary bg-brand-primary/5 dark:border-dark-brand-primary dark:bg-dark-brand-primary/10"
+                      : "border-brand-border dark:border-dark-brand-border hover:border-brand-primary/40"
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-semibold text-sm text-brand-text-primary dark:text-dark-brand-text-primary">
+                      {lang === "ar" ? scale.labelAr : scale.labelEn}
+                    </span>
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-brand-primary/10 text-brand-primary font-medium">
+                      {lang === "ar"
+                        ? scale.governanceBadgeAr
+                        : scale.governanceBadgeEn}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                    {lang === "ar" ? scale.descriptionAr : scale.descriptionEn}
+                  </p>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Auto-Provision Starter Blueprint Toggle */}
+        <label className="flex items-start gap-3 p-4 rounded-lg border border-brand-primary/30 bg-brand-primary/5 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={formData.autoProvisionStarterPack ?? true}
+            onChange={(e) =>
+              onUpdateForm({ autoProvisionStarterPack: e.target.checked })
+            }
+            className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-primary focus:ring-brand-primary"
+          />
+          <div>
+            <span className="block text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {lang === "ar"
+                ? "تهيئة تلقائية للأقسام ومشروع الجاهزية الأساسي والسياسات الإلزامية"
+                : "Auto-provision starter departments, baseline readiness project & mandatory policies"}
+            </span>
+            <span className="block text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary mt-0.5">
+              {lang === "ar"
+                ? "يقوم بإنشاء هيكل الأقسام وقائمة الفحص الأساسية ونماذج السياسات المتوافقة مع نوع منشأتك فوراً."
+                : "Automatically sets up tailored departments, survey-critical checklist items, and controlled policy templates for your facility type."}
+            </span>
+          </div>
+        </label>
       </div>
 
       {/* Navigation Buttons */}
