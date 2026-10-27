@@ -282,6 +282,49 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
   > | null>(null);
   const [isDashboardLoading, setIsDashboardLoading] = useState(false);
   const [isBatchAuditOpen, setIsBatchAuditOpen] = useState(false);
+  const [governanceMode, setGovernanceMode] = useState<
+    "small" | "medium" | "enterprise"
+  >(currentUser?.profile?.organizationSize || "medium");
+  const [isExpressApproving, setIsExpressApproving] = useState(false);
+
+  const handleExpressApprovePending = async () => {
+    if (!canApprove || isExpressApproving) return;
+    const unapproved = controlledDocuments.filter(
+      (d) => d.status === "Draft" || d.status === "Pending Review" || d.status === "Under Review",
+    );
+    if (unapproved.length === 0) return;
+    setIsExpressApproving(true);
+    try {
+      const now = new Date().toISOString();
+      const nextYear = new Date();
+      nextYear.setFullYear(nextYear.getFullYear() + 1);
+      const defaultReviewDate = nextYear.toISOString().split("T")[0];
+
+      for (const doc of unapproved) {
+        await onUpdateDocument({
+          ...doc,
+          status: "Approved",
+          approvedBy: currentUser.name || currentUser.email,
+          approvalDate: now,
+          reviewDate: doc.reviewDate || defaultReviewDate,
+        });
+      }
+      toast.success(
+        lang === "ar"
+          ? `تم اعتماد ونشر ${unapproved.length} وثيقة بنجاح (الاعتماد السريع)`
+          : `Express-approved & published ${unapproved.length} controlled document(s)`,
+      );
+    } catch (err) {
+      console.error("Express approval failed:", err);
+      toast.error(
+        lang === "ar"
+          ? "تعذر إتمام الاعتماد السريع للوثائق"
+          : "Failed to express-approve documents",
+      );
+    } finally {
+      setIsExpressApproving(false);
+    }
+  };
 
   // Load compliance dashboard when tab or project changes
   useEffect(() => {
@@ -1005,6 +1048,61 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             <p className="text-sm text-brand-primary dark:text-blue-400 mt-1 font-medium">
               {summaryLine}
             </p>
+            {/* Scale-Adaptive Governance Mode Strip */}
+            <div className="mt-2.5 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-brand-text-secondary dark:text-dark-brand-text-secondary">
+                {lang === "ar" ? "نمط حوكمة الوثائق:" : "Governance Mode:"}
+              </span>
+              {(
+                [
+                  {
+                    id: "small",
+                    labelEn: "Express (<50 Staff · 1-Step Publish)",
+                    labelAr: "حوكمة سريعة (<50 موظف · اعتماد مباشر)",
+                  },
+                  {
+                    id: "medium",
+                    labelEn: "Departmental (50–250 Staff)",
+                    labelAr: "حوكمة الأقسام (50–250 موظف)",
+                  },
+                  {
+                    id: "enterprise",
+                    labelEn: "Enterprise Network (250+ Staff)",
+                    labelAr: "حوكمة المؤسسات الكبرى (250+ موظف)",
+                  },
+                ] as const
+              ).map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setGovernanceMode(m.id)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border transition-colors ${
+                    governanceMode === m.id
+                      ? "bg-brand-primary text-white border-brand-primary"
+                      : "bg-white dark:bg-gray-800 text-brand-text-secondary dark:text-dark-brand-text-secondary border-gray-200 dark:border-gray-700 hover:bg-gray-50"
+                  }`}
+                >
+                  {lang === "ar" ? m.labelAr : m.labelEn}
+                </button>
+              ))}
+              {canApprove && (stats.drafts > 0 || stats.pending > 0) && (
+                <button
+                  type="button"
+                  disabled={isExpressApproving}
+                  onClick={handleExpressApprovePending}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white px-3 py-1 text-[11px] font-semibold shadow-sm transition-colors"
+                >
+                  <CheckCircleIcon className="w-3.5 h-3.5" />
+                  {isExpressApproving
+                    ? lang === "ar"
+                      ? "جاري الاعتماد..."
+                      : "Approving..."
+                    : lang === "ar"
+                      ? `اعتماد سريع (${stats.drafts + stats.pending} وثيقة)`
+                      : `1-Click Express Approve (${stats.drafts + stats.pending})`}
+                </button>
+              )}
+            </div>
             {/* SLA Alert Banner */}
             {slaViolations.length > 0 && (
               <button

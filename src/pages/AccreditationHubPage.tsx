@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui";
 import { useConfirmStore } from "@/stores/useConfirmStore";
 import React, { useState } from "react";
+import CrosswalkSyncWidget from "../components/accreditation/CrosswalkSyncWidget";
 import ProgramCard from "../components/accreditation/ProgramCard";
 import ProgramImportExport from "../components/accreditation/ProgramImportExport";
 import ProgramImportWizardModal from "../components/accreditation/ProgramImportWizardModal";
@@ -217,6 +218,8 @@ const AccreditationHubPage: React.FC<AccreditationHubPageProps> = ({
       {!canModify && (
         <RestrictedFeatureIndicator featureName="Accreditation Programs Management" />
       )}
+
+      <CrosswalkSyncWidget />
 
       {accreditationPrograms.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
