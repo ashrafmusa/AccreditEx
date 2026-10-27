@@ -24,10 +24,11 @@ const PublicPageHeader: React.FC<{ landing?: boolean }> = ({
           className="flex items-center gap-2 text-xl font-bold text-brand-text-primary dark:text-dark-brand-text-primary"
         >
           <img
-            src="/logo.png"
-            alt=""
+            src="/logo.webp"
+            alt="AccreditEx Logo"
             width={36}
             height={36}
+            loading="eager"
             className="rounded-lg"
           />
           <span>

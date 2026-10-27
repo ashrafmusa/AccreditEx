@@ -58,7 +58,7 @@ export const useTenantStore = create<TenantState>((set, get) => ({
 
     loadOrganization: async (orgId: string) => {
         if (!orgId) return;
-        set({ loading: true, error: null });
+        set({ organizationId: orgId, isMultiTenant: true, loading: true, error: null });
         try {
             await reconcileOrganizationBilling(orgId);
             const orgRef = doc(db, 'organizations', orgId);

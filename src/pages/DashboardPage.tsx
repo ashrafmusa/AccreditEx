@@ -183,7 +183,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({
         <DashboardJourney user={currentUser} organizationId={organizationId}
           projects={projects} documents={documents || []} auditPlans={auditPlans || []}
           setNavigation={setNavigation} />
-        <div id="dashboard-overview" tabIndex={-1} className="scroll-mt-6">
+        <div id="dashboard-overview" tabIndex={-1} className="scroll-mt-6 min-h-[600px]">
           {renderDashboard()}
         </div>
         {showAIDailyBriefing && (

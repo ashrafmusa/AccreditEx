@@ -1,5 +1,4 @@
-/* Typography - Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cairo:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap');
+/* Typography - Google Fonts loaded non-blocking via index.html */
 
 @import "tailwindcss";
 
@@ -12,7 +11,7 @@
   --color-brand-background: #f8fafc;
   --color-brand-border: #e2e8f0;
   --color-brand-text-primary: #0f172a;
-  --color-brand-text-secondary: #64748b;
+  --color-brand-text-secondary: #475569;
   --color-brand-success: var(--user-success, #22c55e);
   --color-brand-warning: var(--user-warning, #f97316);
   --color-brand-danger: var(--user-danger, #ef4444);

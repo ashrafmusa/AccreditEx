@@ -389,7 +389,7 @@ const PitchDeckPage: React.FC = () => {
           <div className="flex flex-col items-center justify-center h-full text-center px-8 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 text-white relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(0,137,123,0.3),transparent_40%),radial-gradient(circle_at_70%_80%,rgba(0,137,123,0.2),transparent_50%)]" />
             <div className="relative z-10 space-y-6 max-w-3xl">
-              <img src="/logo.png" alt="AccreditEx" className="h-20 w-20 rounded-2xl shadow-2xl mx-auto" />
+              <img src="/logo.webp" alt="AccreditEx Logo" width={80} height={80} className="h-20 w-20 rounded-2xl shadow-2xl mx-auto" />
               <SectionBadge icon={<StarIcon className="w-4 h-4" />} label={copy.slides.title.badge} dark />
               <h1 className="text-5xl md:text-7xl font-black tracking-tight">{copy.slides.title.headline}</h1>
               <p className="text-lg md:text-xl text-white/80 leading-relaxed">{copy.slides.title.sub}</p>

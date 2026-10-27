@@ -380,7 +380,8 @@ export class AIAgentService {
         ai: "online" | "degraded" | "offline";
     }> {
         const controller = new AbortController();
-        const timeout = setTimeout(() => controller.abort(), 8000);
+        // Allow up to 45s for Render free-tier cold starts before aborting
+        const timeout = setTimeout(() => controller.abort(), 45000);
         try {
             const url = this.getApiUrl('/health');
             const response = await fetch(url, {

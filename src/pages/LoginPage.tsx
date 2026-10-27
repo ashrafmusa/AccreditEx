@@ -207,8 +207,11 @@ const LoginPage: React.FC<LoginPageProps> = () => {
             <div className="bg-brand-surface dark:bg-dark-brand-surface p-6 sm:p-8 rounded-3xl shadow-xl shadow-brand-primary/5 border border-brand-border dark:border-dark-brand-border">
               <div className="flex flex-col items-center text-center gap-3 mb-8 animate-[scaleIn_0.5s_ease-out]">
                 <img
-                  src={appSettings?.logoUrl || "/logo.png"}
-                  alt=""
+                  src={appSettings?.logoUrl || "/logo.webp"}
+                  alt="AccreditEx Logo"
+                  width={48}
+                  height={48}
+                  loading="eager"
                   className="h-12 w-12 object-contain"
                 />
                 <p className="text-xl font-bold">

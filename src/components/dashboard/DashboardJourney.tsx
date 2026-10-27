@@ -38,7 +38,7 @@ const DashboardJourney: React.FC<Props> = ({
       </div>
 
       {priorities.length ? (
-        <div className={`mt-5 grid gap-3 ${priorities.length === 3 ? "md:grid-cols-3" : priorities.length === 2 ? "md:grid-cols-2" : ""}`}>
+        <div className={`mt-5 grid gap-3 min-h-[148px] ${priorities.length === 3 ? "md:grid-cols-3" : priorities.length === 2 ? "md:grid-cols-2" : ""}`}>
           {priorities.map((action, index) => (
             <button key={action.id} type="button" onClick={() => setNavigation(action.navigation)}
               className={`group flex flex-col items-start rounded-xl border p-4 text-start transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary ${

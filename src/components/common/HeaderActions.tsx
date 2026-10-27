@@ -31,17 +31,23 @@ const HeaderActions: React.FC<HeaderActionsProps> = ({
     <>
       <button
         onClick={onOpenCommandPalette}
-        className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+        aria-label={t("searchAnything") || "Search Projects and Documents"}
+        className="flex items-center gap-2 text-sm text-brand-text-secondary dark:text-dark-brand-text-secondary p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
       >
-        <MagnifyingGlassIcon className="h-5 w-5" />
+        <MagnifyingGlassIcon className="h-5 w-5" aria-hidden="true" />
         <span className="hidden md:inline">{t("searchAnything")}</span>
-        <kbd className="hidden md:inline font-sans text-xs text-slate-400 dark:text-slate-500 border border-slate-300 dark:border-slate-700 rounded-md px-1.5 py-0.5">
+        <kbd className="hidden md:inline font-sans text-xs text-brand-text-secondary dark:text-dark-brand-text-secondary border border-slate-300 dark:border-slate-700 rounded-md px-1.5 py-0.5">
           Ctrl K
         </kbd>
       </button>
 
       <button
         onClick={toggleLang}
+        aria-label={
+          lang === "en"
+            ? t("switchToArabic") || "Switch to Arabic"
+            : t("switchToEnglish") || "Switch to English"
+        }
         className="text-sm font-semibold text-brand-primary-600 dark:text-brand-primary-400 hover:underline hidden sm:block"
       >
         {lang === "en" ? "العربية" : "English"}

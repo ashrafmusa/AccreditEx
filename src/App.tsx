@@ -94,16 +94,12 @@ const AppInitializer: React.FC = () => {
 
       try {
         // OPTIMIZATION: Only fetch critical app settings on startup
-        // Users and projects load on-demand via lazy loading
+        // Pre-fetch users and projects immediately in parallel to avoid delayed layout shifts on dashboard
         await withTimeout(fetchAllAppData(), 15000);
 
-        // Optionally pre-fetch users and projects in background after settings load
-        // This happens after the UI is interactive
-        setTimeout(() => {
-          Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {
-            // Silently handle errors - data will load on-demand
-          });
-        }, 1000);
+        Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {
+          // Silently handle errors - data will load on-demand
+        });
       } catch (error) {
         toast.error("Failed to load application data. Please refresh.");
       } finally {
@@ -265,8 +261,14 @@ const AppManager: React.FC = () => {
     return () => window.removeEventListener("accreditex:replay-tour", handler);
   }, []);
 
-  // Combine auth check with lazy loading - single loading screen
-  if (!authChecked) {
+  // Combine auth check with lazy loading - single loading screen for protected routes
+  const isPublicEntryPath =
+    location.pathname === "/" ||
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname === "/pitch";
+
+  if (!authChecked && !isPublicEntryPath) {
     return <LoadingScreen />; // Show loading screen while checking auth
   }
 
