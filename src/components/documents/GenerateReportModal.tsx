@@ -97,7 +97,7 @@ const GenerateReportModal: FC<GenerateReportModalProps> = ({
                 <option value="executiveSummary">Executive Summary</option>
                 <option value="capaAnalysis">CAPA Analysis Report</option>
                 <option value="assessorPack">
-                  Assessor Evidence Pack (JSON + CSV)
+                  Surveyor Evidence Dossier (Print-Ready PDF + CSV + JSON)
                 </option>
               </select>
               <p className="mt-2 text-xs text-gray-600 dark:text-gray-400">

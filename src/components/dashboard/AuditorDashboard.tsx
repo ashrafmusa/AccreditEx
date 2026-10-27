@@ -16,6 +16,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { LocalizedString, NavigationState } from "@/types";
 import React, { useMemo } from "react";
+import SurveyDayCommandCenter from "@/components/audits/SurveyDayCommandCenter";
 import DashboardHeader from "./DashboardHeader";
 
 interface DashboardPageProps {
@@ -364,6 +365,11 @@ const AuditorDashboard: React.FC<DashboardPageProps> = ({ setNavigation }) => {
                   />
                 )}
               </div>
+            </div>
+
+            {/* Survey-Day Command Center & Surveyor Evidence Explorer */}
+            <div className="mt-8">
+              <SurveyDayCommandCenter setNavigation={setNavigation} />
             </div>
           </div>
         )}

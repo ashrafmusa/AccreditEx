@@ -227,6 +227,7 @@ Be specific and actionable.`;
           buildAssessorReportPack,
           exportAssessorEvidenceMatrixCsv,
           exportAssessorReportPackJson,
+          exportAssessorReportPackPdf,
           recordAssessorPackExportAudit,
         } = await import("@/services/assessorReportPackService");
 
@@ -256,6 +257,14 @@ Be specific and actionable.`;
           toast.error(t("projectAssessorAuditFailed"));
           setIsGeneratingReport(false);
           return;
+        }
+        try {
+          await exportAssessorReportPackPdf(reportPack, {
+            reviewerName: options?.reviewerName,
+            signOffNote: options?.signOffNote,
+          });
+        } catch (pdfErr) {
+          console.warn("PDF dossier export warning:", pdfErr);
         }
         exportAssessorReportPackJson(reportPack);
         exportAssessorEvidenceMatrixCsv(reportPack);

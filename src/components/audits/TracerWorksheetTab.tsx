@@ -1,6 +1,8 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { useUserStore } from "@/stores/useUserStore";
 import { useAppStore } from "@/stores/useAppStore";
+import { useProjectStore } from "@/stores/useProjectStore";
+import { useToast } from "@/hooks/useToast";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
   TracerType,
@@ -16,6 +18,7 @@ import {
   PlusIcon,
   CheckCircleIcon,
   ClipboardDocumentSearchIcon,
+  SparklesIcon,
 } from "@/components/icons";
 import {
   getTenantTracerTemplates,
@@ -492,10 +495,14 @@ const TRACER_TYPE_LABEL_KEYS: Record<TracerType, string> = {
 };
 
 const TracerWorksheetTab: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, lang } = useTranslation();
+  const isAr = lang === "ar";
   const { currentUser, users } = useUserStore();
-  const { departments } = useAppStore();
+  const { departments, addRisk } = useAppStore();
+  const { projects, createCAPA } = useProjectStore();
+  const toast = useToast();
   const isAdmin = currentUser?.role === UserRole.Admin;
+  const [escalatingCpId, setEscalatingCpId] = useState<string | null>(null);
 
   const [view, setView] = useState<ViewMode>("templates");
   const [sessions, setSessions] = useState<TracerSession[]>([]);
@@ -988,20 +995,100 @@ const TracerWorksheetTab: React.FC = () => {
                       </div>
                       {(cp.result === "partial" ||
                         cp.result === "non_compliant") && (
-                        <textarea
-                          value={cp.findings ?? ""}
-                          onChange={(e) =>
-                            updateCheckpoint(
-                              activeStepIdx,
-                              cpIdx,
-                              "findings",
-                              e.target.value,
-                            )
-                          }
-                          placeholder={t("tracerFindingsPlaceholder")}
-                          rows={2}
-                          className={`${inputCls} ml-4`}
-                        />
+                        <div className="ml-4 space-y-2">
+                          <textarea
+                            value={cp.findings ?? ""}
+                            onChange={(e) =>
+                              updateCheckpoint(
+                                activeStepIdx,
+                                cpIdx,
+                                "findings",
+                                e.target.value,
+                              )
+                            }
+                            placeholder={t("tracerFindingsPlaceholder")}
+                            rows={2}
+                            className={inputCls}
+                          />
+                          <div className="flex justify-end">
+                            <button
+                              type="button"
+                              disabled={escalatingCpId === cp.id}
+                              onClick={async () => {
+                                if (!currentUser || escalatingCpId) return;
+                                setEscalatingCpId(cp.id);
+                                try {
+                                  const targetProject = projects.find(
+                                    (p) => !p.archived,
+                                  );
+                                  const dueDate = new Date(
+                                    Date.now() + 14 * 24 * 60 * 60 * 1000,
+                                  ).toISOString();
+                                  const detailText =
+                                    cp.findings?.trim() ||
+                                    `Non-compliance observed during ${activeSession.title} (${step.department} — ${step.area})`;
+
+                                  if (targetProject) {
+                                    await createCAPA(targetProject.id, {
+                                      checklistItemId:
+                                        cp.standardRef || cp.id,
+                                      description: `Tracer Finding [${cp.standardRef || step.department}]: ${cp.question}`,
+                                      rootCause: detailText,
+                                      correctiveAction: `Implement immediate corrective action in ${step.department} (${step.area}) for ${cp.standardRef || "standard"}.`,
+                                      preventiveAction:
+                                        "Re-audit checkpoint during next monthly clinical tracer round.",
+                                      status: "Open" as any,
+                                      assignedTo: currentUser.id,
+                                      dueDate,
+                                      pdcaStage: "Plan",
+                                      pdcaHistory: [],
+                                    } as any);
+                                  }
+
+                                  await addRisk({
+                                    title: `Tracer Finding (${cp.standardRef || step.department}): ${cp.question.slice(0, 65)}`,
+                                    description: `${detailText} [Tracer: ${activeSession.title}]`,
+                                    likelihood:
+                                      cp.result === "non_compliant" ? 4 : 3,
+                                    impact: 4,
+                                    ownerId: currentUser.id,
+                                    status: "Open",
+                                    mitigationPlan: `Complete CAPA verification in ${step.department} (${step.area}).`,
+                                    createdAt: new Date().toISOString(),
+                                  });
+
+                                  toast.success(
+                                    isAr
+                                      ? "تم تصعيد ملاحظة المتتبع إلى تقرير CAPA وسجل المخاطر بنجاح"
+                                      : "Escalated tracer finding to CAPA & Risk Register",
+                                  );
+                                } catch (err) {
+                                  console.error(
+                                    "Failed to escalate tracer finding:",
+                                    err,
+                                  );
+                                  toast.error(
+                                    isAr
+                                      ? "تعذر تصعيد الملاحظة"
+                                      : "Failed to escalate tracer finding",
+                                  );
+                                } finally {
+                                  setEscalatingCpId(null);
+                                }
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white px-3 py-1 text-xs font-semibold transition-colors"
+                            >
+                              <SparklesIcon className="w-3.5 h-3.5" />
+                              {escalatingCpId === cp.id
+                                ? isAr
+                                  ? "جاري التصعيد..."
+                                  : "Escalating..."
+                                : isAr
+                                  ? "تصعيد إلى CAPA وسجل المخاطر"
+                                  : "Escalate to CAPA & Risk"}
+                            </button>
+                          </div>
+                        </div>
                       )}
                     </div>
                   ))}

@@ -207,6 +207,263 @@ export const exportAssessorEvidenceMatrixCsv = (pack: AssessorReportPack): void 
     );
 };
 
+export const exportAssessorReportPackPdf = async (
+    pack: AssessorReportPack,
+    options?: {
+        organizationName?: string;
+        reviewerName?: string;
+        signOffNote?: string;
+    },
+): Promise<void> => {
+    const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+        import("jspdf"),
+        import("jspdf-autotable"),
+    ]);
+
+    const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const margin = 16;
+
+    // 1. Top Banner Header
+    doc.setFillColor(15, 23, 42); // Slate-900 header
+    doc.rect(0, 0, pageWidth, 28, "F");
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("ACCREDITEX — OFFICIAL SURVEYOR EVIDENCE DOSSIER", margin, 13);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9.5);
+    const facilityTitle = options?.organizationName || "Healthcare Facility";
+    doc.text(
+        `${facilityTitle}  |  Project: ${pack.metadata.projectName}`,
+        margin,
+        21,
+    );
+    doc.text(
+        `Generated: ${new Date(pack.metadata.generatedAt).toLocaleString()}`,
+        pageWidth - margin,
+        21,
+        { align: "right" },
+    );
+
+    let y = 36;
+
+    // 2. Executive Compliance Summary Table
+    doc.setTextColor(15, 23, 42);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("1. Executive Accreditation & Evidence Summary", margin, y);
+    y += 4;
+
+    const totalApplicable = Math.max(1, pack.summary.totalChecklistItems);
+    const complianceRate = Math.round(
+        ((pack.summary.compliantItems + pack.summary.partiallyCompliantItems * 0.5) /
+            totalApplicable) *
+            100,
+    );
+    const verifiedRows = pack.evidenceMatrix.filter(
+        (r) => Boolean(r.evidenceDocumentId),
+    ).length;
+
+    autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [
+            [
+                "Total Standards",
+                "Compliant",
+                "Partial",
+                "Non-Compliant",
+                "Readiness Score",
+                "Linked Evidence Docs",
+                "Open CAPAs",
+                "High Risks",
+            ],
+        ],
+        body: [
+            [
+                String(pack.summary.totalChecklistItems),
+                String(pack.summary.compliantItems),
+                String(pack.summary.partiallyCompliantItems),
+                String(pack.summary.nonCompliantItems),
+                `${complianceRate}%`,
+                `${verifiedRows} linked (${pack.summary.controlledEvidenceDocs} controlled)`,
+                String(pack.summary.openCapas),
+                String(pack.summary.criticalOpenRisks),
+            ],
+        ],
+        theme: "grid",
+        headStyles: {
+            fillColor: [30, 64, 175],
+            textColor: 255,
+            fontSize: 8.5,
+            fontStyle: "bold",
+        },
+        bodyStyles: {
+            fontSize: 9,
+            textColor: [30, 41, 59],
+            halign: "center",
+        },
+    });
+
+    y = ((doc as any).lastAutoTable?.finalY || y + 25) + 10;
+
+    // 3. Standards-to-Evidence Cross-Reference Matrix
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("2. Standards-to-Evidence Cross-Reference Matrix", margin, y);
+    y += 4;
+
+    autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [
+            [
+                "Standard ID",
+                "Checklist Requirement",
+                "Compliance Status",
+                "Controlled Evidence Document",
+                "Doc Status",
+            ],
+        ],
+        body:
+            pack.evidenceMatrix.length > 0
+                ? pack.evidenceMatrix.map((row) => [
+                      row.standardId || "-",
+                      (row.checklistItem || "").slice(0, 110),
+                      row.status || "-",
+                      row.evidenceDocumentName || "UNLINKED (Blind Spot)",
+                      row.documentStatus || "-",
+                  ])
+                : [["-", "No checklist items recorded", "-", "-", "-"]],
+        theme: "striped",
+        headStyles: {
+            fillColor: [15, 23, 42],
+            textColor: 255,
+            fontSize: 8.5,
+        },
+        bodyStyles: {
+            fontSize: 8,
+            textColor: [30, 41, 59],
+        },
+        columnStyles: {
+            0: { cellWidth: 26, fontStyle: "bold" },
+            1: { cellWidth: 68 },
+            2: { cellWidth: 28 },
+            3: { cellWidth: 36 },
+            4: { cellWidth: 20 },
+        },
+    });
+
+    y = ((doc as any).lastAutoTable?.finalY || y + 40) + 10;
+
+    // 4. Open Findings, CAPAs & High-Risk Register
+    if (y > pageHeight - 55) {
+        doc.addPage();
+        y = 20;
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    doc.text("3. Open Non-Conformities, CAPA & High-Risk Register", margin, y);
+    y += 4;
+
+    autoTable(doc, {
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [["Type", "Reference", "Finding / Action Details", "Due Date"]],
+        body:
+            pack.openFindings.length > 0
+                ? pack.openFindings.map((finding) => [
+                      finding.type,
+                      finding.reference || "-",
+                      (finding.details || "").slice(0, 120),
+                      finding.dueDate
+                          ? new Date(finding.dueDate).toLocaleDateString()
+                          : "-",
+                  ])
+                : [
+                      [
+                          "None",
+                          "-",
+                          "Zero open non-conformities, CAPAs, or critical risks.",
+                          "-",
+                      ],
+                  ],
+        theme: "striped",
+        headStyles: {
+            fillColor: [185, 28, 28],
+            textColor: 255,
+            fontSize: 8.5,
+        },
+        bodyStyles: {
+            fontSize: 8,
+            textColor: [30, 41, 59],
+        },
+        columnStyles: {
+            0: { cellWidth: 22, fontStyle: "bold" },
+            1: { cellWidth: 28 },
+            2: { cellWidth: 100 },
+            3: { cellWidth: 28 },
+        },
+    });
+
+    y = ((doc as any).lastAutoTable?.finalY || y + 30) + 12;
+
+    // 5. Reviewer Sign-Off & Attestation Block
+    if (y > pageHeight - 45) {
+        doc.addPage();
+        y = 20;
+    }
+    doc.setDrawColor(203, 213, 225);
+    doc.setFillColor(248, 250, 252);
+    doc.roundedRect(margin, y, pageWidth - margin * 2, 32, 2, 2, "FD");
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(15, 23, 42);
+    doc.text("4. Quality & Accreditation Sign-Off Attestation", margin + 4, y + 7);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
+    doc.text(
+        `Prepared By: ${pack.metadata.generatedBy}    |    Reviewer Sign-Off: ${
+            options?.reviewerName?.trim() || "Pending Quality Director Sign-Off"
+        }`,
+        margin + 4,
+        y + 15,
+    );
+    if (options?.signOffNote?.trim()) {
+        doc.text(
+            `Reviewer Note: ${options.signOffNote.trim().slice(0, 110)}`,
+            margin + 4,
+            y + 22,
+        );
+    }
+    doc.text(
+        "Digital Signature / Stamp: ____________________________      Date: __________________",
+        margin + 4,
+        y + 28,
+    );
+
+    const safeProject = (pack.metadata.projectName || pack.metadata.projectId)
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+    doc.save(
+        `accreditex-survey-dossier-${safeProject || "project"}-${new Date()
+            .toISOString()
+            .slice(0, 10)}.pdf`,
+    );
+};
+
 export const recordAssessorPackExportAudit = async (
     pack: AssessorReportPack,
     userId: string,

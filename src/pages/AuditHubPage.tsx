@@ -30,14 +30,17 @@ const QualityRoundingPage = lazy(() => import("@/pages/QualityRoundingPage"));
 const TracerWorksheetTab = lazy(
   () => import("@/components/audits/TracerWorksheetTab"),
 );
+const SurveyDayCommandCenter = lazy(
+  () => import("@/components/audits/SurveyDayCommandCenter"),
+);
 
 interface AuditHubPageProps {
   setNavigation: (state: NavigationState) => void;
 }
 
-type AuditHubTab = "plans" | "log" | "rounding" | "tracers";
+type AuditHubTab = "plans" | "log" | "rounding" | "tracers" | "surveyDay";
 
-const AuditHubPage: React.FC<AuditHubPageProps> = () => {
+const AuditHubPage: React.FC<AuditHubPageProps> = ({ setNavigation }) => {
   const { t, lang } = useTranslation();
   const {
     auditPlans,
@@ -264,6 +267,16 @@ Format your response in clear Markdown with headers and bullet points.`;
             className="rounded-t-lg border-b-2 whitespace-nowrap"
           >
             {t("tracersTab")}
+          </Button>
+          <Button
+            aria-pressed={activeTab === "surveyDay"}
+            onClick={() => setActiveTab("surveyDay")}
+            variant={activeTab === "surveyDay" ? "primary" : "ghost"}
+            className="rounded-t-lg border-b-2 whitespace-nowrap"
+          >
+            {lang === "ar"
+              ? "مركز قيادة يوم المسح (Survey-Day)"
+              : "Survey-Day Command Center"}
           </Button>
         </nav>
       </div>
@@ -493,6 +506,12 @@ Format your response in clear Markdown with headers and bullet points.`;
       {activeTab === "tracers" && (
         <Suspense fallback={<LoadingScreen />}>
           <TracerWorksheetTab />
+        </Suspense>
+      )}
+
+      {activeTab === "surveyDay" && (
+        <Suspense fallback={<LoadingScreen />}>
+          <SurveyDayCommandCenter setNavigation={setNavigation} />
         </Suspense>
       )}
 
