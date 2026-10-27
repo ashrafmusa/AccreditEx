@@ -122,9 +122,14 @@ const AppInitializer: React.FC = () => {
   useEffect(() => {
     const auth = getAuthInstance();
     const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser && !appSettings) {
+      if (firebaseUser) {
         try {
-          await fetchAllAppData();
+          if (!useAppStore.getState().appSettings) {
+            await fetchAllAppData();
+          }
+          if (useProjectStore.getState().projects.length === 0) {
+            Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {});
+          }
         } catch {
           // Silent — already handled above
         } finally {
@@ -254,6 +259,16 @@ const AppManager: React.FC = () => {
       setShowProgramSelector(false);
     }
   }, [currentUser]);
+
+  // Redirect authenticated users away from public auth entry routes (/login, /register) to /dashboard
+  useEffect(() => {
+    if (
+      currentUser &&
+      (location.pathname === "/login" || location.pathname === "/register")
+    ) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [currentUser, location.pathname, navigate]);
 
   const handleOnboardingComplete = () => {
     localStorage.setItem("accreditex-onboarding-complete", "true");

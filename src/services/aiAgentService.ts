@@ -386,8 +386,8 @@ export class AIAgentService {
                 method: 'GET',
                 signal: controller.signal,
             });
-        } catch (e) {
-            console.error('Backend unreachable', e);
+        } catch {
+            // Silently ignore transient network/navigation aborts during background keep-alive
         } finally {
             clearTimeout(timeout);
         }

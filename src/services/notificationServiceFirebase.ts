@@ -28,23 +28,29 @@ export async function getNotificationsForUser(
   userId: string
 ): Promise<Notification[]> {
   try {
-    const q = getTenantQuery('notifications',
+    const q = getTenantQuery(
+      'notifications',
       where('userId', '==', userId),
-      orderBy('timestamp', 'desc'),
-      firestoreLimit(50) // Limit to 50 most recent
+      firestoreLimit(50) // Limit to 50 most recent; sorted client-side to avoid composite index dependency
     );
 
     const querySnapshot = await getDocs(q);
-    const notifications = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-      timestamp: doc.data().timestamp?.toDate?.() || new Date(),
-    })) as Notification[];
+    const notifications = querySnapshot.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate?.() || new Date(doc.data().timestamp || 0),
+      }))
+      .sort((a, b) => {
+        const timeA = a.timestamp instanceof Date ? a.timestamp.getTime() : 0;
+        const timeB = b.timestamp instanceof Date ? b.timestamp.getTime() : 0;
+        return timeB - timeA;
+      }) as Notification[];
 
     return notifications;
   } catch (error) {
-    console.error('Failed to load notifications:', error);
-    throw error;
+    console.warn('Failed to load notifications:', error);
+    return [];
   }
 }
 

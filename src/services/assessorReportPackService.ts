@@ -265,7 +265,6 @@ export const getAssessorPackExportAudit = async (): Promise<AssessorPackExportAu
         getTenantQuery(
             "activity_logs",
             where("type", "==", "assessor_pack_export"),
-            orderBy("timestamp", "desc"),
             limit(500),
         ),
     );
@@ -283,7 +282,7 @@ export const getAssessorPackExportAudit = async (): Promise<AssessorPackExportAu
                 reviewerSignOff: data.reviewerSignOff,
             } as AssessorPackExportAuditEntry;
         })
-        .sort((a, b) => b.exportedAt.localeCompare(a.exportedAt));
+        .sort((a, b) => (b.exportedAt || "").localeCompare(a.exportedAt || ""));
 };
 
 export const calculateAssessorPackExportMetrics = (
