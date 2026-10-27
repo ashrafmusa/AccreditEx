@@ -10,7 +10,7 @@ import { useEffect } from 'react';
 
 async function hydrateUserOrganization(userData: User, authUid: string): Promise<User> {
   if (userData.organizationId) {
-    useTenantStore.getState().loadOrganizationForUser(userData.organizationId);
+    await useTenantStore.getState().loadOrganizationForUser(userData.organizationId);
     return userData;
   }
 
@@ -18,7 +18,7 @@ async function hydrateUserOrganization(userData: User, authUid: string): Promise
     const organizationId = await findSoleOrganizationOwnedByUser(authUid);
     if (organizationId) {
       const resolvedUser = { ...userData, organizationId };
-      useTenantStore.getState().loadOrganizationForUser(organizationId);
+      await useTenantStore.getState().loadOrganizationForUser(organizationId);
       console.info(`[Auth] Resolved missing organization from sole owner match for ${userData.email}`);
       return resolvedUser;
     }
@@ -26,7 +26,7 @@ async function hydrateUserOrganization(userData: User, authUid: string): Promise
     console.warn(`[Auth] Could not safely resolve an organization for ${userData.email}.`, error);
   }
 
-  useTenantStore.getState().loadOrganizationForUser();
+  await useTenantStore.getState().loadOrganizationForUser();
   return userData;
 }
 
@@ -36,14 +36,33 @@ export function useFirebaseAuth() {
 
   useEffect(() => {
     const auth = getAuthInstance();
+    const getDocWithRetry = async (docRef: ReturnType<typeof doc>, retries = 3) => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          return await getDoc(docRef);
+        } catch (err: unknown) {
+          const code = (err as { code?: string })?.code;
+          const msg = (err as { message?: string })?.message || '';
+          const isOfflineErr = code === 'unavailable' || msg.includes('client is offline');
+          if (!isOfflineErr || attempt >= retries) throw err;
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        }
+      }
+      return await getDoc(docRef);
+    };
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser && firebaseUser.email) {
+        // Skip duplicate hydration if useUserStore.login() already hydrated this exact user
+        if (useUserStore.getState().currentUser?.id === firebaseUser.uid) {
+          return;
+        }
         try {
           // ============================================================
           // STEP 1: Try direct lookup by Auth UID (fast path for new/migrated users)
           // ============================================================
           const uidDocRef = doc(db, 'users', firebaseUser.uid);
-          const uidDocSnap = await getDoc(uidDocRef);
+          const uidDocSnap = await getDocWithRetry(uidDocRef);
 
           if (uidDocSnap.exists()) {
             // User document is correctly keyed by Auth UID

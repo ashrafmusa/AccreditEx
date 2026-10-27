@@ -63,18 +63,33 @@ export const useUserStore = create<UserState>((set, get) => ({
 
     // Hydrate the Zustand store immediately after successful auth.
     // Try UID-keyed doc first (fast path), then fall back to email query.
+    const getDocWithRetry = async (docRef: ReturnType<typeof doc>, retries = 3) => {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          return await getDoc(docRef);
+        } catch (err: any) {
+          const isOfflineErr =
+            err?.code === 'unavailable' ||
+            err?.message?.includes('client is offline');
+          if (!isOfflineErr || attempt >= retries) throw err;
+          await new Promise((r) => setTimeout(r, 500 * (attempt + 1)));
+        }
+      }
+      return await getDoc(docRef);
+    };
+
     try {
       // Fast path: document keyed by Auth UID
       const uidDocRef = doc(db, 'users', firebaseUser.uid);
-      const directSnap = await getDoc(uidDocRef);
+      const directSnap = await getDocWithRetry(uidDocRef);
 
       if (directSnap.exists()) {
         const user = { ...directSnap.data(), id: directSnap.id } as User;
+        await useTenantStore.getState().loadOrganizationForUser(user.organizationId);
         set({
           currentUser: user,
           permissionCache: permissionService.buildPermissionCache(user.role),
         });
-        useTenantStore.getState().loadOrganizationForUser(user.organizationId);
         deviceSessionService.createOrUpdateSession(user.id).catch(err =>
           logger.warn('Failed to track session', err)
         );
@@ -90,11 +105,11 @@ export const useUserStore = create<UserState>((set, get) => ({
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const user = { ...userDoc.data(), id: userDoc.id } as User;
+          await useTenantStore.getState().loadOrganizationForUser(user.organizationId);
           set({
             currentUser: user,
             permissionCache: permissionService.buildPermissionCache(user.role),
           });
-          useTenantStore.getState().loadOrganizationForUser(user.organizationId);
           deviceSessionService.createOrUpdateSession(user.id).catch(err =>
             logger.warn('Failed to track session', err)
           );

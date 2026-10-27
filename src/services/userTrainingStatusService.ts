@@ -42,11 +42,15 @@ export const getUserTrainingStatuses = async (): Promise<UserTrainingStatusRecor
         }
         return [];
     } catch {
-        const snapshot = await getDocs(
-            getTenantQuery('userTrainingStatuses', where('userId', '==', user.uid), limit(1)),
-        );
-        return snapshot.docs.map((statusDoc) =>
-            mapTrainingStatusDoc(statusDoc.id, statusDoc.data()),
-        );
+        try {
+            const snapshot = await getDocs(
+                getTenantQuery('userTrainingStatuses', where('userId', '==', user.uid), limit(1)),
+            );
+            return snapshot.docs.map((statusDoc) =>
+                mapTrainingStatusDoc(statusDoc.id, statusDoc.data()),
+            );
+        } catch {
+            return [];
+        }
     }
 };

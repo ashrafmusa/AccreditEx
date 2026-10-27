@@ -82,6 +82,7 @@ const AppInitializer: React.FC = () => {
 
   const fetchAllAppData = useAppStore((state) => state.fetchAllData);
   const appSettings = useAppStore((state) => state.appSettings);
+  const currentUser = useUserStore((state) => state.currentUser);
   // OPTIMIZATION: Load users and projects on-demand instead of all at startup
   const fetchAllUsers = useUserStore((state) => state.fetchAllUsers);
   const fetchAllProjects = useProjectStore((state) => state.fetchAllProjects);
@@ -116,30 +117,34 @@ const AppInitializer: React.FC = () => {
     initializeApp();
   }, [fetchAllAppData, fetchAllUsers, fetchAllProjects, toast]);
 
-  // FIX: If fetchAllData ran before Firebase Auth restored the session,
-  // appSettings will be null even though the user is logged in.
-  // Re-fetch once auth resolves and appSettings is still missing.
+  // FIX: Re-fetch app data, users, and projects AFTER currentUser and tenant organizationId are hydrated
+  // (avoids racing 12 Firestore queries against user profile hydration during sign-in).
   useEffect(() => {
-    const auth = getAuthInstance();
-    const unsubscribe = auth.onAuthStateChanged(async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          if (!useAppStore.getState().appSettings) {
-            await fetchAllAppData();
-          }
-          if (useProjectStore.getState().projects.length === 0) {
-            Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {});
-          }
-        } catch {
-          // Silent — already handled above
-        } finally {
+    if (!currentUser?.id) return;
+
+    let cancelled = false;
+    const hydratePostLoginData = async () => {
+      try {
+        if (!useAppStore.getState().appSettings) {
+          await fetchAllAppData();
+        }
+        if (!cancelled && useProjectStore.getState().projects.length === 0) {
+          await Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {});
+        }
+      } catch {
+        // Silent — already handled above
+      } finally {
+        if (!cancelled) {
           setIsLoading(false);
         }
       }
-    });
-    return () => unsubscribe();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    };
+
+    void hydratePostLoginData();
+    return () => {
+      cancelled = true;
+    };
+  }, [currentUser?.id, fetchAllAppData, fetchAllUsers, fetchAllProjects]);
 
   // Set the primary color theme variable when app settings load/change.
   useEffect(() => {
