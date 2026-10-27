@@ -13,6 +13,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 // FIX: Corrected import path for useUserStore
 import { getAuthInstance } from "@/firebase/firebaseConfig";
 import { useFirebaseAuth } from "@/firebase/firebaseHooks";
+import { aiAgentService } from "@/services/aiAgentService";
 import { SecurityService } from "@/services/securityService";
 import { useAppStore } from "@/stores/useAppStore";
 import { useUserStore } from "@/stores/useUserStore";
@@ -84,6 +85,12 @@ const AppInitializer: React.FC = () => {
   // OPTIMIZATION: Load users and projects on-demand instead of all at startup
   const fetchAllUsers = useUserStore((state) => state.fetchAllUsers);
   const fetchAllProjects = useProjectStore((state) => state.fetchAllProjects);
+
+  useEffect(() => {
+    // Pre-warm the Render AI backend on app load and keep it warm while active
+    const stopKeepAlive = aiAgentService.startKeepAlive();
+    return () => stopKeepAlive();
+  }, []);
 
   useEffect(() => {
     const initializeApp = async () => {

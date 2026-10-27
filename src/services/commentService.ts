@@ -244,7 +244,8 @@ export async function getDocumentComments(
  */
 export function subscribeToDocumentComments(
     documentId: string,
-    callback: (comments: Comment[]) => void
+    callback: (comments: Comment[]) => void,
+    onError?: (error: Error) => void
 ): () => void {
     const commentsQuery = getTenantQuery(
         COMMENTS_COLLECTION,
@@ -252,22 +253,32 @@ export function subscribeToDocumentComments(
         orderBy('createdAt', 'asc')
     );
 
-    return onSnapshot(commentsQuery, (snapshot) => {
-        const comments = snapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            createdAt: doc.data().createdAt?.toDate() || new Date(),
-            updatedAt: doc.data().updatedAt?.toDate(),
-            resolvedBy: doc.data().resolvedBy
-                ? {
-                    ...doc.data().resolvedBy,
-                    resolvedAt: doc.data().resolvedBy.resolvedAt?.toDate() || new Date(),
-                }
-                : undefined,
-        })) as Comment[];
+    return onSnapshot(
+        commentsQuery,
+        (snapshot) => {
+            const comments = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+                createdAt: doc.data().createdAt?.toDate() || new Date(),
+                updatedAt: doc.data().updatedAt?.toDate(),
+                resolvedBy: doc.data().resolvedBy
+                    ? {
+                        ...doc.data().resolvedBy,
+                        resolvedAt: doc.data().resolvedBy.resolvedAt?.toDate() || new Date(),
+                    }
+                    : undefined,
+            })) as Comment[];
 
-        callback(comments);
-    });
+            callback(comments);
+        },
+        (error) => {
+            if (onError) {
+                onError(error);
+            } else {
+                console.warn('Document comments snapshot listener error:', error);
+            }
+        }
+    );
 }
 
 /**

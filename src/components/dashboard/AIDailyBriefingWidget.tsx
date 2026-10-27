@@ -299,7 +299,16 @@ const AIDailyBriefingWidget: React.FC<AIDailyBriefingWidgetProps> = ({
     [t],
   );
 
+  const isMountedRef = React.useRef(true);
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const generateBriefing = useCallback(async () => {
+    if (!isMountedRef.current) return;
     setIsLoading(true);
     setError(null);
 
@@ -333,6 +342,7 @@ User summary:
 - Pending audits: ${snapshot.pendingAudits}`;
 
       const response = await aiAgentService.chat(prompt, true);
+      if (!isMountedRef.current) return;
       const parsed = parseBriefingPayload(response.response);
 
       if (!parsed) {
@@ -344,11 +354,14 @@ User summary:
 
       setUpdatedAt(new Date().toISOString());
     } catch {
+      if (!isMountedRef.current) return;
       setBriefing(fallbackBriefing);
       setError(t("aiDailyBriefingError"));
       setUpdatedAt(new Date().toISOString());
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [fallbackBriefing, lang, snapshot, t]);
 

@@ -15,22 +15,37 @@ export const useFirestoreQuery = <T>(
     const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const parsedData = querySnapshot.docs.map((doc) => {
-                const validationResult = schema.safeParse(doc.data());
-                if (validationResult.success) {
-                    return validationResult.data;
-                } else {
-                    console.error('Invalid data from Firestore:', validationResult.error.flatten());
-                    return null;
+        let isMounted = true;
+
+        const unsubscribe = onSnapshot(
+            q,
+            (querySnapshot) => {
+                if (!isMounted) return;
+                const parsedData = querySnapshot.docs.map((doc) => {
+                    const validationResult = schema.safeParse(doc.data());
+                    if (validationResult.success) {
+                        return validationResult.data;
+                    } else {
+                        console.error('Invalid data from Firestore:', validationResult.error.flatten());
+                        return null;
+                    }
+                });
+
+                setData(parsedData.filter((item): item is T => item !== null));
+                setLoading(false);
+            },
+            (error) => {
+                console.warn('Firestore query listener error:', error);
+                if (isMounted) {
+                    setLoading(false);
                 }
-            });
+            },
+        );
 
-            setData(parsedData.filter((item): item is T => item !== null));
-            setLoading(false);
-        });
-
-        return () => unsubscribe();
+        return () => {
+            isMounted = false;
+            unsubscribe();
+        };
     }, [q, schema]);
 
     return [data, loading];

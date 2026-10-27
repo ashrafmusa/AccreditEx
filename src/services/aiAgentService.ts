@@ -375,6 +375,40 @@ export class AIAgentService {
         return health.ai === "online";
     }
 
+    /**
+     * Lightweight keep-alive ping to pre-warm Render backend and mitigate cold starts on /chat
+     */
+    async pokeServer(): Promise<void> {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 45000);
+        try {
+            await fetch(this.getApiUrl('/health'), {
+                method: 'GET',
+                signal: controller.signal,
+            });
+        } catch (e) {
+            console.error('Backend unreachable', e);
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+
+    /**
+     * Start periodic keep-alive pings while the application tab is visible.
+     * Returns an unsubscribe/cleanup function.
+     */
+    startKeepAlive(intervalMs: number = 10 * 60 * 1000): () => void {
+        void this.pokeServer();
+
+        const intervalId = setInterval(() => {
+            if (typeof document === 'undefined' || document.visibilityState === 'visible') {
+                void this.pokeServer();
+            }
+        }, intervalMs);
+
+        return () => clearInterval(intervalId);
+    }
+
     async healthCheckDetails(): Promise<{
         api: "online" | "degraded" | "offline";
         ai: "online" | "degraded" | "offline";

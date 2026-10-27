@@ -231,21 +231,32 @@ export const deleteProject = async (projectId: string): Promise<void> => {
 
 export const subscribeToProjects = (
   callback: (projects: Project[]) => void,
+  onError?: (error: Error) => void,
 ): (() => void) => {
   const q = getTenantQuery("projects");
 
-  const unsubscribe = onSnapshot(q, (snapshot) => {
-    const projects = snapshot.docs
-      .map(
-        (doc) =>
-          ({
-            id: doc.id,
-            ...doc.data(),
-          }) as Project,
-      )
-      .sort(byCreatedAtDesc);
-    callback(projects);
-  });
+  const unsubscribe = onSnapshot(
+    q,
+    (snapshot) => {
+      const projects = snapshot.docs
+        .map(
+          (doc) =>
+            ({
+              id: doc.id,
+              ...doc.data(),
+            }) as Project,
+        )
+        .sort(byCreatedAtDesc);
+      callback(projects);
+    },
+    (error) => {
+      if (onError) {
+        onError(error);
+      } else {
+        console.warn("Projects snapshot listener error:", error);
+      }
+    },
+  );
 
   return unsubscribe;
 };

@@ -1,21 +1,24 @@
 {
-  "name": "Accreditex_ Your Accreditation  assistant",
-  "short_name": "Accreditex",
+  "name": "AccreditEx — Healthcare Accreditation Management Platform",
+  "short_name": "AccreditEx",
+  "description": "Enterprise-grade healthcare accreditation management platform with AI-powered compliance tracking, audit management, and quality improvement tools.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#f8fafc",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     },
     {
       "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any maskable"
     }
-  ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  ]
 }

@@ -1,4 +1,5 @@
 import React, { Component, ReactNode, ErrorInfo } from 'react';
+import { logger } from '@/services/logger';
 
 interface Props {
   children: ReactNode;
@@ -18,12 +19,20 @@ export class ErrorBoundary extends Component<Props, State> {
     errorCount: 0,
   };
 
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorCount: 0 };
+  public static getDerivedStateFromError(error: Error): Partial<State> {
+    return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     console.error('Caught an error:', error, errorInfo);
+    logger.error('ErrorBoundary caught a React lifecycle error', {
+      message: error.message,
+      name: error.name,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      errorCount: this.state.errorCount + 1,
+      url: typeof window !== 'undefined' ? window.location.href : undefined,
+    });
   }
 
   public retry = (): void => {

@@ -127,9 +127,19 @@ const Layout: React.FC<LayoutProps> = ({
   ]);
 
   useEffect(() => {
+    if (!currentUser?.id) return;
+    let isMounted = true;
+
     const fetchNotifications = async () => {
+      if (
+        typeof document !== "undefined" &&
+        document.visibilityState === "hidden"
+      ) {
+        return;
+      }
       try {
         const userNotifications = await getNotificationsForUser(currentUser.id);
+        if (!isMounted) return;
         setNotifications((prevNotifications) => {
           if (
             JSON.stringify(prevNotifications) !==
@@ -144,9 +154,12 @@ const Layout: React.FC<LayoutProps> = ({
       }
     };
     fetchNotifications();
-    const interval = setInterval(fetchNotifications, 5000);
-    return () => clearInterval(interval);
-  }, [currentUser.id]);
+    const interval = setInterval(fetchNotifications, 30000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [currentUser?.id]);
 
   const handleMarkAsRead = async (notificationId: string | "all") => {
     try {

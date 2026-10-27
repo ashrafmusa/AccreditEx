@@ -197,7 +197,7 @@
                 // Clean up old caches first
                 const cacheNames = await caches.keys();
                 for (let cacheName of cacheNames) {
-                    if (cacheName !== 'accreditex-cache-v4') {
+                    if (cacheName !== 'accreditex-cache-v5') {
                         await caches.delete(cacheName);
                         console.log('Deleted old cache:', cacheName);
                     }
