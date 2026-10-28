@@ -9,6 +9,7 @@ import {
   CheckBadgeIcon,
   ClockIcon,
   CogIcon,
+  PrinterIcon,
   ShieldCheckIcon,
   UserGroupIcon,
 } from "@/components/icons";
@@ -18,7 +19,8 @@ import { useLabOpsStore } from "@/stores/useLabOpsStore";
 import { useAdminGuard } from "@/hooks/useAdminGuard";
 import { useToast } from "@/hooks/useToast";
 import type { LabOpsTab } from "@/types/labOps";
-import React, { lazy, Suspense, useEffect, useRef, useState } from "react";
+import { computeAnalyticalSigma } from "@/types/labOps";
+import React, { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useTenantStore } from "@/stores/useTenantStore";
 import type { LabOpsImportPreview } from "@/services/labOpsImportService";
 
@@ -239,6 +241,187 @@ const LabOperationsPage: React.FC = () => {
     }
   };
 
+  const currentOrganization = useTenantStore((state) => state.currentOrganization);
+  const equipment = useLabOpsStore((state) => state.equipment);
+  const reagents = useLabOpsStore((state) => state.reagents);
+  const iqcAnalytes = useLabOpsStore((state) => state.iqcAnalytes);
+  const iqcResults = useLabOpsStore((state) => state.iqcResults);
+  const proficiencyTests = useLabOpsStore((state) => state.proficiencyTests);
+  const capaRecords = useLabOpsStore((state) => state.capaRecords);
+  const competencyRecords = useLabOpsStore((state) => state.competencyRecords);
+
+  const labMetrics = useMemo(() => {
+    const today = new Date().toISOString().split("T")[0];
+    const activeAnalyzers = equipment.filter((e) => e.status === "active").length;
+    const overdueCalOrMaint = equipment.filter(
+      (e) =>
+        e.status !== "decommissioned" &&
+        ((e.nextCalibrationDue && e.nextCalibrationDue < today) ||
+          (e.nextMaintenanceDue && e.nextMaintenanceDue < today)),
+    ).length;
+
+    const alertReagents = reagents.filter(
+      (r) =>
+        r.status === "low_stock" ||
+        r.status === "expired" ||
+        r.status === "quarantine" ||
+        r.lotVerificationStatus === "pending",
+    ).length;
+
+    const rejectedIqcCount = iqcResults.filter((r) => r.rejected).length;
+    const iqcPassRate =
+      iqcResults.length > 0
+        ? Math.round(
+            ((iqcResults.length - rejectedIqcCount) / iqcResults.length) * 100,
+          )
+        : 100;
+
+    const sigmaValues = iqcAnalytes
+      .filter((a) => a.active)
+      .map((a) =>
+        computeAnalyticalSigma(
+          a,
+          iqcResults.filter((r) => r.analyteId === a.id),
+        ),
+      )
+      .filter((m): m is NonNullable<typeof m> => m !== null);
+    const avgSigma =
+      sigmaValues.length > 0
+        ? (
+            sigmaValues.reduce((acc, s) => acc + s.sigma, 0) /
+            sigmaValues.length
+          ).toFixed(1)
+        : "—";
+
+    const unacceptablePt = proficiencyTests.filter(
+      (pt) => pt.status === "unacceptable" || (!pt.acceptable && pt.status === "reviewed"),
+    ).length;
+    const openCapas = capaRecords.filter((c) => c.status !== "closed").length;
+
+    const authorizedStaffCount = competencyRecords.filter(
+      (c) => c.status === "authorized" && c.authorizedUntil >= today,
+    ).length;
+    const competencyRate =
+      competencyRecords.length > 0
+        ? Math.round((authorizedStaffCount / competencyRecords.length) * 100)
+        : 100;
+
+    return {
+      activeAnalyzers,
+      overdueCalOrMaint,
+      alertReagents,
+      iqcPassRate,
+      rejectedIqcCount,
+      avgSigma,
+      unacceptablePt,
+      openCapas,
+      competencyRate,
+    };
+  }, [
+    capaRecords,
+    competencyRecords,
+    equipment,
+    iqcAnalytes,
+    iqcResults,
+    proficiencyTests,
+    reagents,
+  ]);
+
+  const handlePrintLabDossier = () => {
+    const printWin = window.open("", "_blank");
+    if (!printWin) return;
+    const orgName = currentOrganization?.name || "Clinical & Pathology Laboratory";
+    const today = new Date().toISOString().split("T")[0];
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Laboratory Accreditation Readiness Dossier — ${orgName}</title>
+        <style>
+          @page { margin: 15mm; }
+          body { font-family: 'Segoe UI', Arial, sans-serif; color: #0f172a; max-width: 960px; margin: 0 auto; font-size: 12.5px; line-height: 1.5; }
+          h1 { font-size: 20px; margin-bottom: 4px; color: #0f172a; }
+          h2 { font-size: 14px; margin-top: 22px; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid #0284c7; text-transform: uppercase; letter-spacing: 0.04em; }
+          .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+          .kpi-box { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; background: #f8fafc; }
+          .kpi-box .val { font-size: 18px; font-weight: 700; color: #0369a1; }
+          table { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+          th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; font-size: 11.5px; }
+          th { background: #f1f5f9; font-weight: 700; }
+          .badge-ok { color: #047857; font-weight: 700; }
+          .badge-warn { color: #b45309; font-weight: 700; }
+          .badge-err { color: #dc2626; font-weight: 700; }
+        </style>
+      </head>
+      <body>
+        <h1>${orgName} — CAP / ISO 15189 / CBAHI Laboratory Inspection Dossier</h1>
+        <p style="color:#475569;margin-top:0;">Generated from AccreditEx Lab Operations on ${new Date().toLocaleString()}</p>
+
+        <div class="kpi-grid">
+          <div class="kpi-box"><div>Active Analyzers / Overdue Cal-PM</div><div class="val">${labMetrics.activeAnalyzers} Active / ${labMetrics.overdueCalOrMaint} Due</div></div>
+          <div class="kpi-box"><div>IQC Westgard Pass Rate &amp; Mean &sigma;</div><div class="val">${labMetrics.iqcPassRate}% (${labMetrics.avgSigma}&sigma;)</div></div>
+          <div class="kpi-box"><div>Bench Competency Authorization</div><div class="val">${labMetrics.competencyRate}% Authorized</div></div>
+        </div>
+
+        <h2>1. Analyzer &amp; Equipment Calibration / Maintenance Register</h2>
+        <table>
+          <thead><tr><th>Asset Tag / Name</th><th>Section</th><th>Serial No.</th><th>Status</th><th>Next Calibration</th><th>Next PM</th></tr></thead>
+          <tbody>
+            ${equipment
+              .map(
+                (e) =>
+                  `<tr><td><strong>${e.assetTag || e.id}</strong> — ${e.name}</td><td>${e.labSection}</td><td>${e.serialNumber}</td><td>${e.status}</td><td class="${e.nextCalibrationDue && e.nextCalibrationDue < today ? "badge-err" : ""}">${e.nextCalibrationDue || "—"}</td><td class="${e.nextMaintenanceDue && e.nextMaintenanceDue < today ? "badge-err" : ""}">${e.nextMaintenanceDue || "—"}</td></tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <h2>2. Reagent Inventory &amp; Lot-to-Lot Verification Register (CAP COM.30450)</h2>
+        <table>
+          <thead><tr><th>Reagent</th><th>Lot No.</th><th>Section</th><th>Qty</th><th>Expiration</th><th>Lot Verification</th><th>Status</th></tr></thead>
+          <tbody>
+            ${reagents
+              .map(
+                (r) =>
+                  `<tr><td><strong>${r.name}</strong></td><td>${r.lotNumber}</td><td>${r.labSection}</td><td>${r.quantity} ${r.unit}</td><td>${r.expirationDate}</td><td>${r.lotVerificationStatus === "verified" ? "✓ Verified" : r.lotVerificationStatus === "failed" ? "✗ Failed" : "Pending Parallel Test"}</td><td>${r.status}</td></tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <h2>3. Proficiency Testing (EQA / PT) Performance</h2>
+        <table>
+          <thead><tr><th>Program / Survey</th><th>Analyte</th><th>Section</th><th>Submitted</th><th>Peer Mean &plusmn; SD</th><th>SDI</th><th>Status</th></tr></thead>
+          <tbody>
+            ${proficiencyTests
+              .map(
+                (pt) =>
+                  `<tr><td>${pt.program} (${pt.surveyId})</td><td>${pt.analyteName}</td><td>${pt.labSection}</td><td>${pt.submittedValue ?? "—"} ${pt.submittedUnit ?? ""}</td><td>${pt.peerMean ?? "—"} &plusmn; ${pt.peerSD ?? "—"}</td><td>${pt.sdIndex ?? "—"}</td><td class="${pt.acceptable ? "badge-ok" : "badge-err"}">${pt.status.toUpperCase()}</td></tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+
+        <h2>4. Staff Bench Competency Authorization Matrix</h2>
+        <table>
+          <thead><tr><th>Staff Member</th><th>Analyte / Bench</th><th>Section</th><th>Assessor</th><th>Authorized Until</th><th>Status</th></tr></thead>
+          <tbody>
+            ${competencyRecords
+              .map(
+                (c) =>
+                  `<tr><td><strong>${c.staffName}</strong></td><td>${c.analyteName} (${c.analyteCode})</td><td>${c.labSection}</td><td>${c.assessor}</td><td>${c.authorizedUntil}</td><td class="${c.status === "authorized" ? "badge-ok" : "badge-err"}">${c.status.toUpperCase()}</td></tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table>
+      </body>
+      </html>
+    `);
+    printWin.document.close();
+    printWin.print();
+  };
+
   return (
     <div className="space-y-6">
       {(resettingData || importingData) && (
@@ -253,23 +436,199 @@ const LabOperationsPage: React.FC = () => {
         </div>
       )}
       {/* Header */}
-      <div className="flex items-center space-x-3 rtl:space-x-reverse">
-        <CogIcon className="h-8 w-8 text-brand-primary" />
-        <div>
-          <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
-            {t("labOperations")}
-          </h1>
-          <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
-            {t("labOpsSubtitle")}
-          </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center space-x-3 rtl:space-x-reverse">
+          <CogIcon className="h-8 w-8 text-brand-primary" />
+          <div>
+            <h1 className="text-3xl font-bold dark:text-dark-brand-text-primary">
+              {t("labOperations")}
+            </h1>
+            <p className="text-brand-text-secondary dark:text-dark-brand-text-secondary mt-1">
+              {t("labOpsSubtitle")}
+            </p>
+          </div>
         </div>
-        <div className="ltr:ml-auto rtl:mr-auto flex items-center">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrintLabDossier}
+            className="flex items-center gap-1.5"
+          >
+            <PrinterIcon className="h-4 w-4" />
+            {t("printLabDossier") || "Print Lab Inspection Dossier"}
+          </Button>
           <span
             className={`px-2.5 py-1 rounded-full text-xs font-medium ${syncBadgeClass}`}
           >
             {syncLabel}
           </span>
         </div>
+      </div>
+
+      {/* Live Executive Lab Readiness Command Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveTab("equipment")}
+          className={`text-left rounded-xl border p-3 transition-all ${
+            activeTab === "equipment"
+              ? "border-brand-primary bg-sky-50/50 dark:bg-sky-900/20"
+              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-brand-primary/50"
+          }`}
+        >
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+            Analyzers &amp; Cal/PM
+          </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              {labMetrics.activeAnalyzers}
+            </span>
+            <span
+              className={`text-xs font-semibold ${
+                labMetrics.overdueCalOrMaint > 0
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            >
+              {labMetrics.overdueCalOrMaint > 0
+                ? `${labMetrics.overdueCalOrMaint} overdue`
+                : "All current"}
+            </span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("reagents")}
+          className={`text-left rounded-xl border p-3 transition-all ${
+            activeTab === "reagents"
+              ? "border-brand-primary bg-sky-50/50 dark:bg-sky-900/20"
+              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-brand-primary/50"
+          }`}
+        >
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+            Reagent &amp; Lot Control
+          </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              {reagents.length}
+            </span>
+            <span
+              className={`text-xs font-semibold ${
+                labMetrics.alertReagents > 0
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            >
+              {labMetrics.alertReagents > 0
+                ? `${labMetrics.alertReagents} alerts`
+                : "Verified"}
+            </span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("iqcWestgard")}
+          className={`text-left rounded-xl border p-3 transition-all ${
+            activeTab === "iqcWestgard"
+              ? "border-brand-primary bg-sky-50/50 dark:bg-sky-900/20"
+              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-brand-primary/50"
+          }`}
+        >
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+            IQC Westgard &amp; Sigma
+          </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold text-emerald-600 dark:text-emerald-400">
+              {labMetrics.iqcPassRate}%
+            </span>
+            <span className="text-xs font-mono font-semibold text-sky-600 dark:text-sky-400">
+              {labMetrics.avgSigma}&sigma; mean
+            </span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("proficiency")}
+          className={`text-left rounded-xl border p-3 transition-all ${
+            activeTab === "proficiency"
+              ? "border-brand-primary bg-sky-50/50 dark:bg-sky-900/20"
+              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-brand-primary/50"
+          }`}
+        >
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+            Proficiency Testing (PT)
+          </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              {proficiencyTests.length}
+            </span>
+            <span
+              className={`text-xs font-semibold ${
+                labMetrics.unacceptablePt > 0
+                  ? "text-red-600 dark:text-red-400"
+                  : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            >
+              {labMetrics.unacceptablePt > 0
+                ? `${labMetrics.unacceptablePt} failed`
+                : "100% pass"}
+            </span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("qualityManagement")}
+          className={`text-left rounded-xl border p-3 transition-all ${
+            activeTab === "qualityManagement"
+              ? "border-brand-primary bg-sky-50/50 dark:bg-sky-900/20"
+              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-brand-primary/50"
+          }`}
+        >
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+            LQMS &amp; Open CAPAs
+          </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span className="text-xl font-bold text-gray-900 dark:text-white">
+              {labMetrics.openCapas}
+            </span>
+            <span className="text-xs font-semibold text-brand-primary dark:text-sky-400">
+              TTP KPIs
+            </span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab("competencyMatrix")}
+          className={`text-left rounded-xl border p-3 transition-all ${
+            activeTab === "competencyMatrix"
+              ? "border-brand-primary bg-sky-50/50 dark:bg-sky-900/20"
+              : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-brand-primary/50"
+          }`}
+        >
+          <p className="text-[11px] font-medium text-gray-500 dark:text-gray-400">
+            Bench Competency
+          </p>
+          <div className="flex items-baseline justify-between mt-1">
+            <span
+              className={`text-xl font-bold ${
+                labMetrics.competencyRate === 100
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-amber-600 dark:text-amber-400"
+              }`}
+            >
+              {labMetrics.competencyRate}%
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Authorized
+            </span>
+          </div>
+        </button>
       </div>
 
       {syncStatus === "error" && syncError && (

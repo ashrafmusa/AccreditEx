@@ -24,6 +24,7 @@ import type { IQCAnalyte, IQCResult, QualityEvent } from "@/types/labOps";
 import {
   applyWestgardRules,
   checkCompetencyAuthorization,
+  computeAnalyticalSigma,
   WESTGARD_REJECT_RULES,
   WESTGARD_RULE_LABELS,
 } from "@/types/labOps";
@@ -295,6 +296,13 @@ const IQCWestgardTab: React.FC = () => {
   }, [iqcResults, selectedAnalyte]);
 
   const chartResults = analyteResults.slice(-20);
+  const sigmaMetrics = useMemo(
+    () =>
+      selectedAnalyte
+        ? computeAnalyticalSigma(selectedAnalyte, analyteResults)
+        : null,
+    [analyteResults, selectedAnalyte],
+  );
 
   // KPIs
   const activeCount = iqcAnalytes.filter((a) => a.active).length;
@@ -909,13 +917,78 @@ const IQCWestgardTab: React.FC = () => {
         </div>
       )}
 
-      {/* Levey-Jennings chart */}
+      {/* Six Sigma (σ) & Analytical Precision Panel + Levey-Jennings chart */}
       {selectedAnalyte && (
-        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
-          <h3 className="text-sm font-semibold mb-3 text-brand-text-primary dark:text-dark-brand-text-primary">
-            {t("iqcLeveyJennings") || "Levey-Jennings Chart"} &mdash;{" "}
-            {selectedAnalyte.equipmentName}
-          </h3>
+        <div className="rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold text-brand-text-primary dark:text-dark-brand-text-primary">
+              {t("iqcLeveyJennings") || "Levey-Jennings Chart"} &mdash;{" "}
+              {selectedAnalyte.equipmentName}
+            </h3>
+            {sigmaMetrics && (
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span
+                  className={`px-2.5 py-1 rounded-full font-bold ${
+                    sigmaMetrics.rating === "world_class"
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300"
+                      : sigmaMetrics.rating === "good"
+                        ? "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300"
+                        : sigmaMetrics.rating === "marginal"
+                          ? "bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+                  }`}
+                >
+                  {sigmaMetrics.sigma}&sigma; &middot;{" "}
+                  {sigmaMetrics.rating === "world_class"
+                    ? "World Class (≥6σ)"
+                    : sigmaMetrics.rating === "good"
+                      ? "Good (4–5.9σ)"
+                      : sigmaMetrics.rating === "marginal"
+                        ? "Marginal (3–3.9σ)"
+                        : "Needs Action (<3σ)"}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {sigmaMetrics && (
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5 rounded-lg bg-slate-50 dark:bg-slate-900/50 p-3 border border-slate-200/80 dark:border-slate-700/80 text-xs">
+              <div>
+                <span className="text-gray-500 dark:text-gray-400 block">
+                  Observed Mean &plusmn; SD
+                </span>
+                <span className="font-mono font-bold text-gray-900 dark:text-white">
+                  {sigmaMetrics.observedMean} &plusmn; {sigmaMetrics.observedSD}{" "}
+                  {selectedAnalyte.unit}
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-gray-400 block">
+                  Observed CV%
+                </span>
+                <span className="font-mono font-bold text-gray-900 dark:text-white">
+                  {sigmaMetrics.cvPct}%
+                </span>
+              </div>
+              <div>
+                <span className="text-gray-500 dark:text-gray-400 block">
+                  Bias% / TEa%
+                </span>
+                <span className="font-mono font-bold text-gray-900 dark:text-white">
+                  {sigmaMetrics.biasPct}% / {sigmaMetrics.teaPct}%
+                </span>
+              </div>
+              <div className="sm:col-span-2">
+                <span className="text-gray-500 dark:text-gray-400 block">
+                  CLIA / ISO 15189 Recommended QC Plan
+                </span>
+                <span className="font-semibold text-brand-primary dark:text-sky-400">
+                  {sigmaMetrics.recommendedRules}
+                </span>
+              </div>
+            </div>
+          )}
+
           {chartResults.length >= 2 ? (
             <LeveyJenningsChart
               results={chartResults}

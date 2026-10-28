@@ -135,6 +135,17 @@ export interface Equipment {
     maintenanceIntervalDays: number;
     sopDocumentId?: string;
     notes?: string;
+    targetTempMin?: number;
+    targetTempMax?: number;
+    temperatureLogs?: {
+        id: string;
+        recordedAt: string;
+        recordedBy: string;
+        tempCelsius: number;
+        humidityPct?: number;
+        inRange: boolean;
+        correctiveAction?: string;
+    }[];
     createdAt: string;
     updatedAt: string;
 }
@@ -250,6 +261,10 @@ export interface Reagent {
     associatedTests?: string[];
     associatedEquipmentId?: string;
     qualityFlag?: "normal" | "under_investigation" | "blocked";
+    lotVerificationStatus?: "verified" | "pending" | "failed";
+    lotVerifiedBy?: string;
+    lotVerifiedDate?: string;
+    lotComparisonBiasPct?: number;
     msdsDocId?: string;
     notes?: string;
     createdAt: string;
@@ -1099,10 +1114,78 @@ export interface IQCAnalyte {
     level: IQCLevel;
     targetMean: number;
     targetSD: number;
+    allowableTotalErrorPct?: number;
     unit: string;
     active: boolean;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface AnalyticalSigmaMetrics {
+    observedMean: number;
+    observedSD: number;
+    cvPct: number;
+    biasPct: number;
+    teaPct: number;
+    sigma: number;
+    rating: "world_class" | "good" | "marginal" | "poor";
+    recommendedRules: string;
+}
+
+export function computeAnalyticalSigma(
+    analyte: IQCAnalyte,
+    results: IQCResult[],
+): AnalyticalSigmaMetrics | null {
+    if (!results || results.length < 2 || analyte.targetMean <= 0) {
+        return null;
+    }
+    const n = results.length;
+    const observedMean =
+        results.reduce((sum, r) => sum + r.measuredValue, 0) / n;
+    const variance =
+        results.reduce(
+            (sum, r) => sum + Math.pow(r.measuredValue - observedMean, 2),
+            0,
+        ) /
+        (n - 1);
+    const observedSD = Math.sqrt(variance);
+    const effectiveSD = observedSD > 0 ? observedSD : analyte.targetSD;
+    const cvPct = (effectiveSD / observedMean) * 100;
+    const biasPct =
+        (Math.abs(observedMean - analyte.targetMean) / analyte.targetMean) *
+        100;
+    const defaultTea =
+        analyte.analyteName.toLowerCase().includes("wbc") ||
+        analyte.labSection.toLowerCase().includes("hema")
+            ? 15
+            : 10;
+    const teaPct = analyte.allowableTotalErrorPct || defaultTea;
+    const rawSigma = cvPct > 0 ? (teaPct - biasPct) / cvPct : 6;
+    const sigma = Math.max(0, Math.min(10, Number(rawSigma.toFixed(2))));
+
+    let rating: AnalyticalSigmaMetrics["rating"] = "poor";
+    let recommendedRules = "Full Westgard Multi-Rule (1_3s / 2_2s / R_4s / 4_1s / 10_x)";
+    if (sigma >= 6) {
+        rating = "world_class";
+        recommendedRules = "Single Rule 1_3s (N=2) — World Class Precision";
+    } else if (sigma >= 4) {
+        rating = "good";
+        recommendedRules = "1_3s / 2_2s / R_4s (N=2)";
+    } else if (sigma >= 3) {
+        rating = "marginal";
+        recommendedRules = "1_3s / 2_2s / R_4s / 4_1s (N=4)";
+    }
+
+    return {
+        observedMean: Number(observedMean.toFixed(2)),
+        observedSD: Number(effectiveSD.toFixed(2)),
+        cvPct: Number(cvPct.toFixed(2)),
+        biasPct: Number(biasPct.toFixed(2)),
+        teaPct,
+        sigma,
+        rating,
+        recommendedRules,
+    };
 }
 
 export interface IQCResult {

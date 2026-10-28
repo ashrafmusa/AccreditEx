@@ -79,6 +79,13 @@ const EquipmentTab: React.FC = () => {
   const [showCalForm, setShowCalForm] = useState(false);
   const [showQrModal, setShowQrModal] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState("");
+  const [showTempForm, setShowTempForm] = useState(false);
+  const [tempForm, setTempForm] = useState({
+    tempCelsius: "",
+    humidityPct: "",
+    recordedBy: "",
+    correctiveAction: "",
+  });
 
   // Add form state
   const [form, setForm] = useState<Partial<Equipment>>({
@@ -685,6 +692,245 @@ const EquipmentTab: React.FC = () => {
             </p>
           </Card>
         </div>
+
+        {/* Daily Temperature & Environmental Monitoring Log (CAP COM.30550 / ISO 15189) */}
+        <Card className="p-4 border-l-4 border-l-sky-500">
+          {(() => {
+            const defaultMin =
+              selected.targetTempMin ??
+              (selected.category === "refrigerator"
+                ? 2
+                : selected.category === "freezer"
+                  ? -25
+                  : selected.category === "incubator"
+                    ? selected.labSection.toLowerCase().includes("blood")
+                      ? 20
+                      : 35
+                    : 18);
+            const defaultMax =
+              selected.targetTempMax ??
+              (selected.category === "refrigerator"
+                ? 8
+                : selected.category === "freezer"
+                  ? -15
+                  : selected.category === "incubator"
+                    ? selected.labSection.toLowerCase().includes("blood")
+                      ? 24
+                      : 37
+                    : 25);
+            const tempLogs = selected.temperatureLogs || [];
+            return (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                  <div>
+                    <h3 className="font-semibold text-sm dark:text-dark-brand-text-primary">
+                      Daily Temperature &amp; Cold-Chain Log (CAP COM.30550)
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      Acceptable Range:{" "}
+                      <strong>
+                        {defaultMin}&deg;C to {defaultMax}&deg;C
+                      </strong>{" "}
+                      &middot; {tempLogs.length} readings recorded
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowTempForm((v) => !v)}
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" /> Log Temperature
+                  </Button>
+                </div>
+
+                {showTempForm && (
+                  <div className="mb-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-800 grid grid-cols-1 sm:grid-cols-4 gap-2.5 text-xs">
+                    <div>
+                      <label className="block font-medium mb-1">
+                        Temperature (&deg;C) *
+                      </label>
+                      <input
+                        type="number"
+                        step="0.1"
+                        value={tempForm.tempCelsius}
+                        onChange={(e) =>
+                          setTempForm({
+                            ...tempForm,
+                            tempCelsius: e.target.value,
+                          })
+                        }
+                        placeholder={`${defaultMin} to ${defaultMax}`}
+                        className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium mb-1">
+                        Humidity (%)
+                      </label>
+                      <input
+                        type="number"
+                        step="1"
+                        value={tempForm.humidityPct}
+                        onChange={(e) =>
+                          setTempForm({
+                            ...tempForm,
+                            humidityPct: e.target.value,
+                          })
+                        }
+                        placeholder="e.g. 45"
+                        className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium mb-1">
+                        Recorded By *
+                      </label>
+                      <input
+                        value={tempForm.recordedBy}
+                        onChange={(e) =>
+                          setTempForm({
+                            ...tempForm,
+                            recordedBy: e.target.value,
+                          })
+                        }
+                        placeholder="Technologist name"
+                        className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-medium mb-1">
+                        Excursion Action (if out of range)
+                      </label>
+                      <input
+                        value={tempForm.correctiveAction}
+                        onChange={(e) =>
+                          setTempForm({
+                            ...tempForm,
+                            correctiveAction: e.target.value,
+                          })
+                        }
+                        placeholder="Thermostat adjusted / moved"
+                        className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                    <div className="sm:col-span-4 flex justify-end gap-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowTempForm(false)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="primary"
+                        size="sm"
+                        onClick={async () => {
+                          const tVal = parseFloat(tempForm.tempCelsius);
+                          if (
+                            !Number.isFinite(tVal) ||
+                            !tempForm.recordedBy.trim()
+                          )
+                            return;
+                          const inRange =
+                            tVal >= defaultMin && tVal <= defaultMax;
+                          const newEntry = {
+                            id: `tmp-${Date.now()}`,
+                            recordedAt: new Date().toISOString(),
+                            recordedBy: tempForm.recordedBy.trim(),
+                            tempCelsius: tVal,
+                            humidityPct: tempForm.humidityPct
+                              ? parseFloat(tempForm.humidityPct)
+                              : undefined,
+                            inRange,
+                            correctiveAction:
+                              tempForm.correctiveAction.trim() || undefined,
+                          };
+                          await updateEquipment({
+                            ...selected,
+                            temperatureLogs: [newEntry, ...tempLogs],
+                            updatedAt: new Date().toISOString(),
+                          });
+                          setShowTempForm(false);
+                          setTempForm({
+                            tempCelsius: "",
+                            humidityPct: "",
+                            recordedBy: "",
+                            correctiveAction: "",
+                          });
+                          if (!inRange) {
+                            toast.warning(
+                              `Temperature Excursion Alert: ${tVal}°C is outside [${defaultMin}°C .. ${defaultMax}°C]`,
+                            );
+                          } else {
+                            toast.success(`Logged ${tVal}°C (Within Range)`);
+                          }
+                        }}
+                      >
+                        Save Reading
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {tempLogs.length > 0 && (
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="bg-gray-50 dark:bg-gray-800 text-left">
+                        <th className="px-2 py-1.5 font-medium">Timestamp</th>
+                        <th className="px-2 py-1.5 font-medium">Temp</th>
+                        <th className="px-2 py-1.5 font-medium">Humidity</th>
+                        <th className="px-2 py-1.5 font-medium">Status</th>
+                        <th className="px-2 py-1.5 font-medium">By / Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tempLogs.slice(0, 6).map((log) => (
+                        <tr
+                          key={log.id}
+                          className="border-b border-gray-100 dark:border-gray-700"
+                        >
+                          <td className="px-2 py-1.5">
+                            {new Date(log.recordedAt).toLocaleString()}
+                          </td>
+                          <td
+                            className={`px-2 py-1.5 font-mono font-bold ${
+                              log.inRange ? "text-emerald-600" : "text-red-600"
+                            }`}
+                          >
+                            {log.tempCelsius}&deg;C
+                          </td>
+                          <td className="px-2 py-1.5">
+                            {log.humidityPct ? `${log.humidityPct}%` : "—"}
+                          </td>
+                          <td className="px-2 py-1.5">
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold ${
+                                log.inRange
+                                  ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                                  : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                              }`}
+                            >
+                              {log.inRange ? "In Range" : "EXCURSION"}
+                            </span>
+                          </td>
+                          <td className="px-2 py-1.5">
+                            {log.recordedBy}
+                            {log.correctiveAction && (
+                              <span className="text-gray-500">
+                                {" "}
+                                — {log.correctiveAction}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </>
+            );
+          })()}
+        </Card>
 
         {/* Calibration history */}
         <Card className="p-4">

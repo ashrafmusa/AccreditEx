@@ -34,6 +34,7 @@ const ReagentTab: React.FC = () => {
     reagents,
     reagentUsageLogs,
     addReagent,
+    updateReagent,
     removeReagent,
     addReagentUsage,
     equipment,
@@ -49,6 +50,13 @@ const ReagentTab: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showAdd, setShowAdd] = useState(false);
   const [showUsage, setShowUsage] = useState(false);
+  const [showLotVerify, setShowLotVerify] = useState(false);
+  const [lotVerifyForm, setLotVerifyForm] = useState({
+    verifiedBy: "",
+    oldLotMean: "",
+    newLotMean: "",
+    status: "verified" as "verified" | "failed",
+  });
 
   const [form, setForm] = useState<Partial<Reagent>>({ status: "in_stock" });
   const [usageForm, setUsageForm] = useState<Partial<ReagentUsageLog>>({});
@@ -277,6 +285,182 @@ const ReagentTab: React.FC = () => {
             )}
           </Card>
         </div>
+
+        {/* Lot-to-Lot Parallel Testing Verification (CAP COM.30450 / ISO 15189 7.3.3) */}
+        <Card className="p-4 border-l-4 border-l-brand-primary">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-sm dark:text-dark-brand-text-primary">
+                  Lot-to-Lot Parallel Verification (CAP COM.30450 / ISO 15189)
+                </h3>
+                <span
+                  className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                    selected.lotVerificationStatus === "verified"
+                      ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300"
+                      : selected.lotVerificationStatus === "failed"
+                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                        : "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300"
+                  }`}
+                >
+                  {selected.lotVerificationStatus === "verified"
+                    ? "✓ Verified for Clinical Use"
+                    : selected.lotVerificationStatus === "failed"
+                      ? "✗ Parallel Test Failed — Quarantined"
+                      : "Pending Parallel Verification"}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                {selected.lotVerifiedDate ? (
+                  <>
+                    Verified by <strong>{selected.lotVerifiedBy}</strong> on{" "}
+                    {selected.lotVerifiedDate}
+                    {selected.lotComparisonBiasPct !== undefined && (
+                      <>
+                        {" "}
+                        &middot; Lot-to-Lot Bias:{" "}
+                        <strong>{selected.lotComparisonBiasPct}%</strong>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  "New reagent lots must undergo parallel comparability testing against the previous lot before patient reporting."
+                )}
+              </p>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLotVerify((v) => !v)}
+            >
+              {selected.lotVerificationStatus === "verified"
+                ? "Update Verification"
+                : "Verify Lot (Parallel Test)"}
+            </Button>
+          </div>
+
+          {showLotVerify && (
+            <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+              <div>
+                <label className="block font-medium mb-1">
+                  Old Lot Mean Value
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={lotVerifyForm.oldLotMean}
+                  onChange={(e) =>
+                    setLotVerifyForm({
+                      ...lotVerifyForm,
+                      oldLotMean: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. 100.0"
+                  className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">
+                  New Lot Mean ({selected.lotNumber})
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={lotVerifyForm.newLotMean}
+                  onChange={(e) =>
+                    setLotVerifyForm({
+                      ...lotVerifyForm,
+                      newLotMean: e.target.value,
+                    })
+                  }
+                  placeholder="e.g. 101.4"
+                  className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Verified By *</label>
+                <input
+                  value={lotVerifyForm.verifiedBy}
+                  onChange={(e) =>
+                    setLotVerifyForm({
+                      ...lotVerifyForm,
+                      verifiedBy: e.target.value,
+                    })
+                  }
+                  placeholder="Lab Supervisor / Technologist"
+                  className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block font-medium mb-1">Outcome</label>
+                <select
+                  value={lotVerifyForm.status}
+                  onChange={(e) =>
+                    setLotVerifyForm({
+                      ...lotVerifyForm,
+                      status: e.target.value as "verified" | "failed",
+                    })
+                  }
+                  className="w-full px-2 py-1.5 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                >
+                  <option value="verified">Acceptable — Release Lot</option>
+                  <option value="failed">Unacceptable — Quarantine Lot</option>
+                </select>
+              </div>
+              <div className="sm:col-span-4 flex justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowLotVerify(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    if (!lotVerifyForm.verifiedBy.trim()) return;
+                    const oldM = parseFloat(lotVerifyForm.oldLotMean);
+                    const newM = parseFloat(lotVerifyForm.newLotMean);
+                    const biasPct =
+                      Number.isFinite(oldM) && oldM > 0 && Number.isFinite(newM)
+                        ? Number(
+                            (
+                              (Math.abs(newM - oldM) / oldM) *
+                              100
+                            ).toFixed(2),
+                          )
+                        : undefined;
+                    updateReagent({
+                      ...selected,
+                      lotVerificationStatus: lotVerifyForm.status,
+                      lotVerifiedBy: lotVerifyForm.verifiedBy.trim(),
+                      lotVerifiedDate: today,
+                      lotComparisonBiasPct: biasPct,
+                      status:
+                        lotVerifyForm.status === "failed"
+                          ? "quarantine"
+                          : selected.status,
+                      qualityFlag:
+                        lotVerifyForm.status === "failed"
+                          ? "blocked"
+                          : "normal",
+                      updatedAt: new Date().toISOString(),
+                    });
+                    setShowLotVerify(false);
+                    toast.success(
+                      lotVerifyForm.status === "verified"
+                        ? `Lot ${selected.lotNumber} verified for clinical use`
+                        : `Lot ${selected.lotNumber} moved to quarantine`,
+                    );
+                  }}
+                >
+                  Save Parallel Verification
+                </Button>
+              </div>
+            </div>
+          )}
+        </Card>
 
         {/* Usage log */}
         <Card className="p-4">

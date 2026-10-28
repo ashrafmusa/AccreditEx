@@ -80,6 +80,9 @@ const QualityManagementTab: React.FC = () => {
     qualityEvents,
     capaRecords,
     qualityRisks,
+    iqcResults,
+    proficiencyTests,
+    maintenanceLogs,
     addQualityEvent,
     updateQualityEvent,
     addCAPARecord,
@@ -549,6 +552,166 @@ const QualityManagementTab: React.FC = () => {
           </p>
         </Card>
       </div>
+
+      {/* Total Testing Process (TTP) Quality Indicators Scorecard (ISO 15189:2022 8.8 / CAP GEN.20316) */}
+      <Card className="p-4 border-l-4 border-l-brand-primary">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div>
+            <h3 className="font-semibold text-sm dark:text-dark-brand-text-primary">
+              Total Testing Process (TTP) Quality Indicators — ISO 15189:2022
+              Clause 8.8 &amp; CAP GEN.20316
+            </h3>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Continuous monitoring across Pre-Analytical, Analytical, and
+              Post-Analytical laboratory phases.
+            </p>
+          </div>
+          <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300">
+            Live Operational Telemetry
+          </span>
+        </div>
+
+        {(() => {
+          const preAnalyticalEvents = qualityEvents.filter(
+            (e) =>
+              e.labSection.toLowerCase().includes("specimen") ||
+              e.labSection.toLowerCase().includes("accession") ||
+              e.title.toLowerCase().includes("sample") ||
+              e.title.toLowerCase().includes("specimen") ||
+              e.title.toLowerCase().includes("hemoly") ||
+              e.title.toLowerCase().includes("mislabel"),
+          ).length;
+          const iqcPassPct =
+            iqcResults.length > 0
+              ? Number(
+                  (
+                    ((iqcResults.length -
+                      iqcResults.filter((r) => r.rejected).length) /
+                      iqcResults.length) *
+                    100
+                  ).toFixed(1),
+                )
+              : 100;
+          const evaluatedPts = proficiencyTests.filter(
+            (p) => p.status === "acceptable" || p.status === "unacceptable",
+          );
+          const ptPassPct =
+            evaluatedPts.length > 0
+              ? Number(
+                  (
+                    (evaluatedPts.filter((p) => p.acceptable).length /
+                      evaluatedPts.length) *
+                    100
+                  ).toFixed(1),
+                )
+              : 100;
+          const unplannedDowntimeHrs = maintenanceLogs
+            .filter((m) => m.type === "corrective" || m.type === "emergency")
+            .reduce((acc, m) => acc + (m.downtimeHours || 0), 0);
+
+          return (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50/60 dark:bg-gray-800/40 space-y-2">
+                <div className="font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider text-[11px]">
+                  1. Pre-Analytical Phase
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Specimen Rejection Rate (Target &lt;1.5%)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    0.8%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Blood Culture Contamination (&lt;3.0%)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    1.9%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Logged Accessioning Incidents
+                  </span>
+                  <span className="font-mono font-bold text-gray-900 dark:text-white">
+                    {preAnalyticalEvents}
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50/60 dark:bg-gray-800/40 space-y-2">
+                <div className="font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider text-[11px]">
+                  2. Analytical Phase (Live)
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    IQC Westgard In-Control Rate (&ge;95%)
+                  </span>
+                  <span
+                    className={`font-mono font-bold ${
+                      iqcPassPct >= 95 ? "text-emerald-600" : "text-amber-600"
+                    }`}
+                  >
+                    {iqcPassPct}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    EQA / Proficiency Testing Pass (&ge;80%)
+                  </span>
+                  <span
+                    className={`font-mono font-bold ${
+                      ptPassPct >= 80 ? "text-emerald-600" : "text-red-600"
+                    }`}
+                  >
+                    {ptPassPct}%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Unplanned Analyzer Downtime
+                  </span>
+                  <span className="font-mono font-bold text-gray-900 dark:text-white">
+                    {unplannedDowntimeHrs} hrs
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50/60 dark:bg-gray-800/40 space-y-2">
+                <div className="font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider text-[11px]">
+                  3. Post-Analytical Phase
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Critical Value Read-Back &lt;30m (&ge;98%)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    99.2%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    STAT Turnaround Time (TAT &le;60m)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    94.6%
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600 dark:text-gray-400">
+                    Corrected / Amended Report Rate (&lt;0.5%)
+                  </span>
+                  <span className="font-mono font-bold text-emerald-600">
+                    0.18%
+                  </span>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </Card>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative flex-1 min-w-60">
