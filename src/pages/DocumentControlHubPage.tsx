@@ -1885,6 +1885,11 @@ const DocumentControlHubPage: React.FC<DocumentControlHubPageProps> = ({
             onAutoSave={handleAutoSaveDocument}
             standards={standards}
             allDocuments={documents}
+            canApprove={canApprove}
+            onApproveRequest={(doc) => {
+              setViewingDoc(null);
+              setSigningDoc(doc);
+            }}
           />
         </Suspense>
       )}

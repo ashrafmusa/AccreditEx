@@ -363,20 +363,25 @@ const DocumentRow: React.FC<DocumentRowProps> = ({
       {cols.has("actions") && (
         <td className="px-6 py-4 text-right rtl:text-left text-sm font-medium">
           <div className="flex items-center justify-end rtl:justify-start gap-1">
-            {/* Approve button */}
-            {canApprove && doc.status === "Pending Review" && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onApprove(doc);
-                }}
-                className="p-1.5 rounded-md text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
-                title={t("approve") || "Approve"}
-                aria-label={t("approve") || "Approve"}
-              >
-                <CheckCircleIcon className="w-4 h-4" />
-              </button>
-            )}
+            {/* Approve button — available for Pending Review and Draft documents */}
+            {canApprove &&
+              (doc.status === "Pending Review" || doc.status === "Draft") && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onApprove(doc);
+                  }}
+                  className="p-1.5 rounded-md text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors"
+                  title={
+                    doc.status === "Draft"
+                      ? t("expressApprove") || "Approve & Sign"
+                      : t("approve") || "Approve"
+                  }
+                  aria-label={t("approve") || "Approve"}
+                >
+                  <CheckCircleIcon className="w-4 h-4" />
+                </button>
+              )}
 
             {/* View button */}
             <button

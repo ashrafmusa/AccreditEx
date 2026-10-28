@@ -667,6 +667,13 @@ export interface AppDocument {
   }[];
   expiryDate?: string;
   retentionPeriod?: number;
+  acknowledgedBy?: {
+    userId: string;
+    userName: string;
+    userRole?: string;
+    version: number;
+    acknowledgedAt: string;
+  }[];
 }
 
 export interface TrainingProgram {
