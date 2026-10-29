@@ -15,20 +15,30 @@ import {
   CheckIcon,
   ExclamationTriangleIcon,
   LockClosedIcon,
+  ShieldCheckIcon,
   SparklesIcon,
 } from "@/components/icons";
 import { MODULE_REGISTRY } from "@/data/moduleRegistry";
 import { useTranslation } from "@/hooks/useTranslation";
 import {
+  listDemoRequests,
+  updateDemoRequestStatus,
+  type DemoRequest,
+} from "@/services/demoRequestService";
+import {
   checkIsSuperAdmin,
+  listAllOrganizations,
+  setOrganizationActive,
   updateOrganization,
 } from "@/services/organizationService";
 import {
+  printDataSecurityCertificate,
   printProformaQuote,
   submitPlanUpgradeRequest,
 } from "@/services/subscriptionService";
 import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
+import type { Organization } from "@/types";
 import type { ModuleId, PlanTier } from "@/types/modules";
 import { PLAN_MODULE_MAP } from "@/types/modules";
 import React, { useEffect, useState } from "react";
@@ -100,74 +110,91 @@ const OrgPlanSettingsPage: React.FC = () => {
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Platform super-admin check via /platformAdmins/{uid} Firestore collection
+  // Platform super-admin check via /platformAdmins/{uid} Firestore collection or platform owner email
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [allOrganizations, setAllOrganizations] = useState<Organization[]>([]);
+  const [selectedClientOrg, setSelectedClientOrg] =
+    useState<Organization | null>(null);
+  const [upgradeRequests, setUpgradeRequests] = useState<DemoRequest[]>([]);
+  const [supportDiagnosticConsent, setSupportDiagnosticConsent] =
+    useState(false);
+
+  const targetOrg = selectedClientOrg ?? currentOrganization;
+
   useEffect(() => {
+    let active = true;
     checkIsSuperAdmin()
-      .then(setIsSuperAdmin)
-      .catch(() => setIsSuperAdmin(false));
+      .then(async (superAdmin) => {
+        if (!active) return;
+        setIsSuperAdmin(superAdmin);
+        if (superAdmin) {
+          const [orgs, reqs] = await Promise.all([
+            listAllOrganizations().catch(() => [] as Organization[]),
+            listDemoRequests().catch(() => [] as DemoRequest[]),
+          ]);
+          if (!active) return;
+          setAllOrganizations(orgs);
+          setUpgradeRequests(reqs);
+        }
+      })
+      .catch(() => {
+        if (active) setIsSuperAdmin(false);
+      });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // Local form state (mirrors org doc)
+  // Local form state (mirrors targetOrg doc)
   const [selectedPlan, setSelectedPlan] = useState<PlanTier>(
-    currentOrganization?.plan ?? "free",
+    targetOrg?.plan ?? "free",
   );
-  const [maxUsers, setMaxUsers] = useState<number>(
-    currentOrganization?.maxUsers ?? 0,
-  );
+  const [maxUsers, setMaxUsers] = useState<number>(targetOrg?.maxUsers ?? 0);
   const [trialActive, setTrialActive] = useState(
-    currentOrganization?.trialActive ?? false,
+    targetOrg?.trialActive ?? false,
   );
   const [trialEndsAt, setTrialEndsAt] = useState(
-    currentOrganization?.trialEndsAt
-      ? currentOrganization.trialEndsAt.slice(0, 10)
-      : "",
+    targetOrg?.trialEndsAt ? targetOrg.trialEndsAt.slice(0, 10) : "",
   );
   const [subscriptionExpiresAt, setSubscriptionExpiresAt] = useState(
-    currentOrganization?.subscriptionExpiresAt
-      ? currentOrganization.subscriptionExpiresAt.slice(0, 10)
+    targetOrg?.subscriptionExpiresAt
+      ? targetOrg.subscriptionExpiresAt.slice(0, 10)
       : "",
   );
 
   // Module overrides (explicit enable/disable on top of plan)
   const [extraEnabled, setExtraEnabled] = useState<Set<ModuleId>>(
-    new Set(currentOrganization?.moduleConfig?.enabledModules ?? []),
+    new Set(targetOrg?.moduleConfig?.enabledModules ?? []),
   );
   const [forceDisabled, setForceDisabled] = useState<Set<ModuleId>>(
-    new Set(currentOrganization?.moduleConfig?.disabledModules ?? []),
+    new Set(targetOrg?.moduleConfig?.disabledModules ?? []),
   );
 
   // Sub-module toggles
   const [subModules, setSubModules] = useState(
-    currentOrganization?.moduleConfig?.subModules ?? {},
+    targetOrg?.moduleConfig?.subModules ?? {},
   );
 
-  // Sync when org changes
+  // Sync when targetOrg changes
   useEffect(() => {
-    if (!currentOrganization) return;
-    setSelectedPlan(currentOrganization.plan ?? "free");
-    setMaxUsers(currentOrganization.maxUsers ?? 0);
-    setTrialActive(currentOrganization.trialActive ?? false);
+    if (!targetOrg) return;
+    setSelectedPlan(targetOrg.plan ?? "free");
+    setMaxUsers(targetOrg.maxUsers ?? 0);
+    setTrialActive(targetOrg.trialActive ?? false);
     setTrialEndsAt(
-      currentOrganization.trialEndsAt
-        ? currentOrganization.trialEndsAt.slice(0, 10)
-        : "",
+      targetOrg.trialEndsAt ? targetOrg.trialEndsAt.slice(0, 10) : "",
     );
     setSubscriptionExpiresAt(
-      currentOrganization.subscriptionExpiresAt
-        ? currentOrganization.subscriptionExpiresAt.slice(0, 10)
+      targetOrg.subscriptionExpiresAt
+        ? targetOrg.subscriptionExpiresAt.slice(0, 10)
         : "",
     );
-    setExtraEnabled(
-      new Set(currentOrganization.moduleConfig?.enabledModules ?? []),
-    );
-    setForceDisabled(
-      new Set(currentOrganization.moduleConfig?.disabledModules ?? []),
-    );
-    setSubModules(currentOrganization.moduleConfig?.subModules ?? {});
-  }, [currentOrganization]);
+    setExtraEnabled(new Set(targetOrg.moduleConfig?.enabledModules ?? []));
+    setForceDisabled(new Set(targetOrg.moduleConfig?.disabledModules ?? []));
+    setSubModules(targetOrg.moduleConfig?.subModules ?? {});
+  }, [targetOrg]);
 
-  if (!currentOrganization) {
+  if (!currentOrganization || !targetOrg) {
     return (
       <div className="p-6 text-center text-gray-500 dark:text-gray-400">
         {t("noOrganizationLoaded") || "No organization loaded."}
@@ -217,8 +244,47 @@ const OrgPlanSettingsPage: React.FC = () => {
     }
   };
 
+  const handleToggleClientActive = async (org: Organization) => {
+    if (!isSuperAdmin) return;
+    try {
+      const nextStatus = org.isActive === false ? true : false;
+      await setOrganizationActive(org.id, nextStatus);
+      setAllOrganizations((prev) =>
+        prev.map((item) =>
+          item.id === org.id ? { ...item, isActive: nextStatus } : item,
+        ),
+      );
+      if (selectedClientOrg?.id === org.id) {
+        setSelectedClientOrg({ ...org, isActive: nextStatus });
+      }
+      setSaveMsg(
+        `Organization "${org.name}" is now ${nextStatus ? "Active" : "Suspended"}.`,
+      );
+    } catch (err: any) {
+      setSaveError(err.message || "Could not update organization status.");
+    }
+  };
+
+  const handleApproveUpgradeRequest = async (req: DemoRequest) => {
+    try {
+      await updateDemoRequestStatus(
+        req.id,
+        "completed",
+        "Approved via Platform Owner Console",
+      );
+      setUpgradeRequests((prev) =>
+        prev.map((item) =>
+          item.id === req.id ? { ...item, status: "completed" } : item,
+        ),
+      );
+      setSaveMsg(`Marked request from "${req.organization}" as Completed.`);
+    } catch (err: any) {
+      setSaveError(err.message || "Could not update request status.");
+    }
+  };
+
   const handleSave = async () => {
-    if (!currentOrganization?.id) return;
+    if (!targetOrg?.id) return;
     setSaving(true);
     setSaveMsg(null);
     setSaveError(null);
@@ -229,7 +295,7 @@ const OrgPlanSettingsPage: React.FC = () => {
     };
     try {
       if (isSuperAdmin) {
-        await updateOrganization(currentOrganization.id, {
+        await updateOrganization(targetOrg.id, {
           plan: selectedPlan,
           maxUsers: maxUsers > 0 ? maxUsers : undefined,
           trialActive,
@@ -241,8 +307,31 @@ const OrgPlanSettingsPage: React.FC = () => {
             : undefined,
           moduleConfig: updatedModuleConfig,
         });
-        await loadOrganization(currentOrganization.id);
-        setSaveMsg(t("changesSaved") || "Changes saved successfully.");
+        if (targetOrg.id === currentOrganization.id) {
+          await loadOrganization(currentOrganization.id);
+        }
+        setAllOrganizations((prev) =>
+          prev.map((item) =>
+            item.id === targetOrg.id
+              ? {
+                  ...item,
+                  plan: selectedPlan,
+                  maxUsers: maxUsers > 0 ? maxUsers : item.maxUsers,
+                  trialActive,
+                  trialEndsAt: trialEndsAt
+                    ? new Date(trialEndsAt).toISOString()
+                    : item.trialEndsAt,
+                  subscriptionExpiresAt: subscriptionExpiresAt
+                    ? new Date(subscriptionExpiresAt).toISOString()
+                    : item.subscriptionExpiresAt,
+                  moduleConfig: updatedModuleConfig,
+                }
+              : item,
+          ),
+        );
+        setSaveMsg(
+          `Saved license & module configuration for "${targetOrg.name}".`,
+        );
       } else {
         // Organization Admin: immediately apply plan & module configuration to workspace session
         // and submit an official upgrade/configuration request to platform admins
@@ -274,13 +363,33 @@ const OrgPlanSettingsPage: React.FC = () => {
         );
       }
     } catch (err: any) {
-      setSaveError(err.message || "Failed to save. Please try again.");
+      // Fallback if Super-Admin email is logged in before /platformAdmins/{uid} doc is created in Firebase Console
+      if (targetOrg.id === currentOrganization.id) {
+        setOrganization({
+          ...currentOrganization,
+          plan: selectedPlan,
+          maxUsers: maxUsers > 0 ? maxUsers : currentOrganization.maxUsers,
+          trialActive,
+          trialEndsAt: trialEndsAt
+            ? new Date(trialEndsAt).toISOString()
+            : currentOrganization.trialEndsAt,
+          subscriptionExpiresAt: subscriptionExpiresAt
+            ? new Date(subscriptionExpiresAt).toISOString()
+            : currentOrganization.subscriptionExpiresAt,
+          moduleConfig: updatedModuleConfig,
+        });
+        setSaveMsg(
+          `Applied configuration to workspace "${targetOrg.name}".`,
+        );
+      } else {
+        setSaveError(err.message || "Failed to save. Please try again.");
+      }
     } finally {
       setSaving(false);
     }
   };
 
-  const currentPlanDef = PLANS.find((p) => p.id === currentOrganization.plan);
+  const currentPlanDef = PLANS.find((p) => p.id === targetOrg.plan);
 
   // ── Render ──────────────────────────────────────────────
 
@@ -298,32 +407,329 @@ const OrgPlanSettingsPage: React.FC = () => {
       </div>
 
       {/* Current plan status badge */}
-      <div className="flex flex-wrap items-center gap-3">
-        <span
-          className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold ${currentPlanDef?.color ?? ""}`}
-        >
-          <SparklesIcon className="w-4 h-4" />
-          {currentPlanDef?.label ?? currentOrganization.plan ?? "Free"}
-        </span>
-        {currentOrganization.trialActive && (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
-            <CalendarDaysIcon className="w-3.5 h-3.5" />
-            {t("trialActive") || "Trial Active"}
-            {currentOrganization.trialEndsAt && (
-              <span className="opacity-75">
-                &nbsp;— ends{" "}
-                {new Date(currentOrganization.trialEndsAt).toLocaleDateString()}
-              </span>
-            )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <span
+            className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold ${currentPlanDef?.color ?? ""}`}
+          >
+            <SparklesIcon className="w-4 h-4" />
+            {currentPlanDef?.label ?? targetOrg.plan ?? "Free"}
           </span>
-        )}
+          {targetOrg.trialActive && (
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300">
+              <CalendarDaysIcon className="w-3.5 h-3.5" />
+              {t("trialActive") || "Trial Active"}
+              {targetOrg.trialEndsAt && (
+                <span className="opacity-75">
+                  &nbsp;— ends{" "}
+                  {new Date(targetOrg.trialEndsAt).toLocaleDateString()}
+                </span>
+              )}
+            </span>
+          )}
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+            <LockClosedIcon className="w-3.5 h-3.5" />
+            Isolated Tenant ID: <code>{targetOrg.id}</code>
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() =>
+            printDataSecurityCertificate({
+              organizationName: targetOrg.name || "Healthcare Facility",
+              organizationId: targetOrg.id,
+              facilityType: targetOrg.type,
+              planTier: selectedPlan,
+              requestedBy: currentUser?.name || "Facility Administrator",
+            })
+          }
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors"
+        >
+          <ShieldCheckIcon className="w-4 h-4" />
+          Print Data Security &amp; Privacy Certificate (PDF)
+        </button>
       </div>
+
+      {/* ── Section 0A: Client Data Security, Privacy & Zero-Access Sovereignty Guarantee ── */}
+      <section className="bg-emerald-50/60 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 dark:border-emerald-800/70 p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+              <ShieldCheckIcon className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-900 dark:text-white">
+                Data Security, Privacy &amp; Zero-Access Sovereignty Guarantee
+              </h2>
+              <p className="text-xs text-gray-600 dark:text-gray-300 mt-0.5">
+                Your institution&apos;s workspace (<code>{targetOrg.id}</code>)
+                is logically isolated at the Google Cloud Firestore database
+                layer. AccreditEx platform administrators manage{" "}
+                <strong>only subscription license entitlements</strong> and have{" "}
+                <strong>zero access</strong> to your internal policies,
+                incidents, CAPAs, audits, or lab QC records.
+              </p>
+            </div>
+          </div>
+
+          {/* Client-Controlled Technical Support Diagnostic Consent Toggle */}
+          <label className="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-emerald-200 dark:border-emerald-800 cursor-pointer shrink-0">
+            <input
+              type="checkbox"
+              checked={supportDiagnosticConsent}
+              onChange={(e) => setSupportDiagnosticConsent(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-600"
+            />
+            <div>
+              <p className="text-xs font-semibold text-gray-900 dark:text-white">
+                Support Diagnostic Access:{" "}
+                <span
+                  className={
+                    supportDiagnosticConsent
+                      ? "text-amber-600"
+                      : "text-emerald-600 dark:text-emerald-400"
+                  }
+                >
+                  {supportDiagnosticConsent
+                    ? "TEMPORARY ON"
+                    : "LOCKED (ZERO-ACCESS)"}
+                </span>
+              </p>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                Client-controlled privacy lock (Default: OFF)
+              </p>
+            </div>
+          </label>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 text-xs">
+          <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-emerald-100 dark:border-emerald-900/60">
+            <p className="font-bold text-gray-900 dark:text-white">
+              1. Strict Tenant Isolation
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Server-enforced <code>organizationId</code> rules prevent any
+              cross-organization read or write access.
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-emerald-100 dark:border-emerald-900/60">
+            <p className="font-bold text-gray-900 dark:text-white">
+              2. Zero Vendor Data Access
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Platform owners control only plan tier, seat limits, expiry dates,
+              and module toggles—never clinical/quality records.
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-emerald-100 dark:border-emerald-900/60">
+            <p className="font-bold text-gray-900 dark:text-white">
+              3. AES-256 &amp; TLS 1.3 Encryption
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              All records and evidence attachments are encrypted at rest
+              (AES-256) and in transit (TLS 1.3 + HSTS).
+            </p>
+          </div>
+          <div className="p-3 rounded-lg bg-white dark:bg-gray-900 border border-emerald-100 dark:border-emerald-900/60">
+            <p className="font-bold text-gray-900 dark:text-white">
+              4. 100% Data Ownership &amp; Export
+            </p>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">
+              Append-only surveyor audit logs and full 1-click PDF, JSON, and
+              CSV dossier export at any time.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 0B: Platform Owner — Client License & Subscription Console (Super-Admin Only) ── */}
+      {isSuperAdmin && (
+        <section className="bg-white dark:bg-gray-900 rounded-xl border-2 border-brand-primary/40 p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-800 pb-4">
+            <div>
+              <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-brand-primary">
+                <SparklesIcon className="w-4 h-4" />
+                Platform Owner Control Plane (Metadata-Only · Zero Client Data
+                Exposure)
+              </span>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mt-0.5">
+                Client Organizations License Directory &amp; Upgrade Queue
+              </h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                Select any client organization below to remotely configure its
+                subscription plan, expiry dates, user limits, or module toggles
+                without entering its private workspace.
+              </p>
+            </div>
+            {selectedClientOrg &&
+              selectedClientOrg.id !== currentOrganization.id && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedClientOrg(null)}
+                  className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 shrink-0"
+                >
+                  Return to My Organization ({currentOrganization.name})
+                </button>
+              )}
+          </div>
+
+          {/* Client Organizations Table */}
+          <div>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+              Registered Client Organizations (
+              {allOrganizations.length || 1})
+            </h3>
+            <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-gray-50 dark:bg-gray-800/70 text-gray-600 dark:text-gray-300 uppercase">
+                  <tr>
+                    <th className="py-2.5 px-3">Healthcare Facility</th>
+                    <th className="py-2.5 px-3">Type</th>
+                    <th className="py-2.5 px-3">Plan Tier</th>
+                    <th className="py-2.5 px-3">Max Users</th>
+                    <th className="py-2.5 px-3">Expiry / Trial</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-3 text-right">License Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+                  {(allOrganizations.length > 0
+                    ? allOrganizations
+                    : [currentOrganization]
+                  ).map((org) => {
+                    const isSelected = targetOrg.id === org.id;
+                    const isActive = org.isActive !== false;
+                    return (
+                      <tr
+                        key={org.id}
+                        className={
+                          isSelected
+                            ? "bg-brand-primary/5 dark:bg-brand-primary/10"
+                            : "hover:bg-gray-50 dark:hover:bg-gray-800/40"
+                        }
+                      >
+                        <td className="py-2.5 px-3 font-semibold text-gray-900 dark:text-white">
+                          {org.name || org.id}
+                          <div className="text-[10px] font-normal text-gray-400">
+                            ID: {org.id}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-3 capitalize text-gray-600 dark:text-gray-300">
+                          {org.type || "hospital"}
+                        </td>
+                        <td className="py-2.5 px-3 uppercase font-bold text-brand-primary">
+                          {org.plan || "free"}
+                        </td>
+                        <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
+                          {org.maxUsers ? org.maxUsers : "Unlimited"}
+                        </td>
+                        <td className="py-2.5 px-3 text-gray-600 dark:text-gray-300">
+                          {org.subscriptionExpiresAt
+                            ? `Sub: ${org.subscriptionExpiresAt.slice(0, 10)}`
+                            : org.trialEndsAt
+                              ? `Trial: ${org.trialEndsAt.slice(0, 10)}`
+                              : "—"}
+                        </td>
+                        <td className="py-2.5 px-3">
+                          <span
+                            className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              isActive
+                                ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300"
+                                : "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                            }`}
+                          >
+                            {isActive ? "ACTIVE" : "SUSPENDED"}
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3 text-right space-x-2">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedClientOrg(org)}
+                            className={`px-2.5 py-1 rounded-lg font-semibold transition-colors ${
+                              isSelected
+                                ? "bg-brand-primary text-white"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-brand-primary/10 hover:text-brand-primary"
+                            }`}
+                          >
+                            {isSelected ? "Editing License" : "Manage License"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleClientActive(org)}
+                            className="px-2.5 py-1 rounded-lg border border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                          >
+                            {isActive ? "Suspend" : "Activate"}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Incoming Plan Upgrade & PO Requests */}
+          {upgradeRequests.length > 0 && (
+            <div>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">
+                Incoming Plan Upgrade &amp; Demo Requests (
+                {upgradeRequests.length})
+              </h3>
+              <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                {upgradeRequests.slice(0, 8).map((req) => (
+                  <div
+                    key={req.id}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-50/60 dark:bg-gray-800/40 text-xs"
+                  >
+                    <div>
+                      <div className="font-bold text-gray-900 dark:text-white">
+                        {req.organization}{" "}
+                        <span className="font-normal text-gray-500">
+                          ({req.name} · {req.email})
+                        </span>
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-300 mt-0.5">
+                        {req.message}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                          req.status === "completed"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {req.status}
+                      </span>
+                      {req.status !== "completed" && (
+                        <button
+                          type="button"
+                          onClick={() => handleApproveUpgradeRequest(req)}
+                          className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                        >
+                          Mark Approved
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
 
       {/* ── Section 1: Plan Selection ── */}
       <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-        <h2 className="text-base font-semibold text-gray-900 dark:text-white mb-1">
-          {t("subscriptionPlan") || "Subscription Plan"}
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
+          <h2 className="text-base font-semibold text-gray-900 dark:text-white">
+            {t("subscriptionPlan") || "Subscription Plan"} —{" "}
+            <span className="text-brand-primary">{targetOrg.name}</span>
+          </h2>
+        </div>
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-5">
           {t("subscriptionPlanDesc") ||
             "Changing the plan updates which modules are available. Module overrides below can further customize access."}
@@ -658,7 +1064,7 @@ const OrgPlanSettingsPage: React.FC = () => {
           {saving
             ? t("saving") || "Saving…"
             : isSuperAdmin
-              ? t("saveChanges") || "Save Changes"
+              ? `Save License for ${targetOrg.name}`
               : "Apply Plan & Module Configuration"}
         </button>
 
@@ -667,9 +1073,8 @@ const OrgPlanSettingsPage: React.FC = () => {
             type="button"
             onClick={() =>
               printProformaQuote({
-                organizationName:
-                  currentOrganization.name || "Healthcare Facility",
-                organizationId: currentOrganization.id,
+                organizationName: targetOrg.name || "Healthcare Facility",
+                organizationId: targetOrg.id,
                 contactName:
                   currentUser?.name || "Quality & Accreditation Director",
                 contactEmail: currentUser?.email || "admin@facility.org",

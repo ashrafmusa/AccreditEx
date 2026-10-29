@@ -40,10 +40,17 @@ import {
  * Firestore rules protect the platformAdmins collection so only
  * existing super-admins (or no one) can write to it.
  */
+const PLATFORM_OWNER_EMAILS = new Set([
+    'excellencequestconsultancy@gmail.com',
+]);
+
 export async function checkIsSuperAdmin(): Promise<boolean> {
     const auth = getAuthInstance();
     const user = auth.currentUser;
     if (!user) return false;
+    if (user.email && PLATFORM_OWNER_EMAILS.has(user.email.toLowerCase().trim())) {
+        return true;
+    }
     try {
         const snap = await getDoc(doc(db, 'platformAdmins', user.uid));
         return snap.exists();

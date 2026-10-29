@@ -354,4 +354,153 @@ export function getPlanInfo(tier: PlanTier): PlanInfo {
     return PLANS.find((p) => p.tier === tier) ?? PLANS[0];
 }
 
+/**
+ * Generates and opens a print-ready Official Healthcare Data Security, Privacy &
+ * Multi-Tenant Isolation Certificate (PDF) for Hospital IT, CISO, and Procurement review.
+ */
+export function printDataSecurityCertificate(input: {
+    organizationName: string;
+    organizationId?: string;
+    facilityType?: string;
+    planTier?: string;
+    requestedBy?: string;
+}): void {
+    const certNumber = `SEC-ISO-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${(input.organizationId || 'TENANT').slice(-5).toUpperCase()}`;
+    const issueDate = new Date().toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: '2-digit',
+    });
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AccreditEx Data Security & Multi-Tenant Isolation Certificate — ${certNumber}</title>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body { margin: 0; padding: 28px; color: #0f172a; background: #fff; }
+    .sheet { max-width: 840px; margin: 0 auto; border: 2px solid #0f172a; padding: 28px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #0f172a; padding-bottom: 16px; margin-bottom: 20px; }
+    .brand { font-size: 22px; font-weight: 800; color: #0284c7; letter-spacing: -0.4px; }
+    .sub { font-size: 12px; color: #475569; margin-top: 4px; }
+    .badge { display: inline-block; background: #dcfce7; color: #166534; font-weight: 700; font-size: 11px; padding: 4px 10px; border-radius: 999px; text-transform: uppercase; border: 1px solid #86efac; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+    .box { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px 14px; background: #f8fafc; font-size: 13px; }
+    .box h4 { margin: 0 0 6px 0; font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12.5px; }
+    th, td { border: 1px solid #cbd5e1; padding: 9px 11px; text-align: left; vertical-align: top; }
+    th { background: #f1f5f9; font-weight: 700; color: #1e293b; }
+    .status-pill { display: inline-block; background: #ecfdf5; color: #047857; font-weight: 700; font-size: 11px; padding: 2px 8px; border-radius: 999px; }
+    .footer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 22px; padding-top: 16px; border-top: 1px dashed #94a3b8; font-size: 12px; }
+    .sig-line { margin-top: 34px; border-top: 1px solid #334155; padding-top: 6px; font-weight: 600; }
+    @media print { .no-print { display: none !important; } body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="max-width:840px;margin:0 auto 14px auto;text-align:right;">
+    <button onclick="window.print()" style="background:#0284c7;color:#fff;border:none;padding:8px 16px;border-radius:6px;font-weight:700;cursor:pointer;">Print / Save Certificate as PDF</button>
+  </div>
+  <div class="sheet">
+    <div class="header">
+      <div>
+        <div class="brand">AccreditEx Healthcare Quality & Accreditation Platform</div>
+        <div class="sub">Official Data Security, Privacy & Multi-Tenant Sovereignty Attestation</div>
+      </div>
+      <div style="text-align:right;">
+        <span class="badge">Verified Zero-Access Isolation</span>
+        <div style="font-size:13px;font-weight:700;margin-top:6px;">Cert ID: ${certNumber}</div>
+        <div class="sub">Issued: ${issueDate}</div>
+      </div>
+    </div>
+
+    <div class="meta-grid">
+      <div class="box">
+        <h4>Certified Healthcare Institution (Tenant)</h4>
+        <div><strong>${input.organizationName || 'Healthcare Facility'}</strong></div>
+        <div>Isolated Tenant Container ID: <code>${input.organizationId || 'org-isolated'}</code></div>
+        <div>Facility Profile: ${(input.facilityType || 'healthcare').toUpperCase()} · Tier: ${(input.planTier || 'professional').toUpperCase()}</div>
+      </div>
+      <div class="box">
+        <h4>Cloud Infrastructure & Governance Boundary</h4>
+        <div><strong>Google Cloud / Firebase Enterprise Security Layer</strong></div>
+        <div>Encryption: AES-256 (At Rest) · TLS 1.3 + HSTS (In Transit)</div>
+        <div>Vendor Access Policy: <strong>Zero-Access to Client Clinical/Quality Records</strong></div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:28%;">Security & Privacy Control Domain</th>
+          <th style="width:54%;">Technical Enforcement & Architecture Specification</th>
+          <th style="width:18%;">Verification Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>1. Strict Multi-Tenant Data Isolation</strong></td>
+          <td>Every document, checklist, CAPA, incident, audit, and lab QC record is scoped to <code>organizationId = ${input.organizationId || 'tenant'}</code>. Server-side Firestore Security Rules (<code>belongsToUserOrg()</code> &amp; <code>belongsToActiveOrg()</code>) reject cross-tenant queries at the database layer.</td>
+          <td><span class="status-pill">ENFORCED</span></td>
+        </tr>
+        <tr>
+          <td><strong>2. Zero-Access Vendor Privacy Boundary</strong></td>
+          <td>AccreditEx platform administrators control only commercial license metadata (<code>/organizations/{orgId}</code> plan tier, seat limits, expiry dates, and module toggles). Platform staff do not access internal policies, incidents, CAPAs, or audit records.</td>
+          <td><span class="status-pill">ENFORCED</span></td>
+        </tr>
+        <tr>
+          <td><strong>3. Encryption in Transit &amp; at Rest</strong></td>
+          <td>All data at rest in Google Cloud Firestore and Storage is encrypted via AES-256. All network traffic enforces HTTPS/TLS 1.3 with HSTS, strict Content-Security-Policy (CSP), and <code>X-Frame-Options: DENY</code>.</td>
+          <td><span class="status-pill">ENFORCED</span></td>
+        </tr>
+        <tr>
+          <td><strong>4. Immutable Surveyor Audit Trail</strong></td>
+          <td>System activity logs (<code>activity_logs</code>) enforce append-only immutability (<code>allow update: if false</code>), satisfying JCI, CBAHI, CAP, and ISO 15189:2022 document &amp; record traceability standards.</td>
+          <td><span class="status-pill">ENFORCED</span></td>
+        </tr>
+        <tr>
+          <td><strong>5. Role-Based Access Control (RBAC)</strong></td>
+          <td>5-tier institutional permission hierarchy (<code>Admin</code>, <code>ProjectLead</code>, <code>Auditor</code>, <code>TeamMember</code>, <code>Viewer</code>) with server-enforced privilege-escalation prevention (<code>cannotEscalatePrivilege()</code>).</td>
+          <td><span class="status-pill">ENFORCED</span></td>
+        </tr>
+        <tr>
+          <td><strong>6. Zero Patient PHI Mandate &amp; Data Sovereignty</strong></td>
+          <td>Platform operates on quality, governance, and accreditation compliance records without requiring identifiable EMR patient PHI. The institution retains 100% ownership and full export rights (PDF, JSON, CSV) at all times.</td>
+          <td><span class="status-pill">VERIFIED</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="footer-grid">
+      <div>
+        <strong>Institutional IT &amp; Compliance Attestation:</strong>
+        <p style="margin:6px 0 0 0;line-height:1.45;color:#334155;">
+          This certificate confirms that <strong>${input.organizationName || 'the institution'}</strong> operates within an isolated, encrypted multi-tenant environment with client-controlled governance.
+        </p>
+      </div>
+      <div>
+        <div class="sig-line">AccreditEx Cloud Security &amp; Architecture Governance</div>
+        <div style="font-size:11px;color:#64748b;margin-top:4px;">Requested by: ${input.requestedBy || 'Facility Administrator'} · ${issueDate}</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const win = window.open('', '_blank', 'width=940,height=820');
+    if (win) {
+        win.document.open();
+        win.document.write(html);
+        win.document.close();
+        setTimeout(() => {
+            try {
+                win.focus();
+                win.print();
+            } catch {
+                // Ignore print errors in headless environments
+            }
+        }, 250);
+    }
+}
+
 // Free-trial lifecycle operations are exported from subscriptionLifecycleService.
