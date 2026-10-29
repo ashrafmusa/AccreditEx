@@ -165,8 +165,6 @@ const MainRouter: React.FC<MainRouterProps> = ({
         .map((r) => r.view);
       const adminOnlyViews = new Set([
         ...routeAdminViews,
-        "departments",
-        "departmentDetail",
         "dataHub",
       ]);
 

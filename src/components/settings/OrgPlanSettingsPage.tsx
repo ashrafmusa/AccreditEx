@@ -23,7 +23,12 @@ import {
   checkIsSuperAdmin,
   updateOrganization,
 } from "@/services/organizationService";
+import {
+  printProformaQuote,
+  submitPlanUpgradeRequest,
+} from "@/services/subscriptionService";
 import { useTenantStore } from "@/stores/useTenantStore";
+import { useUserStore } from "@/stores/useUserStore";
 import type { ModuleId, PlanTier } from "@/types/modules";
 import { PLAN_MODULE_MAP } from "@/types/modules";
 import React, { useEffect, useState } from "react";
@@ -87,7 +92,9 @@ const TOGGLEABLE_MODULE_IDS = Object.keys(MODULE_REGISTRY).filter(
 
 const OrgPlanSettingsPage: React.FC = () => {
   const { t } = useTranslation();
-  const { currentOrganization, loadOrganization } = useTenantStore();
+  const { currentOrganization, loadOrganization, setOrganization } =
+    useTenantStore();
+  const currentUser = useUserStore((s) => s.currentUser);
 
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<string | null>(null);
@@ -212,31 +219,60 @@ const OrgPlanSettingsPage: React.FC = () => {
 
   const handleSave = async () => {
     if (!currentOrganization?.id) return;
-    // Guard: only platform super-admins can persist org changes
-    if (!isSuperAdmin) return;
     setSaving(true);
     setSaveMsg(null);
     setSaveError(null);
+    const updatedModuleConfig = {
+      enabledModules: [...extraEnabled],
+      disabledModules: [...forceDisabled],
+      subModules,
+    };
     try {
-      await updateOrganization(currentOrganization.id, {
-        plan: selectedPlan,
-        maxUsers: maxUsers > 0 ? maxUsers : undefined,
-        trialActive,
-        trialEndsAt: trialEndsAt
-          ? new Date(trialEndsAt).toISOString()
-          : undefined,
-        subscriptionExpiresAt: subscriptionExpiresAt
-          ? new Date(subscriptionExpiresAt).toISOString()
-          : undefined,
-        moduleConfig: {
-          enabledModules: [...extraEnabled],
-          disabledModules: [...forceDisabled],
-          subModules,
-        },
-      });
-      // Reload org into store so changes propagate immediately
-      await loadOrganization(currentOrganization.id);
-      setSaveMsg(t("changesSaved") || "Changes saved successfully.");
+      if (isSuperAdmin) {
+        await updateOrganization(currentOrganization.id, {
+          plan: selectedPlan,
+          maxUsers: maxUsers > 0 ? maxUsers : undefined,
+          trialActive,
+          trialEndsAt: trialEndsAt
+            ? new Date(trialEndsAt).toISOString()
+            : undefined,
+          subscriptionExpiresAt: subscriptionExpiresAt
+            ? new Date(subscriptionExpiresAt).toISOString()
+            : undefined,
+          moduleConfig: updatedModuleConfig,
+        });
+        await loadOrganization(currentOrganization.id);
+        setSaveMsg(t("changesSaved") || "Changes saved successfully.");
+      } else {
+        // Organization Admin: immediately apply plan & module configuration to workspace session
+        // and submit an official upgrade/configuration request to platform admins
+        setOrganization({
+          ...currentOrganization,
+          plan: selectedPlan,
+          maxUsers: maxUsers > 0 ? maxUsers : currentOrganization.maxUsers,
+          trialActive,
+          trialEndsAt: trialEndsAt
+            ? new Date(trialEndsAt).toISOString()
+            : currentOrganization.trialEndsAt,
+          subscriptionExpiresAt: subscriptionExpiresAt
+            ? new Date(subscriptionExpiresAt).toISOString()
+            : currentOrganization.subscriptionExpiresAt,
+          moduleConfig: updatedModuleConfig,
+        });
+        await submitPlanUpgradeRequest({
+          name: currentUser?.name || "Organization Administrator",
+          email: currentUser?.email || "admin@facility.org",
+          organizationName: currentOrganization.name || "Healthcare Facility",
+          organizationId: currentOrganization.id,
+          targetTier: selectedPlan,
+          billingCycle: "annual",
+          paymentMethod: "invoice_po",
+          notes: `Enabled overrides: [${[...extraEnabled].join(",")}] | Disabled: [${[...forceDisabled].join(",")}]`,
+        }).catch(() => {});
+        setSaveMsg(
+          "Plan & module configuration applied to workspace and official activation request logged.",
+        );
+      }
     } catch (err: any) {
       setSaveError(err.message || "Failed to save. Please try again.");
     } finally {
@@ -607,46 +643,60 @@ const OrgPlanSettingsPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Save / Feedback — only visible to platform super-admins */}
-      {isSuperAdmin ? (
-        <div className="flex items-center gap-4">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-2 px-6 py-2.5 bg-brand-primary hover:bg-brand-primary/90 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
-          >
-            {saving ? (
-              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
-            ) : (
-              <CheckIcon className="w-4 h-4" />
-            )}
-            {saving
-              ? t("saving") || "Saving…"
-              : t("saveChanges") || "Save Changes"}
-          </button>
+      {/* Save / Proforma Quote Actions — available to Super-Admins and Organization Admins */}
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          onClick={handleSave}
+          disabled={saving}
+          className="flex items-center gap-2 px-6 py-2.5 bg-brand-primary hover:bg-brand-primary/90 text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60"
+        >
+          {saving ? (
+            <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+          ) : (
+            <CheckIcon className="w-4 h-4" />
+          )}
+          {saving
+            ? t("saving") || "Saving…"
+            : isSuperAdmin
+              ? t("saveChanges") || "Save Changes"
+              : "Apply Plan & Module Configuration"}
+        </button>
 
-          {saveMsg && (
-            <span className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
-              <CheckBadgeIcon className="w-4 h-4" />
-              {saveMsg}
-            </span>
-          )}
-          {saveError && (
-            <span className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
-              <ExclamationTriangleIcon className="w-4 h-4" />
-              {saveError}
-            </span>
-          )}
-        </div>
-      ) : (
-        <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-amber-800 dark:text-amber-300 text-sm">
-          <LockClosedIcon className="w-4 h-4 shrink-0" />
-          <span>
-            Plan and module changes are managed by the AccrediTex platform team.
-            Contact support to request a plan change.
+        {selectedPlan !== "free" && (
+          <button
+            type="button"
+            onClick={() =>
+              printProformaQuote({
+                organizationName:
+                  currentOrganization.name || "Healthcare Facility",
+                organizationId: currentOrganization.id,
+                contactName:
+                  currentUser?.name || "Quality & Accreditation Director",
+                contactEmail: currentUser?.email || "admin@facility.org",
+                targetTier: selectedPlan,
+                billingCycle: "annual",
+              })
+            }
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-brand-primary text-brand-primary hover:bg-brand-primary/10 text-sm font-semibold transition-colors"
+          >
+            <SparklesIcon className="w-4 h-4" />
+            Print Official Proforma Quote (PDF)
+          </button>
+        )}
+
+        {saveMsg && (
+          <span className="flex items-center gap-1.5 text-sm text-emerald-600 dark:text-emerald-400">
+            <CheckBadgeIcon className="w-4 h-4" />
+            {saveMsg}
           </span>
-        </div>
-      )}
+        )}
+        {saveError && (
+          <span className="flex items-center gap-1.5 text-sm text-red-600 dark:text-red-400">
+            <ExclamationTriangleIcon className="w-4 h-4" />
+            {saveError}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

@@ -32,7 +32,15 @@ const Header: React.FC<HeaderProps> = ({
   onLogout,
 }) => {
   const { t } = useTranslation();
-  const { isOnline, pendingCount, isSyncing, syncError } = useOfflineSync();
+  const { isOnline, pendingCount, isSyncing, syncError, processQueue } =
+    useOfflineSync();
+  const isFieldAuditView = [
+    "auditHub",
+    "qualityRounding",
+    "mockSurvey",
+    "labOperations",
+    "projectDetail",
+  ].includes(navigation.view);
 
   return (
     <header className="h-16 bg-brand-surface dark:bg-dark-brand-surface border-b border-brand-border dark:border-dark-brand-border flex items-center justify-between px-4 sm:px-6 shrink-0 shadow-sm">
@@ -46,10 +54,13 @@ const Header: React.FC<HeaderProps> = ({
         </button>
         <div className="flex items-center gap-2">
           <HeaderTitle navigation={navigation} />
-          {/* Offline / Syncing indicator */}
+          {/* Offline / Field-Audit Sync indicator */}
           {!isOnline && (
-            <span className="inline-flex items-center gap-1 bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-yellow-900 dark:text-yellow-300 animate-pulse">
-              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+            <span
+              className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-900 text-xs font-semibold px-2.5 py-1 rounded-full dark:bg-amber-900/60 dark:text-amber-200 border border-amber-300 dark:border-amber-700 animate-pulse"
+              title="Low/No Wi-Fi detected: Field-Audit Offline Mode is active. Checklists, tracers, and logs are cached locally and will sync automatically when reconnected."
+            >
+              <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
                   d="M3.28 2.22a.75.75 0 00-1.06 1.06l14.5 14.5a.75.75 0 101.06-1.06l-1.745-1.745a10.029 10.029 0 003.3-2.38 1.07 1.07 0 000-1.19A10.036 10.036 0 0010 5.001c-1.465 0-2.862.312-4.12.88L3.28 2.22z"
@@ -57,9 +68,9 @@ const Header: React.FC<HeaderProps> = ({
                 />
                 <path d="M7.905 8.967l5.128 5.128A3.001 3.001 0 017.905 8.967z" />
               </svg>
-              {t("offline") || "Offline"}
+              <span>{t("offline") || "Offline Field Mode"} · Saved Locally</span>
               {pendingCount > 0 && (
-                <span className="bg-yellow-200 dark:bg-yellow-800 text-yellow-900 dark:text-yellow-200 text-[10px] font-bold px-1.5 py-px rounded-full ml-0.5">
+                <span className="bg-amber-200 dark:bg-amber-800 text-amber-900 dark:text-amber-200 text-[10px] font-bold px-1.5 py-px rounded-full ml-0.5">
                   {pendingCount}
                 </span>
               )}
@@ -90,11 +101,26 @@ const Header: React.FC<HeaderProps> = ({
             </span>
           )}
           {isOnline && !isSyncing && pendingCount > 0 && (
-            <span
-              className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-amber-900 dark:text-amber-300"
-              title={syncError ? t(syncError) : t("pendingChanges")}
+            <button
+              type="button"
+              onClick={() => processQueue()}
+              className="inline-flex items-center gap-1 bg-amber-100 hover:bg-amber-200 text-amber-800 text-xs font-medium px-2.5 py-0.5 rounded-full dark:bg-amber-900 dark:text-amber-300 transition-colors"
+              title={
+                syncError
+                  ? `${t(syncError)} — Click to retry sync`
+                  : "Click to sync pending offline field-audit changes now"
+              }
             >
-              {pendingCount} {t("pendingChanges")}
+              {pendingCount} {t("pendingChanges") || "Pending Sync"}
+            </button>
+          )}
+          {isOnline && !isSyncing && pendingCount === 0 && isFieldAuditView && (
+            <span
+              className="hidden md:inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-medium px-2.5 py-0.5 rounded-full"
+              title="Field-Audit Offline Cache Ready: Your checklists, tracers, and lab logs are synced in real time and protected against Wi-Fi drops."
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+              Offline-Ready · Synced
             </span>
           )}
         </div>
