@@ -74,6 +74,22 @@ export function useFirebaseAuth() {
             return;
           }
 
+          // Check if this is a freshly created account (< 90 s old) — registrationService
+          // may still be writing the org and user documents. Skip fallback collection queries
+          // that would fail or race against RegistrationPage hydration.
+          const creationTime = firebaseUser.metadata.creationTime;
+          const accountAgeMs = creationTime
+            ? Date.now() - new Date(creationTime).getTime()
+            : Infinity;
+
+          if (accountAgeMs < 90_000) {
+            console.info(
+              '[Auth] New account detected — skipping legacy lookup while registration completes.',
+              firebaseUser.email
+            );
+            return;
+          }
+
           // ============================================================
           // STEP 2: Fallback — query by email (legacy users with custom IDs)
           // ============================================================

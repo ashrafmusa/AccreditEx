@@ -491,4 +491,34 @@ describe('Firestore tenant and ownership rules', () => {
     }));
     await assertFails(updateDoc(usageRef, { templateId: 'changed-template' }));
   });
+
+  it('lets a freshly registered trial user (no custom claims yet) work in their own org only', async () => {
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const adminDb = context.firestore();
+      await setDoc(doc(adminDb, 'organizations/org-new'), {
+        name: 'New Trial Org', plan: 'professional', trialActive: true,
+        isActive: true, createdBy: 'trial-user',
+      });
+      await setDoc(doc(adminDb, 'organizations/org-other'), { name: 'Other Org', plan: 'free' });
+      await setDoc(doc(adminDb, 'users/trial-user'), {
+        name: 'Trial', email: 'trial@example.com', role: 'Admin', organizationId: 'org-new',
+      });
+      await setDoc(doc(adminDb, 'appSettings/s-other'), { organizationId: 'org-other' });
+    });
+
+    // Token has an email but NO role / organizationId claims (just after createUserWithEmailAndPassword)
+    const trialDb = testEnv
+      .authenticatedContext('trial-user', { email: 'trial@example.com' })
+      .firestore();
+
+    await assertSucceeds(getDoc(doc(trialDb, 'organizations/org-new')));
+    await assertFails(getDoc(doc(trialDb, 'organizations/org-other')));
+    await assertSucceeds(setDoc(doc(trialDb, 'departments/d1'), {
+      name: 'Quality', organizationId: 'org-new',
+    }));
+    await assertFails(setDoc(doc(trialDb, 'departments/d2'), {
+      name: 'Hijack', organizationId: 'org-other',
+    }));
+    await assertFails(getDoc(doc(trialDb, 'appSettings/s-other')));
+  });
 });

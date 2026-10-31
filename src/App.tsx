@@ -16,6 +16,7 @@ import { useFirebaseAuth } from "@/firebase/firebaseHooks";
 import { aiAgentService } from "@/services/aiAgentService";
 import { SecurityService } from "@/services/securityService";
 import { useAppStore } from "@/stores/useAppStore";
+import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
 
 // Lazy load heavy components
@@ -94,28 +95,12 @@ const AppInitializer: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const initializeApp = async () => {
-      if (initialized.current) {
-        return;
-      }
-      initialized.current = true;
-
-      try {
-        // OPTIMIZATION: Only fetch critical app settings on startup
-        // Pre-fetch users and projects immediately in parallel to avoid delayed layout shifts on dashboard
-        await withTimeout(fetchAllAppData(), 15000);
-
-        Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {
-          // Silently handle errors - data will load on-demand
-        });
-      } catch (error) {
-        toast.error("Failed to load application data. Please refresh.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    initializeApp();
-  }, [fetchAllAppData, fetchAllUsers, fetchAllProjects, toast]);
+    // Unauthenticated public entry routes do not fetch tenant-protected collections on startup;
+    // post-login hydration below loads appSettings, users, and projects once currentUser is ready.
+    if (!currentUser?.id) {
+      setIsLoading(false);
+    }
+  }, [currentUser?.id]);
 
   // FIX: Re-fetch app data, users, and projects AFTER currentUser and tenant organizationId are hydrated
   // (avoids racing 12 Firestore queries against user profile hydration during sign-in).
@@ -125,14 +110,20 @@ const AppInitializer: React.FC = () => {
     let cancelled = false;
     const hydratePostLoginData = async () => {
       try {
-        if (!useAppStore.getState().appSettings) {
-          await fetchAllAppData();
+        if (
+          currentUser.organizationId &&
+          !useTenantStore.getState().organizationId
+        ) {
+          await useTenantStore
+            .getState()
+            .loadOrganizationForUser(currentUser.organizationId);
         }
-        if (!cancelled && useProjectStore.getState().projects.length === 0) {
+        await withTimeout(fetchAllAppData(), 15000);
+        if (!cancelled) {
           await Promise.all([fetchAllUsers(), fetchAllProjects()]).catch(() => {});
         }
       } catch {
-        // Silent — already handled above
+        // Silent — non-fatal initialization fallback
       } finally {
         if (!cancelled) {
           setIsLoading(false);
@@ -144,7 +135,7 @@ const AppInitializer: React.FC = () => {
     return () => {
       cancelled = true;
     };
-  }, [currentUser?.id, fetchAllAppData, fetchAllUsers, fetchAllProjects]);
+  }, [currentUser?.id, currentUser?.organizationId, fetchAllAppData, fetchAllUsers, fetchAllProjects]);
 
   // Set the primary color theme variable when app settings load/change.
   useEffect(() => {

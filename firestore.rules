@@ -16,14 +16,14 @@ service cloud.firestore {
     
     // Check admin via Custom Claims (fast path, no doc reads)
     function hasAdminClaim() {
-      return isAuthenticated() && request.auth.token.role == 'Admin';
+      return isAuthenticated() && request.auth.token.get('role', null) == 'Admin';
     }
     
     // Check admin via Firestore user document (fallback)
     function hasAdminDoc() {
       return isAuthenticated()
         && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', null) == 'Admin';
     }
     
     // Super-admin check: platform-level operator only.
@@ -41,12 +41,12 @@ service cloud.firestore {
     
     // Role lookup for non-admin roles (used by isProjectLead, isAtLeastTeamMember)
     function getUserRole() {
-      let claimRole = request.auth.token.role;
+      let claimRole = isAuthenticated() ? request.auth.token.get('role', null) : null;
       return isAuthenticated()
         ? (claimRole != null
             ? claimRole
             : (exists(/databases/$(database)/documents/users/$(request.auth.uid))
-                ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+                ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', null)
                 : null))
         : null;
     }
@@ -82,7 +82,7 @@ service cloud.firestore {
     function ownerCanCreateOwnUserDoc(userId) {
       return isOwner(userId)
         && request.resource.data.keys().hasAll(['email'])
-        && request.resource.data.email == request.auth.token.email;
+        && request.resource.data.email == request.auth.token.get('email', null);
     }
     
     // Check if user is the document owner
@@ -91,9 +91,14 @@ service cloud.firestore {
     }
     
     // ── Multi-Tenancy Helpers ──────────────────────────────
-    // Get the organizationId from the requesting user's Auth token
+    // Get the organizationId from the requesting user's Auth token (or user doc fallback)
     function getUserOrgId() {
-      return request.auth.token.organizationId;
+      let claimOrgId = isAuthenticated() ? request.auth.token.get('organizationId', null) : null;
+      return claimOrgId != null
+        ? claimOrgId
+        : (isAuthenticated() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+            ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('organizationId', null)
+            : null);
     }
     
     // Check if tenant isolation is active for this request.
@@ -181,7 +186,7 @@ service cloud.firestore {
     function canPreflightDemoSeedId(collectionName, documentId) {
       return isAuthenticated()
         && isAdmin()
-        && request.auth.token.organizationId == 'org-accreditex'
+        && request.auth.token.get('organizationId', null) == 'org-accreditex'
         && (
           documentId.matches('^demo-accreditex-marketing-v1-[A-Za-z0-9-]+$')
           || (
@@ -214,7 +219,7 @@ service cloud.firestore {
       allow update: if (isOwner(userId) && ownerCannotChangeProtectedUserFields())
                     || (isAdmin() && cannotEscalatePrivilege() && setsCorrectOrg());
       allow delete: if isAdmin() 
-                    || (isAuthenticated() && resource.data.email == request.auth.token.email);
+                    || (isAuthenticated() && resource.data.email == request.auth.token.get('email', null));
     }
     
     // Projects collection
@@ -487,7 +492,7 @@ service cloud.firestore {
       // - Legacy no-claim mode remains compatible
       allow read: if isSuperAdmin() || (
         isAuthenticated() && (
-          !isTenantActive() || request.auth.token.organizationId == orgId
+          !isTenantActive() || getUserOrgId() == orgId
         )
       );
       // Super-admins: full create access.
@@ -510,7 +515,7 @@ service cloud.firestore {
       allow update: if isSuperAdmin() || (
         isAdmin() &&
         isTenantActive() &&
-        request.auth.token.organizationId == orgId &&
+        getUserOrgId() == orgId &&
         !resource.data.get('trialActive', false) &&
         !resource.data.keys().hasAny(['trialEndsAt']) &&
         request.resource.data.diff(resource.data).affectedKeys()

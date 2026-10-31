@@ -60,7 +60,9 @@ export const useTenantStore = create<TenantState>((set, get) => ({
         if (!orgId) return;
         set({ organizationId: orgId, isMultiTenant: true, loading: true, error: null });
         try {
-            await reconcileOrganizationBilling(orgId);
+            await reconcileOrganizationBilling(orgId).catch(() => {
+                // Non-fatal: billing reconciliation write may be restricted to super-admins
+            });
             const orgRef = doc(db, 'organizations', orgId);
             const snap = await getDoc(orgRef);
             if (snap.exists()) {
@@ -77,7 +79,11 @@ export const useTenantStore = create<TenantState>((set, get) => ({
                 set({ loading: false, error: 'Organization not found' });
             }
         } catch (err: any) {
-            console.error('Failed to load organization:', err);
+            console.warn('Failed to load organization from Firestore, keeping cached tenant state:', err);
+            const existing = get().currentOrganization;
+            if (existing && existing.id === orgId) {
+                useModuleStore.getState().resolveModules(existing, existing.moduleConfig);
+            }
             set({ loading: false, error: err.message });
         }
     },

@@ -23,6 +23,15 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/firebase/firebaseConfig';
 import { useTenantStore } from '@/stores/useTenantStore';
+import { useUserStore } from '@/stores/useUserStore';
+
+function resolveActiveOrgId(): string {
+    return (
+        useTenantStore.getState().organizationId ||
+        useUserStore.getState().currentUser?.organizationId ||
+        ''
+    );
+}
 
 /**
  * Get a Firestore query scoped to the current organization.
@@ -35,7 +44,7 @@ export function getTenantQuery(
     collectionName: string,
     ...constraints: QueryConstraint[]
 ): Query {
-    const orgId = useTenantStore.getState().organizationId;
+    const orgId = resolveActiveOrgId();
     const colRef = collection(db, collectionName);
 
     if (orgId) {
@@ -58,7 +67,7 @@ export function getSharedTenantQuery(
     collectionName: string,
     ...constraints: QueryNonFilterConstraint[]
 ): Query {
-    const orgId = useTenantStore.getState().organizationId;
+    const orgId = resolveActiveOrgId();
     const colRef = collection(db, collectionName);
 
     if (orgId) {
@@ -96,7 +105,7 @@ export function sortByFieldDesc<T extends object>(items: T[], field: string): T[
  * Returns undefined in single-tenant mode (field simply won't be set).
  */
 export function getTenantStamp(): { organizationId?: string } {
-    const orgId = useTenantStore.getState().organizationId;
+    const orgId = resolveActiveOrgId();
     return orgId ? { organizationId: orgId } : {};
 }
 

@@ -36,6 +36,7 @@ export interface SelfRegistrationData {
 export interface RegistrationResult {
     orgId: string;
     userId: string;
+    organization: Organization;
 }
 
 /**
@@ -65,7 +66,7 @@ export async function selfRegister(data: SelfRegistrationData): Promise<Registra
     const orgRef = doc(collection(db, 'organizations'));
     const orgId = orgRef.id;
 
-    await setDoc(orgRef, {
+    const orgPayload: Omit<Organization, 'id'> & { createdBy: string; updatedAt: string } = {
         name: data.organizationName,
         type: data.organizationType,
         country: data.country ?? '',
@@ -78,7 +79,9 @@ export async function selfRegister(data: SelfRegistrationData): Promise<Registra
         createdAt: now,
         updatedAt: now,
         createdBy: uid,
-    });
+    };
+
+    await setDoc(orgRef, orgPayload);
 
     // 4. Create user document (keyed by Firebase Auth UID)
     await setDoc(doc(db, 'users', uid), {
@@ -90,5 +93,12 @@ export async function selfRegister(data: SelfRegistrationData): Promise<Registra
         createdAt: now,
     });
 
-    return { orgId, userId: uid };
+    return {
+        orgId,
+        userId: uid,
+        organization: {
+            id: orgId,
+            ...orgPayload,
+        },
+    };
 }

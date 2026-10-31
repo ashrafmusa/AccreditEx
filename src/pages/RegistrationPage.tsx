@@ -70,6 +70,8 @@ const RegistrationPage: React.FC = () => {
         country: form.country?.trim(),
       };
       const result = await selfRegister(data);
+      // Hydrate tenant store FIRST so organizationId and module gating are active before user effects fire
+      useTenantStore.getState().setOrganization(result.organization);
       // Auth fires before profile creation; hydrate only after registration writes succeed.
       const userProfile: User = {
         id: result.userId,
@@ -81,7 +83,7 @@ const RegistrationPage: React.FC = () => {
         createdAt: new Date().toISOString(),
       };
       setCurrentUser(userProfile);
-      useTenantStore.getState().loadOrganizationForUser(result.orgId);
+      void useTenantStore.getState().loadOrganizationForUser(result.orgId);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setError(
