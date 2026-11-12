@@ -381,6 +381,7 @@ export interface User {
     accreditationProgram?: string;
     organizationName?: string;
     organizationType?: string;
+    organizationSize?: 'small' | 'medium' | 'enterprise';
     country?: string;
     city?: string;
     region?: string;

@@ -43,7 +43,7 @@ self.addEventListener('fetch', event => {
 
   // Network-first for everything: try network, fallback to cache
   event.respondWith(
-    fetch(request, isNavigation || isManifest ? { cache: 'no-cache' } : {})
+    fetch(request, isNavigation || isManifest ? { cache: 'no-store' } : {})
       .then(response => {
         if (response && response.status === 200) {
           const contentType = (response.headers.get('content-type') || '').toLowerCase();

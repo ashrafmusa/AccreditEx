@@ -101,19 +101,13 @@ const AuditReadinessScannerWidget: React.FC<
     try {
       const program =
         currentUser.profile?.accreditationProgram ||
-        (currentOrganization?.settings?.accreditationProgram as string) ||
         "cbahi";
       const orgType =
         currentOrganization?.type ||
         currentUser.profile?.organizationType ||
         "hospital";
       const orgSize =
-        currentUser.profile?.organizationSize ||
-        (currentOrganization?.settings?.organizationSize as
-          | "small"
-          | "medium"
-          | "enterprise") ||
-        "medium";
+        currentUser.profile?.organizationSize || "medium";
 
       const res = await provisionFacilityWorkspace({
         user: currentUser,

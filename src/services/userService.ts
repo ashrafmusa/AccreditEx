@@ -14,6 +14,7 @@ export interface ProgramSelection {
     program: string;
     organizationName: string;
     organizationType: string;
+    organizationSize?: 'small' | 'medium' | 'enterprise';
     country: string;
     city: string;
     region: string;
@@ -47,6 +48,7 @@ export const setProgramSelection = async (
             'profile.accreditationProgram': selection.program,
             'profile.organizationName': selection.organizationName,
             'profile.organizationType': selection.organizationType,
+            'profile.organizationSize': selection.organizationSize ?? 'medium',
             'profile.country': selection.country,
             'profile.city': selection.city,
             'profile.region': selection.region,
@@ -82,6 +84,7 @@ export const getProgramSelection = async (userId: string): Promise<ProgramSelect
             program: userData.profile.accreditationProgram,
             organizationName: userData.profile.organizationName || '',
             organizationType: userData.profile.organizationType || '',
+            organizationSize: userData.profile.organizationSize,
             country: userData.profile.country || '',
             city: userData.profile.city || '',
             region: userData.profile.region || '',
