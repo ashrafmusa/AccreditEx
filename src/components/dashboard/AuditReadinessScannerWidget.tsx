@@ -13,6 +13,7 @@ import { useProjectStore } from "@/stores/useProjectStore";
 import { useTenantStore } from "@/stores/useTenantStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
+import { isEligibleProjectLead } from "@/utils/roleAccess";
 import {
   AuditReadinessCheck,
   evaluateAuditReadiness,
@@ -74,6 +75,9 @@ const AuditReadinessScannerWidget: React.FC<
   } = useAppStore();
   const { currentOrganization } = useTenantStore();
   const { currentUser } = useUserStore();
+  const canProvisionStarterBlueprint = currentUser
+    ? isEligibleProjectLead(currentUser)
+    : false;
 
   const [isProvisioning, setIsProvisioning] = useState(false);
   const [provisionSuccess, setProvisionSuccess] = useState<string | null>(null);
@@ -95,7 +99,7 @@ const AuditReadinessScannerWidget: React.FC<
     projects.length === 0 && departments.length === 0 && documents.length === 0;
 
   const handleQuickProvision = async () => {
-    if (!currentUser || isProvisioning) return;
+    if (!currentUser || !canProvisionStarterBlueprint || isProvisioning) return;
     setIsProvisioning(true);
     setProvisionSuccess(null);
     try {
@@ -191,7 +195,7 @@ const AuditReadinessScannerWidget: React.FC<
 
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          {isEmptyWorkspace && (
+          {isEmptyWorkspace && canProvisionStarterBlueprint && (
             <button
               type="button"
               onClick={handleQuickProvision}
