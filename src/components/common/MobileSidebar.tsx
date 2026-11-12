@@ -32,6 +32,7 @@ import { useAppStore } from "@/stores/useAppStore";
 import { useModuleStore } from "@/stores/useModuleStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
+import { isAdminUser } from "@/utils/roleAccess";
 import React, { useEffect, useRef } from "react";
 import UserAvatar from "./UserAvatar";
 import SidebarNavigation from "./SidebarNavigation";
@@ -165,8 +166,8 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
       key: "auditHub",
       label: t("auditHub"),
       auditorAllowed: true,
-      icon: ClipboardDocumentSearchIcon,
       adminOnly: true,
+      icon: ClipboardDocumentSearchIcon,
     },
     {
       nav: { view: "trainingHub" },
@@ -287,7 +288,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({
   const visibleNavItems = allNavItems.filter(
     (item) =>
       (!item.adminOnly ||
-        currentUser?.role?.toLowerCase() === "admin" ||
+        isAdminUser({ role: currentUser?.role }) ||
         (item.auditorAllowed && isAuditor)) &&
       isNavKeyEnabled(item.key),
   );

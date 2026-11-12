@@ -1,4 +1,6 @@
+import { UserRole } from "@/types";
 import { routes } from "../routes";
+import { canAccessRoute } from "@/utils/roleAccess";
 
 describe("routes role access metadata", () => {
     it("marks admin routes with requiresAdmin", () => {
@@ -12,6 +14,8 @@ describe("routes role access metadata", () => {
             "/report-builder",
             "/suppliers",
             "/change-control",
+            "/multi-facility",
+            "/quality-rounding",
         ];
 
         adminPaths.forEach((path) => {
@@ -20,6 +24,13 @@ describe("routes role access metadata", () => {
             expect(route?.requiresAdmin).toBe(true);
             expect(route?.requiresAuth).toBe(true);
         });
+    });
+
+    it("allows auditors into the audit route while denying other non-admin roles", () => {
+        const auditRoute = routes.find((route) => route.path === "/audit");
+        expect(auditRoute).toBeDefined();
+        expect(canAccessRoute(auditRoute!, { role: UserRole.Auditor })).toBe(true);
+        expect(canAccessRoute(auditRoute!, { role: UserRole.TeamMember })).toBe(false);
     });
 
     it("keeps project lead core workflows authenticated and accessible", () => {

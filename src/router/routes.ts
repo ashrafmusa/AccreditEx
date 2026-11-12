@@ -4,13 +4,14 @@
  * Maintains backward compatibility with existing NavigationState system
  */
 
-import { NavigationState, NavigationView } from "@/types";
+import { NavigationState, NavigationView, UserRole } from "@/types";
 
 export interface RouteConfig {
     path: string;
     view: NavigationView;
     requiresAuth?: boolean;
     requiresAdmin?: boolean;
+    allowedRoles?: UserRole[];
 }
 
 /**
@@ -28,7 +29,7 @@ export const routes: RouteConfig[] = [
 
     // Risk and Audit
     { path: "/risk", view: "riskHub", requiresAuth: true },
-    { path: "/audit", view: "auditHub", requiresAuth: true },
+    { path: "/audit", view: "auditHub", requiresAuth: true, requiresAdmin: true, allowedRoles: [UserRole.Auditor] },
 
     // Document Management
     { path: "/documents", view: "documentControl", requiresAuth: true },
@@ -47,8 +48,8 @@ export const routes: RouteConfig[] = [
     { path: "/my-tasks", view: "myTasks", requiresAuth: true },
 
     // Departments
-    { path: "/departments", view: "departments", requiresAuth: true },
-    { path: "/departments/:departmentId", view: "departmentDetail", requiresAuth: true },
+    { path: "/departments", view: "departments", requiresAuth: true, requiresAdmin: true },
+    { path: "/departments/:departmentId", view: "departmentDetail", requiresAuth: true, requiresAdmin: true },
 
     // Settings (accessible to all authenticated users)
     { path: "/settings", view: "settings", requiresAuth: true },
@@ -80,22 +81,22 @@ export const routes: RouteConfig[] = [
     { path: "/question-bank", view: "questionBank", requiresAuth: true },
 
     // Multi-Facility Dashboard
-    { path: "/multi-facility", view: "multiFacility", requiresAuth: true },
+    { path: "/multi-facility", view: "multiFacility", requiresAuth: true, requiresAdmin: true },
 
     // Lab Operations
-    { path: "/lab-operations", view: "labOperations", requiresAuth: true },
+    { path: "/lab-operations", view: "labOperations", requiresAuth: true, requiresAdmin: true },
 
     // Workflow Automation
-    { path: "/workflow-automation", view: "workflowAutomation", requiresAuth: true },
+    { path: "/workflow-automation", view: "workflowAutomation", requiresAuth: true, requiresAdmin: true },
 
     // Report Builder
-    { path: "/report-builder", view: "reportBuilder", requiresAuth: true },
+    { path: "/report-builder", view: "reportBuilder", requiresAuth: true, requiresAdmin: true },
 
     // Supplier Quality Management
-    { path: "/suppliers", view: "supplierHub", requiresAuth: true },
+    { path: "/suppliers", view: "supplierHub", requiresAuth: true, requiresAdmin: true },
 
     // Change Control
-    { path: "/change-control", view: "changeControlHub", requiresAuth: true },
+    { path: "/change-control", view: "changeControlHub", requiresAuth: true, requiresAdmin: true },
 
     // Template Library
     { path: "/templates", view: "templateLibrary", requiresAuth: true },
@@ -104,7 +105,7 @@ export const routes: RouteConfig[] = [
     { path: "/pricing", view: "pricing", requiresAuth: false },
 
     // Quality Rounding
-    { path: "/quality-rounding", view: "qualityRounding", requiresAuth: true },
+    { path: "/quality-rounding", view: "qualityRounding", requiresAuth: true, requiresAdmin: true },
     { path: "/quality-tools", view: "qualityTools", requiresAuth: true },
 
     // Redirect legacy standalone routes to parent hubs

@@ -10,7 +10,7 @@ import { useModuleStore } from "@/stores/useModuleStore";
 import { useProjectStore } from "@/stores/useProjectStore";
 import { useUserStore } from "@/stores/useUserStore";
 import { NavigationState } from "@/types";
-import { isAdminUser } from "@/utils/roleAccess";
+import { canAccessRoute, isAdminUser } from "@/utils/roleAccess";
 import React, { Suspense, lazy, useEffect, useState } from "react";
 
 // Performance Optimization: Lazy load all page components
@@ -159,14 +159,12 @@ const MainRouter: React.FC<MainRouterProps> = ({
     const isAdmin = isAdminUser({ role: currentUser?.role });
 
     if (currentUser && !isAdmin) {
-      // Build admin-only list from route config + hardcoded extras
-      const routeAdminViews = routes
-        .filter((r) => r.requiresAdmin)
-        .map((r) => r.view);
-      const adminOnlyViews = new Set([
-        ...routeAdminViews,
-        "dataHub",
-      ]);
+      const restrictedRoutes = routes.filter(
+        (route) => route.view === navigation.view && route.requiresAdmin,
+      );
+      const hasRouteAccess = restrictedRoutes.some((route) =>
+        canAccessRoute(route, currentUser),
+      );
 
       let isUnauthorized = false;
       let message = "";
@@ -188,14 +186,16 @@ const MainRouter: React.FC<MainRouterProps> = ({
           message =
             "This settings section is restricted to administrators. Please access only the available settings for your role.";
         }
-      } else if (adminOnlyViews.has(navigation.view)) {
+      } else if (restrictedRoutes.length > 0 && !hasRouteAccess) {
         isUnauthorized = true;
         const viewNames = {
           departments: "Department Management",
           departmentDetail: "Department Details",
           auditHub: "Audit Management",
           dataHub: "Data Management",
+          multiFacility: "Multi-Facility Dashboard",
           labOperations: "Lab Operations",
+          qualityRounding: "Quality Rounding",
           workflowAutomation: "Workflow Automation",
           reportBuilder: "Report Builder",
           supplierHub: "Supplier Management",
